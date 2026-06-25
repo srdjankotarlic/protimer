@@ -78,6 +78,10 @@ function fmtMs(ms){ return ms>=0 ? fmtSecs(Math.ceil(ms/1000),false) : fmtSecs(M
 function applyState(s){
   if (S && (s.mode!==S.mode || s.durationMs!==S.durationMs)) prevRem = null;
   S = s;
+  if (IS_ELECTRON && s && s.lang){
+    const fs = document.getElementById('btnFs');
+    if (fs) fs.textContent = s.lang==='en' ? '⛶ Fullscreen' : '⛶ Pun ekran';
+  }
 }
 
 // --- prijem stanja: Electron (IPC) ili browser/OBS (SSE) ---

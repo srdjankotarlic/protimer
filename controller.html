@@ -14,10 +14,11 @@
   *{box-sizing:border-box; -webkit-user-select:none; user-select:none;}
   input,textarea{-webkit-user-select:auto; user-select:auto;}
   body{margin:0; background:var(--bg); color:var(--text); overflow:hidden;
+    height:100vh; display:flex; flex-direction:column;
     font:13.5px/1.4 -apple-system, "Helvetica Neue", system-ui, sans-serif;}
 
   /* ---- top bar ---- */
-  .topbar{display:flex; align-items:center; gap:10px; padding:11px 16px; border-bottom:1px solid var(--border);}
+  .topbar{flex:0 0 auto; display:flex; align-items:center; gap:10px; padding:11px 16px; border-bottom:1px solid var(--border);}
   .brand{font-weight:800; letter-spacing:3px; font-size:14px;}
   .brand b{color:var(--accent); font-weight:800;}
   .grow{flex:1;}
@@ -40,8 +41,10 @@
   label.chk{display:flex; align-items:center; gap:6px; color:var(--dim); font-size:12.5px; cursor:pointer;}
   label.chk input{accent-color:var(--accent);}
 
-  .main{display:grid; grid-template-columns:1fr 300px; gap:14px; padding:14px; height:calc(100vh - 56px);}
-  .left{display:flex; flex-direction:column; gap:10px; min-width:0; overflow:hidden;}
+  .main{flex:1 1 auto; min-height:0; display:grid; grid-template-columns:1fr 300px; gap:14px; padding:14px;}
+  .left{display:flex; flex-direction:column; gap:10px; min-width:0; min-height:0; overflow-y:auto; overflow-x:hidden; padding-right:4px;}
+  .left::-webkit-scrollbar,.right::-webkit-scrollbar{width:8px;}
+  .left::-webkit-scrollbar-thumb,.right::-webkit-scrollbar-thumb{background:var(--border); border-radius:4px;}
   .panel{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:11px 13px;}
   .row{display:flex; gap:9px; align-items:center; flex-wrap:wrap;}
   .lbl{color:var(--dim); font-size:11px; text-transform:uppercase; letter-spacing:1px;}
@@ -59,7 +62,7 @@
 
   /* ---- preview (ogledalo izlaza) ---- */
   .preview{position:relative; border:1px solid var(--border); border-radius:var(--radius);
-    flex:1; min-height:170px; overflow:hidden; display:flex; flex-direction:column;
+    flex:0 0 auto; height:clamp(170px, 26vh, 320px); min-height:170px; overflow:hidden; display:flex; flex-direction:column;
     align-items:center; justify-content:center; background:#000;}
   .pv-checker{position:absolute; inset:0; background-color:#2a2f3a;
     background-image:linear-gradient(45deg,#1a1f28 25%,transparent 25%),linear-gradient(-45deg,#1a1f28 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#1a1f28 75%),linear-gradient(-45deg,transparent 75%,#1a1f28 75%);
@@ -100,7 +103,7 @@
   input.w90{width:92px; text-align:center; font-family:"SF Mono",Menlo,monospace;}
 
   /* ---- right column ---- */
-  .right{display:flex; flex-direction:column; gap:12px; min-height:0;}
+  .right{display:flex; flex-direction:column; gap:12px; min-height:0; overflow-y:auto; overflow-x:hidden;}
   .card{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:12px; display:flex; flex-direction:column; min-height:0;}
   .card h3{margin:0 0 9px; font-size:11px; letter-spacing:1.5px; color:var(--dim); font-weight:700;}
   .cuewrap{flex:1; display:flex; flex-direction:column; min-height:0;}
@@ -123,23 +126,30 @@
   .dot{width:7px; height:7px; border-radius:50%; background:var(--red); display:inline-block;}
   .dot.on{background:var(--accent);}
 
-  .statusbar{position:fixed; bottom:0; left:0; right:0; padding:5px 16px; color:var(--dim2); font-size:11px;
+  .statusbar{flex:0 0 auto; padding:5px 16px; color:var(--dim2); font-size:11px;
     border-top:1px solid var(--border); background:var(--bg); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   kbd{background:var(--panel2); border:1px solid var(--border); border-radius:4px; padding:0 5px; font-size:10px; color:var(--dim);}
+  .lang{display:flex; gap:2px; background:var(--panel2); border:1px solid var(--border); border-radius:8px; padding:2px;}
+  .lang button{padding:4px 9px; font-size:12px; font-weight:700; border:none; background:transparent; color:var(--dim); border-radius:6px;}
+  .lang button.active{background:var(--blue); color:#fff;}
 </style>
 </head>
 <body>
 
 <div class="topbar">
   <div class="brand">PRO<b>TIMER</b></div>
+  <div class="lang">
+    <button data-lang="sr">SR</button>
+    <button data-lang="en">EN</button>
+  </div>
   <div class="grow"></div>
-  <span class="lbl">Izlaz na</span>
-  <select id="displaySel" title="Monitor za izlazni ekran" style="max-width:300px"></select>
-  <button id="btnOpenOut" class="primary">Pošalji na ekran</button>
-  <button id="btnFs" title="Pun ekran (F)">⛶</button>
-  <button id="btnCloseOut" class="ghost" title="Zatvori izlazni prozor">✕</button>
+  <span class="lbl" data-i18n="outLabel">Izlaz na</span>
+  <select id="displaySel" data-i18n-title="displayTitle" title="Monitor za izlazni ekran" style="max-width:280px"></select>
+  <button id="btnOpenOut" class="primary" data-i18n="sendScreen">Pošalji na ekran</button>
+  <button id="btnFs" data-i18n-title="fsTitle" title="Pun ekran (F)">⛶</button>
+  <button id="btnCloseOut" class="ghost" data-i18n-title="closeTitle" title="Zatvori izlazni prozor">✕</button>
   <div class="sep"></div>
-  <label class="chk"><input type="checkbox" id="chkOnTop"> Na vrhu</label>
+  <label class="chk"><input type="checkbox" id="chkOnTop"> <span data-i18n="onTop">Na vrhu</span></label>
 </div>
 
 <div class="main">
@@ -173,105 +183,104 @@
 
     <div class="panel">
       <div class="field">
-        <span class="glabel">Režim</span>
+        <span class="glabel" data-i18n="mode">Režim</span>
         <div class="tabs">
-          <button data-mode="countdown" class="active">Odbrojavanje</button>
-          <button data-mode="countup">Štoperica</button>
-          <button data-mode="clock">Sat</button>
+          <button data-mode="countdown" class="active" data-i18n="modeCountdown">Odbrojavanje</button>
+          <button data-mode="countup" data-i18n="modeCountup">Štoperica</button>
+          <button data-mode="clock" data-i18n="modeClock">Sat</button>
         </div>
         <div class="sep"></div>
-        <input type="text" id="durInput" class="w90" placeholder="10:00" title="10 = minuti · 10:00 = MM:SS · 1:00:00 = HH:MM:SS">
-        <button id="btnSetDur">Postavi</button>
+        <input type="text" id="durInput" class="w90" placeholder="10:00" data-i18n-title="durTitle" title="10 = minuti · 10:00 = MM:SS · 1:00:00 = HH:MM:SS">
+        <button id="btnSetDur" data-i18n="set">Postavi</button>
         <div class="sep"></div>
-        <span class="lbl">Kraj u</span>
+        <span class="lbl" data-i18n="endAt">Kraj u</span>
         <input type="time" id="targetInput">
-        <button id="btnTarget" title="Odbrojavanje do tačnog vremena">Start</button>
+        <button id="btnTarget" data-i18n-title="targetTitle" title="Odbrojavanje do tačnog vremena" data-i18n="startTarget">Start</button>
       </div>
       <div class="field">
-        <span class="glabel">Brzo</span>
+        <span class="glabel" data-i18n="quick">Brzo</span>
         <div class="chips" id="chips"></div>
       </div>
     </div>
 
     <div class="panel">
       <div class="field">
-        <span class="glabel">Boje</span>
-        <label class="swatch">Pozadina <input type="color" id="bgColor" value="#000000"></label>
-        <label class="swatch">Vreme/tekst <input type="color" id="fgColor" value="#ffffff"></label>
+        <span class="glabel" data-i18n="colors">Boje</span>
+        <label class="swatch"><span data-i18n="background">Pozadina</span> <input type="color" id="bgColor" value="#000000"></label>
+        <label class="swatch"><span data-i18n="timeText">Vreme/tekst</span> <input type="color" id="fgColor" value="#ffffff"></label>
         <div class="sep"></div>
-        <label class="chk"><input type="checkbox" id="chkWarn" checked> Boje upozorenja</label>
-        <span class="warn-sw"><span class="tag">Ž</span><input type="color" id="warnYellow" value="#ffc23a" title="Žuto"></span>
-        <span class="warn-sw"><span class="tag">C</span><input type="color" id="warnRed" value="#ff4540" title="Crveno"></span>
+        <label class="chk"><input type="checkbox" id="chkWarn" checked> <span data-i18n="warnColors">Boje upozorenja</span></label>
+        <span class="warn-sw"><span class="tag" data-i18n="tagY">Ž</span><input type="color" id="warnYellow" value="#ffc23a" data-i18n-title="yellow" title="Žuto"></span>
+        <span class="warn-sw"><span class="tag" data-i18n="tagR">C</span><input type="color" id="warnRed" value="#ff4540" data-i18n-title="red" title="Crveno"></span>
         <div class="sep"></div>
-        <label class="chk"><input type="checkbox" id="chkTransparent"> Providna pozadina (OBS)</label>
+        <label class="chk"><input type="checkbox" id="chkTransparent"> <span data-i18n="transparent">Providna pozadina (OBS)</span></label>
       </div>
       <div class="field">
-        <span class="glabel">Tekst</span>
-        <input type="text" id="textInput" placeholder="Tekst na ekranu (npr. PAUZA, DOBRO DOŠLI)…" style="flex:1; min-width:140px">
-        <label class="chk"><input type="checkbox" id="chkTextOnly"> Samo tekst</label>
-        <button id="btnTextClear" class="ghost">Obriši</button>
-      </div>
-    </div>
-
-    <div class="panel">
-      <div class="field">
-        <span class="glabel">Pragovi</span>
-        <label class="swatch">Žuto na <input type="text" id="yellowInput" class="short" value="2:00"></label>
-        <label class="swatch">Crveno na <input type="text" id="redInput" class="short" value="1:00"></label>
-        <div class="sep"></div>
-        <label class="chk"><input type="checkbox" id="chkFlash" checked> Blic na nuli</label>
-        <label class="chk"><input type="checkbox" id="chkSound"> Zvuk</label>
-        <label class="chk"><input type="checkbox" id="chkOver" checked> Minus posle nule</label>
-        <label class="chk"><input type="checkbox" id="chkProg"> Traka napretka</label>
+        <span class="glabel" data-i18n="text">Tekst</span>
+        <input type="text" id="textInput" placeholder="Tekst na ekranu (npr. PAUZA, DOBRO DOŠLI)…" data-i18n-ph="textPh" style="flex:1; min-width:140px">
+        <label class="chk"><input type="checkbox" id="chkTextOnly"> <span data-i18n="textOnly">Samo tekst</span></label>
+        <button id="btnTextClear" class="ghost" data-i18n="clear">Obriši</button>
       </div>
     </div>
 
     <div class="panel">
       <div class="field">
-        <span class="glabel">Poruka</span>
-        <input type="text" id="msgInput" placeholder="Poruka govorniku… (M za fokus, Enter šalje)" style="flex:1; min-width:140px">
-        <label class="chk"><input type="checkbox" id="chkMsgFlash"> Treperi</label>
-        <button id="btnMsgSend" class="primary">Pošalji</button>
-        <button id="btnMsgClear" class="ghost">Obriši</button>
+        <span class="glabel" data-i18n="thresholds">Pragovi</span>
+        <label class="swatch"><span data-i18n="yellowAt">Žuto na</span> <input type="text" id="yellowInput" class="short" value="2:00"></label>
+        <label class="swatch"><span data-i18n="redAt">Crveno na</span> <input type="text" id="redInput" class="short" value="1:00"></label>
+        <div class="sep"></div>
+        <label class="chk"><input type="checkbox" id="chkFlash" checked> <span data-i18n="flashZero">Blic na nuli</span></label>
+        <label class="chk"><input type="checkbox" id="chkSound"> <span data-i18n="sound">Zvuk</span></label>
+        <label class="chk"><input type="checkbox" id="chkOver" checked> <span data-i18n="overtime">Minus posle nule</span></label>
+        <label class="chk"><input type="checkbox" id="chkProg"> <span data-i18n="progress">Traka napretka</span></label>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="field">
+        <span class="glabel" data-i18n="message">Poruka</span>
+        <input type="text" id="msgInput" placeholder="Poruka govorniku… (M za fokus, Enter šalje)" data-i18n-ph="messagePh" style="flex:1; min-width:140px">
+        <label class="chk"><input type="checkbox" id="chkMsgFlash"> <span data-i18n="flash">Treperi</span></label>
+        <button id="btnMsgSend" class="primary" data-i18n="send">Pošalji</button>
+        <button id="btnMsgClear" class="ghost" data-i18n="clear">Obriši</button>
       </div>
     </div>
   </div>
 
   <div class="right">
     <div class="card cuewrap" style="flex:1">
-      <h3>CUE LISTA</h3>
+      <h3 data-i18n="cueList">CUE LISTA</h3>
       <div class="cuelist" id="cueList"></div>
       <div class="row" style="margin-bottom:9px">
-        <input type="text" id="cueName" placeholder="Naziv" style="flex:1; min-width:50px">
+        <input type="text" id="cueName" placeholder="Naziv" data-i18n-ph="namePh" style="flex:1; min-width:50px">
         <input type="text" id="cueDur" class="short" placeholder="10:00">
         <button id="btnCueAdd">+</button>
       </div>
-      <label class="chk" style="margin-bottom:9px"><input type="checkbox" id="chkAuto"> Auto-prelaz na sledeći</label>
-      <button id="btnGo" class="primary" style="font-weight:800; padding:11px">GO ▶ SLEDEĆI &nbsp;(N)</button>
+      <label class="chk" style="margin-bottom:9px"><input type="checkbox" id="chkAuto"> <span data-i18n="autoNext">Auto-prelaz na sledeći</span></label>
+      <button id="btnGo" class="primary" style="font-weight:800; padding:11px" data-i18n-html="goNext">GO ▶ SLEDEĆI &nbsp;(N)</button>
     </div>
 
     <div class="card">
-      <h3>MREŽA → OBS · TELEFON</h3>
-      <div class="lbl" style="margin-bottom:5px">Ekran (OBS / monitor)</div>
+      <h3 data-i18n="netTitle">MREŽA → OBS · TELEFON</h3>
+      <div class="lbl" style="margin-bottom:5px" data-i18n="screenOBS">Ekran (OBS / monitor)</div>
       <div class="net-url">
         <span id="netUrl">—</span>
-        <button id="btnCopyUrl" class="mini ghost" style="padding:3px 8px; font-size:11px">Kopiraj</button>
+        <button id="btnCopyUrl" class="mini ghost" style="padding:3px 8px; font-size:11px" data-i18n="copy">Kopiraj</button>
       </div>
-      <div class="lbl" style="margin-bottom:5px">Daljinski (telefon / tablet)</div>
+      <div class="lbl" style="margin-bottom:5px" data-i18n="remoteLabel">Daljinski (telefon / tablet)</div>
       <div class="net-url">
         <span id="netRemote" style="color:var(--blue)">—</span>
-        <button id="btnCopyRemote" class="mini ghost" style="padding:3px 8px; font-size:11px">Kopiraj</button>
+        <button id="btnCopyRemote" class="mini ghost" style="padding:3px 8px; font-size:11px" data-i18n="copy">Kopiraj</button>
       </div>
       <div class="net-note">
         <span class="dot" id="netDot"></span> <span id="netStatus">pokrećem…</span><br>
-        OBS: <b>Browser Source</b> → Ekran URL („Providna pozadina" za overlay; NDI preko DistroAV).
-        Telefon: otvori Daljinski URL u pretraživaču.
+        <span data-i18n-html="netNote">OBS: <b>Browser Source</b> → Ekran URL („Providna pozadina" za overlay; NDI preko DistroAV). Telefon: otvori Daljinski URL u pretraživaču.</span>
       </div>
     </div>
   </div>
 </div>
 
-<div class="statusbar">
+<div class="statusbar" data-i18n-html="shortcuts">
   <kbd>Space</kbd> start/pauza · <kbd>R</kbd> reset · <kbd>N</kbd> sledeći · <kbd>↑↓</kbd> ±1m · <kbd>←→</kbd> ±10s · <kbd>B</kbd> blackout · <kbd>F</kbd> pun ekran · <kbd>M</kbd> poruka · <kbd>C</kbd> obriši poruku
 </div>
 
@@ -279,8 +288,68 @@
 const api = window.pt || {
   sendState(){}, onState(){}, openOutput(){}, closeOutput(){}, toggleFullscreen(){},
   exitFullscreen(){}, setOnTop(){}, getDisplays:async()=>[], isOutputOpen:async()=>false,
-  getNetworkInfo:async()=>({}), onDisplays(){}, onOutputState(){}, onNetworkInfo(){}, sendToDisplay(){}
+  getNetworkInfo:async()=>({}), onDisplays(){}, onOutputState(){}, onNetworkInfo(){},
+  onRemoteCmd(){}, sendToDisplay(){}
 };
+
+// ---------- JEZIK / LANGUAGE ----------
+const I18N = {
+  sr: {
+    outLabel:'Izlaz na', displayTitle:'Monitor za izlazni ekran', sendScreen:'Pošalji na ekran',
+    fsTitle:'Pun ekran (F)', closeTitle:'Zatvori izlazni prozor', onTop:'Na vrhu',
+    mode:'Režim', modeCountdown:'Odbrojavanje', modeCountup:'Štoperica', modeClock:'Sat',
+    set:'Postavi', endAt:'Kraj u', startTarget:'Start', targetTitle:'Odbrojavanje do tačnog vremena',
+    durTitle:'10 = minuti · 10:00 = MM:SS · 1:00:00 = HH:MM:SS', quick:'Brzo',
+    colors:'Boje', background:'Pozadina', timeText:'Vreme/tekst', warnColors:'Boje upozorenja',
+    tagY:'Ž', tagR:'C', yellow:'Žuto', red:'Crveno', transparent:'Providna pozadina (OBS)',
+    text:'Tekst', textPh:'Tekst na ekranu (npr. PAUZA, DOBRO DOŠLI)…', textOnly:'Samo tekst', clear:'Obriši',
+    thresholds:'Pragovi', yellowAt:'Žuto na', redAt:'Crveno na', flashZero:'Blic na nuli',
+    sound:'Zvuk', overtime:'Minus posle nule', progress:'Traka napretka',
+    message:'Poruka', messagePh:'Poruka govorniku… (M za fokus, Enter šalje)', flash:'Treperi', send:'Pošalji',
+    cueList:'CUE LISTA', cueEmpty:'Nema cue-ova. Dodaj naziv + trajanje ↓', namePh:'Naziv',
+    autoNext:'Auto-prelaz na sledeći', goNext:'GO ▶ SLEDEĆI &nbsp;(N)', noName:'(bez naziva)',
+    netTitle:'MREŽA → OBS · TELEFON', screenOBS:'Ekran (OBS / monitor)', copy:'Kopiraj',
+    remoteLabel:'Daljinski (telefon / tablet)',
+    netNote:'OBS: <b>Browser Source</b> → Ekran URL („Providna pozadina" za overlay; NDI preko DistroAV). Telefon: otvori Daljinski URL u pretraživaču.',
+    start:'▶ START', pause:'⏸ PAUZA', clockBtn:'— SAT —',
+    outLive:'EKRAN ŽIV', outClosed:'EKRAN ZATVOREN', screenTag:'EKRAN', controlTag:'kontrola',
+    netOff:'server nije pokrenut', netStarting:'pokrećem…', live:'uživo', deviceOne:'uređaj', deviceMany:'uređaja', connected:'povezano',
+    shortcuts:'<kbd>Space</kbd> start/pauza · <kbd>R</kbd> reset · <kbd>N</kbd> sledeći · <kbd>↑↓</kbd> ±1m · <kbd>←→</kbd> ±10s · <kbd>B</kbd> blackout · <kbd>F</kbd> pun ekran · <kbd>M</kbd> poruka · <kbd>C</kbd> obriši poruku'
+  },
+  en: {
+    outLabel:'Output to', displayTitle:'Monitor for the output screen', sendScreen:'Send to screen',
+    fsTitle:'Fullscreen (F)', closeTitle:'Close output window', onTop:'On top',
+    mode:'Mode', modeCountdown:'Countdown', modeCountup:'Stopwatch', modeClock:'Clock',
+    set:'Set', endAt:'End at', startTarget:'Start', targetTitle:'Countdown to exact time',
+    durTitle:'10 = minutes · 10:00 = MM:SS · 1:00:00 = HH:MM:SS', quick:'Quick',
+    colors:'Colors', background:'Background', timeText:'Time/text', warnColors:'Warning colors',
+    tagY:'Y', tagR:'R', yellow:'Yellow', red:'Red', transparent:'Transparent background (OBS)',
+    text:'Text', textPh:'On-screen text (e.g. BREAK, WELCOME)…', textOnly:'Text only', clear:'Clear',
+    thresholds:'Warnings', yellowAt:'Yellow at', redAt:'Red at', flashZero:'Flash at zero',
+    sound:'Sound', overtime:'Count past zero', progress:'Progress bar',
+    message:'Message', messagePh:'Message to speaker… (M to focus, Enter sends)', flash:'Flash', send:'Send',
+    cueList:'CUE LIST', cueEmpty:'No cues. Add name + duration ↓', namePh:'Name',
+    autoNext:'Auto-advance to next', goNext:'GO ▶ NEXT &nbsp;(N)', noName:'(no name)',
+    netTitle:'NETWORK → OBS · PHONE', screenOBS:'Screen (OBS / monitor)', copy:'Copy',
+    remoteLabel:'Remote (phone / tablet)',
+    netNote:'OBS: <b>Browser Source</b> → Screen URL (enable “Transparent background” for overlay; NDI via DistroAV). Phone: open the Remote URL in a browser.',
+    start:'▶ START', pause:'⏸ PAUSE', clockBtn:'— CLOCK —',
+    outLive:'SCREEN LIVE', outClosed:'SCREEN CLOSED', screenTag:'SCREEN', controlTag:'control',
+    netOff:'server not running', netStarting:'starting…', live:'live', deviceOne:'device', deviceMany:'devices', connected:'connected',
+    shortcuts:'<kbd>Space</kbd> start/pause · <kbd>R</kbd> reset · <kbd>N</kbd> next · <kbd>↑↓</kbd> ±1m · <kbd>←→</kbd> ±10s · <kbd>B</kbd> blackout · <kbd>F</kbd> fullscreen · <kbd>M</kbd> message · <kbd>C</kbd> clear message'
+  }
+};
+let lang = localStorage.getItem('pt_lang') || 'sr';
+function t(key){ return (I18N[lang] && I18N[lang][key]) ?? I18N.sr[key] ?? key; }
+function applyLang(){
+  document.documentElement.lang = lang;
+  document.querySelectorAll('[data-i18n]').forEach(el => el.textContent = t(el.dataset.i18n));
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => el.placeholder = t(el.dataset.i18nPh));
+  document.querySelectorAll('[data-i18n-title]').forEach(el => el.title = t(el.dataset.i18nTitle));
+  document.querySelectorAll('[data-i18n-html]').forEach(el => el.innerHTML = t(el.dataset.i18nHtml));
+  document.querySelectorAll('.lang button').forEach(b => b.classList.toggle('active', b.dataset.lang===lang));
+  updateButtons(); renderCues(); showNet(lastNetInfo); fillDisplays(lastDisplays);
+}
 
 // ---------- STANJE ----------
 let S = {
@@ -292,8 +361,10 @@ let S = {
   // izgled
   bgColor:'#000000', fgColor:'#ffffff', useWarnColors:true,
   warnYellow:'#ffc23a', warnRed:'#ff4540',
-  text:'', textOnly:false, transparent:false
+  text:'', textOnly:false, transparent:false,
+  lang:lang
 };
+let lastNetInfo = null, lastDisplays = [];
 let cues = [], currentCue = -1, autoNext = false, zeroFired = false, outputOpen = false;
 
 const $ = id => document.getElementById(id);
@@ -404,7 +475,7 @@ function render(){
 
   $('bdgBk').classList.toggle('bk',S.blackout);
   $('bdgOut').classList.toggle('on',outputOpen);
-  $('bdgOut').textContent=outputOpen?'EKRAN ŽIV':'EKRAN ZATVOREN';
+  $('bdgOut').textContent=outputOpen?t('outLive'):t('outClosed');
 
   if(S.mode==='countdown'&&S.running&&r.rem!==null&&r.rem<=0&&!zeroFired){
     zeroFired=true;
@@ -415,21 +486,21 @@ function render(){
 }
 function updateButtons(){
   const b=$('btnStart');
-  if(S.mode==='clock'){ b.textContent='— SAT —'; b.classList.remove('running'); return; }
-  if(S.running){ b.textContent='⏸ PAUZA'; b.classList.add('running'); }
-  else { b.textContent='▶ START'; b.classList.remove('running'); }
+  if(S.mode==='clock'){ b.textContent=t('clockBtn'); b.classList.remove('running'); return; }
+  if(S.running){ b.textContent=t('pause'); b.classList.add('running'); }
+  else { b.textContent=t('start'); b.classList.remove('running'); }
 }
 
 // ---------- CUE LISTA ----------
 function renderCues(){
   const el=$('cueList'); el.innerHTML='';
-  if(!cues.length){ el.innerHTML='<div class="empty">Nema cue-ova. Dodaj naziv + trajanje ↓</div>'; return; }
+  if(!cues.length){ const d=document.createElement('div'); d.className='empty'; d.textContent=t('cueEmpty'); el.appendChild(d); return; }
   cues.forEach((c,i)=>{
     const row=document.createElement('div');
     row.className='cue'+(i===currentCue?' current':'');
     row.innerHTML=`<span class="n">${i+1}</span><span class="nm"></span><span class="du">${fmtMs(c.durationMs)}</span>
       <button class="mini up">▲</button><button class="mini dn">▼</button><button class="mini del">✕</button>`;
-    row.querySelector('.nm').textContent=c.name||'(bez naziva)';
+    row.querySelector('.nm').textContent=c.name||t('noName');
     row.addEventListener('click',e=>{ if(e.target.tagName!=='BUTTON') loadCue(i,false); });
     row.querySelector('.up').addEventListener('click',()=>moveCue(i,-1));
     row.querySelector('.dn').addEventListener('click',()=>moveCue(i,1));
@@ -481,12 +552,13 @@ function load(){
 
 // ---------- MONITORI ----------
 function fillDisplays(list){
+  lastDisplays = list || [];
   const sel=$('displaySel'); sel.innerHTML='';
-  list.forEach(d=>{
+  lastDisplays.forEach(d=>{
     const o=document.createElement('option'); o.value=d.id;
-    const tag=d.hasOutput?' — EKRAN':(d.hasControl?' — kontrola':'');
+    const tag=d.hasOutput?` — ${t('screenTag')}`:(d.hasControl?` — ${t('controlTag')}`:'');
     o.textContent=`${d.label} (${d.width}×${d.height})${tag}`;
-    if(d.hasOutput||(!d.hasControl&&list.length>1)) o.selected=true;
+    if(d.hasOutput||(!d.hasControl&&lastDisplays.length>1)) o.selected=true;
     sel.appendChild(o);
   });
 }
@@ -496,13 +568,15 @@ api.onDisplays(fillDisplays);
 // ---------- MREŽA ----------
 let netUrl='', remoteUrl='';
 function showNet(info){
-  if(!info||!info.running){ $('netUrl').textContent='—'; $('netRemote').textContent='—'; $('netStatus').textContent='server nije pokrenut'; $('netDot').classList.remove('on'); return; }
+  lastNetInfo = info;
+  if(!info||!info.running){ $('netUrl').textContent='—'; $('netRemote').textContent='—'; $('netStatus').textContent=t('netOff'); $('netDot').classList.remove('on'); return; }
   netUrl=`http://${info.ip}:${info.port}`;
   remoteUrl=`${netUrl}/remote`;
   $('netUrl').textContent=netUrl;
   $('netRemote').textContent=remoteUrl;
   $('netDot').classList.add('on');
-  $('netStatus').textContent=`uživo · ${info.clients} ${info.clients===1?'uređaj':'uređaja'} povezano`;
+  const word = info.clients===1?t('deviceOne'):t('deviceMany');
+  $('netStatus').textContent=`${t('live')} · ${info.clients} ${word} ${t('connected')}`;
 }
 api.onNetworkInfo(showNet);
 api.getNetworkInfo().then(showNet).catch(()=>{});
@@ -611,8 +685,13 @@ document.addEventListener('keydown',e=>{
 });
 window.addEventListener('resize',()=>{ lastKey=''; });
 
+// jezik / language
+document.querySelectorAll('.lang button').forEach(b=>b.addEventListener('click',()=>{
+  lang=b.dataset.lang; localStorage.setItem('pt_lang',lang); S.lang=lang; applyLang(); send();
+}));
+
 // ---------- START ----------
-load(); refreshDisplays(); send(); updateButtons(); requestAnimationFrame(render);
+load(); refreshDisplays(); send(); updateButtons(); applyLang(); requestAnimationFrame(render);
 </script>
 </body>
 </html>

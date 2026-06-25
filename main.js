@@ -244,6 +244,12 @@ app.whenReady().then(() => {
         await waitLoad(controlWin);
         const ow = await waitOutput();
         await waitLoad(ow);
+        // opcioni jezik za snimke: --ui-lang=en
+        const langArg = (process.argv.find(a => a.startsWith('--ui-lang=')) || '').split('=')[1];
+        if (langArg) {
+          await controlWin.webContents.executeJavaScript(`localStorage.setItem('pt_lang','${langArg}'); location.reload();`);
+          await waitLoad(controlWin);
+        }
         await new Promise(r => setTimeout(r, 1800));
         fs.writeFileSync('/tmp/protimer_ctl.png', (await controlWin.webContents.capturePage()).toPNG());
         fs.writeFileSync('/tmp/protimer_out.png', (await ow.webContents.capturePage()).toPNG());

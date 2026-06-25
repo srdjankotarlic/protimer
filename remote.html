@@ -57,8 +57,8 @@
 </head>
 <body>
   <div class="head">
-    <div class="brand">PRO<b>TIMER</b> · Daljinski</div>
-    <div class="conn"><span class="dot" id="dot"></span><span id="connTxt">povezivanje…</span></div>
+    <div class="brand">PRO<b>TIMER</b> · <span data-i18n="remoteWord">Daljinski</span></div>
+    <div class="conn"><span class="dot" id="dot"></span><span id="connTxt">…</span></div>
   </div>
 
   <div class="disp">
@@ -72,7 +72,7 @@
     <button class="big" id="btnReset">↺ RESET</button>
   </div>
 
-  <div class="sec">Korekcija</div>
+  <div class="sec" data-i18n="correction">Korekcija</div>
   <div class="grid g4">
     <button class="adj" data-adj="-60">−1m</button>
     <button class="adj" data-adj="-10">−10s</button>
@@ -81,26 +81,26 @@
   </div>
 
   <div class="grid g2">
-    <button class="go" id="btnGo">GO ▶ SLEDEĆI</button>
+    <button class="go" id="btnGo" data-i18n="goNext">GO ▶ SLEDEĆI</button>
     <button class="bk" id="btnBk">■ BLACKOUT</button>
   </div>
 
-  <div class="sec">Brzo trajanje</div>
+  <div class="sec" data-i18n="quickDur">Brzo trajanje</div>
   <div class="grid g4" id="chips"></div>
 
-  <div class="sec">Poruka govorniku</div>
+  <div class="sec" data-i18n="msgToSpeaker">Poruka govorniku</div>
   <div class="grid g3" style="margin-bottom:9px">
-    <button class="preset" data-msg="Ubrzaj">Ubrzaj</button>
-    <button class="preset" data-msg="Završavaj">Završavaj</button>
-    <button class="preset" data-msg="STOP">STOP</button>
+    <button class="preset" data-i18n="preset1">Ubrzaj</button>
+    <button class="preset" data-i18n="preset2">Završavaj</button>
+    <button class="preset" data-i18n="preset3">STOP</button>
   </div>
   <div class="msgrow">
-    <input type="text" id="msgIn" placeholder="Svoja poruka…" enterkeyhint="send">
-    <button id="btnMsg" style="padding:14px 16px">Pošalji</button>
+    <input type="text" id="msgIn" data-i18n-ph="ownMsg" placeholder="Svoja poruka…" enterkeyhint="send">
+    <button id="btnMsg" style="padding:14px 16px" data-i18n="send">Pošalji</button>
     <button id="btnMsgClr" style="padding:14px 14px; background:transparent">✕</button>
   </div>
 
-  <div class="foot">Kontrola radi dok je glavni ProTimer otvoren na računaru.</div>
+  <div class="foot" data-i18n="foot">Kontrola radi dok je glavni ProTimer otvoren na računaru.</div>
 
 <script>
 const $ = id => document.getElementById(id);
@@ -108,6 +108,28 @@ function pad(n){ return String(n).padStart(2,'0'); }
 function fmtSecs(s,neg){ const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),x=s%60;
   return (neg?'−':'')+(h>0?`${h}:${pad(m)}:${pad(x)}`:`${m}:${pad(x)}`); }
 function fmtMs(ms){ return ms>=0?fmtSecs(Math.ceil(ms/1000),false):fmtSecs(Math.floor(-ms/1000),true); }
+
+// ---------- jezik / language ----------
+const I18N = {
+  sr: { remoteWord:'Daljinski', connecting:'povezivanje…', live:'uživo', lost:'veza pala…',
+    start:'▶ START', pause:'⏸ PAUZA', correction:'Korekcija', goNext:'GO ▶ SLEDEĆI',
+    quickDur:'Brzo trajanje', msgToSpeaker:'Poruka govorniku',
+    preset1:'Ubrzaj', preset2:'Završavaj', preset3:'STOP', ownMsg:'Svoja poruka…', send:'Pošalji',
+    foot:'Kontrola radi dok je glavni ProTimer otvoren na računaru.' },
+  en: { remoteWord:'Remote', connecting:'connecting…', live:'live', lost:'connection lost…',
+    start:'▶ START', pause:'⏸ PAUSE', correction:'Adjust', goNext:'GO ▶ NEXT',
+    quickDur:'Quick duration', msgToSpeaker:'Message to speaker',
+    preset1:'Speed up', preset2:'Wrap up', preset3:'STOP', ownMsg:'Your message…', send:'Send',
+    foot:'Works while the main ProTimer is open on the computer.' }
+};
+let lang = 'sr';
+function tr(key){ return (I18N[lang] && I18N[lang][key]) || I18N.sr[key] || key; }
+function applyLang(){
+  document.documentElement.lang = lang;
+  document.querySelectorAll('[data-i18n]').forEach(el => el.textContent = tr(el.dataset.i18n));
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => el.placeholder = tr(el.dataset.i18nPh));
+}
+applyLang();
 
 let S = null;
 function cmd(type, value){
@@ -118,10 +140,16 @@ function cmd(type, value){
 // prijem stanja (SSE)
 function connect(){
   const es = new EventSource('/events');
-  es.onopen = () => { $('dot').classList.add('on'); $('connTxt').textContent='uživo'; };
-  es.onmessage = e => { try { S = JSON.parse(e.data); } catch(_){} };
-  es.onerror = () => { $('dot').classList.remove('on'); $('connTxt').textContent='veza pala…'; es.close(); setTimeout(connect,1000); };
+  es.onopen = () => { $('dot').classList.add('on'); $('connTxt').textContent=tr('live'); };
+  es.onmessage = e => {
+    try {
+      S = JSON.parse(e.data);
+      if (S.lang && S.lang !== lang){ lang = S.lang; applyLang(); }
+    } catch(_){}
+  };
+  es.onerror = () => { $('dot').classList.remove('on'); $('connTxt').textContent=tr('lost'); es.close(); setTimeout(connect,1000); };
 }
+$('connTxt').textContent = tr('connecting');
 connect();
 
 function render(){
@@ -140,7 +168,7 @@ function render(){
   $('lbl').textContent = S.text || '';
   $('msg').textContent = S.message ? S.message.text : '';
   $('btnStart').classList.toggle('run', S.running);
-  $('btnStart').textContent = S.running ? '⏸ PAUZA' : '▶ START';
+  $('btnStart').textContent = S.running ? tr('pause') : tr('start');
   $('btnBk').classList.toggle('on', S.blackout);
 }
 requestAnimationFrame(render);
@@ -155,7 +183,7 @@ document.querySelectorAll('[data-adj]').forEach(b=>b.addEventListener('click',()
   const b=document.createElement('button'); b.className='adj'; b.textContent=min+'m';
   b.addEventListener('click',()=>cmd('setDuration',min*60000)); $('chips').appendChild(b);
 });
-document.querySelectorAll('[data-msg]').forEach(b=>b.addEventListener('click',()=>cmd('message',b.dataset.msg)));
+document.querySelectorAll('.preset').forEach(b=>b.addEventListener('click',()=>cmd('message',b.textContent)));
 $('btnMsg').addEventListener('click', ()=>{ const v=$('msgIn').value.trim(); if(v){ cmd('message',v); $('msgIn').value=''; $('msgIn').blur(); } });
 $('msgIn').addEventListener('keydown', e=>{ if(e.key==='Enter') $('btnMsg').click(); });
 $('btnMsgClr').addEventListener('click', ()=>cmd('clearMessage'));

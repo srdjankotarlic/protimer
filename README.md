@@ -1,112 +1,113 @@
 # ⏱️ ProTimer
 
-**Besplatan, profesionalni stage timer za live produkciju.** Veliko, jasno odbrojavanje na bilo kom ekranu — bina, projektor, OBS, ili telefon u ruci. Otvoren kod, radi na **Mac-u i Windows-u**.
+**A free, open-source stage timer for live production.** Big, clear countdown on any screen — stage, projector, OBS, or a phone in your hand. Runs on **macOS and Windows**, with a **Serbian / English** interface.
 
-> *English: a free, open-source stage / countdown timer for live events and streaming. Send the clock to any screen, into OBS as a browser source, or control it from your phone. (Interface is in Serbian.)*
-
-![ProTimer kontrola](docs/screenshot-control.png)
+![ProTimer control window](docs/screenshot-control.png)
 
 ---
 
-## ✨ Šta dobijaš
+## ✨ Features
 
-- 🟢 **Odbrojavanje, štoperica i sat** — plus „start do tačnog vremena" (npr. kraj bloka u 14:30)
-- 🎨 **Gol, čist ekran** — samo vreme; boje pozadine i cifara biraš sam
-- 🔴 **Upozorenja bojom** — belo → žuto → crveno kako se bliži kraj; posle nule ide u minus + blic
-- 🖥️ **Bilo koji ekran** — pošalji izlaz na drugi monitor / projektor u pun ekran jednim klikom
-- 📺 **OBS / NDI / vMix** — ugrađen mrežni izlaz; dodaš kao Browser Source (i providna pozadina za overlay)
-- 📱 **Daljinski sa telefona** — pokreći tajmer i šalji poruke govorniku iz ruke, preko Wi-Fi-ja
-- 💬 **Poruke govorniku** + ✍️ **tekst na ekranu** („PAUZA", „DOBRO DOŠLI")
-- 🗒️ **Cue lista** — niz tačaka sa trajanjima, dugme GO za sledeću
-- ⌨️ **Prečice** za sve, ⚡ niska latencija (bez kašnjenja i drifta)
+- 🟢 **Countdown, stopwatch & clock** — plus "count down to an exact time" (e.g. end the block at 2:30 PM)
+- 🎨 **Clean output screen** — just the time; you pick the background and digit colors
+- 🔴 **Color warnings** — white → yellow → red as the end approaches; counts past zero into the negative with a flash
+- 🖥️ **Any screen** — send the output to a second monitor / projector in fullscreen with one click
+- 📺 **OBS / NDI / vMix** — built-in network output; add it as a Browser Source (transparent background for overlays)
+- 📱 **Phone remote** — start the timer and send messages to the speaker from your hand, over Wi-Fi
+- 💬 **Messages to the speaker** + ✍️ **on-screen text** ("BREAK", "WELCOME")
+- 🗒️ **Cue list** — a run of segments with durations, GO button for the next one
+- 🌍 **Serbian / English** interface, ⌨️ keyboard shortcuts, ⚡ low latency (no lag, no drift)
 
 ---
 
-## ⬇️ Preuzimanje i instalacija
+## ⬇️ Download & install
 
-Skini poslednju verziju sa **[Releases stranice](../../releases/latest)**:
+Grab the latest build from the **[Releases page](../../releases/latest)**:
 
-| Sistem | Fajl | Kako |
+| System | File | How |
 |---|---|---|
-| 🍎 **macOS** (Apple Silicon) | `ProTimer-*-arm64.dmg` | Otvori → prevuci u Applications. Prvi put: **desni klik → Open**. |
-| 🪟 **Windows** | `ProTimer Setup *.exe` | Pokreni instaler. SmartScreen: **More info → Run anyway**. |
-| 🪟 **Windows** (bez instalacije) | `ProTimer-*-portable.exe` | Samo dupli klik — ništa se ne instalira. |
+| 🍎 **macOS** (Apple Silicon) | `ProTimer-*-arm64.dmg` | Open → drag to Applications. First launch: **right-click → Open**. |
+| 🪟 **Windows** | `ProTimer Setup *.exe` | Run the installer. SmartScreen: **More info → Run anyway**. |
+| 🪟 **Windows** (no install) | `ProTimer-*-portable.exe` | Just double-click — nothing gets installed. |
 
-> Aplikacija nije plaćeno potpisana (košta), zato gornje „desni klik → Open" / „Run anyway". Potpuno je bezbedna — kod je ovde, otvoren.
-
----
-
-## 🚀 Brzi početak (30 sekundi)
-
-1. Otvori ProTimer — odmah dobiješ **dva prozora**: *Kontrola* (za tebe) i *Ekran* (čisto vreme).
-2. Upiši trajanje (npr. `5:00`) ili klikni dugme `5m`, pa **START** (ili `Space`).
-3. Prevuci *Ekran* prozor na projektor — ili gore izaberi monitor i klikni **„Pošalji na ekran"** za pun ekran.
-4. Gotovo. Sa `±` dugmadima dodaješ/oduzimaš vreme uživo dok tajmer radi.
+> The app isn't paid-signed (that costs money), hence the "right-click → Open" / "Run anyway" the first time. It's completely safe — the source is right here, open.
 
 ---
 
-## 📖 Kako se koristi
+## 🚀 Quick start (30 seconds)
 
-### Modovi tajmera
-- **Odbrojavanje** — glavni mod. Uneseš trajanje (`10` = minuti, `10:30` = MM:SS, `1:00:00` = HH:MM:SS).
-- **Štoperica** — broji na gore od nule.
-- **Sat** — prikazuje tačno vreme.
-- **„Kraj u"** — uneseš sat (npr. 20:30) i tajmer odbrojava do tog trenutka.
+1. Open ProTimer — you immediately get **two windows**: *Control* (for you) and *Screen* (clean time).
+2. Type a duration (e.g. `5:00`) or click the `5m` button, then **START** (or `Space`).
+3. Drag the *Screen* window onto your projector — or pick a monitor at the top and click **"Send to screen"** for fullscreen.
+4. Done. Use the `±` buttons to add/remove time live while the timer runs.
 
-### Slanje na bilo koji ekran
-Gore u vrhu izaberi monitor i klikni **„Pošalji na ekran"** — na drugom monitoru ide automatski u pun ekran. Priključiš projektor usred programa? Izlaz sam skoči na njega. Na izlaznom prozoru dvoklik = pun ekran, `Esc` = nazad.
+---
+
+## 📖 How to use
+
+### Timer modes
+- **Countdown** — the main mode. Enter a duration (`10` = minutes, `10:30` = MM:SS, `1:00:00` = HH:MM:SS).
+- **Stopwatch** — counts up from zero.
+- **Clock** — shows the current time of day.
+- **"End at"** — enter a time (e.g. 20:30) and it counts down to that moment.
+
+### Send to any screen
+At the top, pick a monitor and click **"Send to screen"** — on a second monitor it goes fullscreen automatically. Plug in a projector mid-show? The output jumps to it. On the output window, double-click = fullscreen, `Esc` = back.
 
 ### 📺 OBS / NDI / streaming
-U panelu **„Mreža → OBS · Telefon"** stoji URL (npr. `http://192.168.1.50:7878`).
-1. U OBS dodaj **Browser Source** i nalepi taj URL.
-2. Uključi **„Providna pozadina"** u ProTimer-u → tajmer je čist overlay preko slike.
-3. Za **NDI**: pusti taj browser source kroz OBS i uključi OBS NDI izlaz (DistroAV plugin).
+The **"Network → OBS · Phone"** panel shows a URL (e.g. `http://192.168.1.50:7878`).
+1. In OBS, add a **Browser Source** and paste that URL.
+2. Enable **"Transparent background"** in ProTimer → the timer becomes a clean overlay over your video.
+3. For **NDI**: run that browser source through OBS and enable OBS NDI output (DistroAV plugin).
 
-Isti URL možeš otvoriti na bilo kom računaru/TV-u na mreži kao pomoćni monitor.
+Open the same URL on any computer/TV on the network as a confidence monitor.
 
-### 📱 Daljinski sa telefona
-U istom panelu je i **Daljinski** URL (`…:7878/remote`). Otvori ga u pretraživaču telefona (mora biti na istom Wi-Fi-ju). Dobiješ velike dugmiće: Start/Pauza, Reset, ±vreme, GO sledeći, blackout, brzo trajanje i poruke govorniku. *(Glavni ProTimer mora ostati otvoren na računaru.)*
+### 📱 Phone remote
+The same panel has a **Remote** URL (`…:7878/remote`). Open it in your phone's browser (same Wi-Fi). You get big buttons: Start/Pause, Reset, ±time, GO next, blackout, quick durations, and messages to the speaker. *(The main ProTimer must stay open on the computer.)*
 
-### 🎨 Boje i tekst
-- **Boje**: biraš pozadinu i boju cifara. „Boje upozorenja" pale žuto/crveno pred kraj (možeš ih isključiti).
-- **Tekst na ekranu**: upišeš poruku (npr. `PAUZA`) — stoji iznad vremena, ili uključi **„Samo tekst"** da prekrije vreme.
-- **Poruka govorniku**: kratka poruka na dnu ekrana, sa opcijom da treperi.
+### 🎨 Colors & text
+- **Colors**: pick the background and digit color. "Warning colors" turn yellow/red near the end (you can turn them off).
+- **On-screen text**: type a message (e.g. `BREAK`) — it sits above the time, or enable **"Text only"** to replace the time entirely.
+- **Message to speaker**: a short line at the bottom of the screen, with an optional flash.
 
-### 🗒️ Cue lista
-Dodaj tačke programa (naziv + trajanje) desno. Klik na tačku je učita, **GO** (`N`) pušta sledeću. Može i auto-prelaz.
+### 🗒️ Cue list
+Add program segments (name + duration) on the right. Click a cue to load it, **GO** (`N`) starts the next one. Optional auto-advance.
 
-### ⌨️ Prečice
-| Taster | Radnja | | Taster | Radnja |
+### 🌍 Language
+Switch between **SR / EN** with the toggle next to the logo, top-left. The choice is remembered and also applies to the phone remote.
+
+### ⌨️ Shortcuts
+| Key | Action | | Key | Action |
 |---|---|---|---|---|
-| `Space` | Start / pauza | | `B` | Blackout |
-| `R` | Reset | | `F` | Pun ekran |
-| `N` | Sledeći cue | | `M` | Poruka (Enter šalje) |
-| `↑` / `↓` | ± 1 minut | | `C` | Obriši poruku |
-| `←` / `→` | ± 10 sekundi | | `Esc` | Izlaz iz punog ekrana |
+| `Space` | Start / pause | | `B` | Blackout |
+| `R` | Reset | | `F` | Fullscreen |
+| `N` | Next cue | | `M` | Message (Enter sends) |
+| `↑` / `↓` | ± 1 minute | | `C` | Clear message |
+| `←` / `→` | ± 10 seconds | | `Esc` | Exit fullscreen |
 
 ---
 
-## 🛠️ Za programere (pokretanje iz koda)
+## 🛠️ For developers (run from source)
 
-Treba ti [Node.js](https://nodejs.org).
+You need [Node.js](https://nodejs.org).
 
 ```bash
 git clone https://github.com/srdjankotarlic/protimer.git
 cd protimer
 npm install
-npm start            # pokreni aplikaciju
+npm start            # run the app
 
-npm run smoke        # automatski test (prozori + mreža + daljinski)
-npm run dist:mac     # napravi Mac .dmg
-npm run dist:win     # napravi Windows instaler + portable
+npm run smoke        # automated test (windows + network + remote)
+npm run dist:mac     # build the macOS .dmg
+npm run dist:win     # build the Windows installer + portable
 ```
 
-Čist stack, bez runtime zavisnosti: **Electron** + običan HTML/CSS/JS + Node `http` server (SSE). Cela logika je u `controller.html` (kontrola), `output.html` (ekran/OBS), `remote.html` (telefon) i `main.js` (prozori + server).
+Clean stack, no runtime dependencies: **Electron** + plain HTML/CSS/JS + a Node `http` server (SSE). All the logic lives in `controller.html` (control), `output.html` (screen/OBS), `remote.html` (phone), and `main.js` (windows + server).
 
 ---
 
-## 📄 Licenca
+## 📄 License
 
-[MIT](LICENSE) — slobodno koristi, menjaj i deli. Ako ti pomogne u produkciji, ⭐ na repo-u znači mnogo.
+[MIT](LICENSE) — free to use, modify and share. If it helps your show, a ⭐ on the repo means a lot.
 
-Napravio [Srdjan Kotarlic](https://github.com/srdjankotarlic) za live produkciju.
+Built by [Srdjan Kotarlic](https://github.com/srdjankotarlic) for live production.
