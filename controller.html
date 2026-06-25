@@ -107,15 +107,31 @@
   .card{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:12px; display:flex; flex-direction:column; min-height:0;}
   .card h3{margin:0 0 9px; font-size:11px; letter-spacing:1.5px; color:var(--dim); font-weight:700;}
   .cuewrap{flex:1; display:flex; flex-direction:column; min-height:0;}
+  .cuehead{display:flex; align-items:center; gap:7px; margin-bottom:9px;}
+  .cuehead input[type=time]{padding:4px 6px; font-size:12px;}
+  .ou{font-family:"SF Mono",Menlo,monospace; font-size:11px; font-weight:700; padding:2px 7px; border-radius:6px;
+    background:var(--panel2); border:1px solid var(--border); color:var(--dim); white-space:nowrap;}
+  .ou.late{background:#3a1f1d; border-color:#5a2b28; color:#ff8b84;}
+  .ou.early{background:#16263a; border-color:#1f3a5a; color:#7db8ff;}
+  .ou.ontime{background:#13251a; border-color:#1f4a30; color:var(--accent);}
   .cuelist{flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:5px; min-height:40px; margin-bottom:9px;}
   .cuelist::-webkit-scrollbar{width:8px;} .cuelist::-webkit-scrollbar-thumb{background:var(--border); border-radius:4px;}
   .cue{display:flex; align-items:center; gap:7px; background:var(--panel2); border:1px solid var(--border);
-    border-radius:8px; padding:7px 9px; cursor:pointer;}
+    border-radius:8px; padding:7px 9px; padding-left:7px; cursor:pointer; position:relative; overflow:hidden;}
+  .cue .stripe{position:absolute; left:0; top:0; bottom:0; width:4px;}
   .cue.current{border-color:var(--accent); background:#13251a;}
-  .cue .n{color:var(--dim2); font-size:11px; width:14px;}
-  .cue .nm{flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13px;}
-  .cue .du{font-family:"SF Mono",Menlo,monospace; color:var(--dim); font-size:12px;}
-  .cue .mini{padding:2px 6px; font-size:10px; border-radius:5px;}
+  .cue .n{color:var(--dim2); font-size:11px; width:14px; flex:0 0 auto;}
+  .cue .body{flex:1; min-width:0;}
+  .cue .nm{overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13px;}
+  .cue .note{overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:11px; color:var(--dim2); margin-top:1px;}
+  .cue .times{font-family:"SF Mono",Menlo,monospace; color:var(--dim); font-size:11px; text-align:right; flex:0 0 auto;}
+  .cue .times .du{color:var(--dim2); font-size:10.5px;}
+  .cue .mini{padding:2px 6px; font-size:10px; border-radius:5px; flex:0 0 auto;}
+  .cueadd{display:flex; gap:6px; align-items:center; margin-bottom:7px;}
+  .cuecolors{display:flex; gap:3px; align-items:center;}
+  .cuecolors .cdot{width:15px; height:15px; border-radius:50%; cursor:pointer; border:2px solid transparent;}
+  .cuecolors .cdot.sel{border-color:#fff;}
+  .cuecolors .cdot.none{background:var(--panel2); border:1px dashed var(--dim2); position:relative;}
   .empty{color:var(--dim2); font-size:12px; text-align:center; padding:14px 0;}
 
   /* mreža / OBS */
@@ -249,14 +265,25 @@
 
   <div class="right">
     <div class="card cuewrap" style="flex:1">
-      <h3 data-i18n="cueList">CUE LISTA</h3>
-      <div class="cuelist" id="cueList"></div>
-      <div class="row" style="margin-bottom:9px">
-        <input type="text" id="cueName" placeholder="Naziv" data-i18n-ph="namePh" style="flex:1; min-width:50px">
-        <input type="text" id="cueDur" class="short" placeholder="10:00">
-        <button id="btnCueAdd">+</button>
+      <div class="cuehead">
+        <h3 data-i18n="rundown" style="margin:0">RUNDOWN</h3>
+        <div class="grow"></div>
+        <span class="lbl" data-i18n="showStart">Start</span>
+        <input type="time" id="showStartInput" title="Planirani početak showa">
+        <span id="ouStatus" class="ou"></span>
       </div>
-      <label class="chk" style="margin-bottom:9px"><input type="checkbox" id="chkAuto"> <span data-i18n="autoNext">Auto-prelaz na sledeći</span></label>
+      <div class="cuelist" id="cueList"></div>
+      <div class="cueadd">
+        <input type="text" id="cueName" placeholder="Naziv" data-i18n-ph="namePh" style="flex:1; min-width:40px">
+        <input type="text" id="cueDur" class="short" placeholder="10:00">
+        <button id="btnCueAdd" title="Dodaj">+</button>
+      </div>
+      <div class="cueadd">
+        <input type="text" id="cueNote" placeholder="Beleška (opciono)…" data-i18n-ph="notePh" style="flex:1; min-width:60px">
+        <span class="cuecolors" id="cueColors"></span>
+      </div>
+      <label class="chk" style="margin-bottom:7px"><input type="checkbox" id="chkAuto"> <span data-i18n="autoNext">Auto-prelaz na sledeći</span></label>
+      <label class="chk" style="margin-bottom:9px"><input type="checkbox" id="chkNowNext"> <span data-i18n="nowNextOut">NOW/NEXT na ekranu</span></label>
       <button id="btnGo" class="primary" style="font-weight:800; padding:11px" data-i18n-html="goNext">GO ▶ SLEDEĆI &nbsp;(N)</button>
     </div>
 
@@ -271,6 +298,11 @@
       <div class="net-url">
         <span id="netRemote" style="color:var(--blue)">—</span>
         <button id="btnCopyRemote" class="mini ghost" style="padding:3px 8px; font-size:11px" data-i18n="copy">Kopiraj</button>
+      </div>
+      <div class="lbl" style="margin-bottom:5px" data-i18n="backstageLabel">Backstage (raspored / crew)</div>
+      <div class="net-url">
+        <span id="netBackstage" style="color:var(--amber)">—</span>
+        <button id="btnCopyBackstage" class="mini ghost" style="padding:3px 8px; font-size:11px" data-i18n="copy">Kopiraj</button>
       </div>
       <div class="net-note">
         <span class="dot" id="netDot"></span> <span id="netStatus">pokrećem…</span><br>
@@ -306,8 +338,11 @@ const I18N = {
     thresholds:'Pragovi', yellowAt:'Žuto na', redAt:'Crveno na', flashZero:'Blic na nuli',
     sound:'Zvuk', overtime:'Minus posle nule', progress:'Traka napretka',
     message:'Poruka', messagePh:'Poruka govorniku… (M za fokus, Enter šalje)', flash:'Treperi', send:'Pošalji',
-    cueList:'CUE LISTA', cueEmpty:'Nema cue-ova. Dodaj naziv + trajanje ↓', namePh:'Naziv',
+    cueList:'CUE LISTA', cueEmpty:'Nema tačaka. Dodaj naziv + trajanje ↓', namePh:'Naziv',
     autoNext:'Auto-prelaz na sledeći', goNext:'GO ▶ SLEDEĆI &nbsp;(N)', noName:'(bez naziva)',
+    rundown:'RUNDOWN', showStart:'Start', notePh:'Beleška (opciono)…', nowNextOut:'NOW/NEXT na ekranu',
+    backstageLabel:'Backstage (raspored / crew)', onTime:'NA VREME', late:'kasni', early:'ispred',
+    nowLabel:'SADA', nextLabel:'SLEDI', endLabel:'Kraj', plannedLabel:'Planirano', projectedLabel:'Procena',
     netTitle:'MREŽA → OBS · TELEFON', screenOBS:'Ekran (OBS / monitor)', copy:'Kopiraj',
     remoteLabel:'Daljinski (telefon / tablet)',
     netNote:'OBS: <b>Browser Source</b> → Ekran URL („Providna pozadina" za overlay; NDI preko DistroAV). Telefon: otvori Daljinski URL u pretraživaču.',
@@ -328,8 +363,11 @@ const I18N = {
     thresholds:'Warnings', yellowAt:'Yellow at', redAt:'Red at', flashZero:'Flash at zero',
     sound:'Sound', overtime:'Count past zero', progress:'Progress bar',
     message:'Message', messagePh:'Message to speaker… (M to focus, Enter sends)', flash:'Flash', send:'Send',
-    cueList:'CUE LIST', cueEmpty:'No cues. Add name + duration ↓', namePh:'Name',
+    cueList:'CUE LIST', cueEmpty:'No items. Add name + duration ↓', namePh:'Name',
     autoNext:'Auto-advance to next', goNext:'GO ▶ NEXT &nbsp;(N)', noName:'(no name)',
+    rundown:'RUNDOWN', showStart:'Start', notePh:'Note (optional)…', nowNextOut:'NOW/NEXT on screen',
+    backstageLabel:'Backstage (schedule / crew)', onTime:'ON TIME', late:'behind', early:'ahead',
+    nowLabel:'NOW', nextLabel:'NEXT', endLabel:'End', plannedLabel:'Planned', projectedLabel:'Projected',
     netTitle:'NETWORK → OBS · PHONE', screenOBS:'Screen (OBS / monitor)', copy:'Copy',
     remoteLabel:'Remote (phone / tablet)',
     netNote:'OBS: <b>Browser Source</b> → Screen URL (enable “Transparent background” for overlay; NDI via DistroAV). Phone: open the Remote URL in a browser.',
@@ -362,6 +400,8 @@ let S = {
   bgColor:'#000000', fgColor:'#ffffff', useWarnColors:true,
   warnYellow:'#ffc23a', warnRed:'#ff4540',
   text:'', textOnly:false, transparent:false,
+  // rundown / raspored
+  cues:[], currentCue:-1, showStart:'', showNowNext:false,
   lang:lang
 };
 let lastNetInfo = null, lastDisplays = [];
@@ -382,7 +422,32 @@ function parseTime(str){
   if(p.length===3) return (p[0]*3600+p[1]*60+p[2])*1000;
   return null;
 }
-function send(){ api.sendState(S); saveSettings(); }
+function send(){ S.cues=cues; S.currentCue=currentCue; api.sendState(S); saveSettings(); }
+
+// ---------- RASPORED / OVER-UNDER ----------
+function todayAt(hhmm, now){
+  if(!hhmm) return null;
+  const [h,m]=hhmm.split(':').map(Number);
+  if(isNaN(h)||isNaN(m)) return null;
+  const d=new Date(now); d.setHours(h,m,0,0); return d.getTime();
+}
+function schedule(now){
+  const list=cues||[]; const anchor=todayAt(S.showStart, now);
+  let acc=anchor;
+  const rows=list.map((c,i)=>{ const start=acc; const end=acc==null?null:acc+c.durationMs; acc=end;
+    return {name:c.name,durationMs:c.durationMs,note:c.note||'',color:c.color||'',plannedStart:start,plannedEnd:end,index:i}; });
+  let curRem=null;
+  if(currentCue>=0 && S.mode==='countdown') curRem=S.running?S.endAt-now:S.remMs;
+  let delta=null, plannedEnd=null;
+  const total=list.reduce((a,c)=>a+c.durationMs,0);
+  if(anchor!=null){ plannedEnd=anchor+total;
+    if(currentCue>=0 && curRem!=null){
+      const sumAfter=list.slice(currentCue+1).reduce((a,c)=>a+c.durationMs,0);
+      delta=(now+Math.max(0,curRem)+sumAfter)-plannedEnd;
+    }
+  }
+  return {rows,curRem,delta,plannedEnd};
+}
 
 // ---------- TAJMER ----------
 function startPause(){
@@ -477,6 +542,15 @@ function render(){
   $('bdgOut').classList.toggle('on',outputOpen);
   $('bdgOut').textContent=outputOpen?t('outLive'):t('outClosed');
 
+  // over / under raspored
+  const sch=schedule(now); const ou=$('ouStatus');
+  if(sch.delta==null){ ou.textContent=''; ou.className='ou'; }
+  else { const sec=Math.round(sch.delta/1000);
+    if(Math.abs(sec)<=5){ ou.textContent=t('onTime'); ou.className='ou ontime'; }
+    else if(sec>0){ ou.textContent='▲ '+fmtSecs(sec,false); ou.className='ou late'; ou.title=t('late'); }
+    else { ou.textContent='▼ '+fmtSecs(-sec,false); ou.className='ou early'; ou.title=t('early'); }
+  }
+
   if(S.mode==='countdown'&&S.running&&r.rem!==null&&r.rem<=0&&!zeroFired){
     zeroFired=true;
     if(S.soundZero) beep();
@@ -491,26 +565,35 @@ function updateButtons(){
   else { b.textContent=t('start'); b.classList.remove('running'); }
 }
 
-// ---------- CUE LISTA ----------
+// ---------- RUNDOWN ----------
+function clock(ms){ const d=new Date(ms); return pad(d.getHours())+':'+pad(d.getMinutes()); }
 function renderCues(){
   const el=$('cueList'); el.innerHTML='';
   if(!cues.length){ const d=document.createElement('div'); d.className='empty'; d.textContent=t('cueEmpty'); el.appendChild(d); return; }
+  const sch=schedule(Date.now());
   cues.forEach((c,i)=>{
+    const pr=sch.rows[i];
     const row=document.createElement('div');
     row.className='cue'+(i===currentCue?' current':'');
-    row.innerHTML=`<span class="n">${i+1}</span><span class="nm"></span><span class="du">${fmtMs(c.durationMs)}</span>
-      <button class="mini up">▲</button><button class="mini dn">▼</button><button class="mini del">✕</button>`;
+    const times = pr.plannedStart!=null
+      ? `${clock(pr.plannedStart)}–${clock(pr.plannedEnd)}<div class="du">${fmtMs(c.durationMs)}</div>`
+      : `<div class="du">${fmtMs(c.durationMs)}</div>`;
+    row.innerHTML=`${c.color?`<span class="stripe" style="background:${c.color}"></span>`:''}<span class="n">${i+1}</span>`+
+      `<div class="body"><div class="nm"></div>${c.note?'<div class="note"></div>':''}</div>`+
+      `<span class="times">${times}</span>`+
+      `<button class="mini up">▲</button><button class="mini dn">▼</button><button class="mini del">✕</button>`;
     row.querySelector('.nm').textContent=c.name||t('noName');
+    if(c.note) row.querySelector('.note').textContent=c.note;
     row.addEventListener('click',e=>{ if(e.target.tagName!=='BUTTON') loadCue(i,false); });
     row.querySelector('.up').addEventListener('click',()=>moveCue(i,-1));
     row.querySelector('.dn').addEventListener('click',()=>moveCue(i,1));
-    row.querySelector('.del').addEventListener('click',()=>{ cues.splice(i,1); if(currentCue>=cues.length) currentCue=cues.length-1; saveCues(); renderCues(); });
+    row.querySelector('.del').addEventListener('click',()=>{ cues.splice(i,1); if(currentCue>=cues.length) currentCue=cues.length-1; saveCues(); send(); renderCues(); });
     el.appendChild(row);
   });
 }
 function loadCue(i,autostart){ if(i<0||i>=cues.length) return; currentCue=i; setDuration(cues[i].durationMs); if(autostart) startPause(); renderCues(); }
 function moveCue(i,dir){ const j=i+dir; if(j<0||j>=cues.length) return; [cues[i],cues[j]]=[cues[j],cues[i]];
-  if(currentCue===i) currentCue=j; else if(currentCue===j) currentCue=i; saveCues(); renderCues(); }
+  if(currentCue===i) currentCue=j; else if(currentCue===j) currentCue=i; saveCues(); send(); renderCues(); }
 function go(){ if(currentCue+1<cues.length) loadCue(currentCue+1,true); }
 
 // ---------- ČUVANJE ----------
@@ -520,7 +603,8 @@ function saveSettings(){
     yellowSec:S.yellowSec,redSec:S.redSec,flashZero:S.flashZero,soundZero:S.soundZero,
     overtime:S.overtime,showProgress:S.showProgress,durationMs:S.durationMs,autoNext,
     bgColor:S.bgColor,fgColor:S.fgColor,useWarnColors:S.useWarnColors,
-    warnYellow:S.warnYellow,warnRed:S.warnRed,textOnly:S.textOnly,transparent:S.transparent
+    warnYellow:S.warnYellow,warnRed:S.warnRed,textOnly:S.textOnly,transparent:S.transparent,
+    showStart:S.showStart,showNowNext:S.showNowNext
   }));
 }
 function load(){
@@ -534,11 +618,13 @@ function load(){
       bgColor:st.bgColor??S.bgColor, fgColor:st.fgColor??S.fgColor,
       useWarnColors:st.useWarnColors??S.useWarnColors,
       warnYellow:st.warnYellow??S.warnYellow, warnRed:st.warnRed??S.warnRed,
-      textOnly:st.textOnly??S.textOnly, transparent:st.transparent??S.transparent
+      textOnly:st.textOnly??S.textOnly, transparent:st.transparent??S.transparent,
+      showStart:st.showStart??S.showStart, showNowNext:st.showNowNext??S.showNowNext
     });
     S.remMs=S.durationMs; autoNext=!!st.autoNext;
     cues=JSON.parse(localStorage.getItem('pt_cues')||'[]');
   }catch(e){}
+  $('showStartInput').value=S.showStart||''; $('chkNowNext').checked=S.showNowNext;
   $('yellowInput').value=fmtSecs(S.yellowSec,false);
   $('redInput').value=fmtSecs(S.redSec,false);
   $('chkFlash').checked=S.flashZero; $('chkSound').checked=S.soundZero;
@@ -566,14 +652,16 @@ async function refreshDisplays(){ fillDisplays(await api.getDisplays()); }
 api.onDisplays(fillDisplays);
 
 // ---------- MREŽA ----------
-let netUrl='', remoteUrl='';
+let netUrl='', remoteUrl='', backstageUrl='';
 function showNet(info){
   lastNetInfo = info;
-  if(!info||!info.running){ $('netUrl').textContent='—'; $('netRemote').textContent='—'; $('netStatus').textContent=t('netOff'); $('netDot').classList.remove('on'); return; }
+  if(!info||!info.running){ $('netUrl').textContent='—'; $('netRemote').textContent='—'; $('netBackstage').textContent='—'; $('netStatus').textContent=t('netOff'); $('netDot').classList.remove('on'); return; }
   netUrl=`http://${info.ip}:${info.port}`;
   remoteUrl=`${netUrl}/remote`;
+  backstageUrl=`${netUrl}/backstage`;
   $('netUrl').textContent=netUrl;
   $('netRemote').textContent=remoteUrl;
+  $('netBackstage').textContent=backstageUrl;
   $('netDot').classList.add('on');
   const word = info.clients===1?t('deviceOne'):t('deviceMany');
   $('netStatus').textContent=`${t('live')} · ${info.clients} ${word} ${t('connected')}`;
@@ -583,6 +671,7 @@ api.getNetworkInfo().then(showNet).catch(()=>{});
 function copyBtn(btn, getUrl){ btn.addEventListener('click',()=>{ const u=getUrl(); if(u){ navigator.clipboard.writeText(u); const o=btn.textContent; btn.textContent='✓'; setTimeout(()=>btn.textContent=o,1200); } }); }
 copyBtn($('btnCopyUrl'), ()=>netUrl);
 copyBtn($('btnCopyRemote'), ()=>remoteUrl);
+copyBtn($('btnCopyBackstage'), ()=>backstageUrl);
 
 // ---------- DALJINSKI: primena komandi sa telefona ----------
 api.onRemoteCmd(c=>{
@@ -650,13 +739,32 @@ $('btnMsgSend').addEventListener('click',()=>{ S.message={text:$('msgInput').val
 $('msgInput').addEventListener('keydown',e=>{ if(e.key==='Enter') $('btnMsgSend').click(); });
 $('btnMsgClear').addEventListener('click',()=>{ S.message={text:'',flash:false}; $('msgInput').value=''; send(); });
 
-$('btnCueAdd').addEventListener('click',()=>{
-  const ms=parseTime($('cueDur').value)??S.durationMs;
-  cues.push({name:$('cueName').value.trim()||`Cue ${cues.length+1}`,durationMs:ms});
-  $('cueName').value=''; $('cueDur').value=''; saveCues(); renderCues();
+// boja cue-a — palete tačkica
+let cueColorSel='';
+const CUE_COLORS=['','#f0564d','#d9a441','#3fb950','#4493f8','#a371f7','#ec6cb9','#e6edf3'];
+CUE_COLORS.forEach(col=>{
+  const d=document.createElement('span');
+  d.className='cdot'+(col===''?' none':'')+(col===cueColorSel?' sel':'');
+  if(col) d.style.background=col;
+  d.title=col?col:'bez boje';
+  d.addEventListener('click',()=>{ cueColorSel=col; document.querySelectorAll('#cueColors .cdot').forEach(x=>x.classList.remove('sel')); d.classList.add('sel'); });
+  $('cueColors').appendChild(d);
 });
-$('cueDur').addEventListener('keydown',e=>{ if(e.key==='Enter') $('btnCueAdd').click(); });
+
+function addCue(){
+  const ms=parseTime($('cueDur').value)??S.durationMs;
+  cues.push({name:$('cueName').value.trim()||`Cue ${cues.length+1}`, durationMs:ms,
+    note:$('cueNote').value.trim(), color:cueColorSel});
+  $('cueName').value=''; $('cueDur').value=''; $('cueNote').value='';
+  saveCues(); send(); renderCues();
+}
+$('btnCueAdd').addEventListener('click',addCue);
+$('cueDur').addEventListener('keydown',e=>{ if(e.key==='Enter') addCue(); });
+$('cueName').addEventListener('keydown',e=>{ if(e.key==='Enter') addCue(); });
+$('cueNote').addEventListener('keydown',e=>{ if(e.key==='Enter') addCue(); });
 $('btnGo').addEventListener('click',go);
+$('showStartInput').addEventListener('change',e=>{ S.showStart=e.target.value; send(); renderCues(); });
+$('chkNowNext').addEventListener('change',e=>{ S.showNowNext=e.target.checked; send(); });
 
 $('btnOpenOut').addEventListener('click',()=>api.sendToDisplay(+$('displaySel').value||null));
 $('btnCloseOut').addEventListener('click',()=>api.closeOutput());

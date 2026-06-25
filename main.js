@@ -51,6 +51,12 @@ function startServer(port, attempt = 0) {
       return;
     }
 
+    if (url === '/backstage') {
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
+      res.end(fileHtml('backstage.html'));
+      return;
+    }
+
     // komande sa daljinskog (telefon/tablet) → prosledi kontrolnom prozoru
     if (url === '/cmd' && req.method === 'POST') {
       let body = '';
@@ -244,15 +250,35 @@ app.whenReady().then(() => {
         await waitLoad(controlWin);
         const ow = await waitOutput();
         await waitLoad(ow);
-        // opcioni jezik za snimke: --ui-lang=en
+        // opcioni jezik + demo rundown za snimke: --ui-lang=en --demo
         const langArg = (process.argv.find(a => a.startsWith('--ui-lang=')) || '').split('=')[1];
-        if (langArg) {
-          await controlWin.webContents.executeJavaScript(`localStorage.setItem('pt_lang','${langArg}'); location.reload();`);
+        const demo = process.argv.includes('--demo');
+        if (langArg || demo) {
+          const now = new Date(); const hhmm = String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+          const seed = demo ? `
+            localStorage.setItem('pt_cues', JSON.stringify([
+              {name:'Pre-show Countdown', durationMs:600000, note:'Music plays, holding slide', color:'#3fb950'},
+              {name:'Welcome', durationMs:600000, note:'Emma Thompson', color:'#4493f8'},
+              {name:'Session 1', durationMs:3000000, note:'Liam Carter, Sophia Patel', color:'#d9a441'},
+              {name:'Lunch break', durationMs:3600000, note:'Lunch in the lobby', color:'#a371f7'}
+            ]));
+            var st=JSON.parse(localStorage.getItem('pt_settings')||'{}'); st.showStart='${hhmm}'; st.showNowNext=true; st.showProgress=true; localStorage.setItem('pt_settings', JSON.stringify(st));` : '';
+          await controlWin.webContents.executeJavaScript(`localStorage.setItem('pt_lang','${langArg||'en'}'); ${seed} location.reload();`);
           await waitLoad(controlWin);
+          if (demo) { await new Promise(r=>setTimeout(r,500)); await controlWin.webContents.executeJavaScript(`loadCue(0,false); startPause();`); }
         }
         await new Promise(r => setTimeout(r, 1800));
         fs.writeFileSync('/tmp/protimer_ctl.png', (await controlWin.webContents.capturePage()).toPNG());
         fs.writeFileSync('/tmp/protimer_out.png', (await ow.webContents.capturePage()).toPNG());
+        // snimak backstage stranice (učita živi /backstage preko servera)
+        if (demo) {
+          const bw = new BrowserWindow({ width:1280, height:720, show:false, backgroundColor:'#0a0c10',
+            webPreferences:{ contextIsolation:true } });
+          await bw.loadURL(`http://127.0.0.1:${serverPort}/backstage`);
+          await new Promise(r=>setTimeout(r,1600));
+          fs.writeFileSync('/tmp/protimer_backstage.png', (await bw.webContents.capturePage()).toPNG());
+          bw.destroy();
+        }
         // test mrežnog izlaza: HTML stranica
         const got = await new Promise((resolve) => {
           http.get(`http://127.0.0.1:${serverPort}/`, r => {
@@ -291,6 +317,10 @@ app.whenReady().then(() => {
         await new Promise(r => setTimeout(r, 400));
         const after = await readState();
         console.log('REMOTE_PAGE_OK=' + remotePage + ' REMOTE_CMD_OK=' + (after && after.durationMs === 300000));
+        const backstagePage = await new Promise((resolve) => {
+          http.get(`http://127.0.0.1:${serverPort}/backstage`, r => { let d=''; r.on('data',c=>d+=c); r.on('end',()=>resolve(d.includes('Backstage'))); }).on('error',()=>resolve(false));
+        });
+        console.log('BACKSTAGE_PAGE_OK=' + backstagePage + ' RUNDOWN_IN_STATE=' + (after && Array.isArray(after.cues)));
         console.log('SMOKE_OK');
         app.exit(0);
       } catch (err) { console.error('SMOKE_FAIL', err); app.exit(1); }

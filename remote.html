@@ -144,7 +144,7 @@ function connect(){
   es.onmessage = e => {
     try {
       S = JSON.parse(e.data);
-      if (S.lang && S.lang !== lang){ lang = S.lang; applyLang(); }
+      if (S.lang && S.lang !== lang){ lang = S.lang; applyLang(); if($('dot').classList.contains('on')) $('connTxt').textContent=tr('live'); }
     } catch(_){}
   };
   es.onerror = () => { $('dot').classList.remove('on'); $('connTxt').textContent=tr('lost'); es.close(); setTimeout(connect,1000); };

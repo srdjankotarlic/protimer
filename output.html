@@ -36,6 +36,16 @@
   /* tanka traka napretka (opciono) */
   #prog{position:absolute; bottom:0; left:0; height:1vh; width:100%; display:none;}
 
+  /* NOW / NEXT traka */
+  #nownext{position:absolute; left:0; right:0; bottom:0; display:none; flex-direction:column;
+    font-family:-apple-system, system-ui, sans-serif;}
+  #nownext .nn{display:flex; justify-content:space-between; align-items:baseline; gap:3vw;
+    padding:1.3vh 3.5vw; border-top:1px solid rgba(255,255,255,.13);}
+  #nownext .nn .ttl{overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600;}
+  #nownext .nn .tag{flex:0 0 auto; font-size:1.9vh; letter-spacing:.18em; opacity:.55; font-weight:700;}
+  #nownext .now .ttl{font-size:4vh;}
+  #nownext .next{opacity:.62;} #nownext .next .ttl{font-size:3vh;}
+
   #blackout{position:absolute; inset:0; background:#000; z-index:80; display:none;}
 
   /* overlay kontrole — samo u Electron prozoru, sakriju se na mirovanje */
@@ -57,6 +67,7 @@
     <div id="timer">--:--</div>
   </div>
   <div id="msg"></div>
+  <div id="nownext"></div>
   <div id="prog"></div>
   <div id="blackout"></div>
   <div id="ui"><span id="dispBtns"></span><button id="btnFs">⛶ Pun ekran</button></div>
@@ -130,7 +141,28 @@ function render(){
   paint(text, fg, bg, neg, S.text || '', S.message ? S.message.text : '',
         S.message && S.message.flash, S.showProgress ? prog : null);
 
+  renderNowNext(fg);
   $('blackout').style.display = S.blackout ? 'block' : 'none';
+}
+
+function renderNowNext(fg){
+  const el = $('nownext');
+  const cues = S.cues || [];
+  if (!S.showNowNext || S.currentCue == null || S.currentCue < 0 || !cues.length){
+    el.style.display = 'none'; $('msg').style.bottom = '';
+    return;
+  }
+  const cur = cues[S.currentCue], nxt = cues[S.currentCue + 1];
+  const NOW = S.lang === 'en' ? 'NOW' : 'SADA', NEXT = S.lang === 'en' ? 'NEXT' : 'SLEDI';
+  let html = `<div class="nn now"><span class="ttl"></span><span class="tag">${NOW}</span></div>`;
+  if (nxt) html += `<div class="nn next"><span class="ttl"></span><span class="tag">${NEXT}</span></div>`;
+  el.innerHTML = html;
+  el.querySelector('.now .ttl').textContent = cur ? cur.name : '';
+  if (nxt) el.querySelector('.next .ttl').textContent = nxt.name;
+  el.style.color = fg;
+  el.style.bottom = S.showProgress ? '1vh' : '0';
+  el.style.display = 'flex';
+  $('msg').style.bottom = nxt ? '17vh' : '12vh';
 }
 
 function paint(timeText, fg, bg, neg, bigText, msgText, msgFlash, prog){

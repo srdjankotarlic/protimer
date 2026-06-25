@@ -14,9 +14,16 @@
 - 🖥️ **Any screen** — send the output to a second monitor / projector in fullscreen with one click
 - 📺 **OBS / NDI / vMix** — built-in network output; add it as a Browser Source (transparent background for overlays)
 - 📱 **Phone remote** — start the timer and send messages to the speaker from your hand, over Wi-Fi
+- 🗒️ **Rundown** — a run of segments with **durations, notes, colors and planned clock times**
+- 🎭 **Backstage view** — a crew/guest screen with **NOW / NEXT**, the full schedule and live clock times
+- ⏰ **Over / Under** — see at a glance whether the show will finish **ahead or behind** schedule
+- 📍 **NOW / NEXT** on the stage screen — presenters always see what's current and what's next
 - 💬 **Messages to the speaker** + ✍️ **on-screen text** ("BREAK", "WELCOME")
-- 🗒️ **Cue list** — a run of segments with durations, GO button for the next one
 - 🌍 **Serbian / English** interface, ⌨️ keyboard shortcuts, ⚡ low latency (no lag, no drift)
+
+The **Backstage** view — `NOW`, `NEXT`, the schedule and an over/under indicator, on any screen or phone:
+
+![ProTimer backstage view](docs/screenshot-backstage.png)
 
 ---
 
@@ -70,8 +77,13 @@ The same panel has a **Remote** URL (`…:7878/remote`). Open it in your phone's
 - **On-screen text**: type a message (e.g. `BREAK`) — it sits above the time, or enable **"Text only"** to replace the time entirely.
 - **Message to speaker**: a short line at the bottom of the screen, with an optional flash.
 
-### 🗒️ Cue list
-Add program segments (name + duration) on the right. Click a cue to load it, **GO** (`N`) starts the next one. Optional auto-advance.
+### 🗒️ Rundown
+Build your run on the right: each item has a **name, duration, an optional note and a color**. Set a **Start** time for the show and ProTimer fills in the **planned clock times** for every item. Click an item to load it; **GO** (`N`) jumps to and starts the next one. Optional auto-advance. The **Over / Under** badge shows whether you'll finish ahead or behind your planned end.
+
+Turn on **"NOW / NEXT on screen"** to show the current and next item under the timer on the stage screen.
+
+### 🎭 Backstage view (crew & guests)
+The network panel has a **Backstage** URL. Open it on any screen, laptop or phone and everyone sees the same picture: the **current item** with its live timer, **what's next**, the **full schedule** with clock times, and the **planned vs projected finish** with the over/under indicator. Ideal for a green room, a stage manager, or a lobby screen.
 
 ### 🌍 Language
 Switch between **SR / EN** with the toggle next to the logo, top-left. The choice is remembered and also applies to the phone remote.
@@ -102,7 +114,7 @@ npm run dist:mac     # build the macOS .dmg
 npm run dist:win     # build the Windows installer + portable
 ```
 
-Clean stack, no runtime dependencies: **Electron** + plain HTML/CSS/JS + a Node `http` server (SSE). All the logic lives in `controller.html` (control), `output.html` (screen/OBS), `remote.html` (phone), and `main.js` (windows + server).
+Clean stack, no runtime dependencies: **Electron** + plain HTML/CSS/JS + a Node `http` server (SSE). All the logic lives in `controller.html` (control), `output.html` (screen/OBS), `backstage.html` (crew schedule), `remote.html` (phone), and `main.js` (windows + server).
 
 ---
 

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'">
+<title>ProTimer — Backstage</title>
+<style>
+  :root{ --bg:#0a0c10; --panel:#12151b; --panel2:#171b22; --border:#222934;
+    --text:#e8edf3; --dim:#8b97a5; --dim2:#5a6573; --accent:#3fb950;
+    --amber:#e3b341; --red:#f0564d; --blue:#4493f8; }
+  *{box-sizing:border-box; margin:0;}
+  body{background:var(--bg); color:var(--text); height:100vh; overflow:hidden;
+    font-family:-apple-system,"Helvetica Neue",system-ui,sans-serif; display:flex; flex-direction:column; padding:2.2vh 2.2vw;}
+  .top{display:flex; align-items:baseline; gap:14px; margin-bottom:2vh; flex:0 0 auto;}
+  .top .title{font-size:3.2vh; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .top .title b{color:var(--accent);}
+  .top .grow{flex:1;}
+  .top .now-lbl{font-size:1.5vh; letter-spacing:.15em; color:var(--dim2); text-transform:uppercase;}
+  .top .clock{font-variant-numeric:tabular-nums; font-size:4.4vh; font-weight:700; font-family:"SF Mono",ui-monospace,Menlo,monospace;}
+  .top .clock .s{font-size:2.6vh; color:var(--dim);}
+
+  .main{flex:1; display:grid; grid-template-columns:1fr 1fr; gap:2vw; min-height:0;}
+  @media(max-width:760px){ .main{grid-template-columns:1fr; overflow-y:auto;} }
+
+  .left{display:flex; flex-direction:column; gap:1.6vh; min-height:0;}
+  .card{background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:2.4vh 2vw;}
+  .now{flex:1; display:flex; flex-direction:column; justify-content:center; border-left:5px solid var(--accent);}
+  .tag{font-size:1.6vh; letter-spacing:.18em; color:var(--dim2); text-transform:uppercase; font-weight:700; margin-bottom:1vh;}
+  .now .name{font-size:5vh; font-weight:800; line-height:1.05; margin-bottom:1.4vh; word-break:break-word;}
+  .now .note{color:var(--dim); font-size:2.1vh; margin-bottom:1.8vh;}
+  .now .timer{font-family:"SF Mono",ui-monospace,Menlo,monospace; font-weight:700; font-variant-numeric:tabular-nums;
+    font-size:8vh; line-height:1;}
+  .now .meta{display:flex; gap:2.5vw; margin-top:1.4vh; color:var(--dim); font-size:1.9vh;}
+  .now .meta b{color:var(--text); font-family:"SF Mono",Menlo,monospace; font-weight:600;}
+  .next{border-left:5px solid var(--blue); flex:0 0 auto;}
+  .next .name{font-size:3.2vh; font-weight:700;}
+  .next .note{color:var(--dim); font-size:1.8vh; margin-top:.6vh;}
+  .next .at{color:var(--blue); font-family:"SF Mono",Menlo,monospace; font-size:2vh; margin-top:.6vh;}
+
+  .right{display:flex; flex-direction:column; min-height:0;}
+  .right .tag{margin-bottom:1.4vh;}
+  .sched{flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:.7vh;}
+  .sched::-webkit-scrollbar{width:8px;} .sched::-webkit-scrollbar-thumb{background:var(--border); border-radius:4px;}
+  .ev{display:flex; align-items:center; gap:1.2vw; padding:1.3vh 1.2vw; background:var(--panel); border:1px solid var(--border);
+    border-radius:10px; position:relative; overflow:hidden;}
+  .ev .stripe{position:absolute; left:0; top:0; bottom:0; width:4px;}
+  .ev.current{border-color:var(--accent); background:#10231a;}
+  .ev.past{opacity:.4;}
+  .ev .time{font-family:"SF Mono",Menlo,monospace; font-size:2vh; color:var(--dim); flex:0 0 auto; min-width:11ch;}
+  .ev .nm{flex:1; font-size:2.2vh; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .ev .nt{color:var(--dim2); font-size:1.6vh; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:40%;}
+  .ev .dur{font-family:"SF Mono",Menlo,monospace; font-size:1.7vh; color:var(--dim2); flex:0 0 auto;}
+  .empty{color:var(--dim2); text-align:center; padding:4vh; font-size:2vh;}
+
+  .foot{flex:0 0 auto; display:flex; align-items:center; gap:2.5vw; margin-top:1.8vh; padding-top:1.6vh;
+    border-top:1px solid var(--border); font-size:2vh; color:var(--dim); flex-wrap:wrap;}
+  .foot b{color:var(--text); font-family:"SF Mono",Menlo,monospace;}
+  .ou{font-family:"SF Mono",Menlo,monospace; font-weight:700; padding:.5vh 1.4vh; border-radius:8px;
+    background:var(--panel2); border:1px solid var(--border); color:var(--dim);}
+  .ou.late{background:#3a1f1d; border-color:#5a2b28; color:#ff8b84;}
+  .ou.early{background:#16263a; border-color:#1f3a5a; color:#7db8ff;}
+  .ou.ontime{background:#10231a; border-color:#1f4a30; color:var(--accent);}
+  .conn{position:fixed; top:1vh; right:1.4vw; font-size:1.4vh; color:var(--dim2); display:flex; align-items:center; gap:6px;}
+  .conn .dot{width:8px;height:8px;border-radius:50%;background:var(--red);} .conn .dot.on{background:var(--accent);}
+</style>
+</head>
+<body>
+  <div class="conn"><span class="dot" id="dot"></span><span id="connTxt"></span></div>
+  <div class="top">
+    <div class="title" id="title">PRO<b>TIMER</b></div>
+    <div class="grow"></div>
+    <div style="text-align:right">
+      <div class="now-lbl" id="lblNow">TIME NOW</div>
+      <div class="clock" id="clock">--:--<span class="s">:--</span></div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="left">
+      <div class="card now">
+        <div class="tag" id="lblNowTag">NOW</div>
+        <div class="name" id="nowName">—</div>
+        <div class="note" id="nowNote"></div>
+        <div class="timer" id="nowTimer"></div>
+        <div class="meta" id="nowMeta"></div>
+      </div>
+      <div class="card next">
+        <div class="tag" id="lblNextTag">NEXT</div>
+        <div class="name" id="nextName">—</div>
+        <div class="note" id="nextNote"></div>
+        <div class="at" id="nextAt"></div>
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="tag" id="lblSched">SCHEDULE</div>
+      <div class="sched" id="sched"></div>
+      <div class="foot" id="foot"></div>
+    </div>
+  </div>
+
+<script>
+const $ = id => document.getElementById(id);
+function pad(n){ return String(n).padStart(2,'0'); }
+function clk(ms){ const d=new Date(ms); return pad(d.getHours())+':'+pad(d.getMinutes()); }
+function fmtSecs(s,neg){ const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),x=s%60;
+  return (neg?'−':'')+(h>0?`${h}:${pad(m)}:${pad(x)}`:`${m}:${pad(x)}`); }
+function fmtMs(ms){ return ms>=0?fmtSecs(Math.ceil(ms/1000),false):fmtSecs(Math.floor(-ms/1000),true); }
+
+const T = {
+  sr:{ now:'SADA', next:'SLEDI', sched:'RASPORED', timeNow:'TRENUTNO VREME', plannedEnd:'Planiran kraj',
+    projected:'Procena kraja', behind:'kasni', ahead:'ispred', onTime:'NA VREME', started:'Počelo', ends:'Kraj',
+    empty:'Nema tačaka u rundownu', conn:'uživo', lost:'veza pala…', noNext:'— kraj rundowna —' },
+  en:{ now:'NOW', next:'NEXT', sched:'SCHEDULE', timeNow:'TIME NOW', plannedEnd:'Planned end',
+    projected:'Projected end', behind:'behind', ahead:'ahead', onTime:'ON TIME', started:'Started', ends:'Ends',
+    empty:'No items in the rundown', conn:'live', lost:'connection lost…', noNext:'— end of rundown —' }
+};
+let lang='sr';
+const tr = k => (T[lang]&&T[lang][k])||T.sr[k]||k;
+
+let S=null;
+function connect(){
+  const es=new EventSource('/events');
+  es.onopen=()=>{ $('dot').classList.add('on'); $('connTxt').textContent=tr('conn'); };
+  es.onmessage=e=>{ try{ S=JSON.parse(e.data); if(S.lang&&S.lang!==lang){ lang=S.lang; applyStaticLabels(); } }catch(_){} };
+  es.onerror=()=>{ $('dot').classList.remove('on'); $('connTxt').textContent=tr('lost'); es.close(); setTimeout(connect,1000); };
+}
+connect();
+
+function applyStaticLabels(){
+  document.documentElement.lang=lang;
+  $('lblNow').textContent=tr('timeNow'); $('lblNowTag').textContent=tr('now');
+  $('lblNextTag').textContent=tr('next'); $('lblSched').textContent=tr('sched');
+  if($('dot').classList.contains('on')) $('connTxt').textContent=tr('conn');
+}
+applyStaticLabels();
+
+function todayAt(hhmm, now){ if(!hhmm) return null; const [h,m]=hhmm.split(':').map(Number);
+  if(isNaN(h)||isNaN(m)) return null; const d=new Date(now); d.setHours(h,m,0,0); return d.getTime(); }
+function schedule(S, now){
+  const list=S.cues||[]; const anchor=todayAt(S.showStart, now); let acc=anchor;
+  const rows=list.map((c,i)=>{ const start=acc; const end=acc==null?null:acc+c.durationMs; acc=end;
+    return {name:c.name,durationMs:c.durationMs,note:c.note||'',color:c.color||'',plannedStart:start,plannedEnd:end,index:i}; });
+  let curRem=null; if(S.currentCue>=0 && S.mode==='countdown') curRem=S.running?S.endAt-now:S.remMs;
+  let delta=null,plannedEnd=null,projectedEnd=null; const total=list.reduce((a,c)=>a+c.durationMs,0);
+  if(anchor!=null){ plannedEnd=anchor+total;
+    if(S.currentCue>=0 && curRem!=null){ const sumAfter=list.slice(S.currentCue+1).reduce((a,c)=>a+c.durationMs,0);
+      projectedEnd=now+Math.max(0,curRem)+sumAfter; delta=projectedEnd-plannedEnd; } }
+  return {rows,curRem,delta,plannedEnd,projectedEnd};
+}
+
+function render(){
+  requestAnimationFrame(render);
+  const now=Date.now(), d=new Date();
+  $('clock').innerHTML=`${pad(d.getHours())}:${pad(d.getMinutes())}<span class="s">:${pad(d.getSeconds())}</span>`;
+  if(!S) return;
+
+  $('title').innerHTML = S.text ? '' : 'PRO<b>TIMER</b>';
+  if(S.text) $('title').textContent = S.text;
+
+  const sch=schedule(S, now);
+  const list=sch.rows;
+  const ci = (S.currentCue!=null?S.currentCue:-1);
+  const cur = ci>=0?list[ci]:null;
+  const nxt = ci>=0?list[ci+1]:(list.length?list[0]:null);
+
+  // NOW
+  $('nowName').textContent = cur?cur.name:'—';
+  $('nowNote').textContent = cur&&cur.note?cur.note:'';
+  // tajmer tekuće tačke
+  let tcol='#fff', ttxt='';
+  if(cur && S.mode==='countdown'){
+    let rem=S.running?S.endAt-now:S.remMs;
+    if(!S.overtime&&rem<0) rem=0;
+    if(S.useWarnColors){ if(rem<=S.redSec*1000) tcol=S.warnRed||'#ff4540'; else if(rem<=S.yellowSec*1000) tcol=S.warnYellow||'#ffc23a'; }
+    if(rem<0) tcol=S.warnRed||'#ff4540';
+    ttxt=fmtMs(rem);
+  }
+  $('nowTimer').textContent=ttxt; $('nowTimer').style.color=tcol;
+  $('nowTimer').style.display = ttxt?'block':'none';
+  // meta: planirano start–kraj
+  let meta='';
+  if(cur && cur.plannedStart!=null) meta=`${tr('started')} <b>${clk(cur.plannedStart)}</b> · ${tr('ends')} <b>${clk(cur.plannedEnd)}</b>`;
+  $('nowMeta').innerHTML=meta;
+
+  // NEXT
+  if(nxt && nxt!==cur){
+    $('nextName').textContent=nxt.name;
+    $('nextNote').textContent=nxt.note||'';
+    $('nextAt').textContent = nxt.plannedStart!=null?clk(nxt.plannedStart):'';
+  } else { $('nextName').textContent=tr('noNext'); $('nextNote').textContent=''; $('nextAt').textContent=''; }
+
+  // SCHEDULE
+  const se=$('sched');
+  if(!list.length){ se.innerHTML=`<div class="empty">${tr('empty')}</div>`; }
+  else {
+    se.innerHTML = list.map((c,i)=>{
+      const cls = i===ci?'current':(ci>=0&&i<ci?'past':'');
+      const time = c.plannedStart!=null?`${clk(c.plannedStart)}–${clk(c.plannedEnd)}`:fmtMs(c.durationMs);
+      const stripe = c.color?`<span class="stripe" style="background:${c.color}"></span>`:'';
+      const note = c.note?`<span class="nt"></span>`:'';
+      const dur = c.plannedStart!=null?`<span class="dur">${fmtMs(c.durationMs)}</span>`:'';
+      return `<div class="ev ${cls}" data-i="${i}">${stripe}<span class="time">${time}</span><span class="nm"></span>${note}${dur}</div>`;
+    }).join('');
+    // popuni tekst bezbedno
+    se.querySelectorAll('.ev').forEach(ev=>{ const c=list[+ev.dataset.i];
+      ev.querySelector('.nm').textContent=c.name||'—'; const nt=ev.querySelector('.nt'); if(nt) nt.textContent=c.note; });
+    const curEl=se.querySelector('.ev.current'); if(curEl && !se.dataset.scrolled){ curEl.scrollIntoView({block:'nearest'}); }
+  }
+
+  // FOOT: over/under
+  const f=$('foot');
+  if(sch.plannedEnd!=null){
+    let ouHtml='';
+    if(sch.delta!=null){ const sec=Math.round(sch.delta/1000);
+      if(Math.abs(sec)<=5) ouHtml=`<span class="ou ontime">${tr('onTime')}</span>`;
+      else if(sec>0) ouHtml=`<span class="ou late">▲ ${fmtSecs(sec,false)} ${tr('behind')}</span>`;
+      else ouHtml=`<span class="ou early">▼ ${fmtSecs(-sec,false)} ${tr('ahead')}</span>`;
+    }
+    f.innerHTML=`<span>${tr('plannedEnd')}: <b>${clk(sch.plannedEnd)}</b></span>`+
+      (sch.projectedEnd!=null?`<span>${tr('projected')}: <b>${clk(sch.projectedEnd)}</b></span>`:'')+ouHtml;
+  } else f.innerHTML='';
+}
+requestAnimationFrame(render);
+</script>
+</body>
+</html>
