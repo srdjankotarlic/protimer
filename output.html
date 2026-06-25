@@ -59,6 +59,10 @@
     border-radius:8px; padding:8px 13px; font-size:13px; cursor:pointer; font-weight:600;}
   #ui button:hover{border-color:#8b97a5;}
   #ui button.active{background:#2ea043; border-color:#2ea043; color:#fff;}
+
+  /* providni (frameless) prozor — prevlačenje za pomeranje, dugmad klikabilna */
+  body.overlay #stage{ -webkit-app-region: drag; }
+  body.overlay #ui, body.overlay #ui *{ -webkit-app-region: no-drag; }
 </style>
 </head>
 <body>
@@ -116,6 +120,7 @@ function render(){
   if (!S){ paint(`${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`, '#ffffff', '#000000', false, '', '', false, null); return; }
 
   const bg = S.transparent ? 'transparent' : (S.bgColor || '#000000');
+  document.body.classList.toggle('overlay', !!S.transparent);
   let fg = S.fgColor || '#ffffff';
   let text, neg = false, prog = null;
 

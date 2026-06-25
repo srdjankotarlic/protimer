@@ -74,6 +74,7 @@ The same panel has a **Remote** URL (`…:7878/remote`). Open it in your phone's
 
 ### 🎨 Colors & text
 - **Colors**: pick the background and digit color. "Warning colors" turn yellow/red near the end (you can turn them off).
+- **Transparent background**: makes the screen see-through — for OBS overlays, and the desktop output window itself becomes a frameless floating overlay you can drag onto anything.
 - **On-screen text**: type a message (e.g. `BREAK`) — it sits above the time, or enable **"Text only"** to replace the time entirely.
 - **Message to speaker**: a short line at the bottom of the screen, with an optional flash.
 

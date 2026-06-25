@@ -9,6 +9,8 @@ const SMOKE = process.argv.includes('--smoke');
 let controlWin = null;
 let outputWin = null;
 let lastState = null;
+let outputTransparent = false;   // da li je trenutni Ekran prozor providan
+let outputTargetId = null;       // na kom monitoru je Ekran
 
 // ---------------- MREŽNI IZLAZ (OBS Browser Source / NDI most / confidence monitor) ----------------
 let server = null;
@@ -181,14 +183,24 @@ function createOutputWindow(displayId) {
   const displays = screen.getAllDisplays();
   const target = displays.find(d => d.id === displayId)
     || displays.find(d => d.id !== controlDisplayId()) || displays[0];
+  outputTargetId = target.id;
 
   if (outputWin && !outputWin.isDestroyed()) { positionOutput(target); return; }
 
+  const transparent = !!(lastState && lastState.transparent);
+  outputTransparent = transparent;
+
   outputWin = new BrowserWindow({
     width: 900, height: 506, minWidth: 320, minHeight: 180, show: false,
-    title: 'ProTimer — Ekran', backgroundColor: '#000000',
+    title: 'ProTimer — Ekran',
+    backgroundColor: transparent ? '#00000000' : '#000000',
+    transparent: transparent,
+    frame: !transparent,
+    hasShadow: !transparent,
+    alwaysOnTop: transparent,
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false }
   });
+  if (transparent) outputWin.setAlwaysOnTop(true, 'floating');
   outputWin.loadFile('output.html');
   if (SMOKE) outputWin.webContents.on('console-message', (e, l, m, ln) => console.log(`OUT_CONSOLE [${l}] ${m} (line ${ln})`));
   outputWin.webContents.on('did-finish-load', () => {
@@ -200,10 +212,26 @@ function createOutputWindow(displayId) {
   pushOutputState();
 }
 
+// Electron ne može da uključi/isključi `transparent` naživo → presozdaj prozor
+// na istom monitoru (createOutputWindow ga sam pozicionira/fullscreen-uje)
+function recreateOutputForTransparency() {
+  if (!outputWin || outputWin.isDestroyed()) return;
+  const id = outputTargetId;
+  outputWin.destroy();
+  outputWin = null;
+  createOutputWindow(id);
+}
+
 // ---------------- IPC ----------------
 ipcMain.on('state', (e, s) => {
   lastState = s;
-  if (outputWin && !outputWin.isDestroyed()) outputWin.webContents.send('state', s);
+  if (outputWin && !outputWin.isDestroyed()) {
+    if (!!s.transparent !== outputTransparent) {
+      recreateOutputForTransparency();   // providnost se menja → novi prozor
+    } else {
+      outputWin.webContents.send('state', s);
+    }
+  }
   pushSSE(s);
 });
 ipcMain.on('open-output', (e, displayId) => createOutputWindow(displayId || null));
@@ -321,6 +349,23 @@ app.whenReady().then(() => {
           http.get(`http://127.0.0.1:${serverPort}/backstage`, r => { let d=''; r.on('data',c=>d+=c); r.on('end',()=>resolve(d.includes('Backstage'))); }).on('error',()=>resolve(false));
         });
         console.log('BACKSTAGE_PAGE_OK=' + backstagePage + ' RUNDOWN_IN_STATE=' + (after && Array.isArray(after.cues)));
+        // test providnosti: uključi → Ekran prozor se presozdaje providan bez pada
+        await controlWin.webContents.executeJavaScript(`document.getElementById('chkTransparent').checked=true; document.getElementById('chkTransparent').dispatchEvent(new Event('change'));`);
+        await new Promise(r => setTimeout(r, 1100));
+        let cornerAlpha = -1;
+        try {
+          const img = await outputWin.webContents.capturePage();
+          const bmp = img.toBitmap(); const sz = img.getSize();
+          // sredina-levo: pozadina, dalje od gornje #ui trake i centriranog tajmera
+          cornerAlpha = bmp[(Math.floor(sz.height * 0.5) * sz.width + 6) * 4 + 3];
+        } catch (e) {}
+        console.log('TRANSPARENT_RECREATE_OK=' + (!!outputWin && !outputWin.isDestroyed() && outputTransparent === true) + ' CORNER_ALPHA=' + cornerAlpha);
+        // isključi providnost → ponovo neproziran (alfa 255)
+        await controlWin.webContents.executeJavaScript(`document.getElementById('chkTransparent').checked=false; document.getElementById('chkTransparent').dispatchEvent(new Event('change'));`);
+        await new Promise(r => setTimeout(r, 1100));
+        let offAlpha = -1;
+        try { const img = await outputWin.webContents.capturePage(); const bmp = img.toBitmap(); const sz = img.getSize(); offAlpha = bmp[(8 * sz.width + 8) * 4 + 3]; } catch (e) {}
+        console.log('OPAQUE_AGAIN_OK=' + (outputTransparent === false) + ' OFF_ALPHA=' + offAlpha);
         console.log('SMOKE_OK');
         app.exit(0);
       } catch (err) { console.error('SMOKE_FAIL', err); app.exit(1); }
