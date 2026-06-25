@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'">
+<title>ProTimer — Ekran</title>
+<style>
+  *{box-sizing:border-box; user-select:none; margin:0;}
+  html,body{height:100%; overflow:hidden;
+    font-family:-apple-system, "Helvetica Neue", system-ui, sans-serif;}
+  body{background:#000; transition:background .15s;}
+  body.idle{cursor:none;}
+  body.flash::after{content:''; position:fixed; inset:0; background:var(--flashCol,#ff4540);
+    z-index:50; animation:zflash .4s steps(2,start) 6; pointer-events:none;}
+  @keyframes zflash{50%{opacity:0;}}
+
+  #stage{position:absolute; inset:0; display:flex; flex-direction:column;
+    align-items:center; justify-content:center;}
+
+  /* gornji tekst (labela / naziv koji korisnik ubaci) */
+  #text{font-weight:600; line-height:1.1; text-align:center; padding:0 5vw;
+    white-space:pre-wrap; word-break:break-word; display:none;}
+
+  /* glavni tajmer */
+  #timer{font-family:"SF Mono", ui-monospace, Menlo, monospace; font-weight:700;
+    font-variant-numeric:tabular-nums; line-height:.95; white-space:nowrap;}
+
+  /* donja poruka (alert) */
+  #msg{position:absolute; bottom:7vh; left:0; right:0; text-align:center;
+    font-size:6vh; font-weight:700; padding:0 5vw; line-height:1.15;
+    white-space:pre-wrap; display:none;}
+  #msg.flash{animation:pulse .8s steps(2,start) infinite;}
+  #timer.neg{animation:pulse 1s steps(2,start) infinite;}
+  @keyframes pulse{50%{opacity:.25;}}
+
+  /* tanka traka napretka (opciono) */
+  #prog{position:absolute; bottom:0; left:0; height:1vh; width:100%; display:none;}
+
+  #blackout{position:absolute; inset:0; background:#000; z-index:80; display:none;}
+
+  /* overlay kontrole — samo u Electron prozoru, sakriju se na mirovanje */
+  #ui{position:absolute; top:0; left:0; right:0; z-index:200; padding:12px;
+    display:none; gap:8px; justify-content:center; align-items:center; flex-wrap:wrap;
+    background:linear-gradient(rgba(0,0,0,.8), transparent);
+    opacity:0; pointer-events:none; transition:opacity .2s;
+    font-family:-apple-system, system-ui, sans-serif;}
+  body:not(.idle) #ui{opacity:1; pointer-events:auto;}
+  #ui button{background:rgba(22,27,34,.95); color:#e6edf3; border:1px solid #2b3442;
+    border-radius:8px; padding:8px 13px; font-size:13px; cursor:pointer; font-weight:600;}
+  #ui button:hover{border-color:#8b97a5;}
+  #ui button.active{background:#2ea043; border-color:#2ea043; color:#fff;}
+</style>
+</head>
+<body>
+  <div id="stage">
+    <div id="text"></div>
+    <div id="timer">--:--</div>
+  </div>
+  <div id="msg"></div>
+  <div id="prog"></div>
+  <div id="blackout"></div>
+  <div id="ui"><span id="dispBtns"></span><button id="btnFs">⛶ Pun ekran</button></div>
+
+<script>
+const IS_ELECTRON = !!window.pt;
+const api = window.pt || null;
+
+let S = null, prevRem = null, lastKey = '';
+
+const $ = id => document.getElementById(id);
+function pad(n){ return String(n).padStart(2,'0'); }
+function fmtSecs(s, neg){
+  const h=Math.floor(s/3600), m=Math.floor((s%3600)/60), x=s%60;
+  return (neg?'−':'') + (h>0 ? `${h}:${pad(m)}:${pad(x)}` : `${m}:${pad(x)}`);
+}
+function fmtMs(ms){ return ms>=0 ? fmtSecs(Math.ceil(ms/1000),false) : fmtSecs(Math.floor(-ms/1000),true); }
+
+function applyState(s){
+  if (S && (s.mode!==S.mode || s.durationMs!==S.durationMs)) prevRem = null;
+  S = s;
+}
+
+// --- prijem stanja: Electron (IPC) ili browser/OBS (SSE) ---
+if (IS_ELECTRON){
+  api.onState(applyState);
+} else {
+  const connect = () => {
+    const es = new EventSource('/events');
+    es.onmessage = e => { try { applyState(JSON.parse(e.data)); } catch(_){} };
+    es.onerror = () => { es.close(); setTimeout(connect, 1000); };
+  };
+  connect();
+}
+
+function render(){
+  requestAnimationFrame(render);
+  const now = Date.now();
+  const d = new Date();
+
+  // dok ne stigne stanje — prikaži tačno vreme
+  if (!S){ paint(`${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`, '#ffffff', '#000000', false, '', '', false, null); return; }
+
+  const bg = S.transparent ? 'transparent' : (S.bgColor || '#000000');
+  let fg = S.fgColor || '#ffffff';
+  let text, neg = false, prog = null;
+
+  if (S.mode === 'clock'){
+    text = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  } else if (S.mode === 'countup'){
+    const el = S.running ? S.elapsedMs + (now - S.startAt) : S.elapsedMs;
+    text = fmtSecs(Math.floor(el/1000), false);
+  } else {
+    let rem = S.running ? S.endAt - now : S.remMs;
+    if (!S.overtime && rem < 0) rem = 0;
+    if (S.useWarnColors){
+      if (rem <= S.redSec*1000) fg = S.warnRed || '#ff4540';
+      else if (rem <= S.yellowSec*1000) fg = S.warnYellow || '#ffc23a';
+    }
+    if (rem < 0){ fg = S.warnRed || '#ff4540'; neg = true; }
+    prog = S.durationMs > 0 ? Math.max(0, Math.min(1, rem / S.durationMs)) : 0;
+    text = fmtMs(rem);
+    if (S.running && S.flashZero && prevRem !== null && prevRem > 0 && rem <= 0) doFlash(fg);
+    if (S.running) prevRem = rem;
+  }
+
+  paint(text, fg, bg, neg, S.text || '', S.message ? S.message.text : '',
+        S.message && S.message.flash, S.showProgress ? prog : null);
+
+  $('blackout').style.display = S.blackout ? 'block' : 'none';
+}
+
+function paint(timeText, fg, bg, neg, bigText, msgText, msgFlash, prog){
+  document.body.style.background = bg;
+
+  const tEl = $('timer'), txtEl = $('text');
+  const textOnly = S && S.textOnly && bigText;
+
+  // tekst (labela ili samostalno)
+  if (bigText){
+    txtEl.style.display = 'block';
+    txtEl.textContent = bigText;
+    txtEl.style.color = fg;
+    txtEl.style.fontSize = textOnly
+      ? Math.min(innerWidth*0.9/Math.max(6, bigText.length*0.55), innerHeight*0.5) + 'px'
+      : Math.min(innerHeight*0.12, innerWidth*0.06) + 'px';
+    txtEl.style.marginBottom = textOnly ? '0' : '2vh';
+  } else {
+    txtEl.style.display = 'none';
+  }
+
+  // tajmer
+  if (textOnly){
+    tEl.style.display = 'none';
+  } else {
+    tEl.style.display = 'block';
+    tEl.textContent = timeText;
+    tEl.style.color = fg;
+    tEl.className = neg ? 'neg' : '';
+    const key = timeText.length + '|' + innerWidth + 'x' + innerHeight + '|' + (bigText?1:0);
+    if (key !== lastKey){
+      lastKey = key;
+      const avail = bigText ? innerHeight*0.6 : innerHeight*0.7;
+      tEl.style.fontSize = Math.min(innerWidth*0.92/(timeText.length*0.6), avail) + 'px';
+    }
+  }
+
+  // poruka
+  const mEl = $('msg');
+  if (msgText){ mEl.style.display='block'; mEl.textContent=msgText; mEl.style.color=fg; mEl.className = msgFlash?'flash':''; }
+  else mEl.style.display='none';
+
+  // traka napretka
+  const pEl = $('prog');
+  if (prog !== null){ pEl.style.display='block'; pEl.style.width=(prog*100)+'%'; pEl.style.background=fg; }
+  else pEl.style.display='none';
+}
+
+function doFlash(col){
+  document.body.style.setProperty('--flashCol', col);
+  document.body.classList.remove('flash'); void document.body.offsetWidth;
+  document.body.classList.add('flash');
+}
+document.body.addEventListener('animationend', e => {
+  if (e.target === document.body || e.animationName === 'zflash') document.body.classList.remove('flash');
+});
+
+// ---------- Electron-only overlay ----------
+if (IS_ELECTRON){
+  $('ui').style.display = 'flex';
+  const renderDisplays = list => {
+    const box = $('dispBtns'); box.innerHTML='';
+    list.forEach(dp => {
+      const b=document.createElement('button');
+      b.textContent = `▶ ${dp.label}`;
+      if (dp.hasOutput) b.classList.add('active');
+      b.title = `${dp.width}×${dp.height}`;
+      b.addEventListener('click', () => api.sendToDisplay(dp.id));
+      box.appendChild(b);
+    });
+  };
+  api.onDisplays(renderDisplays);
+  api.getDisplays().then(renderDisplays).catch(()=>{});
+  $('btnFs').addEventListener('click', () => api.toggleFullscreen());
+
+  let idleT=null;
+  const wake = () => { document.body.classList.remove('idle'); clearTimeout(idleT);
+    idleT=setTimeout(()=>document.body.classList.add('idle'),3000); };
+  document.addEventListener('mousemove', wake); wake();
+  document.addEventListener('keydown', e => { if (e.key==='Escape') api.exitFullscreen(); });
+  document.addEventListener('dblclick', e => { if (!e.target.closest('#ui')) api.toggleFullscreen(); });
+}
+
+window.addEventListener('resize', () => { lastKey=''; });
+requestAnimationFrame(render);
+</script>
+</body>
+</html>

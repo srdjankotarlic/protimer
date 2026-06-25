@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'">
+<title>ProTimer — Kontrola</title>
+<style>
+  :root{
+    --bg:#0b0d11; --panel:#13161c; --panel2:#1a1f28; --border:#232936;
+    --text:#e8edf3; --dim:#7d8794; --dim2:#566070;
+    --accent:#3fb950; --accent-d:#2ea043; --blue:#4493f8; --red:#f0564d; --amber:#d9a441;
+    --radius:10px;
+  }
+  *{box-sizing:border-box; -webkit-user-select:none; user-select:none;}
+  input,textarea{-webkit-user-select:auto; user-select:auto;}
+  body{margin:0; background:var(--bg); color:var(--text); overflow:hidden;
+    font:13.5px/1.4 -apple-system, "Helvetica Neue", system-ui, sans-serif;}
+
+  /* ---- top bar ---- */
+  .topbar{display:flex; align-items:center; gap:10px; padding:11px 16px; border-bottom:1px solid var(--border);}
+  .brand{font-weight:800; letter-spacing:3px; font-size:14px;}
+  .brand b{color:var(--accent); font-weight:800;}
+  .grow{flex:1;}
+
+  select,input[type=text],input[type=time]{background:var(--panel2); color:var(--text);
+    border:1px solid var(--border); border-radius:8px; padding:7px 9px; font-size:13px; outline:none;}
+  select:focus,input:focus{border-color:var(--dim);}
+  input[type=color]{width:34px; height:30px; padding:2px; border:1px solid var(--border);
+    border-radius:8px; background:var(--panel2); cursor:pointer;}
+
+  button{background:var(--panel2); color:var(--text); border:1px solid var(--border);
+    border-radius:8px; padding:7px 12px; font-size:13px; cursor:pointer; white-space:nowrap; transition:border-color .12s, background .12s;}
+  button:hover{border-color:var(--dim);}
+  button:active{transform:translateY(1px);}
+  button.primary{background:var(--accent-d); border-color:var(--accent-d); color:#fff; font-weight:600;}
+  button.primary:hover{background:var(--accent);}
+  button.ghost{background:transparent;}
+  button.danger{background:transparent; border-color:#5a2b28; color:#e88;}
+  button.danger:hover{border-color:var(--red);}
+  label.chk{display:flex; align-items:center; gap:6px; color:var(--dim); font-size:12.5px; cursor:pointer;}
+  label.chk input{accent-color:var(--accent);}
+
+  .main{display:grid; grid-template-columns:1fr 300px; gap:14px; padding:14px; height:calc(100vh - 56px);}
+  .left{display:flex; flex-direction:column; gap:10px; min-width:0; overflow:hidden;}
+  .panel{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:11px 13px;}
+  .row{display:flex; gap:9px; align-items:center; flex-wrap:wrap;}
+  .lbl{color:var(--dim); font-size:11px; text-transform:uppercase; letter-spacing:1px;}
+  .sep{width:1px; height:20px; background:var(--border); margin:0 2px;}
+
+  /* poravnata polja sa levim žlebom za oznaku sekcije */
+  .field{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
+  .field + .field{margin-top:11px; padding-top:11px; border-top:1px solid var(--border);}
+  .glabel{flex:0 0 70px; font-size:10.5px; letter-spacing:1.3px; text-transform:uppercase;
+    color:var(--dim); font-weight:700;}
+  .swatch{display:flex; align-items:center; gap:7px; color:var(--dim); font-size:12.5px;}
+  .warn-sw{display:flex; align-items:center; gap:4px;}
+  .warn-sw .tag{font-size:11px; color:var(--dim2); font-family:"SF Mono",Menlo,monospace; width:11px; text-align:center;}
+  .field input.short{width:58px;}
+
+  /* ---- preview (ogledalo izlaza) ---- */
+  .preview{position:relative; border:1px solid var(--border); border-radius:var(--radius);
+    flex:1; min-height:170px; overflow:hidden; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; background:#000;}
+  .pv-checker{position:absolute; inset:0; background-color:#2a2f3a;
+    background-image:linear-gradient(45deg,#1a1f28 25%,transparent 25%),linear-gradient(-45deg,#1a1f28 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#1a1f28 75%),linear-gradient(-45deg,transparent 75%,#1a1f28 75%);
+    background-size:24px 24px; background-position:0 0,0 12px,12px -12px,-12px 0; display:none;}
+  .pv-text{position:relative; font-weight:600; line-height:1.1; text-align:center; padding:0 24px; display:none;
+    white-space:pre-wrap; max-width:100%; overflow:hidden;}
+  .pv-time{position:relative; font-family:"SF Mono",ui-monospace,Menlo,monospace; font-weight:700;
+    font-variant-numeric:tabular-nums; line-height:.95; white-space:nowrap;}
+  .pv-time.neg{animation:pulse 1s steps(2,start) infinite;}
+  @keyframes pulse{50%{opacity:.25;}}
+  .pv-msg{position:absolute; bottom:14px; left:0; right:0; text-align:center; font-size:17px; font-weight:700;
+    padding:0 16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:none;}
+  .pv-msg.flash{animation:pulse .8s steps(2,start) infinite;}
+  .pv-prog{position:absolute; bottom:0; left:0; height:5px; display:none;}
+  .badges{position:absolute; top:9px; right:11px; display:flex; gap:6px; z-index:2;}
+  .badge{font-size:10px; font-weight:700; letter-spacing:.5px; padding:3px 8px; border-radius:20px;
+    background:rgba(0,0,0,.5); color:var(--dim); border:1px solid var(--border);}
+  .badge.on{background:var(--accent-d); color:#fff; border-color:var(--accent-d);}
+  .badge.bk{background:var(--red); color:#fff; border-color:var(--red);}
+
+  /* ---- transport ---- */
+  .transport{display:flex; gap:8px;}
+  #btnStart{flex:1.7; font-size:18px; font-weight:800; padding:15px 8px; letter-spacing:1px;}
+  #btnStart.running{background:#9a6a06; border-color:#bb8009; color:#fff;}
+  #btnReset{flex:.7; font-size:14px;}
+  .adjust{display:flex; gap:6px; flex:3;}
+  .adjust button{flex:1; font-family:"SF Mono",Menlo,monospace; font-size:13px; padding:8px 4px;}
+  #btnBlackout{flex:1;}
+  #btnBlackout.on{background:var(--red); border-color:var(--red); color:#fff;}
+
+  .tabs{display:flex; gap:5px;}
+  .tabs button{padding:7px 13px; color:var(--dim);}
+  .tabs button.active{background:var(--blue); border-color:var(--blue); color:#fff; font-weight:600;}
+  .chips{display:flex; gap:5px; flex-wrap:wrap;}
+  .chips button{padding:5px 9px; font-size:12px; font-family:"SF Mono",Menlo,monospace; color:var(--dim);}
+  .chips button:hover{color:var(--text);}
+  input.short{width:62px; text-align:center; font-family:"SF Mono",Menlo,monospace;}
+  input.w90{width:92px; text-align:center; font-family:"SF Mono",Menlo,monospace;}
+
+  /* ---- right column ---- */
+  .right{display:flex; flex-direction:column; gap:12px; min-height:0;}
+  .card{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:12px; display:flex; flex-direction:column; min-height:0;}
+  .card h3{margin:0 0 9px; font-size:11px; letter-spacing:1.5px; color:var(--dim); font-weight:700;}
+  .cuewrap{flex:1; display:flex; flex-direction:column; min-height:0;}
+  .cuelist{flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:5px; min-height:40px; margin-bottom:9px;}
+  .cuelist::-webkit-scrollbar{width:8px;} .cuelist::-webkit-scrollbar-thumb{background:var(--border); border-radius:4px;}
+  .cue{display:flex; align-items:center; gap:7px; background:var(--panel2); border:1px solid var(--border);
+    border-radius:8px; padding:7px 9px; cursor:pointer;}
+  .cue.current{border-color:var(--accent); background:#13251a;}
+  .cue .n{color:var(--dim2); font-size:11px; width:14px;}
+  .cue .nm{flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13px;}
+  .cue .du{font-family:"SF Mono",Menlo,monospace; color:var(--dim); font-size:12px;}
+  .cue .mini{padding:2px 6px; font-size:10px; border-radius:5px;}
+  .empty{color:var(--dim2); font-size:12px; text-align:center; padding:14px 0;}
+
+  /* mreža / OBS */
+  .net-url{display:flex; align-items:center; gap:7px; background:var(--panel2); border:1px solid var(--border);
+    border-radius:8px; padding:8px 10px; font-family:"SF Mono",Menlo,monospace; font-size:12.5px; margin-bottom:8px;}
+  .net-url span{flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--accent);}
+  .net-note{color:var(--dim2); font-size:11px; line-height:1.5;}
+  .dot{width:7px; height:7px; border-radius:50%; background:var(--red); display:inline-block;}
+  .dot.on{background:var(--accent);}
+
+  .statusbar{position:fixed; bottom:0; left:0; right:0; padding:5px 16px; color:var(--dim2); font-size:11px;
+    border-top:1px solid var(--border); background:var(--bg); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  kbd{background:var(--panel2); border:1px solid var(--border); border-radius:4px; padding:0 5px; font-size:10px; color:var(--dim);}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">PRO<b>TIMER</b></div>
+  <div class="grow"></div>
+  <span class="lbl">Izlaz na</span>
+  <select id="displaySel" title="Monitor za izlazni ekran" style="max-width:300px"></select>
+  <button id="btnOpenOut" class="primary">Pošalji na ekran</button>
+  <button id="btnFs" title="Pun ekran (F)">⛶</button>
+  <button id="btnCloseOut" class="ghost" title="Zatvori izlazni prozor">✕</button>
+  <div class="sep"></div>
+  <label class="chk"><input type="checkbox" id="chkOnTop"> Na vrhu</label>
+</div>
+
+<div class="main">
+  <div class="left">
+
+    <div class="preview" id="preview">
+      <div class="pv-checker" id="pvChecker"></div>
+      <div class="badges">
+        <div class="badge" id="bdgOut">EKRAN</div>
+        <div class="badge" id="bdgBk">BLACKOUT</div>
+      </div>
+      <div class="pv-text" id="pvText"></div>
+      <div class="pv-time" id="pvTime">10:00</div>
+      <div class="pv-msg" id="pvMsg"></div>
+      <div class="pv-prog" id="pvProg"></div>
+    </div>
+
+    <div class="transport">
+      <button id="btnStart" class="primary">▶ START</button>
+      <button id="btnReset">↺ RESET</button>
+      <div class="adjust">
+        <button data-adj="-300">−5m</button>
+        <button data-adj="-60">−1m</button>
+        <button data-adj="-10">−10s</button>
+        <button data-adj="10">+10s</button>
+        <button data-adj="60">+1m</button>
+        <button data-adj="300">+5m</button>
+      </div>
+      <button id="btnBlackout">■ BLACKOUT</button>
+    </div>
+
+    <div class="panel">
+      <div class="field">
+        <span class="glabel">Režim</span>
+        <div class="tabs">
+          <button data-mode="countdown" class="active">Odbrojavanje</button>
+          <button data-mode="countup">Štoperica</button>
+          <button data-mode="clock">Sat</button>
+        </div>
+        <div class="sep"></div>
+        <input type="text" id="durInput" class="w90" placeholder="10:00" title="10 = minuti · 10:00 = MM:SS · 1:00:00 = HH:MM:SS">
+        <button id="btnSetDur">Postavi</button>
+        <div class="sep"></div>
+        <span class="lbl">Kraj u</span>
+        <input type="time" id="targetInput">
+        <button id="btnTarget" title="Odbrojavanje do tačnog vremena">Start</button>
+      </div>
+      <div class="field">
+        <span class="glabel">Brzo</span>
+        <div class="chips" id="chips"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="field">
+        <span class="glabel">Boje</span>
+        <label class="swatch">Pozadina <input type="color" id="bgColor" value="#000000"></label>
+        <label class="swatch">Vreme/tekst <input type="color" id="fgColor" value="#ffffff"></label>
+        <div class="sep"></div>
+        <label class="chk"><input type="checkbox" id="chkWarn" checked> Boje upozorenja</label>
+        <span class="warn-sw"><span class="tag">Ž</span><input type="color" id="warnYellow" value="#ffc23a" title="Žuto"></span>
+        <span class="warn-sw"><span class="tag">C</span><input type="color" id="warnRed" value="#ff4540" title="Crveno"></span>
+        <div class="sep"></div>
+        <label class="chk"><input type="checkbox" id="chkTransparent"> Providna pozadina (OBS)</label>
+      </div>
+      <div class="field">
+        <span class="glabel">Tekst</span>
+        <input type="text" id="textInput" placeholder="Tekst na ekranu (npr. PAUZA, DOBRO DOŠLI)…" style="flex:1; min-width:140px">
+        <label class="chk"><input type="checkbox" id="chkTextOnly"> Samo tekst</label>
+        <button id="btnTextClear" class="ghost">Obriši</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="field">
+        <span class="glabel">Pragovi</span>
+        <label class="swatch">Žuto na <input type="text" id="yellowInput" class="short" value="2:00"></label>
+        <label class="swatch">Crveno na <input type="text" id="redInput" class="short" value="1:00"></label>
+        <div class="sep"></div>
+        <label class="chk"><input type="checkbox" id="chkFlash" checked> Blic na nuli</label>
+        <label class="chk"><input type="checkbox" id="chkSound"> Zvuk</label>
+        <label class="chk"><input type="checkbox" id="chkOver" checked> Minus posle nule</label>
+        <label class="chk"><input type="checkbox" id="chkProg"> Traka napretka</label>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="field">
+        <span class="glabel">Poruka</span>
+        <input type="text" id="msgInput" placeholder="Poruka govorniku… (M za fokus, Enter šalje)" style="flex:1; min-width:140px">
+        <label class="chk"><input type="checkbox" id="chkMsgFlash"> Treperi</label>
+        <button id="btnMsgSend" class="primary">Pošalji</button>
+        <button id="btnMsgClear" class="ghost">Obriši</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="right">
+    <div class="card cuewrap" style="flex:1">
+      <h3>CUE LISTA</h3>
+      <div class="cuelist" id="cueList"></div>
+      <div class="row" style="margin-bottom:9px">
+        <input type="text" id="cueName" placeholder="Naziv" style="flex:1; min-width:50px">
+        <input type="text" id="cueDur" class="short" placeholder="10:00">
+        <button id="btnCueAdd">+</button>
+      </div>
+      <label class="chk" style="margin-bottom:9px"><input type="checkbox" id="chkAuto"> Auto-prelaz na sledeći</label>
+      <button id="btnGo" class="primary" style="font-weight:800; padding:11px">GO ▶ SLEDEĆI &nbsp;(N)</button>
+    </div>
+
+    <div class="card">
+      <h3>MREŽA → OBS · TELEFON</h3>
+      <div class="lbl" style="margin-bottom:5px">Ekran (OBS / monitor)</div>
+      <div class="net-url">
+        <span id="netUrl">—</span>
+        <button id="btnCopyUrl" class="mini ghost" style="padding:3px 8px; font-size:11px">Kopiraj</button>
+      </div>
+      <div class="lbl" style="margin-bottom:5px">Daljinski (telefon / tablet)</div>
+      <div class="net-url">
+        <span id="netRemote" style="color:var(--blue)">—</span>
+        <button id="btnCopyRemote" class="mini ghost" style="padding:3px 8px; font-size:11px">Kopiraj</button>
+      </div>
+      <div class="net-note">
+        <span class="dot" id="netDot"></span> <span id="netStatus">pokrećem…</span><br>
+        OBS: <b>Browser Source</b> → Ekran URL („Providna pozadina" za overlay; NDI preko DistroAV).
+        Telefon: otvori Daljinski URL u pretraživaču.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="statusbar">
+  <kbd>Space</kbd> start/pauza · <kbd>R</kbd> reset · <kbd>N</kbd> sledeći · <kbd>↑↓</kbd> ±1m · <kbd>←→</kbd> ±10s · <kbd>B</kbd> blackout · <kbd>F</kbd> pun ekran · <kbd>M</kbd> poruka · <kbd>C</kbd> obriši poruku
+</div>
+
+<script>
+const api = window.pt || {
+  sendState(){}, onState(){}, openOutput(){}, closeOutput(){}, toggleFullscreen(){},
+  exitFullscreen(){}, setOnTop(){}, getDisplays:async()=>[], isOutputOpen:async()=>false,
+  getNetworkInfo:async()=>({}), onDisplays(){}, onOutputState(){}, onNetworkInfo(){}, sendToDisplay(){}
+};
+
+// ---------- STANJE ----------
+let S = {
+  mode:'countdown', running:false,
+  durationMs:600000, remMs:600000, endAt:0, elapsedMs:0, startAt:0,
+  yellowSec:120, redSec:60,
+  flashZero:true, soundZero:false, overtime:true, showProgress:false,
+  message:{text:'', flash:false}, blackout:false,
+  // izgled
+  bgColor:'#000000', fgColor:'#ffffff', useWarnColors:true,
+  warnYellow:'#ffc23a', warnRed:'#ff4540',
+  text:'', textOnly:false, transparent:false
+};
+let cues = [], currentCue = -1, autoNext = false, zeroFired = false, outputOpen = false;
+
+const $ = id => document.getElementById(id);
+function pad(n){ return String(n).padStart(2,'0'); }
+function fmtSecs(s,neg){ const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),x=s%60;
+  return (neg?'−':'')+(h>0?`${h}:${pad(m)}:${pad(x)}`:`${m}:${pad(x)}`); }
+function fmtMs(ms){ return ms>=0?fmtSecs(Math.ceil(ms/1000),false):fmtSecs(Math.floor(-ms/1000),true); }
+function parseTime(str){
+  str=(str||'').trim().replace(',',':').replace('.',':');
+  if(!str) return null;
+  if(/^\d+$/.test(str)) return +str*60000;
+  const p=str.split(':').map(Number);
+  if(p.some(isNaN)) return null;
+  if(p.length===2) return (p[0]*60+p[1])*1000;
+  if(p.length===3) return (p[0]*3600+p[1]*60+p[2])*1000;
+  return null;
+}
+function send(){ api.sendState(S); saveSettings(); }
+
+// ---------- TAJMER ----------
+function startPause(){
+  const now=Date.now();
+  if(S.mode==='clock') return;
+  if(S.running){
+    if(S.mode==='countdown') S.remMs=S.endAt-now; else S.elapsedMs+=now-S.startAt;
+    S.running=false;
+  } else {
+    if(S.mode==='countdown'){ S.endAt=now+S.remMs; if(S.remMs>0) zeroFired=false; }
+    else S.startAt=now;
+    S.running=true;
+  }
+  send(); updateButtons();
+}
+function reset(){ S.running=false; S.remMs=S.durationMs; S.elapsedMs=0; zeroFired=false; send(); updateButtons(); }
+function setDuration(ms){ S.mode='countdown'; S.durationMs=ms; S.remMs=ms; S.running=false; zeroFired=false; setModeTabs(); send(); updateButtons(); }
+function adjust(sec){
+  if(S.mode!=='countdown') return;
+  const d=sec*1000;
+  if(S.running) S.endAt+=d; else S.remMs=Math.max(0,S.remMs+d);
+  S.durationMs=Math.max(1000,S.durationMs+d);
+  if((S.running?S.endAt-Date.now():S.remMs)>0) zeroFired=false;
+  send();
+}
+function setMode(m){ S.mode=m; S.running=false; S.remMs=S.durationMs; S.elapsedMs=0; zeroFired=false; setModeTabs(); send(); updateButtons(); }
+function setModeTabs(){ document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('active',b.dataset.mode===S.mode)); }
+
+// ---------- ZVUK ----------
+function beep(){
+  try{
+    const ctx=new AudioContext(), t=ctx.currentTime;
+    [0,.25,.5].forEach((off,i)=>{ const o=ctx.createOscillator(),g=ctx.createGain();
+      o.frequency.value=i===2?1318:880; o.connect(g); g.connect(ctx.destination);
+      g.gain.setValueAtTime(.0001,t+off); g.gain.exponentialRampToValueAtTime(.5,t+off+.02);
+      g.gain.exponentialRampToValueAtTime(.0001,t+off+.22); o.start(t+off); o.stop(t+off+.25); });
+    setTimeout(()=>ctx.close(),1200);
+  }catch(e){}
+}
+
+// ---------- RENDER (ogledalo izlaza) ----------
+function calc(now){
+  if(S.mode==='clock'){ const d=new Date(); return {text:`${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`,fg:S.fgColor,neg:false,prog:null,rem:null}; }
+  if(S.mode==='countup'){ const el=S.running?S.elapsedMs+(now-S.startAt):S.elapsedMs; return {text:fmtSecs(Math.floor(el/1000),false),fg:S.fgColor,neg:false,prog:null,rem:null}; }
+  let rem=S.running?S.endAt-now:S.remMs;
+  if(!S.overtime&&rem<0) rem=0;
+  let fg=S.fgColor, neg=false;
+  if(S.useWarnColors){ if(rem<=S.redSec*1000) fg=S.warnRed; else if(rem<=S.yellowSec*1000) fg=S.warnYellow; }
+  if(rem<0){ fg=S.warnRed; neg=true; }
+  const prog=S.durationMs>0?Math.max(0,Math.min(1,rem/S.durationMs)):0;
+  return {text:fmtMs(rem),fg,neg,prog,rem};
+}
+let lastKey='';
+function render(){
+  const now=Date.now(), r=calc(now);
+  const pv=$('preview');
+
+  // pozadina
+  if(S.transparent){ $('pvChecker').style.display='block'; pv.style.background='transparent'; }
+  else { $('pvChecker').style.display='none'; pv.style.background=S.bgColor; }
+
+  const textOnly = S.textOnly && S.text;
+  const txtEl=$('pvText'), tEl=$('pvTime');
+
+  if(S.text){
+    txtEl.style.display='block'; txtEl.textContent=S.text; txtEl.style.color=r.fg;
+    txtEl.style.fontSize = textOnly
+      ? Math.min(pv.clientWidth*0.85/Math.max(6,S.text.length*0.55), pv.clientHeight*0.42)+'px'
+      : Math.min(pv.clientHeight*0.13, pv.clientWidth*0.06)+'px';
+    txtEl.style.marginBottom = textOnly?'0':'8px';
+  } else txtEl.style.display='none';
+
+  if(textOnly){ tEl.style.display='none'; }
+  else {
+    tEl.style.display='block'; tEl.textContent=r.text; tEl.style.color=r.fg;
+    tEl.className='pv-time'+(r.neg?' neg':'');
+    const key=r.text.length+'|'+pv.clientWidth+'x'+pv.clientHeight+'|'+(S.text?1:0);
+    if(key!==lastKey){ lastKey=key;
+      const avail=S.text?pv.clientHeight*0.42:pv.clientHeight*0.55;
+      tEl.style.fontSize=Math.min(pv.clientWidth*0.9/(r.text.length*0.6),avail)+'px'; }
+  }
+
+  const m=$('pvMsg');
+  if(S.message.text){ m.style.display='block'; m.textContent=S.message.text; m.style.color=r.fg; m.className='pv-msg'+(S.message.flash?' flash':''); }
+  else m.style.display='none';
+
+  const p=$('pvProg');
+  if(S.showProgress&&r.prog!==null){ p.style.display='block'; p.style.width=(r.prog*100)+'%'; p.style.background=r.fg; }
+  else p.style.display='none';
+
+  $('bdgBk').classList.toggle('bk',S.blackout);
+  $('bdgOut').classList.toggle('on',outputOpen);
+  $('bdgOut').textContent=outputOpen?'EKRAN ŽIV':'EKRAN ZATVOREN';
+
+  if(S.mode==='countdown'&&S.running&&r.rem!==null&&r.rem<=0&&!zeroFired){
+    zeroFired=true;
+    if(S.soundZero) beep();
+    if(autoNext&&currentCue>=0&&currentCue+1<cues.length) setTimeout(()=>loadCue(currentCue+1,true),800);
+  }
+  requestAnimationFrame(render);
+}
+function updateButtons(){
+  const b=$('btnStart');
+  if(S.mode==='clock'){ b.textContent='— SAT —'; b.classList.remove('running'); return; }
+  if(S.running){ b.textContent='⏸ PAUZA'; b.classList.add('running'); }
+  else { b.textContent='▶ START'; b.classList.remove('running'); }
+}
+
+// ---------- CUE LISTA ----------
+function renderCues(){
+  const el=$('cueList'); el.innerHTML='';
+  if(!cues.length){ el.innerHTML='<div class="empty">Nema cue-ova. Dodaj naziv + trajanje ↓</div>'; return; }
+  cues.forEach((c,i)=>{
+    const row=document.createElement('div');
+    row.className='cue'+(i===currentCue?' current':'');
+    row.innerHTML=`<span class="n">${i+1}</span><span class="nm"></span><span class="du">${fmtMs(c.durationMs)}</span>
+      <button class="mini up">▲</button><button class="mini dn">▼</button><button class="mini del">✕</button>`;
+    row.querySelector('.nm').textContent=c.name||'(bez naziva)';
+    row.addEventListener('click',e=>{ if(e.target.tagName!=='BUTTON') loadCue(i,false); });
+    row.querySelector('.up').addEventListener('click',()=>moveCue(i,-1));
+    row.querySelector('.dn').addEventListener('click',()=>moveCue(i,1));
+    row.querySelector('.del').addEventListener('click',()=>{ cues.splice(i,1); if(currentCue>=cues.length) currentCue=cues.length-1; saveCues(); renderCues(); });
+    el.appendChild(row);
+  });
+}
+function loadCue(i,autostart){ if(i<0||i>=cues.length) return; currentCue=i; setDuration(cues[i].durationMs); if(autostart) startPause(); renderCues(); }
+function moveCue(i,dir){ const j=i+dir; if(j<0||j>=cues.length) return; [cues[i],cues[j]]=[cues[j],cues[i]];
+  if(currentCue===i) currentCue=j; else if(currentCue===j) currentCue=i; saveCues(); renderCues(); }
+function go(){ if(currentCue+1<cues.length) loadCue(currentCue+1,true); }
+
+// ---------- ČUVANJE ----------
+function saveCues(){ localStorage.setItem('pt_cues',JSON.stringify(cues)); }
+function saveSettings(){
+  localStorage.setItem('pt_settings',JSON.stringify({
+    yellowSec:S.yellowSec,redSec:S.redSec,flashZero:S.flashZero,soundZero:S.soundZero,
+    overtime:S.overtime,showProgress:S.showProgress,durationMs:S.durationMs,autoNext,
+    bgColor:S.bgColor,fgColor:S.fgColor,useWarnColors:S.useWarnColors,
+    warnYellow:S.warnYellow,warnRed:S.warnRed,textOnly:S.textOnly,transparent:S.transparent
+  }));
+}
+function load(){
+  try{
+    const st=JSON.parse(localStorage.getItem('pt_settings')||'{}');
+    Object.assign(S,{
+      yellowSec:st.yellowSec??S.yellowSec, redSec:st.redSec??S.redSec,
+      flashZero:st.flashZero??S.flashZero, soundZero:st.soundZero??S.soundZero,
+      overtime:st.overtime??S.overtime, showProgress:st.showProgress??S.showProgress,
+      durationMs:st.durationMs??S.durationMs,
+      bgColor:st.bgColor??S.bgColor, fgColor:st.fgColor??S.fgColor,
+      useWarnColors:st.useWarnColors??S.useWarnColors,
+      warnYellow:st.warnYellow??S.warnYellow, warnRed:st.warnRed??S.warnRed,
+      textOnly:st.textOnly??S.textOnly, transparent:st.transparent??S.transparent
+    });
+    S.remMs=S.durationMs; autoNext=!!st.autoNext;
+    cues=JSON.parse(localStorage.getItem('pt_cues')||'[]');
+  }catch(e){}
+  $('yellowInput').value=fmtSecs(S.yellowSec,false);
+  $('redInput').value=fmtSecs(S.redSec,false);
+  $('chkFlash').checked=S.flashZero; $('chkSound').checked=S.soundZero;
+  $('chkOver').checked=S.overtime; $('chkProg').checked=S.showProgress;
+  $('chkAuto').checked=autoNext; $('durInput').value=fmtMs(S.durationMs);
+  $('bgColor').value=S.bgColor; $('fgColor').value=S.fgColor;
+  $('chkWarn').checked=S.useWarnColors; $('warnYellow').value=S.warnYellow; $('warnRed').value=S.warnRed;
+  $('chkTextOnly').checked=S.textOnly; $('chkTransparent').checked=S.transparent;
+  renderCues();
+}
+
+// ---------- MONITORI ----------
+function fillDisplays(list){
+  const sel=$('displaySel'); sel.innerHTML='';
+  list.forEach(d=>{
+    const o=document.createElement('option'); o.value=d.id;
+    const tag=d.hasOutput?' — EKRAN':(d.hasControl?' — kontrola':'');
+    o.textContent=`${d.label} (${d.width}×${d.height})${tag}`;
+    if(d.hasOutput||(!d.hasControl&&list.length>1)) o.selected=true;
+    sel.appendChild(o);
+  });
+}
+async function refreshDisplays(){ fillDisplays(await api.getDisplays()); }
+api.onDisplays(fillDisplays);
+
+// ---------- MREŽA ----------
+let netUrl='', remoteUrl='';
+function showNet(info){
+  if(!info||!info.running){ $('netUrl').textContent='—'; $('netRemote').textContent='—'; $('netStatus').textContent='server nije pokrenut'; $('netDot').classList.remove('on'); return; }
+  netUrl=`http://${info.ip}:${info.port}`;
+  remoteUrl=`${netUrl}/remote`;
+  $('netUrl').textContent=netUrl;
+  $('netRemote').textContent=remoteUrl;
+  $('netDot').classList.add('on');
+  $('netStatus').textContent=`uživo · ${info.clients} ${info.clients===1?'uređaj':'uređaja'} povezano`;
+}
+api.onNetworkInfo(showNet);
+api.getNetworkInfo().then(showNet).catch(()=>{});
+function copyBtn(btn, getUrl){ btn.addEventListener('click',()=>{ const u=getUrl(); if(u){ navigator.clipboard.writeText(u); const o=btn.textContent; btn.textContent='✓'; setTimeout(()=>btn.textContent=o,1200); } }); }
+copyBtn($('btnCopyUrl'), ()=>netUrl);
+copyBtn($('btnCopyRemote'), ()=>remoteUrl);
+
+// ---------- DALJINSKI: primena komandi sa telefona ----------
+api.onRemoteCmd(c=>{
+  if(!c||!c.type) return;
+  switch(c.type){
+    case 'start': startPause(); break;
+    case 'reset': reset(); break;
+    case 'adjust': adjust(+c.value||0); break;
+    case 'go': go(); break;
+    case 'blackout': $('btnBlackout').click(); break;
+    case 'setDuration': if(+c.value>0){ currentCue=-1; renderCues(); setDuration(+c.value); } break;
+    case 'mode': if(['countdown','countup','clock'].includes(c.value)) setMode(c.value); break;
+    case 'message': S.message={text:String(c.value||''),flash:false}; $('msgInput').value=S.message.text; send(); break;
+    case 'clearMessage': S.message={text:'',flash:false}; $('msgInput').value=''; send(); break;
+    case 'text': S.text=String(c.value||''); $('textInput').value=S.text; send(); break;
+    case 'clearText': S.text=''; $('textInput').value=''; send(); break;
+    case 'textOnly': S.textOnly=!!c.value; $('chkTextOnly').checked=S.textOnly; lastKey=''; send(); break;
+  }
+});
+
+// ---------- DOGAĐAJI ----------
+$('btnStart').addEventListener('click',startPause);
+$('btnReset').addEventListener('click',reset);
+document.querySelectorAll('[data-adj]').forEach(b=>b.addEventListener('click',()=>adjust(+b.dataset.adj)));
+document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.mode)));
+
+$('btnSetDur').addEventListener('click',()=>{ const ms=parseTime($('durInput').value); if(ms!==null&&ms>0){ currentCue=-1; renderCues(); setDuration(ms); } });
+$('durInput').addEventListener('keydown',e=>{ if(e.key==='Enter') $('btnSetDur').click(); });
+
+[1,2,3,5,10,15,20,30,45,60].forEach(min=>{
+  const b=document.createElement('button'); b.textContent=min+'m';
+  b.addEventListener('click',()=>{ currentCue=-1; renderCues(); setDuration(min*60000); });
+  $('chips').appendChild(b);
+});
+
+$('btnTarget').addEventListener('click',()=>{
+  const v=$('targetInput').value; if(!v) return;
+  const [h,m]=v.split(':').map(Number); const now=new Date(); const target=new Date(now);
+  target.setHours(h,m,0,0); if(target<=now) target.setDate(target.getDate()+1);
+  setDuration(target-now); startPause();
+});
+
+$('yellowInput').addEventListener('change',()=>{ const ms=parseTime($('yellowInput').value); if(ms!==null){ S.yellowSec=ms/1000; send(); } });
+$('redInput').addEventListener('change',()=>{ const ms=parseTime($('redInput').value); if(ms!==null){ S.redSec=ms/1000; send(); } });
+$('chkFlash').addEventListener('change',e=>{ S.flashZero=e.target.checked; send(); });
+$('chkSound').addEventListener('change',e=>{ S.soundZero=e.target.checked; send(); });
+$('chkOver').addEventListener('change',e=>{ S.overtime=e.target.checked; send(); });
+$('chkProg').addEventListener('change',e=>{ S.showProgress=e.target.checked; send(); });
+$('chkAuto').addEventListener('change',e=>{ autoNext=e.target.checked; saveSettings(); });
+
+// izgled
+$('bgColor').addEventListener('input',e=>{ S.bgColor=e.target.value; send(); });
+$('fgColor').addEventListener('input',e=>{ S.fgColor=e.target.value; send(); });
+$('chkWarn').addEventListener('change',e=>{ S.useWarnColors=e.target.checked; send(); });
+$('warnYellow').addEventListener('input',e=>{ S.warnYellow=e.target.value; send(); });
+$('warnRed').addEventListener('input',e=>{ S.warnRed=e.target.value; send(); });
+$('chkTransparent').addEventListener('change',e=>{ S.transparent=e.target.checked; send(); });
+$('textInput').addEventListener('input',e=>{ S.text=e.target.value; send(); });
+$('chkTextOnly').addEventListener('change',e=>{ S.textOnly=e.target.checked; lastKey=''; send(); });
+$('btnTextClear').addEventListener('click',()=>{ S.text=''; $('textInput').value=''; send(); });
+
+$('btnBlackout').addEventListener('click',()=>{ S.blackout=!S.blackout; $('btnBlackout').classList.toggle('on',S.blackout); send(); });
+
+$('btnMsgSend').addEventListener('click',()=>{ S.message={text:$('msgInput').value.trim(),flash:$('chkMsgFlash').checked}; send(); });
+$('msgInput').addEventListener('keydown',e=>{ if(e.key==='Enter') $('btnMsgSend').click(); });
+$('btnMsgClear').addEventListener('click',()=>{ S.message={text:'',flash:false}; $('msgInput').value=''; send(); });
+
+$('btnCueAdd').addEventListener('click',()=>{
+  const ms=parseTime($('cueDur').value)??S.durationMs;
+  cues.push({name:$('cueName').value.trim()||`Cue ${cues.length+1}`,durationMs:ms});
+  $('cueName').value=''; $('cueDur').value=''; saveCues(); renderCues();
+});
+$('cueDur').addEventListener('keydown',e=>{ if(e.key==='Enter') $('btnCueAdd').click(); });
+$('btnGo').addEventListener('click',go);
+
+$('btnOpenOut').addEventListener('click',()=>api.sendToDisplay(+$('displaySel').value||null));
+$('btnCloseOut').addEventListener('click',()=>api.closeOutput());
+$('btnFs').addEventListener('click',()=>api.toggleFullscreen());
+$('chkOnTop').addEventListener('change',e=>api.setOnTop(e.target.checked));
+api.onOutputState(open=>{ outputOpen=open; });
+api.isOutputOpen().then(open=>{ outputOpen=open; }).catch(()=>{});
+
+// Prečice
+document.addEventListener('keydown',e=>{
+  const tag=e.target.tagName;
+  if(tag==='INPUT'||tag==='TEXTAREA'){ if(e.key==='Escape') e.target.blur(); return; }
+  switch(e.key){
+    case ' ': e.preventDefault(); startPause(); break;
+    case 'r': case 'R': reset(); break;
+    case 'b': case 'B': $('btnBlackout').click(); break;
+    case 'f': case 'F': api.toggleFullscreen(); break;
+    case 'm': case 'M': e.preventDefault(); $('msgInput').focus(); break;
+    case 'c': case 'C': $('btnMsgClear').click(); break;
+    case 'n': case 'N': go(); break;
+    case 'ArrowUp': e.preventDefault(); adjust(60); break;
+    case 'ArrowDown': e.preventDefault(); adjust(-60); break;
+    case 'ArrowRight': e.preventDefault(); adjust(10); break;
+    case 'ArrowLeft': e.preventDefault(); adjust(-10); break;
+  }
+});
+window.addEventListener('resize',()=>{ lastKey=''; });
+
+// ---------- START ----------
+load(); refreshDisplays(); send(); updateButtons(); requestAnimationFrame(render);
+</script>
+</body>
+</html>

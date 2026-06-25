@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0b0d11">
+<title>ProTimer — Daljinski</title>
+<style>
+  :root{ --bg:#0b0d11; --panel:#13161c; --panel2:#1a1f28; --border:#232936;
+    --text:#e8edf3; --dim:#7d8794; --accent:#2ea043; --accent-h:#3fb950;
+    --amber:#d9a441; --red:#f0564d; --blue:#4493f8; }
+  *{box-sizing:border-box; margin:0; -webkit-tap-highlight-color:transparent; user-select:none;}
+  body{background:var(--bg); color:var(--text); overflow-x:hidden;
+    font:16px/1.4 -apple-system,"Helvetica Neue",system-ui,sans-serif;
+    padding:14px; max-width:560px; margin:0 auto; -webkit-user-select:none;}
+  input{user-select:auto; -webkit-user-select:auto;}
+  .head{display:flex; align-items:center; gap:8px; margin-bottom:12px;}
+  .brand{font-weight:800; letter-spacing:2px; font-size:14px;}
+  .brand b{color:var(--accent-h);}
+  .conn{margin-left:auto; font-size:12px; color:var(--dim); display:flex; align-items:center; gap:6px;}
+  .dot{width:8px; height:8px; border-radius:50%; background:var(--red);}
+  .dot.on{background:var(--accent-h);}
+
+  .disp{background:#000; border:1px solid var(--border); border-radius:14px;
+    padding:22px 12px; text-align:center; margin-bottom:14px;}
+  .disp .lbl{font-size:13px; color:var(--dim); min-height:16px; margin-bottom:4px;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .disp .t{font-family:"SF Mono",ui-monospace,Menlo,monospace; font-weight:700;
+    font-variant-numeric:tabular-nums; font-size:21vw; line-height:1; color:#fff;}
+  @media(min-width:560px){ .disp .t{font-size:118px;} }
+  .disp .t.neg{animation:pulse 1s steps(2,start) infinite;}
+  @keyframes pulse{50%{opacity:.3;}}
+  .disp .msg{font-size:15px; color:var(--amber); font-weight:600; min-height:18px; margin-top:6px;}
+
+  .grid{display:grid; gap:9px; margin-bottom:14px;}
+  .g2{grid-template-columns:1fr 1fr;} .g3{grid-template-columns:1fr 1fr 1fr;} .g4{grid-template-columns:repeat(4,1fr);}
+  button{background:var(--panel2); color:var(--text); border:1px solid var(--border);
+    border-radius:12px; padding:16px 8px; font-size:16px; font-weight:600; cursor:pointer;
+    -webkit-appearance:none; transition:transform .05s;}
+  button:active{transform:scale(.96);}
+  button.big{padding:22px 8px; font-size:20px; font-weight:800;}
+  button.start{background:var(--accent); border-color:var(--accent); color:#fff;}
+  button.start.run{background:#9a6a06; border-color:#bb8009;}
+  button.go{background:var(--accent); border-color:var(--accent); color:#fff;}
+  button.bk{background:transparent; border-color:#5a2b28; color:#e88;}
+  button.bk.on{background:var(--red); border-color:var(--red); color:#fff;}
+  button.adj{font-family:"SF Mono",Menlo,monospace; font-size:15px; padding:14px 4px;}
+  .sec{font-size:11px; letter-spacing:1.5px; color:var(--dim); text-transform:uppercase; margin:4px 2px 8px;}
+  .msgrow{display:flex; gap:8px;}
+  .msgrow input{flex:1; background:var(--panel2); border:1px solid var(--border); color:var(--text);
+    border-radius:12px; padding:14px; font-size:16px; outline:none;}
+  .preset{background:var(--panel); font-size:14px; padding:12px 6px;}
+  .foot{text-align:center; color:#566070; font-size:12px; margin:16px 0 8px;}
+</style>
+</head>
+<body>
+  <div class="head">
+    <div class="brand">PRO<b>TIMER</b> · Daljinski</div>
+    <div class="conn"><span class="dot" id="dot"></span><span id="connTxt">povezivanje…</span></div>
+  </div>
+
+  <div class="disp">
+    <div class="lbl" id="lbl"></div>
+    <div class="t" id="time">--:--</div>
+    <div class="msg" id="msg"></div>
+  </div>
+
+  <div class="grid g2">
+    <button class="big start" id="btnStart">▶ START</button>
+    <button class="big" id="btnReset">↺ RESET</button>
+  </div>
+
+  <div class="sec">Korekcija</div>
+  <div class="grid g4">
+    <button class="adj" data-adj="-60">−1m</button>
+    <button class="adj" data-adj="-10">−10s</button>
+    <button class="adj" data-adj="10">+10s</button>
+    <button class="adj" data-adj="60">+1m</button>
+  </div>
+
+  <div class="grid g2">
+    <button class="go" id="btnGo">GO ▶ SLEDEĆI</button>
+    <button class="bk" id="btnBk">■ BLACKOUT</button>
+  </div>
+
+  <div class="sec">Brzo trajanje</div>
+  <div class="grid g4" id="chips"></div>
+
+  <div class="sec">Poruka govorniku</div>
+  <div class="grid g3" style="margin-bottom:9px">
+    <button class="preset" data-msg="Ubrzaj">Ubrzaj</button>
+    <button class="preset" data-msg="Završavaj">Završavaj</button>
+    <button class="preset" data-msg="STOP">STOP</button>
+  </div>
+  <div class="msgrow">
+    <input type="text" id="msgIn" placeholder="Svoja poruka…" enterkeyhint="send">
+    <button id="btnMsg" style="padding:14px 16px">Pošalji</button>
+    <button id="btnMsgClr" style="padding:14px 14px; background:transparent">✕</button>
+  </div>
+
+  <div class="foot">Kontrola radi dok je glavni ProTimer otvoren na računaru.</div>
+
+<script>
+const $ = id => document.getElementById(id);
+function pad(n){ return String(n).padStart(2,'0'); }
+function fmtSecs(s,neg){ const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),x=s%60;
+  return (neg?'−':'')+(h>0?`${h}:${pad(m)}:${pad(x)}`:`${m}:${pad(x)}`); }
+function fmtMs(ms){ return ms>=0?fmtSecs(Math.ceil(ms/1000),false):fmtSecs(Math.floor(-ms/1000),true); }
+
+let S = null;
+function cmd(type, value){
+  fetch('/cmd', { method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ type, value }) }).catch(()=>{});
+}
+
+// prijem stanja (SSE)
+function connect(){
+  const es = new EventSource('/events');
+  es.onopen = () => { $('dot').classList.add('on'); $('connTxt').textContent='uživo'; };
+  es.onmessage = e => { try { S = JSON.parse(e.data); } catch(_){} };
+  es.onerror = () => { $('dot').classList.remove('on'); $('connTxt').textContent='veza pala…'; es.close(); setTimeout(connect,1000); };
+}
+connect();
+
+function render(){
+  requestAnimationFrame(render);
+  if(!S) return;
+  const now=Date.now(); let text, neg=false, col='#fff';
+  if(S.mode==='clock'){ const d=new Date(); text=`${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`; }
+  else if(S.mode==='countup'){ const el=S.running?S.elapsedMs+(now-S.startAt):S.elapsedMs; text=fmtSecs(Math.floor(el/1000),false); }
+  else {
+    let rem=S.running?S.endAt-now:S.remMs; if(!S.overtime&&rem<0) rem=0;
+    if(S.useWarnColors){ if(rem<=S.redSec*1000) col=S.warnRed||'#ff4540'; else if(rem<=S.yellowSec*1000) col=S.warnYellow||'#ffc23a'; }
+    if(rem<0){ col=S.warnRed||'#ff4540'; neg=true; }
+    text=fmtMs(rem);
+  }
+  const t=$('time'); t.textContent=text; t.style.color=col; t.className='t'+(neg?' neg':'');
+  $('lbl').textContent = S.text || '';
+  $('msg').textContent = S.message ? S.message.text : '';
+  $('btnStart').classList.toggle('run', S.running);
+  $('btnStart').textContent = S.running ? '⏸ PAUZA' : '▶ START';
+  $('btnBk').classList.toggle('on', S.blackout);
+}
+requestAnimationFrame(render);
+
+// kontrole
+$('btnStart').addEventListener('click', ()=>cmd('start'));
+$('btnReset').addEventListener('click', ()=>cmd('reset'));
+$('btnGo').addEventListener('click', ()=>cmd('go'));
+$('btnBk').addEventListener('click', ()=>cmd('blackout'));
+document.querySelectorAll('[data-adj]').forEach(b=>b.addEventListener('click',()=>cmd('adjust',+b.dataset.adj)));
+[1,2,5,10,15,20,30,45].forEach(min=>{
+  const b=document.createElement('button'); b.className='adj'; b.textContent=min+'m';
+  b.addEventListener('click',()=>cmd('setDuration',min*60000)); $('chips').appendChild(b);
+});
+document.querySelectorAll('[data-msg]').forEach(b=>b.addEventListener('click',()=>cmd('message',b.dataset.msg)));
+$('btnMsg').addEventListener('click', ()=>{ const v=$('msgIn').value.trim(); if(v){ cmd('message',v); $('msgIn').value=''; $('msgIn').blur(); } });
+$('msgIn').addEventListener('keydown', e=>{ if(e.key==='Enter') $('btnMsg').click(); });
+$('btnMsgClr').addEventListener('click', ()=>cmd('clearMessage'));
+</script>
+</body>
+</html>

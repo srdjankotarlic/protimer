@@ -1,0 +1,13 @@
+# zavisnosti i build izlazi
+node_modules/
+dist/
+dist-installers/
+
+# OS / editor
+.DS_Store
+*.log
+.vscode/
+.idea/
+
+# privremeni snimci
+/tmp/

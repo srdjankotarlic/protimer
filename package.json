@@ -1,0 +1,64 @@
+{
+  "name": "pro-timer",
+  "productName": "ProTimer",
+  "version": "1.1.0",
+  "description": "Profesionalni stage timer za live produkciju",
+  "main": "main.js",
+  "author": "Srdjan Kotarlic",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "smoke": "electron . --smoke",
+    "dist:mac": "electron-builder --mac --arm64",
+    "dist:win": "electron-builder --win --x64",
+    "dist:all": "electron-builder --mac --arm64 --win --x64"
+  },
+  "devDependencies": {
+    "electron": "^39.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "allowScripts": {
+    "electron@39.8.10": true
+  },
+  "build": {
+    "appId": "com.srdjankotarlic.protimer",
+    "productName": "ProTimer",
+    "directories": {
+      "buildResources": "build",
+      "output": "dist-installers"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "controller.html",
+      "output.html",
+      "remote.html"
+    ],
+    "mac": {
+      "target": [{ "target": "dmg", "arch": "arm64" }],
+      "category": "public.app-category.utilities",
+      "icon": "build/icon.png",
+      "identity": null
+    },
+    "dmg": {
+      "title": "ProTimer ${version}"
+    },
+    "win": {
+      "target": [
+        { "target": "nsis", "arch": "x64" },
+        { "target": "portable", "arch": "x64" }
+      ],
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "ProTimer"
+    },
+    "portable": {
+      "artifactName": "ProTimer-${version}-portable.exe"
+    }
+  }
+}
