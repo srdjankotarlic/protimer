@@ -2,7 +2,7 @@
 
 **A free, open-source stage timer for live production.** Big, clear countdown on any screen — stage, projector, OBS, or a phone in your hand. Runs on **macOS and Windows**, with a **Serbian / English** interface.
 
-![ProTimer control window](docs/screenshot-control.png)
+![ProTimer stage screen — countdown turning yellow then red, with NOW / NEXT](docs/demo.gif)
 
 ---
 
@@ -20,6 +20,10 @@
 - 📍 **NOW / NEXT** on the stage screen — presenters always see what's current and what's next
 - 💬 **Messages to the speaker** + ✍️ **on-screen text** ("BREAK", "WELCOME")
 - 🌍 **Serbian / English** interface, ⌨️ keyboard shortcuts, ⚡ low latency (no lag, no drift)
+
+The **control window** — your cockpit: transport, modes, colors, rundown and the network/OBS links:
+
+![ProTimer control window](docs/screenshot-control.png)
 
 The **Backstage** view — `NOW`, `NEXT`, the schedule and an over/under indicator, on any screen or phone:
 

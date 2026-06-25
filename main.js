@@ -248,8 +248,46 @@ ipcMain.handle('displays', () => displayList());
 ipcMain.handle('output-open', () => !!outputWin);
 ipcMain.handle('network-info', () => networkInfo());
 
+// ---------------- PROMO: snimanje demo kadrova izlaznog ekrana ----------------
+function runPromo() {
+  const demo = {
+    mode:'countdown', running:false, durationMs:10000, remMs:10000, endAt:0, startAt:0, elapsedMs:0,
+    yellowSec:5, redSec:2, overtime:true, useWarnColors:true, warnYellow:'#ffc23a', warnRed:'#ff4540', flashZero:true,
+    bgColor:'#0b0d11', fgColor:'#ffffff', text:'', message:{ text:'', flash:false }, blackout:false,
+    showProgress:true, transparent:false, lang:'en', showNowNext:true, currentCue:0,
+    cues:[ { name:'Keynote — Dr. Maya Chen', durationMs:10000, note:'', color:'#3fb950' },
+           { name:'Q&A Panel', durationMs:1200000, note:'', color:'#4493f8' } ]
+  };
+  const pw = new BrowserWindow({
+    width:1280, height:720, show:true, frame:false, backgroundColor:'#0b0d11',
+    webPreferences:{ preload: path.join(__dirname,'preload.js'), contextIsolation:true, nodeIntegration:false }
+  });
+  pw.loadFile('output.html');
+  pw.webContents.on('did-finish-load', async () => {
+    const dir='/tmp/promo';
+    try { fs.rmSync(dir,{recursive:true,force:true}); } catch(e){}
+    fs.mkdirSync(dir,{recursive:true});
+    // sakrij overlay kontrole (#ui) — bez pomeranja miša ostaje skriveno
+    await pw.webContents.executeJavaScript("document.body.classList.add('idle')").catch(()=>{});
+    await new Promise(r=>setTimeout(r,120));
+    demo.running = true; demo.endAt = Date.now() + demo.durationMs;
+    pw.webContents.send('state', demo);
+    const total = 60, interval = 200;
+    for (let i=0;i<total;i++){
+      await new Promise(r=>setTimeout(r, interval));
+      if (i===36){ demo.message = { text:'WRAP UP', flash:false }; pw.webContents.send('state', demo); }
+      const img = await pw.webContents.capturePage();
+      fs.writeFileSync(`${dir}/frame_${String(i).padStart(4,'0')}.png`, img.toPNG());
+    }
+    console.log('PROMO_DONE frames=' + total);
+    app.exit(0);
+  });
+  setTimeout(()=>{ console.error('PROMO_TIMEOUT'); app.exit(1); }, 30000);
+}
+
 // ---------------- START ----------------
 app.whenReady().then(() => {
+  if (process.argv.includes('--promo')) { runPromo(); return; }
   startServer(7878);
   createControlWindow();
 
