@@ -119,8 +119,14 @@ Clean stack, no runtime dependencies: **Electron** + plain HTML/CSS/JS + a Node 
 
 ---
 
+## 👤 Author
+
+**ProTimer** is created and maintained by **Srdjan Kotarlic** — built from real live-production needs.
+
+- GitHub: [@srdjankotarlic](https://github.com/srdjankotarlic)
+
+If it helps your show, a ⭐ on the repo means a lot. Issues and ideas are welcome.
+
 ## 📄 License
 
-[MIT](LICENSE) — free to use, modify and share. If it helps your show, a ⭐ on the repo means a lot.
-
-Built by [Srdjan Kotarlic](https://github.com/srdjankotarlic) for live production.
+© 2026 Srdjan Kotarlic. Released under the [MIT License](LICENSE) — free to use, modify and share, with attribution.
