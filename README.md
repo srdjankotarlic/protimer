@@ -2,6 +2,14 @@
 
 **A free, open-source stage timer for live production.** Big, clear countdown on any screen — stage, projector, OBS, or a phone in your hand. Runs on **macOS and Windows**, with a **Serbian / English** interface.
 
+[![Download latest release](https://img.shields.io/github/v/release/srdjankotarlic/protimer?color=2ea043&label=%E2%AC%87%EF%B8%8F%20download&style=for-the-badge)](https://github.com/srdjankotarlic/protimer/releases/latest)
+&nbsp;
+[![Platforms](https://img.shields.io/badge/macOS%20%C2%B7%20Windows-free-2ea043?style=for-the-badge)](https://github.com/srdjankotarlic/protimer/releases/latest)
+&nbsp;
+[![License: MIT](https://img.shields.io/github/license/srdjankotarlic/protimer?style=for-the-badge&color=555)](LICENSE)
+
+> ### 👉 [Download for macOS or Windows](https://github.com/srdjankotarlic/protimer/releases/latest) — free, no sign-up
+
 ![ProTimer stage screen — countdown turning yellow then red, with NOW / NEXT](docs/demo.gif)
 
 ---

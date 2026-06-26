@@ -149,7 +149,7 @@ function pushOutputState() {
 
 function createControlWindow() {
   controlWin = new BrowserWindow({
-    width: 1120, height: 740, minWidth: 900, minHeight: 600,
+    width: 1120, height: 740, minWidth: 820, minHeight: 480,
     title: 'ProTimer — Kontrola', backgroundColor: '#0b0d11',
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false }
   });
