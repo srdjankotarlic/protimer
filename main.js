@@ -308,9 +308,9 @@ function runPromo() {
     const dir='/tmp/promo';
     try { fs.rmSync(dir,{recursive:true,force:true}); } catch(e){}
     fs.mkdirSync(dir,{recursive:true});
-    // sakrij overlay kontrole (#ui) — bez pomeranja miša ostaje skriveno
-    await pw.webContents.executeJavaScript("document.body.classList.add('idle')").catch(()=>{});
-    await new Promise(r=>setTimeout(r,120));
+    // potpuno sakrij overlay kontrole (#ui) za snimak — bulletproof
+    await pw.webContents.executeJavaScript("var u=document.getElementById('ui'); if(u){u.style.display='none';} document.body.classList.add('idle');").catch(()=>{});
+    await new Promise(r=>setTimeout(r,150));
     demo.running = true; demo.endAt = Date.now() + demo.durationMs;
     pw.webContents.send('state', demo);
     const total = 60, interval = 200;
