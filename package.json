@@ -1,7 +1,7 @@
 {
   "name": "pro-timer",
   "productName": "ProTimer",
-  "version": "1.3.4",
+  "version": "1.4.0",
   "description": "Profesionalni stage timer za live produkciju",
   "main": "main.js",
   "author": "Srdjan Kotarlic",
@@ -36,7 +36,12 @@
       "backstage.html"
     ],
     "mac": {
-      "target": [{ "target": "dmg", "arch": "arm64" }],
+      "target": [
+        {
+          "target": "dmg",
+          "arch": "arm64"
+        }
+      ],
       "category": "public.app-category.utilities",
       "icon": "build/icon.png",
       "identity": null
@@ -46,8 +51,14 @@
     },
     "win": {
       "target": [
-        { "target": "nsis", "arch": "x64" },
-        { "target": "portable", "arch": "x64" }
+        {
+          "target": "nsis",
+          "arch": "x64"
+        },
+        {
+          "target": "portable",
+          "arch": "x64"
+        }
       ],
       "icon": "build/icon.png"
     },
@@ -61,5 +72,9 @@
     "portable": {
       "artifactName": "ProTimer-${version}-portable.exe"
     }
+  },
+  "dependencies": {
+    "localtunnel": "^2.0.2",
+    "qrcode": "^1.5.4"
   }
 }

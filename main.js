@@ -248,6 +248,47 @@ ipcMain.handle('displays', () => displayList());
 ipcMain.handle('output-open', () => !!outputWin);
 ipcMain.handle('network-info', () => networkInfo());
 
+// ---------------- QR KOD + JAVNI LINK (tunel) ----------------
+let tunnel = null, tunnelUrl = null, tunnelStarting = false;
+
+ipcMain.handle('qr', async (e, text) => {
+  try {
+    const QRCode = require('qrcode');
+    return await QRCode.toString(String(text || ''), {
+      type: 'svg', margin: 1, color: { dark: '#0b0d11', light: '#ffffff' }
+    });
+  } catch (err) { return null; }
+});
+
+function pushShare() {
+  if (controlWin && !controlWin.isDestroyed())
+    controlWin.webContents.send('share-info', { url: tunnelUrl, starting: tunnelStarting });
+}
+
+ipcMain.handle('share-start', async () => {
+  if (tunnel) return { url: tunnelUrl };
+  tunnelStarting = true; pushShare();
+  try {
+    const localtunnel = require('localtunnel');
+    tunnel = await localtunnel({ port: serverPort });
+    tunnelUrl = tunnel.url;
+    tunnel.on('close', () => { tunnel = null; tunnelUrl = null; tunnelStarting = false; pushShare(); });
+    tunnel.on('error', () => { try { tunnel && tunnel.close(); } catch (e) {} tunnel = null; tunnelUrl = null; tunnelStarting = false; pushShare(); });
+    tunnelStarting = false; pushShare();
+    return { url: tunnelUrl };
+  } catch (err) {
+    tunnel = null; tunnelUrl = null; tunnelStarting = false; pushShare();
+    return { error: (err && err.message) || 'fail' };
+  }
+});
+ipcMain.handle('share-stop', () => {
+  try { if (tunnel) tunnel.close(); } catch (e) {}
+  tunnel = null; tunnelUrl = null; tunnelStarting = false; pushShare();
+  return true;
+});
+ipcMain.handle('share-info', () => ({ url: tunnelUrl, starting: tunnelStarting }));
+app.on('before-quit', () => { try { if (tunnel) tunnel.close(); } catch (e) {} });
+
 // ---------------- PROMO: snimanje demo kadrova izlaznog ekrana ----------------
 function runPromo() {
   const demo = {
@@ -404,6 +445,10 @@ app.whenReady().then(() => {
         let offAlpha = -1;
         try { const img = await outputWin.webContents.capturePage(); const bmp = img.toBitmap(); const sz = img.getSize(); offAlpha = bmp[(8 * sz.width + 8) * 4 + 3]; } catch (e) {}
         console.log('OPAQUE_AGAIN_OK=' + (outputTransparent === false) + ' OFF_ALPHA=' + offAlpha);
+        // QR generator radi i spakovan je
+        let qrOK = false;
+        try { const svg = await controlWin.webContents.executeJavaScript("window.pt.qr('http://192.168.1.50:7878')"); qrOK = typeof svg === 'string' && svg.includes('<svg'); } catch (e) {}
+        console.log('QR_OK=' + qrOK);
         console.log('SMOKE_OK');
         app.exit(0);
       } catch (err) { console.error('SMOKE_FAIL', err); app.exit(1); }

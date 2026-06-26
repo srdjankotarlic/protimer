@@ -22,6 +22,7 @@
 - 🖥️ **Any screen** — send the output to a second monitor / projector in fullscreen with one click
 - 📺 **OBS / NDI / vMix** — built-in network output; add it as a Browser Source (transparent background for overlays)
 - 📱 **Phone remote** — start the timer and send messages to the speaker from your hand, over Wi-Fi
+- 🔗 **Share with anyone** — a **QR code** to scan on-site, or a one-click **public link** that works from any network
 - 🗒️ **Rundown** — a run of segments with **durations, notes, colors and planned clock times**
 - 🎭 **Backstage view** — a crew/guest screen with **NOW / NEXT**, the full schedule and live clock times
 - ⏰ **Over / Under** — see at a glance whether the show will finish **ahead or behind** schedule
@@ -94,6 +95,9 @@ The same panel has a **Remote** URL (`…:7878/remote`). Open it in your phone's
 Build your run on the right: each item has a **name, duration, an optional note and a color**. Set a **Start** time for the show and ProTimer fills in the **planned clock times** for every item. Click an item to load it; **GO** (`N`) jumps to and starts the next one. Optional auto-advance. The **Over / Under** badge shows whether you'll finish ahead or behind your planned end.
 
 Turn on **"NOW / NEXT on screen"** to show the current and next item under the timer on the stage screen.
+
+### 🔗 Share with others
+Next to every link in the network panel there's a **QR** button — show it and people scan it with their phone to watch the timer (same Wi-Fi). Need someone **off your network** (a remote client, another venue)? Click **Share online** and ProTimer gives you a public `https://` link that works from anywhere. *(First-time visitors to a public link may see a one-time “Click to continue” page.)*
 
 ### 🎭 Backstage view (crew & guests)
 The network panel has a **Backstage** URL. Open it on any screen, laptop or phone and everyone sees the same picture: the **current item** with its live timer, **what's next**, the **full schedule** with clock times, and the **planned vs projected finish** with the over/under indicator. Ideal for a green room, a stage manager, or a lobby screen.

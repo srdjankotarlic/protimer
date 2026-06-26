@@ -15,5 +15,10 @@ contextBridge.exposeInMainWorld('pt', {
   onDisplays: (cb) => ipcRenderer.on('displays', (e, list) => cb(list)),
   onOutputState: (cb) => ipcRenderer.on('output-state', (e, open) => cb(open)),
   onNetworkInfo: (cb) => ipcRenderer.on('network-info', (e, info) => cb(info)),
-  onRemoteCmd: (cb) => ipcRenderer.on('remote-cmd', (e, cmd) => cb(cmd))
+  onRemoteCmd: (cb) => ipcRenderer.on('remote-cmd', (e, cmd) => cb(cmd)),
+  qr: (text) => ipcRenderer.invoke('qr', text),
+  shareStart: () => ipcRenderer.invoke('share-start'),
+  shareStop: () => ipcRenderer.invoke('share-stop'),
+  shareInfo: () => ipcRenderer.invoke('share-info'),
+  onShareInfo: (cb) => ipcRenderer.on('share-info', (e, info) => cb(info))
 });

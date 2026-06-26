@@ -41,10 +41,14 @@
   label.chk{display:flex; align-items:center; gap:6px; color:var(--dim); font-size:12.5px; cursor:pointer;}
   label.chk input{accent-color:var(--accent);}
 
-  .main{flex:1 1 auto; min-height:0; display:grid; grid-template-columns:1fr 300px; grid-template-rows:minmax(0,1fr); gap:14px; padding:14px;}
-  .left{display:flex; flex-direction:column; gap:10px; min-width:0; min-height:0; overflow-y:auto; overflow-x:hidden; padding-right:4px;}
-  .left::-webkit-scrollbar,.right::-webkit-scrollbar{width:8px;}
-  .left::-webkit-scrollbar-thumb,.right::-webkit-scrollbar-thumb{background:var(--border); border-radius:4px;}
+  .main{flex:1 1 auto; min-height:0; display:grid; grid-template-columns:1fr 300px; align-items:start;
+    gap:14px; padding:14px; overflow-y:auto; overflow-x:hidden;}
+  .main::-webkit-scrollbar{width:11px;}
+  .main::-webkit-scrollbar-thumb{background:var(--border); border-radius:6px; border:2px solid var(--bg);}
+  .main::-webkit-scrollbar-thumb:hover{background:var(--dim2);}
+  .left{display:flex; flex-direction:column; gap:10px; min-width:0;}
+  .cuelist::-webkit-scrollbar{width:8px;}
+  .cuelist::-webkit-scrollbar-thumb{background:var(--border); border-radius:4px;}
   .panel{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:11px 13px;}
   .row{display:flex; gap:9px; align-items:center; flex-wrap:wrap;}
   .lbl{color:var(--dim); font-size:11px; text-transform:uppercase; letter-spacing:1px;}
@@ -103,7 +107,7 @@
   input.w90{width:92px; text-align:center; font-family:"SF Mono",Menlo,monospace;}
 
   /* ---- right column ---- */
-  .right{display:flex; flex-direction:column; gap:12px; min-height:0; overflow-y:auto; overflow-x:hidden;}
+  .right{display:flex; flex-direction:column; gap:12px; min-width:0;}
   .card{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:12px; display:flex; flex-direction:column; min-height:0;}
   .card h3{margin:0 0 9px; font-size:11px; letter-spacing:1.5px; color:var(--dim); font-weight:700;}
   .cuewrap{flex:0 0 auto; display:flex; flex-direction:column;}
@@ -138,6 +142,12 @@
   .net-url{display:flex; align-items:center; gap:7px; background:var(--panel2); border:1px solid var(--border);
     border-radius:8px; padding:8px 10px; font-family:"SF Mono",Menlo,monospace; font-size:12.5px; margin-bottom:8px;}
   .net-url span{flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--accent);}
+  .net-url .mini{padding:3px 8px; font-size:11px; flex:0 0 auto;}
+  .qrbtn{padding:3px 7px; font-size:10px; flex:0 0 auto;}
+  .qrbox{display:none; background:#fff; border-radius:10px; padding:11px; margin:2px 0 9px; text-align:center;}
+  .qrbox svg{width:172px; height:172px; display:block; margin:0 auto;}
+  .qrbox .qrlbl{color:#0b0d11; font-size:10.5px; margin-top:7px; word-break:break-all; font-family:"SF Mono",Menlo,monospace; line-height:1.3;}
+  #btnShare.on{background:var(--accent-d); border-color:var(--accent-d); color:#fff; font-weight:600;}
   .net-note{color:var(--dim2); font-size:11px; line-height:1.5;}
   .dot{width:7px; height:7px; border-radius:50%; background:var(--red); display:inline-block;}
   .dot.on{background:var(--accent);}
@@ -292,21 +302,36 @@
       <div class="lbl" style="margin-bottom:5px" data-i18n="screenOBS">Ekran (OBS / monitor)</div>
       <div class="net-url">
         <span id="netUrl">—</span>
-        <button id="btnCopyUrl" class="mini ghost" style="padding:3px 8px; font-size:11px" data-i18n="copy">Kopiraj</button>
+        <button class="mini ghost qrbtn" data-qr="netUrl" title="QR kod">QR</button>
+        <button id="btnCopyUrl" class="mini ghost" data-i18n="copy">Kopiraj</button>
       </div>
       <div class="lbl" style="margin-bottom:5px" data-i18n="remoteLabel">Daljinski (telefon / tablet)</div>
       <div class="net-url">
         <span id="netRemote" style="color:var(--blue)">—</span>
-        <button id="btnCopyRemote" class="mini ghost" style="padding:3px 8px; font-size:11px" data-i18n="copy">Kopiraj</button>
+        <button class="mini ghost qrbtn" data-qr="netRemote" title="QR kod">QR</button>
+        <button id="btnCopyRemote" class="mini ghost" data-i18n="copy">Kopiraj</button>
       </div>
       <div class="lbl" style="margin-bottom:5px" data-i18n="backstageLabel">Backstage (raspored / crew)</div>
       <div class="net-url">
         <span id="netBackstage" style="color:var(--amber)">—</span>
-        <button id="btnCopyBackstage" class="mini ghost" style="padding:3px 8px; font-size:11px" data-i18n="copy">Kopiraj</button>
+        <button class="mini ghost qrbtn" data-qr="netBackstage" title="QR kod">QR</button>
+        <button id="btnCopyBackstage" class="mini ghost" data-i18n="copy">Kopiraj</button>
       </div>
+
+      <div id="qrBox" class="qrbox"></div>
+
+      <button id="btnShare" class="ghost" style="width:100%; margin-top:4px" data-i18n="shareOnline">🌐 Deli online (bilo koja mreža)</button>
+      <div class="lbl" id="publicLbl" style="display:none; margin:8px 0 5px" data-i18n="publicLabel">Javni link (bilo koja mreža)</div>
+      <div class="net-url" id="publicRow" style="display:none">
+        <span id="netPublic" style="color:#7ee0a0">—</span>
+        <button class="mini ghost qrbtn" data-qr="netPublic" title="QR kod">QR</button>
+        <button id="btnCopyPublic" class="mini ghost" data-i18n="copy">Kopiraj</button>
+      </div>
+
       <div class="net-note">
         <span class="dot" id="netDot"></span> <span id="netStatus">pokrećem…</span><br>
         <span data-i18n-html="netNote">OBS: <b>Browser Source</b> → Ekran URL („Providna pozadina" za overlay; NDI preko DistroAV). Telefon: otvori Daljinski URL u pretraživaču.</span>
+        <span data-i18n="shareNote" style="display:block; margin-top:5px; color:var(--dim2)">QR = skeniraj telefonom (ista Wi-Fi). „Deli online" = link koji radi sa bilo koje mreže.</span>
       </div>
     </div>
   </div>
@@ -321,7 +346,9 @@ const api = window.pt || {
   sendState(){}, onState(){}, openOutput(){}, closeOutput(){}, toggleFullscreen(){},
   exitFullscreen(){}, setOnTop(){}, getDisplays:async()=>[], isOutputOpen:async()=>false,
   getNetworkInfo:async()=>({}), onDisplays(){}, onOutputState(){}, onNetworkInfo(){},
-  onRemoteCmd(){}, sendToDisplay(){}
+  onRemoteCmd(){}, sendToDisplay(){},
+  qr:async()=>null, shareStart:async()=>({error:'preview'}), shareStop:async()=>true,
+  shareInfo:async()=>({}), onShareInfo(){}
 };
 
 // ---------- JEZIK / LANGUAGE ----------
@@ -345,6 +372,9 @@ const I18N = {
     nowLabel:'SADA', nextLabel:'SLEDI', endLabel:'Kraj', plannedLabel:'Planirano', projectedLabel:'Procena',
     netTitle:'MREŽA → OBS · TELEFON', screenOBS:'Ekran (OBS / monitor)', copy:'Kopiraj',
     remoteLabel:'Daljinski (telefon / tablet)',
+    shareOnline:'🌐 Deli online (bilo koja mreža)', publicLabel:'Javni link (bilo koja mreža)',
+    connecting:'⏳ Povezivanje…', stopSharing:'✕ Prekini deljenje', shareFail:'⚠ Nije uspelo, pokušaj opet',
+    shareNote:'QR = skeniraj telefonom (ista Wi-Fi). „Deli online" = link sa bilo koje mreže.',
     netNote:'⚠️ Svi uređaji moraju biti na <b>ISTOJ Wi-Fi</b> mreži. OBS: <b>Browser Source</b> → Ekran URL („Providna pozadina" za overlay; NDI preko DistroAV). Telefon: otvori Daljinski URL u pretraživaču.',
     start:'▶ START', pause:'⏸ PAUZA', clockBtn:'— SAT —',
     outLive:'EKRAN ŽIV', outClosed:'EKRAN ZATVOREN', screenTag:'EKRAN', controlTag:'kontrola',
@@ -370,6 +400,9 @@ const I18N = {
     nowLabel:'NOW', nextLabel:'NEXT', endLabel:'End', plannedLabel:'Planned', projectedLabel:'Projected',
     netTitle:'NETWORK → OBS · PHONE', screenOBS:'Screen (OBS / monitor)', copy:'Copy',
     remoteLabel:'Remote (phone / tablet)',
+    shareOnline:'🌐 Share online (any network)', publicLabel:'Public link (any network)',
+    connecting:'⏳ Connecting…', stopSharing:'✕ Stop sharing', shareFail:'⚠ Failed, try again',
+    shareNote:'QR = scan with a phone (same Wi-Fi). “Share online” = a link that works from any network.',
     netNote:'⚠️ All devices must be on the <b>SAME Wi-Fi</b> network. OBS: <b>Browser Source</b> → Screen URL (enable “Transparent background” for overlay; NDI via DistroAV). Phone: open the Remote URL in a browser.',
     start:'▶ START', pause:'⏸ PAUSE', clockBtn:'— CLOCK —',
     outLive:'SCREEN LIVE', outClosed:'SCREEN CLOSED', screenTag:'SCREEN', controlTag:'control',
@@ -387,6 +420,7 @@ function applyLang(){
   document.querySelectorAll('[data-i18n-html]').forEach(el => el.innerHTML = t(el.dataset.i18nHtml));
   document.querySelectorAll('.lang button').forEach(b => b.classList.toggle('active', b.dataset.lang===lang));
   updateButtons(); renderCues(); showNet(lastNetInfo); fillDisplays(lastDisplays);
+  if(typeof applyShare==='function') applyShare({ url: (typeof publicUrl!=='undefined'?publicUrl:'') });
 }
 
 // ---------- STANJE ----------
@@ -672,6 +706,43 @@ function copyBtn(btn, getUrl){ btn.addEventListener('click',()=>{ const u=getUrl
 copyBtn($('btnCopyUrl'), ()=>netUrl);
 copyBtn($('btnCopyRemote'), ()=>remoteUrl);
 copyBtn($('btnCopyBackstage'), ()=>backstageUrl);
+
+// ---------- QR KOD ----------
+let qrShownFor='';
+document.querySelectorAll('.qrbtn').forEach(b=>b.addEventListener('click',async ()=>{
+  const url=$(b.dataset.qr).textContent.trim();
+  const box=$('qrBox');
+  if(!url||url==='—') return;
+  if(qrShownFor===url && box.style.display==='block'){ box.style.display='none'; qrShownFor=''; return; }
+  const svg=await api.qr(url);
+  if(svg){ box.innerHTML=svg+'<div class="qrlbl">'+url+'</div>'; box.style.display='block'; qrShownFor=url;
+    box.scrollIntoView({block:'nearest'}); }
+}));
+
+// ---------- JAVNI LINK (tunel) ----------
+let publicUrl='';
+function applyShare(info){
+  publicUrl = (info&&info.url)||'';
+  if(publicUrl){
+    $('publicLbl').style.display='block'; $('publicRow').style.display='flex';
+    $('netPublic').textContent=publicUrl; $('btnShare').textContent=t('stopSharing'); $('btnShare').classList.add('on');
+  } else if(info&&info.starting){
+    $('btnShare').textContent=t('connecting'); $('btnShare').classList.remove('on');
+  } else {
+    $('publicLbl').style.display='none'; $('publicRow').style.display='none';
+    $('btnShare').textContent=t('shareOnline'); $('btnShare').classList.remove('on');
+    if(qrShownFor && qrShownFor===$('netPublic').textContent){ $('qrBox').style.display='none'; }
+  }
+}
+api.onShareInfo(applyShare);
+api.shareInfo().then(applyShare).catch(()=>{});
+$('btnShare').addEventListener('click',async ()=>{
+  if(publicUrl){ await api.shareStop(); return; }
+  $('btnShare').textContent=t('connecting'); $('btnShare').disabled=true;
+  const r=await api.shareStart(); $('btnShare').disabled=false;
+  if(!r||r.error){ $('btnShare').textContent=t('shareFail'); setTimeout(()=>{ if(!publicUrl) $('btnShare').textContent=t('shareOnline'); },2500); }
+});
+copyBtn($('btnCopyPublic'), ()=>publicUrl);
 
 // ---------- DALJINSKI: primena komandi sa telefona ----------
 api.onRemoteCmd(c=>{
