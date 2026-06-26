@@ -106,7 +106,7 @@
   .right{display:flex; flex-direction:column; gap:12px; min-height:0; overflow-y:auto; overflow-x:hidden;}
   .card{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:12px; display:flex; flex-direction:column; min-height:0;}
   .card h3{margin:0 0 9px; font-size:11px; letter-spacing:1.5px; color:var(--dim); font-weight:700;}
-  .cuewrap{flex:1; display:flex; flex-direction:column; min-height:0;}
+  .cuewrap{flex:0 0 auto; display:flex; flex-direction:column;}
   .cuehead{display:flex; align-items:center; gap:7px; margin-bottom:9px;}
   .cuehead input[type=time]{padding:4px 6px; font-size:12px;}
   .ou{font-family:"SF Mono",Menlo,monospace; font-size:11px; font-weight:700; padding:2px 7px; border-radius:6px;
@@ -114,7 +114,7 @@
   .ou.late{background:#3a1f1d; border-color:#5a2b28; color:#ff8b84;}
   .ou.early{background:#16263a; border-color:#1f3a5a; color:#7db8ff;}
   .ou.ontime{background:#13251a; border-color:#1f4a30; color:var(--accent);}
-  .cuelist{flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:5px; min-height:40px; margin-bottom:9px;}
+  .cuelist{overflow-y:auto; display:flex; flex-direction:column; gap:5px; min-height:40px; max-height:34vh; margin-bottom:9px;}
   .cuelist::-webkit-scrollbar{width:8px;} .cuelist::-webkit-scrollbar-thumb{background:var(--border); border-radius:4px;}
   .cue{display:flex; align-items:center; gap:7px; background:var(--panel2); border:1px solid var(--border);
     border-radius:8px; padding:7px 9px; padding-left:7px; cursor:pointer; position:relative; overflow:hidden;}
@@ -345,7 +345,7 @@ const I18N = {
     nowLabel:'SADA', nextLabel:'SLEDI', endLabel:'Kraj', plannedLabel:'Planirano', projectedLabel:'Procena',
     netTitle:'MREŽA → OBS · TELEFON', screenOBS:'Ekran (OBS / monitor)', copy:'Kopiraj',
     remoteLabel:'Daljinski (telefon / tablet)',
-    netNote:'OBS: <b>Browser Source</b> → Ekran URL („Providna pozadina" za overlay; NDI preko DistroAV). Telefon: otvori Daljinski URL u pretraživaču.',
+    netNote:'⚠️ Svi uređaji moraju biti na <b>ISTOJ Wi-Fi</b> mreži. OBS: <b>Browser Source</b> → Ekran URL („Providna pozadina" za overlay; NDI preko DistroAV). Telefon: otvori Daljinski URL u pretraživaču.',
     start:'▶ START', pause:'⏸ PAUZA', clockBtn:'— SAT —',
     outLive:'EKRAN ŽIV', outClosed:'EKRAN ZATVOREN', screenTag:'EKRAN', controlTag:'kontrola',
     netOff:'server nije pokrenut', netStarting:'pokrećem…', live:'uživo', deviceOne:'uređaj', deviceMany:'uređaja', connected:'povezano',
@@ -370,7 +370,7 @@ const I18N = {
     nowLabel:'NOW', nextLabel:'NEXT', endLabel:'End', plannedLabel:'Planned', projectedLabel:'Projected',
     netTitle:'NETWORK → OBS · PHONE', screenOBS:'Screen (OBS / monitor)', copy:'Copy',
     remoteLabel:'Remote (phone / tablet)',
-    netNote:'OBS: <b>Browser Source</b> → Screen URL (enable “Transparent background” for overlay; NDI via DistroAV). Phone: open the Remote URL in a browser.',
+    netNote:'⚠️ All devices must be on the <b>SAME Wi-Fi</b> network. OBS: <b>Browser Source</b> → Screen URL (enable “Transparent background” for overlay; NDI via DistroAV). Phone: open the Remote URL in a browser.',
     start:'▶ START', pause:'⏸ PAUSE', clockBtn:'— CLOCK —',
     outLive:'SCREEN LIVE', outClosed:'SCREEN CLOSED', screenTag:'SCREEN', controlTag:'control',
     netOff:'server not running', netStarting:'starting…', live:'live', deviceOne:'device', deviceMany:'devices', connected:'connected',
