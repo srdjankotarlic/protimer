@@ -33,7 +33,8 @@
       "controller.html",
       "output.html",
       "remote.html",
-      "backstage.html"
+      "backstage.html",
+      "node_modules/**/*"
     ],
     "mac": {
       "target": [

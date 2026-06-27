@@ -40,6 +40,25 @@ The **Backstage** view — `NOW`, `NEXT`, the schedule and an over/under indicat
 
 ---
 
+## ⚖️ How does it compare?
+
+ProTimer doesn't try to beat the big tools at everything — it aims to be the simplest **free** one that just works for the core job.
+
+| | **ProTimer** | StageTimer | Ontime | CueTimer |
+|---|:---:|:---:|:---:|:---:|
+| Price | **Free** | Free → $210–980 | **Free** (cloud paid) | $50+/yr |
+| Open-source | ✅ | ❌ | ✅ | ❌ |
+| Runs locally, no account | ✅ | desktop tier | ✅ | ✅ |
+| Transparent OBS overlay | ✅ | ✅ | ✅ | ✅ |
+| Phone remote · QR · public link | ✅ | ✅ | partial | ✅ |
+| Rundown + backstage view | ✅ basic | ✅ | ✅ advanced | ✅ |
+| OSC / HTTP / Companion API | ❌ | ✅ | ✅ | ✅ |
+| Serbian interface | ✅ | ❌ | ❌ | ❌ |
+
+**Honest take:** if you need deep integrations (OSC, Companion, vMix/Qlab) or multi-operator collaboration, [Ontime](https://www.getontime.no/) and [StageTimer](https://stagetimer.io/) are more mature — they're great tools. ProTimer wins when you want something **free, simple, no-account and bilingual** that you open and use in seconds.
+
+---
+
 ## ⬇️ Download & install
 
 Grab the latest build from the **[Releases page](../../releases/latest)**:
@@ -131,7 +150,30 @@ npm run dist:mac     # build the macOS .dmg
 npm run dist:win     # build the Windows installer + portable
 ```
 
-Clean stack, no runtime dependencies: **Electron** + plain HTML/CSS/JS + a Node `http` server (SSE). All the logic lives in `controller.html` (control), `output.html` (screen/OBS), `backstage.html` (crew schedule), `remote.html` (phone), and `main.js` (windows + server).
+Clean stack, almost no dependencies: **Electron** + plain HTML/CSS/JS + a Node `http` server (SSE), with `qrcode` and `localtunnel` for the share features. All the logic lives in `controller.html` (control), `output.html` (screen/OBS), `backstage.html` (crew schedule), `remote.html` (phone), and `main.js` (windows + server).
+
+---
+
+## 🗺️ Roadmap
+
+Ideas on the list (feedback very welcome — open an issue to vote or suggest):
+
+- [ ] Signed / notarized builds (no “unidentified developer” warning)
+- [ ] Import a rundown from Excel / Google Sheets / CSV
+- [ ] Groups/blocks in the rundown (e.g. *Morning Sessions*, *Lunch*)
+- [ ] OSC / HTTP control API + Bitfocus Companion module
+- [ ] More languages
+- [ ] Multiple independent timers
+
+## 🤝 Contributing
+
+Issues and pull requests are welcome — bug reports, feature ideas, translations, docs.
+
+1. Open an [issue](../../issues) (there are templates for bugs and features).
+2. For code: fork, `npm install`, make your change, run `npm run smoke`, open a PR.
+3. Keep it simple — the whole point of ProTimer is that it stays small and obvious.
+
+If you use ProTimer on a show, a ⭐ or a quick note about what worked (or didn't) genuinely helps.
 
 ---
 

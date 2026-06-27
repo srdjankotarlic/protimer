@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8">
+<style>
+  *{margin:0; box-sizing:border-box;}
+  html,body{width:1200px; height:630px; overflow:hidden;}
+  body{background:radial-gradient(120% 140% at 80% 10%, #18324a 0%, #0b0d11 55%);
+    font-family:-apple-system,"Helvetica Neue",system-ui,sans-serif; color:#e8edf3;
+    display:flex; align-items:center; padding:0 76px; gap:60px;}
+  .left{flex:1;}
+  .brand{display:flex; align-items:center; gap:16px; margin-bottom:26px;}
+  .brand img{width:64px; height:64px; border-radius:14px;}
+  .brand b{font-size:38px; font-weight:800; letter-spacing:3px;}
+  .brand b span{color:#3fb950;}
+  h1{font-size:66px; line-height:1.04; font-weight:800; letter-spacing:-1.5px;}
+  h1 em{color:#3fb950; font-style:normal;}
+  p{font-size:27px; color:#9aa6b2; margin-top:20px; max-width:620px;}
+  .chips{display:flex; gap:12px; margin-top:34px;}
+  .chip{background:#161b22; border:1px solid #2b3442; border-radius:30px; padding:11px 22px; font-size:21px; font-weight:600;}
+  .chip.g{background:#143020; border-color:#1f4a30; color:#5fd07f;}
+  /* timer mock */
+  .scr{width:420px; height:300px; background:#000; border:1px solid #232b38; border-radius:22px;
+    box-shadow:0 30px 90px rgba(0,0,0,.6); display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative;}
+  .scr .t{font-family:"SF Mono",ui-monospace,Menlo,monospace; font-weight:700; font-size:128px; color:#ffc23a; letter-spacing:2px;}
+  .scr .bar{position:absolute; bottom:0; left:0; height:10px; width:62%; background:#ffc23a; border-bottom-left-radius:22px;}
+  .scr .nn{position:absolute; bottom:20px; left:22px; font-size:19px; color:#cfd7df; font-weight:600;}
+  .scr .nn small{color:#6b7682; letter-spacing:2px; font-weight:700;}
+</style></head>
+<body>
+  <div class="left">
+    <div class="brand"><img src="icon.png"><b>PRO<span>TIMER</span></b></div>
+    <h1>A <em>free</em> stage timer<br>for live production</h1>
+    <p>Big countdown · transparent OBS overlay · phone remote · backstage view.</p>
+    <div class="chips"><div class="chip g">Free &amp; open-source</div><div class="chip">macOS · Windows</div></div>
+  </div>
+  <div class="scr">
+    <div class="t">2:43</div>
+    <div class="nn"><small>NOW</small><br>Keynote — Dr. Maya Chen</div>
+    <div class="bar"></div>
+  </div>
+</body>
+</html>

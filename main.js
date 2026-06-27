@@ -329,6 +329,17 @@ function runPromo() {
 // ---------------- START ----------------
 app.whenReady().then(() => {
   if (process.argv.includes('--promo')) { runPromo(); return; }
+  if (process.argv.includes('--banner')) {
+    const bw = new BrowserWindow({ width:1200, height:630, useContentSize:true, frame:false, show:false, webPreferences:{ contextIsolation:true } });
+    bw.loadFile('build/banner.html');
+    bw.webContents.on('did-finish-load', async () => {
+      await new Promise(r=>setTimeout(r,400));
+      fs.writeFileSync('/tmp/og-banner.png', (await bw.webContents.capturePage()).toPNG());
+      console.log('BANNER_DONE'); app.exit(0);
+    });
+    setTimeout(()=>{ console.error('BANNER_TIMEOUT'); app.exit(1); }, 15000);
+    return;
+  }
   startServer(7878);
   createControlWindow();
 
