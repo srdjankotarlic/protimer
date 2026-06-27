@@ -48,21 +48,8 @@
 
   #blackout{position:absolute; inset:0; background:#000; z-index:80; display:none;}
 
-  /* overlay kontrole — samo u Electron prozoru, sakriju se na mirovanje */
-  #ui{position:absolute; top:0; left:0; right:0; z-index:200; padding:12px;
-    display:none; gap:8px; justify-content:center; align-items:center; flex-wrap:wrap;
-    background:linear-gradient(rgba(0,0,0,.8), transparent);
-    opacity:0; pointer-events:none; transition:opacity .2s;
-    font-family:-apple-system, system-ui, sans-serif;}
-  body:not(.idle) #ui{opacity:1; pointer-events:auto;}
-  #ui button{background:rgba(22,27,34,.95); color:#e6edf3; border:1px solid #2b3442;
-    border-radius:8px; padding:8px 13px; font-size:13px; cursor:pointer; font-weight:600;}
-  #ui button:hover{border-color:#8b97a5;}
-  #ui button.active{background:#2ea043; border-color:#2ea043; color:#fff;}
-
-  /* providni (frameless) prozor — prevlačenje za pomeranje, dugmad klikabilna */
+  /* providni (frameless) prozor — prevlačenje za pomeranje */
   body.overlay #stage{ -webkit-app-region: drag; }
-  body.overlay #ui, body.overlay #ui *{ -webkit-app-region: no-drag; }
 </style>
 </head>
 <body>
@@ -74,7 +61,6 @@
   <div id="nownext"></div>
   <div id="prog"></div>
   <div id="blackout"></div>
-  <div id="ui"><span id="dispBtns"></span><button id="btnFs">⛶ Pun ekran</button></div>
 
 <script>
 const IS_ELECTRON = !!window.pt;
@@ -93,10 +79,6 @@ function fmtMs(ms){ return ms>=0 ? fmtSecs(Math.ceil(ms/1000),false) : fmtSecs(M
 function applyState(s){
   if (S && (s.mode!==S.mode || s.durationMs!==S.durationMs)) prevRem = null;
   S = s;
-  if (IS_ELECTRON && s && s.lang){
-    const fs = document.getElementById('btnFs');
-    if (fs) fs.textContent = s.lang==='en' ? '⛶ Fullscreen' : '⛶ Pun ekran';
-  }
 }
 
 // --- prijem stanja: Electron (IPC) ili browser/OBS (SSE) ---
@@ -225,30 +207,15 @@ document.body.addEventListener('animationend', e => {
   if (e.target === document.body || e.animationName === 'zflash') document.body.classList.remove('flash');
 });
 
-// ---------- Electron-only overlay ----------
+// ---------- Electron-only: čist ekran, BEZ vidljivih kontrola (kontrola je u kontrolnom prozoru) ----------
+// zadržano samo: sakrivanje kursora na mirovanje + nevidljive prečice (Esc / dupli klik za pun ekran)
 if (IS_ELECTRON){
-  $('ui').style.display = 'flex';
-  const renderDisplays = list => {
-    const box = $('dispBtns'); box.innerHTML='';
-    list.forEach(dp => {
-      const b=document.createElement('button');
-      b.textContent = `▶ ${dp.label}`;
-      if (dp.hasOutput) b.classList.add('active');
-      b.title = `${dp.width}×${dp.height}`;
-      b.addEventListener('click', () => api.sendToDisplay(dp.id));
-      box.appendChild(b);
-    });
-  };
-  api.onDisplays(renderDisplays);
-  api.getDisplays().then(renderDisplays).catch(()=>{});
-  $('btnFs').addEventListener('click', () => api.toggleFullscreen());
-
   let idleT=null;
   const wake = () => { document.body.classList.remove('idle'); clearTimeout(idleT);
-    idleT=setTimeout(()=>document.body.classList.add('idle'),3000); };
+    idleT=setTimeout(()=>document.body.classList.add('idle'),2000); };
   document.addEventListener('mousemove', wake); wake();
   document.addEventListener('keydown', e => { if (e.key==='Escape') api.exitFullscreen(); });
-  document.addEventListener('dblclick', e => { if (!e.target.closest('#ui')) api.toggleFullscreen(); });
+  document.addEventListener('dblclick', () => api.toggleFullscreen());
 }
 
 window.addEventListener('resize', () => { lastKey=''; });
