@@ -6,6 +6,8 @@
   "main": "main.js",
   "author": "Srdjan Kotarlic",
   "license": "MIT",
+  "repository": "https://github.com/srdjankotarlic/protimer",
+  "homepage": "https://srdjankotarlic.github.io/protimer/",
   "scripts": {
     "start": "electron .",
     "smoke": "electron . --smoke",
