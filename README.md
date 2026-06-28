@@ -165,6 +165,16 @@ Ideas on the list (feedback very welcome — open an issue to vote or suggest):
 - [ ] More languages
 - [ ] Multiple independent timers
 
+## ⚠️ Known limitations
+
+Being honest about where it's at:
+
+- **Unsigned builds.** macOS shows “unidentified developer” (right-click → Open) and Windows shows SmartScreen (More info → Run anyway) on first launch. Code signing is on the roadmap.
+- **Network sharing needs the same Wi-Fi** — unless you use the optional **Share online** link, which is **beta** (a tunnel; may show a one-time “continue” page, and reliability depends on the tunnel service). For shows, the LAN + QR path is the dependable one.
+- **Remote control is link-based.** Anyone with the exact `…/remote?t=…` link can control the timer — share it deliberately.
+- **Single operator** — no real-time multi-user collaboration (see Ontime/StageTimer if you need that).
+- **Builds:** macOS (Apple Silicon) and Windows (x64). No Intel-mac or Linux builds yet.
+
 ## 🤝 Contributing
 
 Issues and pull requests are welcome — bug reports, feature ideas, translations, docs.

@@ -691,7 +691,7 @@ function showNet(info){
   lastNetInfo = info;
   if(!info||!info.running){ $('netUrl').textContent='—'; $('netRemote').textContent='—'; $('netBackstage').textContent='—'; $('netStatus').textContent=t('netOff'); $('netDot').classList.remove('on'); return; }
   netUrl=`http://${info.ip}:${info.port}`;
-  remoteUrl=`${netUrl}/remote`;
+  remoteUrl=`${netUrl}/remote${info.token?`?t=${info.token}`:''}`;
   backstageUrl=`${netUrl}/backstage`;
   $('netUrl').textContent=netUrl;
   $('netRemote').textContent=remoteUrl;

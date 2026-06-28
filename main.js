@@ -3,8 +3,13 @@ const path = require('path');
 const fs = require('fs');
 const http = require('http');
 const os = require('os');
+const crypto = require('crypto');
 
 const SMOKE = process.argv.includes('--smoke');
+// na CI/Linux (Xvfb) Electron sandbox pravi probleme — isključi ga samo za smoke
+if (SMOKE) app.commandLine.appendSwitch('no-sandbox');
+// token za daljinske komande (/cmd) — samo onaj ko ima ?t=token u linku može da kontroliše
+const CMD_TOKEN = crypto.randomBytes(8).toString('hex');
 
 let controlWin = null;
 let outputWin = null;
@@ -61,6 +66,14 @@ function startServer(port, attempt = 0) {
 
     // komande sa daljinskog (telefon/tablet) → prosledi kontrolnom prozoru
     if (url === '/cmd' && req.method === 'POST') {
+      // token: samo onaj ko ima ispravan ?t= / x-pt-token sme da kontroliše
+      const qToken = new URLSearchParams((req.url.split('?')[1] || '')).get('t');
+      const token = req.headers['x-pt-token'] || qToken;
+      if (token !== CMD_TOKEN) {
+        res.writeHead(403, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+        res.end('{"ok":false,"error":"unauthorized"}');
+        return;
+      }
       let body = '';
       req.on('data', c => { body += c; if (body.length > 1e5) req.destroy(); });
       req.on('end', () => {
@@ -113,7 +126,7 @@ function pushSSE(state) {
 }
 
 function networkInfo() {
-  return { ip: lanIP(), port: serverPort, running: !!serverPort, clients: sseClients.size };
+  return { ip: lanIP(), port: serverPort, running: !!serverPort, clients: sseClients.size, token: CMD_TOKEN };
 }
 function pushNetworkInfo() {
   if (controlWin && !controlWin.isDestroyed()) controlWin.webContents.send('network-info', networkInfo());
@@ -420,7 +433,7 @@ app.whenReady().then(() => {
         const postCmd = (obj) => new Promise((resolve) => {
           const data = JSON.stringify(obj);
           const r = http.request(`http://127.0.0.1:${serverPort}/cmd`,
-            { method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(data) } },
+            { method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(data), 'x-pt-token': CMD_TOKEN } },
             res => { let d=''; res.on('data',c=>d+=c); res.on('end',()=>resolve(d)); });
           r.on('error', () => resolve(null)); r.write(data); r.end();
         });
@@ -435,6 +448,13 @@ app.whenReady().then(() => {
         await new Promise(r => setTimeout(r, 400));
         const after = await readState();
         console.log('REMOTE_PAGE_OK=' + remotePage + ' REMOTE_CMD_OK=' + (after && after.durationMs === 300000));
+        // bezbednost: /cmd BEZ tokena mora biti odbijen (403)
+        const noTokStatus = await new Promise((resolve) => {
+          const data = JSON.stringify({ type: 'reset' });
+          const r = http.request(`http://127.0.0.1:${serverPort}/cmd`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(data) } }, res => resolve(res.statusCode));
+          r.on('error', () => resolve(0)); r.write(data); r.end();
+        });
+        console.log('CMD_TOKEN_GUARD_OK=' + (noTokStatus === 403));
         const backstagePage = await new Promise((resolve) => {
           http.get(`http://127.0.0.1:${serverPort}/backstage`, r => { let d=''; r.on('data',c=>d+=c); r.on('end',()=>resolve(d.includes('Backstage'))); }).on('error',()=>resolve(false));
         });

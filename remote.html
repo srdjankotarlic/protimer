@@ -132,8 +132,9 @@ function applyLang(){
 applyLang();
 
 let S = null;
+const TOKEN = new URLSearchParams(location.search).get('t') || '';
 function cmd(type, value){
-  fetch('/cmd', { method:'POST', headers:{'Content-Type':'application/json'},
+  fetch('/cmd', { method:'POST', headers:{'Content-Type':'application/json','x-pt-token':TOKEN},
     body: JSON.stringify({ type, value }) }).catch(()=>{});
 }
 
