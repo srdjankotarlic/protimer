@@ -16,5 +16,9 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      - name: Configure Electron sandbox (CI)
+        run: |
+          sudo chown root:root node_modules/electron/dist/chrome-sandbox
+          sudo chmod 4755 node_modules/electron/dist/chrome-sandbox
       - name: Smoke test (Electron under Xvfb)
         run: xvfb-run --auto-servernum npm run smoke

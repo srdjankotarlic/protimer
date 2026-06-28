@@ -6,8 +6,6 @@ const os = require('os');
 const crypto = require('crypto');
 
 const SMOKE = process.argv.includes('--smoke');
-// na CI/Linux (Xvfb) Electron sandbox pravi probleme — isključi ga samo za smoke
-if (SMOKE) app.commandLine.appendSwitch('no-sandbox');
 // token za daljinske komande (/cmd) — samo onaj ko ima ?t=token u linku može da kontroliše
 const CMD_TOKEN = crypto.randomBytes(8).toString('hex');
 
