@@ -28,6 +28,7 @@
   "build": {
     "appId": "com.srdjankotarlic.protimer",
     "productName": "ProTimer",
+    "publish": { "provider": "github", "releaseType": "release" },
     "directories": {
       "buildResources": "build",
       "output": "dist-installers"
