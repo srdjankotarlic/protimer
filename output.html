@@ -67,6 +67,8 @@ const IS_ELECTRON = !!window.pt;
 const api = window.pt || null;
 
 let S = null, prevRem = null, lastKey = '';
+let isFS = false, fitMode = false, lastFitH = 0;   // kompaktan prozor (prati tajmer)
+if (IS_ELECTRON) api.onWinFs(v => { isFS = !!v; lastKey = ''; lastFitH = 0; });
 
 const $ = id => document.getElementById(id);
 function pad(n){ return String(n).padStart(2,'0'); }
@@ -125,12 +127,27 @@ function render(){
     if (S.running) prevRem = rem;
   }
 
-  applyGrid();
+  // kompaktan prozor: kad NIJE fullscreen i opcija je uključena → tajmer puni širinu, prozor prati visinu
+  fitMode = IS_ELECTRON && !!S.fitWindow && !isFS;
+  if (fitMode){ const st=$('stage'); st.style.inset='0'; st.style.left=st.style.top=st.style.width=st.style.height=''; }
+  else applyGrid();
+
   paint(text, fg, bg, neg, S.text || '', S.message ? S.message.text : '',
         S.message && S.message.flash, S.showProgress ? prog : null);
 
+  if (fitMode) requestFit();
   renderNowNext(fg);
   $('blackout').style.display = S.blackout ? 'block' : 'none';
+}
+
+// kompaktan prozor: traži od main-a da visina prozora bude tačno koliko i tajmer (+mali rub)
+function requestFit(){
+  const tEl=$('timer'), txtEl=$('text');
+  if (tEl.style.display==='none') return;
+  let h = tEl.getBoundingClientRect().height;
+  if (txtEl.style.display!=='none') h += txtEl.getBoundingClientRect().height + h*0.06;
+  const want = Math.round(h * 1.34);
+  if (h > 4 && Math.abs(want - lastFitH) > 4){ lastFitH = want; api.fitWindow(want); }
 }
 
 // Grid: pozicioniraj #stage (tajmer) u izabranu kockicu N×N, ili preko celog ekrana
@@ -197,11 +214,17 @@ function paint(timeText, fg, bg, neg, bigText, msgText, msgFlash, prog){
     tEl.textContent = timeText;
     tEl.style.color = fg;
     tEl.className = neg ? 'neg' : '';
-    const key = timeText.length + '|' + Math.round(sw) + 'x' + Math.round(sh) + '|' + (bigText?1:0);
-    if (key !== lastKey){
-      lastKey = key;
-      const avail = bigText ? sh*0.6 : sh*0.7;
-      tEl.style.fontSize = Math.min(sw*0.92/(timeText.length*0.6), avail) + 'px';
+    if (fitMode){
+      // puni širinu prozora; rezervisana dužina (stabilna) da se prozor ne trza po cifri
+      const refLen = Math.max(timeText.length, fmtMs(S.durationMs||0).length, 4);
+      tEl.style.fontSize = Math.max(14, sw*0.86/(refLen*0.6)) + 'px';
+    } else {
+      const key = timeText.length + '|' + Math.round(sw) + 'x' + Math.round(sh) + '|' + (bigText?1:0);
+      if (key !== lastKey){
+        lastKey = key;
+        const avail = bigText ? sh*0.6 : sh*0.7;
+        tEl.style.fontSize = Math.min(sw*0.92/(timeText.length*0.6), avail) + 'px';
+      }
     }
   }
 

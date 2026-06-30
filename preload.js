@@ -20,5 +20,7 @@ contextBridge.exposeInMainWorld('pt', {
   shareStart: () => ipcRenderer.invoke('share-start'),
   shareStop: () => ipcRenderer.invoke('share-stop'),
   shareInfo: () => ipcRenderer.invoke('share-info'),
-  onShareInfo: (cb) => ipcRenderer.on('share-info', (e, info) => cb(info))
+  onShareInfo: (cb) => ipcRenderer.on('share-info', (e, info) => cb(info)),
+  fitWindow: (h) => ipcRenderer.send('fit-window', h),
+  onWinFs: (cb) => ipcRenderer.on('win-fs', (e, v) => cb(v))
 });

@@ -182,6 +182,7 @@
   <button id="btnFs" data-i18n-title="fsTitle" title="Pun ekran (F)">⛶</button>
   <button id="btnCloseOut" class="ghost" data-i18n-title="closeTitle" title="Zatvori izlazni prozor">✕</button>
   <div class="sep"></div>
+  <label class="chk" data-i18n-title="fitTitle" title="Prozor (kad nije pun ekran) prati veličinu tajmera"><input type="checkbox" id="chkFit"> <span data-i18n="fitWindow">Kompaktan</span></label>
   <label class="chk"><input type="checkbox" id="chkOnTop"> <span data-i18n="onTop">Na vrhu</span></label>
 </div>
 
@@ -388,6 +389,7 @@ const I18N = {
     colors:'Boje', background:'Pozadina', timeText:'Vreme/tekst', warnColors:'Boje upozorenja',
     tagY:'Ž', tagR:'C', yellow:'Žuto', red:'Crveno', transparent:'Providna pozadina (OBS)',
     grid:'Grid', gridOn:'Pozicija na ekranu', gridHint:'klikni kockicu →',
+    fitWindow:'Kompaktan', fitTitle:'Prozor (kad nije pun ekran) prati veličinu tajmera',
     text:'Tekst', textPh:'Tekst na ekranu (npr. PAUZA, DOBRO DOŠLI)…', textOnly:'Samo tekst', clear:'Obriši',
     thresholds:'Pragovi', yellowAt:'Žuto na', redAt:'Crveno na', flashZero:'Blic na nuli',
     sound:'Zvuk', overtime:'Minus posle nule', progress:'Traka napretka',
@@ -417,6 +419,7 @@ const I18N = {
     colors:'Colors', background:'Background', timeText:'Time/text', warnColors:'Warning colors',
     tagY:'Y', tagR:'R', yellow:'Yellow', red:'Red', transparent:'Transparent background (OBS)',
     grid:'Grid', gridOn:'Position on screen', gridHint:'click a cell →',
+    fitWindow:'Compact', fitTitle:'When not fullscreen, the window follows the timer size',
     text:'Text', textPh:'On-screen text (e.g. BREAK, WELCOME)…', textOnly:'Text only', clear:'Clear',
     thresholds:'Warnings', yellowAt:'Yellow at', redAt:'Red at', flashZero:'Flash at zero',
     sound:'Sound', overtime:'Count past zero', progress:'Progress bar',
@@ -464,6 +467,8 @@ let S = {
   text:'', textOnly:false, transparent:false,
   // grid pozicioniranje tajmera na ekranu
   gridOn:false, gridSize:3, gridCell:4,
+  // kompaktan prozor (prozor prati veličinu tajmera kad nije fullscreen)
+  fitWindow:false,
   // rundown / raspored
   cues:[], currentCue:-1, showStart:'', showNowNext:false,
   lang:lang
@@ -671,7 +676,7 @@ function saveSettings(){
     bgColor:S.bgColor,fgColor:S.fgColor,useWarnColors:S.useWarnColors,
     warnYellow:S.warnYellow,warnRed:S.warnRed,textOnly:S.textOnly,transparent:S.transparent,
     showStart:S.showStart,showNowNext:S.showNowNext,
-    gridOn:S.gridOn,gridSize:S.gridSize,gridCell:S.gridCell
+    gridOn:S.gridOn,gridSize:S.gridSize,gridCell:S.gridCell,fitWindow:S.fitWindow
   }));
 }
 function load(){
@@ -687,7 +692,8 @@ function load(){
       warnYellow:st.warnYellow??S.warnYellow, warnRed:st.warnRed??S.warnRed,
       textOnly:st.textOnly??S.textOnly, transparent:st.transparent??S.transparent,
       showStart:st.showStart??S.showStart, showNowNext:st.showNowNext??S.showNowNext,
-      gridOn:st.gridOn??S.gridOn, gridSize:st.gridSize??S.gridSize, gridCell:st.gridCell??S.gridCell
+      gridOn:st.gridOn??S.gridOn, gridSize:st.gridSize??S.gridSize, gridCell:st.gridCell??S.gridCell,
+      fitWindow:st.fitWindow??S.fitWindow
     });
     S.remMs=S.durationMs; autoNext=!!st.autoNext;
     cues=JSON.parse(localStorage.getItem('pt_cues')||'[]');
@@ -701,6 +707,7 @@ function load(){
   $('bgColor').value=S.bgColor; $('fgColor').value=S.fgColor;
   $('chkWarn').checked=S.useWarnColors; $('warnYellow').value=S.warnYellow; $('warnRed').value=S.warnRed;
   $('chkTextOnly').checked=S.textOnly; $('chkTransparent').checked=S.transparent;
+  $('chkFit').checked=S.fitWindow;
   buildGrid();
   renderCues();
 }
@@ -910,6 +917,7 @@ $('btnOpenOut').addEventListener('click',()=>api.sendToDisplay(+$('displaySel').
 $('btnCloseOut').addEventListener('click',()=>api.closeOutput());
 $('btnFs').addEventListener('click',()=>api.toggleFullscreen());
 $('chkOnTop').addEventListener('change',e=>api.setOnTop(e.target.checked));
+$('chkFit').addEventListener('change',e=>{ S.fitWindow=e.target.checked; lastKey=''; send(); });
 api.onOutputState(open=>{ outputOpen=open; });
 api.isOutputOpen().then(open=>{ outputOpen=open; }).catch(()=>{});
 

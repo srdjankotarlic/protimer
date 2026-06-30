@@ -202,7 +202,7 @@ function createOutputWindow(displayId) {
   outputTransparent = transparent;
 
   outputWin = new BrowserWindow({
-    width: 900, height: 506, minWidth: 320, minHeight: 180, show: false,
+    width: 900, height: 506, minWidth: 160, minHeight: 90, show: false,
     title: 'ProTimer — Ekran',
     backgroundColor: transparent ? '#00000000' : '#000000',
     transparent: transparent,
@@ -216,11 +216,18 @@ function createOutputWindow(displayId) {
   if (SMOKE) outputWin.webContents.on('console-message', (e, l, m, ln) => console.log(`OUT_CONSOLE [${l}] ${m} (line ${ln})`));
   outputWin.webContents.on('did-finish-load', () => {
     if (lastState) outputWin.webContents.send('state', lastState);
-    pushDisplays();
+    pushDisplays(); pushOutMode();
   });
+  outputWin.on('enter-full-screen', pushOutMode);
+  outputWin.on('leave-full-screen', pushOutMode);
   outputWin.once('ready-to-show', () => positionOutput(target));
   outputWin.on('closed', () => { outputWin = null; pushOutputState(); pushDisplays(); });
   pushOutputState();
+}
+
+// javi izlazu da li je u punom ekranu (da odluči: grid vs kompaktan prozor)
+function pushOutMode() {
+  if (outputWin && !outputWin.isDestroyed()) outputWin.webContents.send('win-fs', outputWin.isFullScreen());
 }
 
 // Electron ne može da uključi/isključi `transparent` naživo → presozdaj prozor
@@ -254,6 +261,13 @@ ipcMain.on('send-to-display', (e, displayId) => {
 ipcMain.on('close-output', () => { if (outputWin && !outputWin.isDestroyed()) outputWin.close(); });
 ipcMain.on('toggle-fullscreen', () => { if (outputWin && !outputWin.isDestroyed()) outputWin.setFullScreen(!outputWin.isFullScreen()); });
 ipcMain.on('exit-fullscreen', () => { if (outputWin && !outputWin.isDestroyed()) outputWin.setFullScreen(false); });
+// kompaktan prozor: izlaz traži da visina prozora prati visinu tajmera (samo kad NIJE fullscreen)
+ipcMain.on('fit-window', (e, h) => {
+  if (!outputWin || outputWin.isDestroyed() || outputWin.isFullScreen()) return;
+  const want = Math.max(80, Math.min(Math.round(h) || 0, 2200));
+  const [w, cur] = outputWin.getContentSize();
+  if (Math.abs(cur - want) > 4) outputWin.setContentSize(w, want);
+});
 ipcMain.on('ctl-on-top', (e, flag) => { if (controlWin && !controlWin.isDestroyed()) controlWin.setAlwaysOnTop(!!flag, 'floating'); });
 ipcMain.handle('displays', () => displayList());
 ipcMain.handle('output-open', () => !!outputWin);
@@ -478,6 +492,15 @@ app.whenReady().then(() => {
         let qrOK = false;
         try { const svg = await controlWin.webContents.executeJavaScript("window.pt.qr('http://192.168.1.50:7878')"); qrOK = typeof svg === 'string' && svg.includes('<svg'); } catch (e) {}
         console.log('QR_OK=' + qrOK);
+        // kompaktan prozor: u PROZORU (ne fullscreen) → prozor se skupi na visinu tajmera
+        await controlWin.webContents.executeJavaScript("window.pt.exitFullscreen()");
+        await new Promise(r => setTimeout(r, 500));
+        let fitH0 = 9999, fitH1 = 9999;
+        try { fitH0 = outputWin.getContentSize()[1]; } catch (e) {}
+        await controlWin.webContents.executeJavaScript("document.getElementById('chkFit').checked=true; document.getElementById('chkFit').dispatchEvent(new Event('change'));");
+        await new Promise(r => setTimeout(r, 900));
+        try { fitH1 = outputWin.getContentSize()[1]; } catch (e) {}
+        console.log('FIT_OK=' + (fitH1 < fitH0 - 40 && fitH1 > 60) + ' FIT_H=' + fitH0 + '→' + fitH1);
         console.log('SMOKE_OK');
         app.exit(0);
       } catch (err) { console.error('SMOKE_FAIL', err); app.exit(1); }
