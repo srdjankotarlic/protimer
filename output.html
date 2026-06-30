@@ -128,9 +128,10 @@ function render(){
   }
 
   // kompaktan prozor: kad NIJE fullscreen i opcija je uključena → tajmer puni širinu, prozor prati visinu
-  fitMode = IS_ELECTRON && !!S.fitWindow && !isFS;
-  if (fitMode){ const st=$('stage'); st.style.inset='0'; st.style.left=st.style.top=st.style.width=st.style.height=''; }
-  else applyGrid();
+  // tajmer UVEK puni prozor; grid se realizuje veličinom/pozicijom samog PROZORA (main proces)
+  { const st=$('stage'); if(st.style.left){ st.style.inset='0'; st.style.left=st.style.top=st.style.width=st.style.height=''; } }
+  // fit (kompaktan prozor) — samo ako NIJE grid i NIJE fullscreen
+  fitMode = IS_ELECTRON && !!S.fitWindow && !isFS && !S.gridOn;
 
   paint(text, fg, bg, neg, S.text || '', S.message ? S.message.text : '',
         S.message && S.message.flash, S.showProgress ? prog : null);
@@ -148,21 +149,6 @@ function requestFit(){
   if (txtEl.style.display!=='none') h += txtEl.getBoundingClientRect().height + h*0.06;
   const want = Math.round(h * 1.34);
   if (h > 4 && Math.abs(want - lastFitH) > 4){ lastFitH = want; api.fitWindow(want); }
-}
-
-// Grid: pozicioniraj #stage (tajmer) u izabranu kockicu N×N, ili preko celog ekrana
-function applyGrid(){
-  const st = $('stage');
-  if (S && S.gridOn && S.gridSize){
-    const n = S.gridSize, cell = Math.max(0, Math.min(n*n-1, S.gridCell||0));
-    const r = Math.floor(cell/n), c = cell%n;
-    st.style.inset = 'auto';
-    st.style.left = (c*100/n)+'%'; st.style.top = (r*100/n)+'%';
-    st.style.width = (100/n)+'%'; st.style.height = (100/n)+'%';
-  } else if (st.style.inset !== '0px' && st.style.inset !== '0'){
-    st.style.inset = '0';
-    st.style.left = st.style.top = st.style.width = st.style.height = '';
-  }
 }
 
 function renderNowNext(fg){

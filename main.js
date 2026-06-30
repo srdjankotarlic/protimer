@@ -13,6 +13,7 @@ let controlWin = null;
 let outputWin = null;
 let lastState = null;
 let outputTransparent = false;   // da li je trenutni Ekran prozor providan
+let outputFrameless = false;     // da li je bez okvira (providan ili grid)
 let outputTargetId = null;       // na kom monitoru je Ekran
 
 // ---------------- MREŽNI IZLAZ (OBS Browser Source / NDI most / confidence monitor) ----------------
@@ -175,7 +176,16 @@ function createControlWindow() {
 function positionOutput(target) {
   if (!outputWin || outputWin.isDestroyed()) return;
   const ctlId = controlDisplayId();
-  if (target.id !== ctlId) {
+  const g = lastState || {};
+  if (g.gridOn && g.gridSize) {
+    // GRID: prozor = izabrana kockica N×N tog monitora (mali timer-prozor)
+    const n = g.gridSize, cell = Math.max(0, Math.min(n * n - 1, g.gridCell || 0));
+    const r = Math.floor(cell / n), c = cell % n;
+    const b = target.bounds;
+    const cw = Math.floor(b.width / n), ch = Math.floor(b.height / n);
+    if (outputWin.isFullScreen()) outputWin.setFullScreen(false);
+    outputWin.setBounds({ x: b.x + c * cw, y: b.y + r * ch, width: cw, height: ch });
+  } else if (target.id !== ctlId) {
     outputWin.setFullScreen(false);
     outputWin.setBounds(target.bounds);
     outputWin.setFullScreen(true);
@@ -199,19 +209,22 @@ function createOutputWindow(displayId) {
   if (outputWin && !outputWin.isDestroyed()) { positionOutput(target); return; }
 
   const transparent = !!(lastState && lastState.transparent);
+  const grid = !!(lastState && lastState.gridOn);
+  const frameless = transparent || grid;   // grid prozor je takođe bez okvira (čista kockica)
   outputTransparent = transparent;
+  outputFrameless = frameless;
 
   outputWin = new BrowserWindow({
-    width: 900, height: 506, minWidth: 160, minHeight: 90, show: false,
+    width: 900, height: 506, minWidth: 80, minHeight: 60, show: false,
     title: 'ProTimer — Ekran',
     backgroundColor: transparent ? '#00000000' : '#000000',
     transparent: transparent,
-    frame: !transparent,
-    hasShadow: !transparent,
-    alwaysOnTop: transparent,
+    frame: !frameless,
+    hasShadow: !frameless,
+    alwaysOnTop: frameless,
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false }
   });
-  if (transparent) outputWin.setAlwaysOnTop(true, 'floating');
+  if (frameless) outputWin.setAlwaysOnTop(true, 'floating');
   outputWin.loadFile('output.html');
   if (SMOKE) outputWin.webContents.on('console-message', (e, l, m, ln) => console.log(`OUT_CONSOLE [${l}] ${m} (line ${ln})`));
   outputWin.webContents.on('did-finish-load', () => {
@@ -242,12 +255,19 @@ function recreateOutputForTransparency() {
 
 // ---------------- IPC ----------------
 ipcMain.on('state', (e, s) => {
+  const prev = lastState || {};
+  const gridPosChanged = (prev.gridSize !== s.gridSize) || (prev.gridCell !== s.gridCell);
+  const wantFrameless = !!s.transparent || !!s.gridOn;
   lastState = s;
   if (outputWin && !outputWin.isDestroyed()) {
-    if (!!s.transparent !== outputTransparent) {
-      recreateOutputForTransparency();   // providnost se menja → novi prozor
+    if (!!s.transparent !== outputTransparent || wantFrameless !== outputFrameless) {
+      recreateOutputForTransparency();   // providnost ili okvir (grid uklj/isklj) → novi prozor (sam se pozicionira)
     } else {
       outputWin.webContents.send('state', s);
+      if (gridPosChanged && s.gridOn) {   // druga kockica / veličina grida → presloži prozor
+        const d = screen.getAllDisplays().find(x => x.id === outputTargetId) || screen.getPrimaryDisplay();
+        positionOutput(d);
+      }
     }
   }
   pushSSE(s);
@@ -501,6 +521,19 @@ app.whenReady().then(() => {
         await new Promise(r => setTimeout(r, 900));
         try { fitH1 = outputWin.getContentSize()[1]; } catch (e) {}
         console.log('FIT_OK=' + (fitH1 < fitH0 - 40 && fitH1 > 60) + ' FIT_H=' + fitH0 + '→' + fitH1);
+        // GRID: uključi grid 3×3, kockica 0 (gore-levo) → PROZOR = ta kockica monitora
+        await controlWin.webContents.executeJavaScript("document.getElementById('chkFit').checked=false; document.getElementById('chkFit').dispatchEvent(new Event('change')); var g=document.getElementById('chkGrid'); g.checked=true; g.dispatchEvent(new Event('change')); document.querySelector('#gridSizes button[data-gs=\"3\"]').click(); document.querySelectorAll('#gridSel .gc')[0].click();");
+        await new Promise(r => setTimeout(r, 800));
+        let gridWinOK = false, gbStr = '?';
+        try {
+          const d = screen.getAllDisplays().find(x => x.id === outputTargetId) || screen.getPrimaryDisplay();
+          const gb = outputWin.getBounds();
+          const expW = Math.floor(d.bounds.width / 3), expH = Math.floor(d.bounds.height / 3);
+          // ključno: prozor je VELIČINE kockice i nije fullscreen (tačan x/y zavisi od rasporeda monitora)
+          gridWinOK = Math.abs(gb.width - expW) < 8 && Math.abs(gb.height - expH) < 8 && !outputWin.isFullScreen();
+          gbStr = `${gb.width}x${gb.height}@${gb.x},${gb.y} (cell≈${expW}x${expH}) frameless=${outputFrameless}`;
+        } catch (e) {}
+        console.log('GRID_WIN_OK=' + gridWinOK + ' ' + gbStr);
         console.log('SMOKE_OK');
         app.exit(0);
       } catch (err) { console.error('SMOKE_FAIL', err); app.exit(1); }

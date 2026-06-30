@@ -20,7 +20,7 @@
 - 🎨 **Clean output screen** — just the time; you pick the background and digit colors
 - 🔴 **Color warnings** — white → yellow → red as the end approaches; counts past zero into the negative with a flash
 - 🖥️ **Any screen** — send the output to a second monitor / projector in fullscreen with one click
-- 🔲 **Grid placement** — drop the timer into any cell of a 3×3 / 5×5 / 7×7 / 9×9 grid, so it sits exactly in the corner you want (great as a clean OBS overlay)
+- 🔲 **Grid placement** — pick a cell of a 3×3 / 5×5 / 7×7 / 9×9 grid and the **output window becomes that exact cell of the screen** — a small, frameless timer window sitting precisely where you want it (pair with *Transparent* for a clean see-through corner overlay)
 - 📐 **Compact window** — when not fullscreen, the output window can hug the timer: a small timer means a small window, no big black box
 - 📺 **OBS / NDI / vMix** — built-in network output; add it as a Browser Source (transparent background for overlays)
 - 📱 **Phone remote** — start the timer and send messages to the speaker from your hand, over Wi-Fi
