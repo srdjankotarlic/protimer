@@ -125,11 +125,27 @@ function render(){
     if (S.running) prevRem = rem;
   }
 
+  applyGrid();
   paint(text, fg, bg, neg, S.text || '', S.message ? S.message.text : '',
         S.message && S.message.flash, S.showProgress ? prog : null);
 
   renderNowNext(fg);
   $('blackout').style.display = S.blackout ? 'block' : 'none';
+}
+
+// Grid: pozicioniraj #stage (tajmer) u izabranu kockicu N×N, ili preko celog ekrana
+function applyGrid(){
+  const st = $('stage');
+  if (S && S.gridOn && S.gridSize){
+    const n = S.gridSize, cell = Math.max(0, Math.min(n*n-1, S.gridCell||0));
+    const r = Math.floor(cell/n), c = cell%n;
+    st.style.inset = 'auto';
+    st.style.left = (c*100/n)+'%'; st.style.top = (r*100/n)+'%';
+    st.style.width = (100/n)+'%'; st.style.height = (100/n)+'%';
+  } else if (st.style.inset !== '0px' && st.style.inset !== '0'){
+    st.style.inset = '0';
+    st.style.left = st.style.top = st.style.width = st.style.height = '';
+  }
 }
 
 function renderNowNext(fg){
@@ -155,7 +171,9 @@ function renderNowNext(fg){
 function paint(timeText, fg, bg, neg, bigText, msgText, msgFlash, prog){
   document.body.style.background = bg;
 
-  const tEl = $('timer'), txtEl = $('text');
+  const tEl = $('timer'), txtEl = $('text'), st = $('stage');
+  // veličina referentne oblasti = #stage (ceo ekran, ili kockica grida)
+  const sw = st.clientWidth || innerWidth, sh = st.clientHeight || innerHeight;
   const textOnly = S && S.textOnly && bigText;
 
   // tekst (labela ili samostalno)
@@ -164,9 +182,9 @@ function paint(timeText, fg, bg, neg, bigText, msgText, msgFlash, prog){
     txtEl.textContent = bigText;
     txtEl.style.color = fg;
     txtEl.style.fontSize = textOnly
-      ? Math.min(innerWidth*0.9/Math.max(6, bigText.length*0.55), innerHeight*0.5) + 'px'
-      : Math.min(innerHeight*0.12, innerWidth*0.06) + 'px';
-    txtEl.style.marginBottom = textOnly ? '0' : '2vh';
+      ? Math.min(sw*0.9/Math.max(6, bigText.length*0.55), sh*0.5) + 'px'
+      : Math.min(sh*0.12, sw*0.06) + 'px';
+    txtEl.style.marginBottom = textOnly ? '0' : (sh*0.02)+'px';
   } else {
     txtEl.style.display = 'none';
   }
@@ -179,11 +197,11 @@ function paint(timeText, fg, bg, neg, bigText, msgText, msgFlash, prog){
     tEl.textContent = timeText;
     tEl.style.color = fg;
     tEl.className = neg ? 'neg' : '';
-    const key = timeText.length + '|' + innerWidth + 'x' + innerHeight + '|' + (bigText?1:0);
+    const key = timeText.length + '|' + Math.round(sw) + 'x' + Math.round(sh) + '|' + (bigText?1:0);
     if (key !== lastKey){
       lastKey = key;
-      const avail = bigText ? innerHeight*0.6 : innerHeight*0.7;
-      tEl.style.fontSize = Math.min(innerWidth*0.92/(timeText.length*0.6), avail) + 'px';
+      const avail = bigText ? sh*0.6 : sh*0.7;
+      tEl.style.fontSize = Math.min(sw*0.92/(timeText.length*0.6), avail) + 'px';
     }
   }
 

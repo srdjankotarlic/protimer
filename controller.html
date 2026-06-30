@@ -71,6 +71,13 @@
   .pv-checker{position:absolute; inset:0; background-color:#2a2f3a;
     background-image:linear-gradient(45deg,#1a1f28 25%,transparent 25%),linear-gradient(-45deg,#1a1f28 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#1a1f28 75%),linear-gradient(-45deg,transparent 75%,#1a1f28 75%);
     background-size:24px 24px; background-position:0 0,0 12px,12px -12px,-12px 0; display:none;}
+  .pv-stage{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; overflow:hidden;}
+  .gridsel{width:248px; max-width:100%; aspect-ratio:16/9; background:#000; border:1px solid var(--border);
+    border-radius:7px; display:grid; gap:1px; overflow:hidden;}
+  .gridsel .gc{background:#11151c; cursor:pointer; transition:background .08s;}
+  .gridsel .gc:hover{background:#22303f;}
+  .gridsel .gc.sel{background:var(--accent);}
+  .gridsel.off{opacity:.35; pointer-events:none;}
   .pv-text{position:relative; font-weight:600; line-height:1.1; text-align:center; padding:0 24px; display:none;
     white-space:pre-wrap; max-width:100%; overflow:hidden;}
   .pv-time{position:relative; font-family:"SF Mono",ui-monospace,Menlo,monospace; font-weight:700;
@@ -187,8 +194,10 @@
         <div class="badge" id="bdgOut">EKRAN</div>
         <div class="badge" id="bdgBk">BLACKOUT</div>
       </div>
-      <div class="pv-text" id="pvText"></div>
-      <div class="pv-time" id="pvTime">10:00</div>
+      <div class="pv-stage" id="pvStage">
+        <div class="pv-text" id="pvText"></div>
+        <div class="pv-time" id="pvTime">10:00</div>
+      </div>
       <div class="pv-msg" id="pvMsg"></div>
       <div class="pv-prog" id="pvProg"></div>
     </div>
@@ -246,6 +255,23 @@
         <input type="text" id="textInput" placeholder="Tekst na ekranu (npr. PAUZA, DOBRO DOŠLI)…" data-i18n-ph="textPh" style="flex:1; min-width:140px">
         <label class="chk"><input type="checkbox" id="chkTextOnly"> <span data-i18n="textOnly">Samo tekst</span></label>
         <button id="btnTextClear" class="ghost" data-i18n="clear">Obriši</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="field" style="align-items:flex-start">
+        <span class="glabel" data-i18n="grid">Grid</span>
+        <div style="flex:1; min-width:0;">
+          <div class="row" style="margin-bottom:9px">
+            <label class="chk"><input type="checkbox" id="chkGrid"> <span data-i18n="gridOn">Pozicija na ekranu</span></label>
+            <div class="sep"></div>
+            <div class="tabs" id="gridSizes">
+              <button data-gs="3">3×3</button><button data-gs="5">5×5</button><button data-gs="7">7×7</button><button data-gs="9">9×9</button>
+            </div>
+            <span class="lbl" id="gridHint" data-i18n="gridHint">izaberi kockicu →</span>
+          </div>
+          <div class="gridsel" id="gridSel"></div>
+        </div>
       </div>
     </div>
 
@@ -361,6 +387,7 @@ const I18N = {
     durTitle:'10 = minuti · 10:00 = MM:SS · 1:00:00 = HH:MM:SS', quick:'Brzo',
     colors:'Boje', background:'Pozadina', timeText:'Vreme/tekst', warnColors:'Boje upozorenja',
     tagY:'Ž', tagR:'C', yellow:'Žuto', red:'Crveno', transparent:'Providna pozadina (OBS)',
+    grid:'Grid', gridOn:'Pozicija na ekranu', gridHint:'klikni kockicu →',
     text:'Tekst', textPh:'Tekst na ekranu (npr. PAUZA, DOBRO DOŠLI)…', textOnly:'Samo tekst', clear:'Obriši',
     thresholds:'Pragovi', yellowAt:'Žuto na', redAt:'Crveno na', flashZero:'Blic na nuli',
     sound:'Zvuk', overtime:'Minus posle nule', progress:'Traka napretka',
@@ -389,6 +416,7 @@ const I18N = {
     durTitle:'10 = minutes · 10:00 = MM:SS · 1:00:00 = HH:MM:SS', quick:'Quick',
     colors:'Colors', background:'Background', timeText:'Time/text', warnColors:'Warning colors',
     tagY:'Y', tagR:'R', yellow:'Yellow', red:'Red', transparent:'Transparent background (OBS)',
+    grid:'Grid', gridOn:'Position on screen', gridHint:'click a cell →',
     text:'Text', textPh:'On-screen text (e.g. BREAK, WELCOME)…', textOnly:'Text only', clear:'Clear',
     thresholds:'Warnings', yellowAt:'Yellow at', redAt:'Red at', flashZero:'Flash at zero',
     sound:'Sound', overtime:'Count past zero', progress:'Progress bar',
@@ -434,6 +462,8 @@ let S = {
   bgColor:'#000000', fgColor:'#ffffff', useWarnColors:true,
   warnYellow:'#ffc23a', warnRed:'#ff4540',
   text:'', textOnly:false, transparent:false,
+  // grid pozicioniranje tajmera na ekranu
+  gridOn:false, gridSize:3, gridCell:4,
   // rundown / raspored
   cues:[], currentCue:-1, showStart:'', showNowNext:false,
   lang:lang
@@ -544,24 +574,26 @@ function render(){
   else { $('pvChecker').style.display='none'; pv.style.background=S.bgColor; }
 
   const textOnly = S.textOnly && S.text;
-  const txtEl=$('pvText'), tEl=$('pvTime');
+  const txtEl=$('pvText'), tEl=$('pvTime'), ps=$('pvStage');
+  applyGridPreview(ps);
+  const sw=ps.clientWidth||pv.clientWidth, sh=ps.clientHeight||pv.clientHeight;
 
   if(S.text){
     txtEl.style.display='block'; txtEl.textContent=S.text; txtEl.style.color=r.fg;
     txtEl.style.fontSize = textOnly
-      ? Math.min(pv.clientWidth*0.85/Math.max(6,S.text.length*0.55), pv.clientHeight*0.42)+'px'
-      : Math.min(pv.clientHeight*0.13, pv.clientWidth*0.06)+'px';
-    txtEl.style.marginBottom = textOnly?'0':'8px';
+      ? Math.min(sw*0.85/Math.max(6,S.text.length*0.55), sh*0.42)+'px'
+      : Math.min(sh*0.13, sw*0.06)+'px';
+    txtEl.style.marginBottom = textOnly?'0':(sh*0.025)+'px';
   } else txtEl.style.display='none';
 
   if(textOnly){ tEl.style.display='none'; }
   else {
     tEl.style.display='block'; tEl.textContent=r.text; tEl.style.color=r.fg;
     tEl.className='pv-time'+(r.neg?' neg':'');
-    const key=r.text.length+'|'+pv.clientWidth+'x'+pv.clientHeight+'|'+(S.text?1:0);
+    const key=r.text.length+'|'+Math.round(sw)+'x'+Math.round(sh)+'|'+(S.text?1:0);
     if(key!==lastKey){ lastKey=key;
-      const avail=S.text?pv.clientHeight*0.42:pv.clientHeight*0.55;
-      tEl.style.fontSize=Math.min(pv.clientWidth*0.9/(r.text.length*0.6),avail)+'px'; }
+      const avail=S.text?sh*0.42:sh*0.55;
+      tEl.style.fontSize=Math.min(sw*0.9/(r.text.length*0.6),avail)+'px'; }
   }
 
   const m=$('pvMsg');
@@ -638,7 +670,8 @@ function saveSettings(){
     overtime:S.overtime,showProgress:S.showProgress,durationMs:S.durationMs,autoNext,
     bgColor:S.bgColor,fgColor:S.fgColor,useWarnColors:S.useWarnColors,
     warnYellow:S.warnYellow,warnRed:S.warnRed,textOnly:S.textOnly,transparent:S.transparent,
-    showStart:S.showStart,showNowNext:S.showNowNext
+    showStart:S.showStart,showNowNext:S.showNowNext,
+    gridOn:S.gridOn,gridSize:S.gridSize,gridCell:S.gridCell
   }));
 }
 function load(){
@@ -653,7 +686,8 @@ function load(){
       useWarnColors:st.useWarnColors??S.useWarnColors,
       warnYellow:st.warnYellow??S.warnYellow, warnRed:st.warnRed??S.warnRed,
       textOnly:st.textOnly??S.textOnly, transparent:st.transparent??S.transparent,
-      showStart:st.showStart??S.showStart, showNowNext:st.showNowNext??S.showNowNext
+      showStart:st.showStart??S.showStart, showNowNext:st.showNowNext??S.showNowNext,
+      gridOn:st.gridOn??S.gridOn, gridSize:st.gridSize??S.gridSize, gridCell:st.gridCell??S.gridCell
     });
     S.remMs=S.durationMs; autoNext=!!st.autoNext;
     cues=JSON.parse(localStorage.getItem('pt_cues')||'[]');
@@ -667,6 +701,7 @@ function load(){
   $('bgColor').value=S.bgColor; $('fgColor').value=S.fgColor;
   $('chkWarn').checked=S.useWarnColors; $('warnYellow').value=S.warnYellow; $('warnRed').value=S.warnRed;
   $('chkTextOnly').checked=S.textOnly; $('chkTransparent').checked=S.transparent;
+  buildGrid();
   renderCues();
 }
 
@@ -803,6 +838,40 @@ $('chkTransparent').addEventListener('change',e=>{ S.transparent=e.target.checke
 $('textInput').addEventListener('input',e=>{ S.text=e.target.value; send(); });
 $('chkTextOnly').addEventListener('change',e=>{ S.textOnly=e.target.checked; lastKey=''; send(); });
 $('btnTextClear').addEventListener('click',()=>{ S.text=''; $('textInput').value=''; send(); });
+
+// ---------- GRID (pozicija tajmera na ekranu) ----------
+function applyGridPreview(ps){
+  if(S.gridOn && S.gridSize){
+    const n=S.gridSize, cell=Math.max(0,Math.min(n*n-1,S.gridCell||0));
+    const rr=Math.floor(cell/n), cc=cell%n;
+    ps.style.inset='auto'; ps.style.left=(cc*100/n)+'%'; ps.style.top=(rr*100/n)+'%';
+    ps.style.width=(100/n)+'%'; ps.style.height=(100/n)+'%';
+  } else { ps.style.inset='0'; ps.style.left=ps.style.top=ps.style.width=ps.style.height=''; }
+}
+function buildGrid(){
+  const n=S.gridSize, sel=$('gridSel');
+  sel.style.gridTemplateColumns='repeat('+n+',1fr)';
+  sel.style.gridTemplateRows='repeat('+n+',1fr)';
+  sel.classList.toggle('off', !S.gridOn);
+  sel.innerHTML='';
+  for(let i=0;i<n*n;i++){
+    const d=document.createElement('div'); d.className='gc'+(i===S.gridCell?' sel':'');
+    d.addEventListener('click',()=>{ S.gridCell=i; lastKey=''; buildGrid(); send(); });
+    sel.appendChild(d);
+  }
+  document.querySelectorAll('#gridSizes button').forEach(b=>b.classList.toggle('active', +b.dataset.gs===S.gridSize));
+  $('chkGrid').checked=S.gridOn;
+}
+$('chkGrid').addEventListener('change',e=>{ S.gridOn=e.target.checked; lastKey=''; buildGrid(); send(); });
+document.querySelectorAll('#gridSizes button').forEach(b=>b.addEventListener('click',()=>{
+  const oN=S.gridSize, nN=+b.dataset.gs;
+  const oR=Math.floor(S.gridCell/oN), oC=S.gridCell%oN;
+  const nR=Math.min(nN-1, Math.round(oR*(nN-1)/(oN-1||1)));
+  const nC=Math.min(nN-1, Math.round(oC*(nN-1)/(oN-1||1)));
+  S.gridSize=nN; S.gridCell=nR*nN+nC;
+  if(!S.gridOn){ S.gridOn=true; }   // izbor veličine podrazumeva da hoćeš grid
+  lastKey=''; buildGrid(); send();
+}));
 
 $('btnBlackout').addEventListener('click',()=>{ S.blackout=!S.blackout; $('btnBlackout').classList.toggle('on',S.blackout); send(); });
 
