@@ -534,6 +534,18 @@ app.whenReady().then(() => {
           gbStr = `${gb.width}x${gb.height}@${gb.x},${gb.y} (cell≈${expW}x${expH}) frameless=${outputFrameless}`;
         } catch (e) {}
         console.log('GRID_WIN_OK=' + gridWinOK + ' ' + gbStr);
+        // REGRESIJA: biranje veličine grida NE sme da pokvari mod tajmera.
+        // (Grid dugmad su u .tabs kontejneru — ranije su greškom zvala setMode(undefined),
+        //  pa je START ostavljao endAt=0 → prikaz ogromnog negativnog vremena.)
+        let startOK = false, gridStartStr = '?';
+        try {
+          await controlWin.webContents.executeJavaScript(`setDuration(530000); document.querySelector('#gridSizes button[data-gs=\"5\"]').click(); startPause();`);
+          await new Promise(r => setTimeout(r, 500));
+          gridStartStr = await controlWin.webContents.executeJavaScript(`(function(){var now=Date.now();return JSON.stringify({mode:S.mode,running:S.running,rem:S.endAt-now,text:calc(now).text});})()`);
+          const s = JSON.parse(gridStartStr);
+          startOK = s.mode === 'countdown' && s.running === true && s.rem > 0 && s.rem < 540000;
+        } catch (e) { gridStartStr = 'ERR ' + e; }
+        console.log('GRID_START_OK=' + startOK + ' ' + gridStartStr);
         console.log('SMOKE_OK');
         app.exit(0);
       } catch (err) { console.error('SMOKE_FAIL', err); app.exit(1); }

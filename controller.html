@@ -523,11 +523,12 @@ function startPause(){
   const now=Date.now();
   if(S.mode==='clock') return;
   if(S.running){
-    if(S.mode==='countdown') S.remMs=S.endAt-now; else S.elapsedMs+=now-S.startAt;
+    // countup broji naviše; sve ostalo (i countdown) računa preko endAt — usklađeno sa calc()
+    if(S.mode==='countup') S.elapsedMs+=now-S.startAt; else S.remMs=S.endAt-now;
     S.running=false;
   } else {
-    if(S.mode==='countdown'){ S.endAt=now+S.remMs; if(S.remMs>0) zeroFired=false; }
-    else S.startAt=now;
+    if(S.mode==='countup') S.startAt=now;
+    else { S.endAt=now+S.remMs; if(S.remMs>0) zeroFired=false; }
     S.running=true;
   }
   send(); updateButtons();
@@ -542,7 +543,7 @@ function adjust(sec){
   if((S.running?S.endAt-Date.now():S.remMs)>0) zeroFired=false;
   send();
 }
-function setMode(m){ S.mode=m; S.running=false; S.remMs=S.durationMs; S.elapsedMs=0; zeroFired=false; setModeTabs(); send(); updateButtons(); }
+function setMode(m){ if(!['countdown','countup','clock'].includes(m)) return; S.mode=m; S.running=false; S.remMs=S.durationMs; S.elapsedMs=0; zeroFired=false; setModeTabs(); send(); updateButtons(); }
 function setModeTabs(){ document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('active',b.dataset.mode===S.mode)); }
 
 // ---------- ZVUK ----------
@@ -809,7 +810,7 @@ api.onRemoteCmd(c=>{
 $('btnStart').addEventListener('click',startPause);
 $('btnReset').addEventListener('click',reset);
 document.querySelectorAll('[data-adj]').forEach(b=>b.addEventListener('click',()=>adjust(+b.dataset.adj)));
-document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.mode)));
+document.querySelectorAll('.tabs button[data-mode]').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.mode)));
 
 $('btnSetDur').addEventListener('click',()=>{ const ms=parseTime($('durInput').value); if(ms!==null&&ms>0){ currentCue=-1; renderCues(); setDuration(ms); } });
 $('durInput').addEventListener('keydown',e=>{ if(e.key==='Enter') $('btnSetDur').click(); });
