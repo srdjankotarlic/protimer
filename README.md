@@ -24,7 +24,9 @@
 - 📐 **Compact window** — when not fullscreen, the output window can hug the timer: a small timer means a small window, no big black box
 - 📺 **OBS / NDI / vMix** — built-in network output; add it as a Browser Source (transparent background for overlays)
 - 📱 **Phone remote** — start the timer and send messages to the speaker from your hand, over Wi-Fi
-- 🎛️ **Stream Deck / HTTP API** — control the timer from Bitfocus Companion (its built-in *Generic HTTP* module), a Stream Deck, or plain `curl` — no extra plugin needed
+- 🎛️ **Stream Deck / Companion** — a [dedicated Companion module](https://github.com/srdjankotarlic/companion-module-protimer) with live feedbacks and a time variable, or the built-in *Generic HTTP* module — plus a plain HTTP GET API for `curl` and automations
+- 🎚️ **OSC input** — control from QLab, TouchOSC or any OSC sender (`/protimer/start` on UDP 7879)
+- 📄 **CSV import / export** — build the rundown in Excel or Google Sheets and import it (or just **paste** it in); export back to CSV
 - 🔗 **Share with anyone** — a **QR code** to scan on-site, or a one-click **public link** that works from any network
 - 🗒️ **Rundown** — a run of segments with **durations, notes, colors and planned clock times**
 - 🎭 **Backstage view** — a crew/guest screen with **NOW / NEXT**, the full schedule and live clock times
@@ -56,10 +58,12 @@ ProTimer doesn't try to beat the big tools at everything — it aims to be the s
 | Phone remote · QR · public link | ✅ | ✅ | partial | ✅ |
 | Rundown + backstage view | ✅ basic | ✅ | ✅ advanced | ✅ |
 | HTTP API (Stream Deck / Companion) | ✅ | ✅ | ✅ | ✅ |
-| OSC / native Companion module | ❌ | ✅ | ✅ | ✅ |
+| OSC input | ✅ | ❌ | ✅ | partial |
+| Companion module | ✅ [module](https://github.com/srdjankotarlic/companion-module-protimer) | ✅ | ✅ | ✅ |
+| CSV rundown import/export | ✅ | ✅ | ✅ | ✅ |
 | Serbian interface | ✅ | ❌ | ❌ | ❌ |
 
-**Honest take:** if you need deep integrations (OSC, Companion, vMix/Qlab) or multi-operator collaboration, [Ontime](https://www.getontime.no/) and [StageTimer](https://stagetimer.io/) are more mature — they're great tools. ProTimer wins when you want something **free, simple, no-account and bilingual** that you open and use in seconds.
+**Honest take:** if you need multi-operator collaboration or deep rundown automation, [Ontime](https://www.getontime.no/) and [StageTimer](https://stagetimer.io/) are more mature — they're great tools. ProTimer wins when you want something **free, simple, no-account and bilingual** that you open and use in seconds — and it now covers the pro-AV control stack too (Stream Deck, OSC, HTTP, CSV).
 
 ---
 
@@ -117,7 +121,22 @@ http://<ip>:7878/cmd?type=start&t=<token>
 
 Available `type` values: `start` (toggles start/pause), `reset`, `go` (next cue), `blackout`, `adjust&value=<seconds>` (e.g. `-60`), `setDuration&value=<ms>`, `mode&value=countdown|countup|clock`, `message&value=<text>`, `clearMessage`, `text&value=<text>`, `clearText`.
 
-**Stream Deck via [Bitfocus Companion](https://bitfocus.io/companion):** add a **Generic HTTP** connection, create a button with an *HTTP GET* action, and paste the API URL (change `type` per button). That's it — Start, Reset, GO and ±1min on physical keys, no plugin required. Works from `curl`, Keyboard Maestro, or any automation too. The token changes on every app launch (security), so re-copy the URL after restarting ProTimer.
+**Stream Deck via [Bitfocus Companion](https://bitfocus.io/companion):** two options:
+1. **Dedicated module** — [companion-module-protimer](https://github.com/srdjankotarlic/companion-module-protimer): nice actions, live feedbacks (running = green, blackout = red) and a `$(protimer:time)` variable for the button face. Install via Companion's developer-modules path (registry submission pending).
+2. **Zero-install** — add a **Generic HTTP** connection, create a button with an *HTTP GET* action, and paste the API URL (change `type` per button).
+
+Works from `curl`, Keyboard Maestro, or any automation too. The token changes on every app launch (security), so re-copy the URL after restarting ProTimer.
+
+### 🎚️ OSC (QLab / TouchOSC / Companion OSC)
+ProTimer listens for OSC on **UDP port 7879**. Addresses mirror the HTTP API:
+
+```
+/protimer/start          /protimer/reset         /protimer/go
+/protimer/blackout       /protimer/adjust 60     /protimer/setDuration 600000
+/protimer/message "WRAP UP"                      /protimer/clearMessage
+```
+
+Arguments: int/float/string (first argument = `value`). OSC has no token — it's LAN-trusted like QLab/Ontime, so keep the machine on a network you control.
 
 ### 🎨 Colors & text
 - **Colors**: pick the background and digit color. "Warning colors" turn yellow/red near the end (you can turn them off).
@@ -174,10 +193,10 @@ Clean stack, almost no dependencies: **Electron** + plain HTML/CSS/JS + a Node `
 Ideas on the list (feedback very welcome — open an issue to vote or suggest):
 
 - [ ] Signed / notarized builds (no “unidentified developer” warning)
-- [ ] Import a rundown from Excel / Google Sheets / CSV
+- [x] ~~Import a rundown from Excel / Google Sheets / CSV~~ — done (import, paste and export)
 - [ ] Groups/blocks in the rundown (e.g. *Morning Sessions*, *Lunch*)
 - [x] ~~HTTP control API~~ — done (works with Companion's Generic HTTP module + Stream Deck)
-- [ ] Native OSC + dedicated Bitfocus Companion module
+- [x] ~~Native OSC + dedicated Bitfocus Companion module~~ — done ([module repo](https://github.com/srdjankotarlic/companion-module-protimer); official registry submission pending)
 - [ ] More languages
 - [ ] Multiple independent timers
 
@@ -188,6 +207,7 @@ Being honest about where it's at:
 - **Unsigned builds.** macOS shows “unidentified developer” (right-click → Open) and Windows shows SmartScreen (More info → Run anyway) on first launch. Code signing is on the roadmap.
 - **Network sharing needs the same Wi-Fi** — unless you use the optional **Share online** link, which is **beta** (a tunnel; may show a one-time “continue” page, and reliability depends on the tunnel service). For shows, the LAN + QR path is the dependable one.
 - **Remote control is link-based.** Anyone with the exact `…/remote?t=…` link can control the timer — share it deliberately.
+- **OSC has no authentication** (UDP, LAN-trusted — same model as QLab/Ontime). Anyone on your network can send OSC commands; use it on networks you control.
 - **Single operator** — no real-time multi-user collaboration (see Ontime/StageTimer if you need that).
 - **Builds:** macOS (Apple Silicon) and Windows (x64). No Intel-mac or Linux builds yet.
 

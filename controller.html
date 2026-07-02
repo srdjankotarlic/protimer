@@ -6,39 +6,49 @@
 <title>ProTimer — Kontrola</title>
 <style>
   :root{
-    --bg:#0b0d11; --panel:#13161c; --panel2:#1a1f28; --border:#232936;
-    --text:#e8edf3; --dim:#7d8794; --dim2:#566070;
-    --accent:#3fb950; --accent-d:#2ea043; --blue:#4493f8; --red:#f0564d; --amber:#d9a441;
-    --radius:10px;
+    --bg:#0a0a0d; --panel:#141419; --panel2:#1e1e25; --border:rgba(255,255,255,.075);
+    --border-strong:rgba(255,255,255,.14);
+    --text:#f2f2f5; --dim:#9b9ba6; --dim2:#5e5e68;
+    --accent:#30d158; --accent-d:#28b34c; --blue:#0a84ff; --red:#ff453a; --amber:#d9a441;
+    --radius:12px;
+    --focus:0 0 0 3px rgba(10,132,255,.28);
+    --shadow-card:0 1px 2px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.03);
   }
   *{box-sizing:border-box; -webkit-user-select:none; user-select:none;}
   input,textarea{-webkit-user-select:auto; user-select:auto;}
-  body{margin:0; background:var(--bg); color:var(--text); overflow:hidden;
+  body{margin:0; color:var(--text); overflow:hidden;
     height:100vh; display:flex; flex-direction:column;
-    font:13.5px/1.4 -apple-system, "Helvetica Neue", system-ui, sans-serif;}
+    background:radial-gradient(1200px 500px at 50% -200px, #131318 0%, var(--bg) 60%) fixed;
+    font:13.5px/1.45 -apple-system, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;}
 
   /* ---- top bar ---- */
-  .topbar{flex:0 0 auto; display:flex; align-items:center; gap:10px; padding:11px 16px; border-bottom:1px solid var(--border);}
-  .brand{font-weight:800; letter-spacing:3px; font-size:14px;}
-  .brand b{color:var(--accent); font-weight:800;}
+  .topbar{flex:0 0 auto; display:flex; align-items:center; gap:10px; padding:12px 18px;
+    border-bottom:1px solid var(--border); background:rgba(20,20,25,.6); backdrop-filter:blur(20px);}
+  .brand{font-weight:700; letter-spacing:4px; font-size:13.5px;}
+  .brand b{color:var(--accent); font-weight:700;}
   .grow{flex:1;}
 
-  select,input[type=text],input[type=time]{background:var(--panel2); color:var(--text);
-    border:1px solid var(--border); border-radius:8px; padding:7px 9px; font-size:13px; outline:none;}
-  select:focus,input:focus{border-color:var(--dim);}
+  select,input[type=text],input[type=time]{background:rgba(255,255,255,.055); color:var(--text);
+    border:1px solid var(--border); border-radius:9px; padding:7px 10px; font-size:13px; outline:none;
+    transition:border-color .15s, box-shadow .15s;}
+  select:focus,input:focus{border-color:var(--blue); box-shadow:var(--focus);}
   input[type=color]{width:34px; height:30px; padding:2px; border:1px solid var(--border);
-    border-radius:8px; background:var(--panel2); cursor:pointer;}
+    border-radius:9px; background:rgba(255,255,255,.055); cursor:pointer;}
 
-  button{background:var(--panel2); color:var(--text); border:1px solid var(--border);
-    border-radius:8px; padding:7px 12px; font-size:13px; cursor:pointer; white-space:nowrap; transition:border-color .12s, background .12s;}
-  button:hover{border-color:var(--dim);}
-  button:active{transform:translateY(1px);}
-  button.primary{background:var(--accent-d); border-color:var(--accent-d); color:#fff; font-weight:600;}
-  button.primary:hover{background:var(--accent);}
+  button{background:rgba(255,255,255,.065); color:var(--text); border:1px solid var(--border);
+    border-radius:9px; padding:7px 13px; font-size:13px; font-weight:500; cursor:pointer; white-space:nowrap;
+    transition:background .15s, border-color .15s, transform .06s, box-shadow .15s;}
+  button:hover{background:rgba(255,255,255,.11); border-color:var(--border-strong);}
+  button:active{transform:scale(.97);}
+  button.primary{background:linear-gradient(180deg, #2fbd54, #23a344); border-color:transparent; color:#fff;
+    font-weight:600; box-shadow:0 1px 8px rgba(48,209,88,.25), inset 0 1px 0 rgba(255,255,255,.18);}
+  button.primary:hover{background:linear-gradient(180deg, #36d160, #28b34c); filter:brightness(1.04);}
   button.ghost{background:transparent;}
-  button.danger{background:transparent; border-color:#5a2b28; color:#e88;}
-  button.danger:hover{border-color:var(--red);}
-  label.chk{display:flex; align-items:center; gap:6px; color:var(--dim); font-size:12.5px; cursor:pointer;}
+  button.danger{background:transparent; border-color:rgba(255,69,58,.35); color:#ff8b84;}
+  button.danger:hover{border-color:var(--red); background:rgba(255,69,58,.1);}
+  label.chk{display:flex; align-items:center; gap:6px; color:var(--dim); font-size:12.5px; cursor:pointer; transition:color .15s;}
+  label.chk:hover{color:var(--text);}
   label.chk input{accent-color:var(--accent);}
 
   .main{flex:1 1 auto; min-height:0; display:grid; grid-template-columns:1fr 300px; align-items:start;
@@ -49,10 +59,11 @@
   .left{display:flex; flex-direction:column; gap:10px; min-width:0;}
   .cuelist::-webkit-scrollbar{width:8px;}
   .cuelist::-webkit-scrollbar-thumb{background:var(--border); border-radius:4px;}
-  .panel{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:11px 13px;}
+  .panel{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius);
+    padding:12px 14px; box-shadow:var(--shadow-card);}
   .row{display:flex; gap:9px; align-items:center; flex-wrap:wrap;}
-  .lbl{color:var(--dim); font-size:11px; text-transform:uppercase; letter-spacing:1px;}
-  .sep{width:1px; height:20px; background:var(--border); margin:0 2px;}
+  .lbl{color:var(--dim); font-size:10.5px; text-transform:uppercase; letter-spacing:1.4px; font-weight:600;}
+  .sep{width:1px; height:20px; background:var(--border-strong); margin:0 2px;}
 
   /* poravnata polja sa levim žlebom za oznaku sekcije */
   .field{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
@@ -96,29 +107,39 @@
 
   /* ---- transport ---- */
   .transport{display:flex; gap:8px;}
-  #btnStart{flex:1.7; font-size:18px; font-weight:800; padding:15px 8px; letter-spacing:1px;}
-  #btnStart.running{background:#9a6a06; border-color:#bb8009; color:#fff;}
-  #btnReset{flex:.7; font-size:14px;}
+  #btnStart{flex:1.7; font-size:17px; font-weight:700; padding:15px 8px; letter-spacing:1.5px; border-radius:11px;}
+  #btnStart.running{background:linear-gradient(180deg,#c9880c,#a86f05); border-color:transparent; color:#fff;
+    box-shadow:0 1px 8px rgba(217,164,65,.25), inset 0 1px 0 rgba(255,255,255,.18);}
+  #btnReset{flex:.7; font-size:14px; border-radius:11px;}
   .adjust{display:flex; gap:6px; flex:3;}
-  .adjust button{flex:1; font-family:"SF Mono",Menlo,monospace; font-size:13px; padding:8px 4px;}
-  #btnBlackout{flex:1;}
-  #btnBlackout.on{background:var(--red); border-color:var(--red); color:#fff;}
+  .adjust button{flex:1; font-family:"SF Mono",ui-monospace,Menlo,monospace; font-size:12.5px; padding:8px 4px;
+    font-variant-numeric:tabular-nums;}
+  #btnBlackout{flex:1; border-radius:11px;}
+  #btnBlackout.on{background:linear-gradient(180deg,#ff453a,#e03026); border-color:transparent; color:#fff;
+    box-shadow:0 1px 8px rgba(255,69,58,.3), inset 0 1px 0 rgba(255,255,255,.15);}
 
-  .tabs{display:flex; gap:5px;}
-  .tabs button{padding:7px 13px; color:var(--dim);}
-  .tabs button.active{background:var(--blue); border-color:var(--blue); color:#fff; font-weight:600;}
+  /* segmented kontrola (Apple-stil) */
+  .tabs{display:inline-flex; gap:2px; background:rgba(255,255,255,.05); border:1px solid var(--border);
+    border-radius:10px; padding:2px;}
+  .tabs button{padding:6px 13px; color:var(--dim); background:transparent; border:none; border-radius:8px; font-weight:500;}
+  .tabs button:hover{color:var(--text); background:rgba(255,255,255,.05);}
+  .tabs button.active{background:var(--blue); color:#fff; font-weight:600;
+    box-shadow:0 1px 4px rgba(10,132,255,.35), inset 0 1px 0 rgba(255,255,255,.15);}
   .chips{display:flex; gap:5px; flex-wrap:wrap;}
-  .chips button{padding:5px 9px; font-size:12px; font-family:"SF Mono",Menlo,monospace; color:var(--dim);}
+  .chips button{padding:5px 10px; font-size:12px; font-family:"SF Mono",ui-monospace,Menlo,monospace; color:var(--dim);
+    border-radius:20px;}
   .chips button:hover{color:var(--text);}
   input.short{width:62px; text-align:center; font-family:"SF Mono",Menlo,monospace;}
   input.w90{width:92px; text-align:center; font-family:"SF Mono",Menlo,monospace;}
 
   /* ---- right column ---- */
   .right{display:flex; flex-direction:column; gap:12px; min-width:0;}
-  .card{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:12px; display:flex; flex-direction:column; min-height:0;}
-  .card h3{margin:0 0 9px; font-size:11px; letter-spacing:1.5px; color:var(--dim); font-weight:700;}
+  .card{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius);
+    padding:13px; display:flex; flex-direction:column; min-height:0; box-shadow:var(--shadow-card);}
+  .card h3{margin:0 0 10px; font-size:10.5px; letter-spacing:1.8px; color:var(--dim); font-weight:600;}
   .cuewrap{flex:0 0 auto; display:flex; flex-direction:column;}
-  .cuehead{display:flex; align-items:center; gap:7px; margin-bottom:9px;}
+  .cuehead{display:flex; align-items:center; gap:7px; margin-bottom:9px; flex-wrap:wrap;}
+  .cuehead .mini{padding:3px 8px; font-size:11px;}
   .cuehead input[type=time]{padding:4px 6px; font-size:12px;}
   .ou{font-family:"SF Mono",Menlo,monospace; font-size:11px; font-weight:700; padding:2px 7px; border-radius:6px;
     background:var(--panel2); border:1px solid var(--border); color:var(--dim); white-space:nowrap;}
@@ -127,10 +148,12 @@
   .ou.ontime{background:#13251a; border-color:#1f4a30; color:var(--accent);}
   .cuelist{overflow-y:auto; display:flex; flex-direction:column; gap:5px; min-height:40px; max-height:34vh; margin-bottom:9px;}
   .cuelist::-webkit-scrollbar{width:8px;} .cuelist::-webkit-scrollbar-thumb{background:var(--border); border-radius:4px;}
-  .cue{display:flex; align-items:center; gap:7px; background:var(--panel2); border:1px solid var(--border);
-    border-radius:8px; padding:7px 9px; padding-left:7px; cursor:pointer; position:relative; overflow:hidden;}
-  .cue .stripe{position:absolute; left:0; top:0; bottom:0; width:4px;}
-  .cue.current{border-color:var(--accent); background:#13251a;}
+  .cue{display:flex; align-items:center; gap:7px; background:rgba(255,255,255,.045); border:1px solid var(--border);
+    border-radius:9px; padding:7px 9px; padding-left:7px; cursor:pointer; position:relative; overflow:hidden;
+    transition:background .15s, border-color .15s;}
+  .cue:hover{background:rgba(255,255,255,.08);}
+  .cue .stripe{position:absolute; left:0; top:0; bottom:0; width:3px; border-radius:3px;}
+  .cue.current{border-color:rgba(48,209,88,.5); background:rgba(48,209,88,.09);}
   .cue .n{color:var(--dim2); font-size:11px; width:14px; flex:0 0 auto;}
   .cue .body{flex:1; min-width:0;}
   .cue .nm{overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13px;}
@@ -146,8 +169,8 @@
   .empty{color:var(--dim2); font-size:12px; text-align:center; padding:14px 0;}
 
   /* mreža / OBS */
-  .net-url{display:flex; align-items:center; gap:7px; background:var(--panel2); border:1px solid var(--border);
-    border-radius:8px; padding:8px 10px; font-family:"SF Mono",Menlo,monospace; font-size:12.5px; margin-bottom:8px;}
+  .net-url{display:flex; align-items:center; gap:7px; background:rgba(255,255,255,.045); border:1px solid var(--border);
+    border-radius:9px; padding:8px 10px; font-family:"SF Mono",ui-monospace,Menlo,monospace; font-size:12px; margin-bottom:8px;}
   .net-url span{flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--accent);}
   .net-url .mini{padding:3px 8px; font-size:11px; flex:0 0 auto;}
   .qrbtn{padding:3px 7px; font-size:10px; flex:0 0 auto;}
@@ -159,12 +182,13 @@
   .dot{width:7px; height:7px; border-radius:50%; background:var(--red); display:inline-block;}
   .dot.on{background:var(--accent);}
 
-  .statusbar{flex:0 0 auto; padding:5px 16px; color:var(--dim2); font-size:11px;
-    border-top:1px solid var(--border); background:var(--bg); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-  kbd{background:var(--panel2); border:1px solid var(--border); border-radius:4px; padding:0 5px; font-size:10px; color:var(--dim);}
-  .lang{display:flex; gap:2px; background:var(--panel2); border:1px solid var(--border); border-radius:8px; padding:2px;}
-  .lang button{padding:4px 9px; font-size:12px; font-weight:700; border:none; background:transparent; color:var(--dim); border-radius:6px;}
-  .lang button.active{background:var(--blue); color:#fff;}
+  .statusbar{flex:0 0 auto; padding:6px 18px; color:var(--dim2); font-size:11px;
+    border-top:1px solid var(--border); background:rgba(20,20,25,.6); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  kbd{background:rgba(255,255,255,.07); border:1px solid var(--border-strong); border-bottom-width:2px;
+    border-radius:5px; padding:0 5px; font-size:10px; color:var(--dim);}
+  .lang{display:inline-flex; gap:2px; background:rgba(255,255,255,.05); border:1px solid var(--border); border-radius:9px; padding:2px;}
+  .lang button{padding:4px 9px; font-size:11.5px; font-weight:600; border:none; background:transparent; color:var(--dim); border-radius:7px;}
+  .lang button.active{background:var(--blue); color:#fff; box-shadow:0 1px 4px rgba(10,132,255,.35);}
 </style>
 </head>
 <body>
@@ -304,6 +328,9 @@
     <div class="card cuewrap" style="flex:1">
       <div class="cuehead">
         <h3 data-i18n="rundown" style="margin:0">RUNDOWN</h3>
+        <button id="btnCueImport" class="mini ghost" data-i18n="cueImport" data-i18n-title="cueImportTitle" title="Uvezi CSV / nalepi iz Excel-a ili Sheets-a (naziv, trajanje, beleška)">⬆ Uvoz</button>
+        <button id="btnCueExport" class="mini ghost" data-i18n="cueExport" data-i18n-title="cueExportTitle" title="Izvezi rundown kao CSV">⬇ CSV</button>
+        <input type="file" id="cueFile" accept=".csv,.txt,.tsv" style="display:none">
         <div class="grow"></div>
         <span class="lbl" data-i18n="showStart">Start</span>
         <input type="time" id="showStartInput" title="Planirani početak showa">
@@ -402,6 +429,7 @@ const I18N = {
     cueList:'CUE LISTA', cueEmpty:'Nema tačaka. Dodaj naziv + trajanje ↓', namePh:'Naziv',
     autoNext:'Auto-prelaz na sledeći', goNext:'GO ▶ SLEDEĆI &nbsp;(N)', noName:'(bez naziva)',
     rundown:'RUNDOWN', showStart:'Start', notePh:'Beleška (opciono)…', nowNextOut:'NOW/NEXT na ekranu',
+    cueImport:'⬆ Uvoz', cueExport:'⬇ CSV', cueImportTitle:'Uvezi CSV / nalepi iz Excel-a ili Sheets-a (naziv, trajanje, beleška)', cueExportTitle:'Izvezi rundown kao CSV', cueImportNone:'Nijedan red nije prepoznat. Format: naziv, trajanje (10:00), beleška',
     backstageLabel:'Backstage (raspored / crew)', onTime:'NA VREME', late:'kasni', early:'ispred',
     apiLabel:'API (Stream Deck / Companion)', apiTitle:'GET komanda za Companion „Generic HTTP“ dugme. type: start · reset · go · blackout · adjust(&value=sek) · setDuration(&value=ms)',
     nowLabel:'SADA', nextLabel:'SLEDI', endLabel:'Kraj', plannedLabel:'Planirano', projectedLabel:'Procena',
@@ -410,7 +438,7 @@ const I18N = {
     shareOnline:'🌐 Deli online (bilo koja mreža)', publicLabel:'Javni link (bilo koja mreža)',
     connecting:'⏳ Povezivanje…', stopSharing:'✕ Prekini deljenje', shareFail:'⚠ Nije uspelo, pokušaj opet',
     shareNote:'QR = skeniraj telefonom (ista Wi-Fi). „Deli online" = link sa bilo koje mreže.',
-    netNote:'⚠️ Svi uređaji moraju biti na <b>ISTOJ Wi-Fi</b> mreži. OBS: <b>Browser Source</b> → Ekran URL („Providna pozadina" za overlay; NDI preko DistroAV). Telefon: otvori Daljinski URL u pretraživaču.',
+    netNote:'⚠️ Svi uređaji moraju biti na <b>ISTOJ Wi-Fi</b> mreži. OBS: <b>Browser Source</b> → Ekran URL („Providna pozadina" za overlay; NDI preko DistroAV). Telefon: otvori Daljinski URL u pretraživaču. OSC: UDP port <b>7879</b>, adrese <b>/protimer/start</b> · reset · go · blackout · adjust · setDuration.',
     start:'▶ START', pause:'⏸ PAUZA', clockBtn:'— SAT —',
     outLive:'EKRAN ŽIV', outClosed:'EKRAN ZATVOREN', screenTag:'EKRAN', controlTag:'kontrola',
     netOff:'server nije pokrenut', netStarting:'pokrećem…', live:'uživo', deviceOne:'uređaj', deviceMany:'uređaja', connected:'povezano',
@@ -433,6 +461,7 @@ const I18N = {
     cueList:'CUE LIST', cueEmpty:'No items. Add name + duration ↓', namePh:'Name',
     autoNext:'Auto-advance to next', goNext:'GO ▶ NEXT &nbsp;(N)', noName:'(no name)',
     rundown:'RUNDOWN', showStart:'Start', notePh:'Note (optional)…', nowNextOut:'NOW/NEXT on screen',
+    cueImport:'⬆ Import', cueExport:'⬇ CSV', cueImportTitle:'Import CSV / paste from Excel or Sheets (name, duration, note)', cueExportTitle:'Export rundown as CSV', cueImportNone:'No rows recognized. Format: name, duration (10:00), note',
     backstageLabel:'Backstage (schedule / crew)', onTime:'ON TIME', late:'behind', early:'ahead',
     apiLabel:'API (Stream Deck / Companion)', apiTitle:'GET command for a Companion "Generic HTTP" button. type: start · reset · go · blackout · adjust(&value=sec) · setDuration(&value=ms)',
     nowLabel:'NOW', nextLabel:'NEXT', endLabel:'End', plannedLabel:'Planned', projectedLabel:'Projected',
@@ -441,7 +470,7 @@ const I18N = {
     shareOnline:'🌐 Share online (any network)', publicLabel:'Public link (any network)',
     connecting:'⏳ Connecting…', stopSharing:'✕ Stop sharing', shareFail:'⚠ Failed, try again',
     shareNote:'QR = scan with a phone (same Wi-Fi). “Share online” = a link that works from any network.',
-    netNote:'⚠️ All devices must be on the <b>SAME Wi-Fi</b> network. OBS: <b>Browser Source</b> → Screen URL (enable “Transparent background” for overlay; NDI via DistroAV). Phone: open the Remote URL in a browser.',
+    netNote:'⚠️ All devices must be on the <b>SAME Wi-Fi</b> network. OBS: <b>Browser Source</b> → Screen URL (enable “Transparent background” for overlay; NDI via DistroAV). Phone: open the Remote URL in a browser. OSC: UDP port <b>7879</b>, addresses <b>/protimer/start</b> · reset · go · blackout · adjust · setDuration.',
     start:'▶ START', pause:'⏸ PAUSE', clockBtn:'— CLOCK —',
     outLive:'SCREEN LIVE', outClosed:'SCREEN CLOSED', screenTag:'SCREEN', controlTag:'control',
     netOff:'server not running', netStarting:'starting…', live:'live', deviceOne:'device', deviceMany:'devices', connected:'connected',
@@ -917,6 +946,59 @@ function addCue(){
   saveCues(); send(); renderCues();
 }
 $('btnCueAdd').addEventListener('click',addCue);
+
+// ---------- CSV UVOZ / IZVOZ RUNDOWN-a ----------
+// Prihvata CSV (,/;) i TSV (nalepljen iz Excel/Sheets): naziv, trajanje[, beleška[, boja]]
+// Trajanje: "10" (min), "10:00" (MM:SS), "1:00:00" (HH:MM:SS). Red bez validnog trajanja se preskače.
+function parseRundownCSV(txt){
+  const out=[];
+  for(let line of (txt||'').split(/\r?\n/)){
+    line=line.trim(); if(!line) continue;
+    const delim=line.includes('\t')?'\t':(line.includes(';')&&!line.includes(',')?';':',');
+    // podeli poštujući navodnike
+    const cells=[]; let cur='', inQ=false;
+    for(let i=0;i<line.length;i++){ const ch=line[i];
+      if(ch==='"'){ if(inQ&&line[i+1]==='"'){cur+='"';i++;} else inQ=!inQ; }
+      else if(ch===delim&&!inQ){ cells.push(cur); cur=''; }
+      else cur+=ch; }
+    cells.push(cur);
+    const c=cells.map(x=>x.trim());
+    const ms=parseTime(c[1]);
+    if(ms===null||ms<=0) continue;   // zaglavlje ili neispravan red
+    out.push({name:c[0]||`Cue ${out.length+1}`, durationMs:ms, note:c[2]||'',
+      color:/^#[0-9a-fA-F]{6}$/.test(c[3]||'')?c[3]:''});
+  }
+  return out;
+}
+function importRundownText(txt){
+  const items=parseRundownCSV(txt);
+  if(!items.length){ alert(t('cueImportNone')); return 0; }
+  cues=cues.concat(items); saveCues(); send(); renderCues();
+  return items.length;
+}
+$('btnCueImport').addEventListener('click',()=>$('cueFile').click());
+$('cueFile').addEventListener('change',e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader(); r.onload=()=>importRundownText(String(r.result||'')); r.readAsText(f);
+  e.target.value='';
+});
+// nalepi direktno iz Excel/Sheets bilo gde u rundown karticu (TSV)
+document.querySelector('.cuewrap').addEventListener('paste',e=>{
+  const tag=(e.target.tagName||'').toLowerCase();
+  if(tag==='input'||tag==='textarea') return;   // ne otimaj paste iz polja
+  const txt=(e.clipboardData||{}).getData?e.clipboardData.getData('text'):'';
+  if(txt&&txt.includes('\t')){ e.preventDefault(); importRundownText(txt); }
+});
+$('btnCueExport').addEventListener('click',()=>{
+  const esc=v=>/[",\n]/.test(v)?'"'+String(v).replace(/"/g,'""')+'"':v;
+  const csv=cues.map(c=>{ const s=Math.round(c.durationMs/1000),h=Math.floor(s/3600),m=Math.floor((s%3600)/60),x=s%60;
+    const dur=h>0?`${h}:${pad(m)}:${pad(x)}`:`${m}:${pad(x)}`;
+    return [esc(c.name),dur,esc(c.note||''),c.color||''].join(','); }).join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent('name,duration,note,color\n'+csv);
+  a.download='protimer-rundown.csv'; a.click();
+});
+
 $('cueDur').addEventListener('keydown',e=>{ if(e.key==='Enter') addCue(); });
 $('cueName').addEventListener('keydown',e=>{ if(e.key==='Enter') addCue(); });
 $('cueNote').addEventListener('keydown',e=>{ if(e.key==='Enter') addCue(); });

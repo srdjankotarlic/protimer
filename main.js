@@ -135,8 +135,55 @@ function pushSSE(state) {
   for (const res of sseClients) { try { res.write(data); } catch (e) { sseClients.delete(res); } }
 }
 
+// ---------------- OSC ULAZ (QLab / Companion / TouchOSC / bilo koji OSC sender) ----------------
+// UDP, adrese /protimer/<type> — isti skup komandi kao HTTP API. LAN-poverenje kao kod
+// Ontime/QLab: OSC nema token (dokumentovano u SECURITY.md).
+let oscSocket = null, oscPort = 0;
+function parseOSC(buf) {
+  // OSC 1.0: address (null-terminisan string, 4-byte poravnat), ',tipovi', argumenti
+  const readStr = (off) => {
+    const end = buf.indexOf(0, off);
+    if (end < 0) return null;
+    return { str: buf.toString('ascii', off, end), next: (end + 4) & ~3 };
+  };
+  const a = readStr(0);
+  if (!a || a.str[0] !== '/') return null;
+  let args = [], off = a.next;
+  const t = readStr(off);
+  if (t && t.str[0] === ',') {
+    off = t.next;
+    for (const tag of t.str.slice(1)) {
+      if (tag === 'i') { args.push(buf.readInt32BE(off)); off += 4; }
+      else if (tag === 'f') { args.push(Math.round(buf.readFloatBE(off))); off += 4; }
+      else if (tag === 's') { const s = readStr(off); if (!s) break; args.push(s.str); off = s.next; }
+      else break; // nepodržan tag (blob/…) — stani
+    }
+  }
+  return { address: a.str, args };
+}
+function startOSC(port, attempt = 0) {
+  const dgram = require('dgram');
+  oscSocket = dgram.createSocket('udp4');
+  oscSocket.on('error', (err) => {
+    try { oscSocket.close(); } catch (e) {}
+    if (err.code === 'EADDRINUSE' && attempt < 10) startOSC(port + 1, attempt + 1);
+    else console.error('OSC error:', err.message);
+  });
+  oscSocket.on('message', (buf) => {
+    try {
+      const m = parseOSC(buf);
+      if (!m) return;
+      const type = m.address.replace(/^\/protimer\//, '');
+      if (!CMD_TYPES.includes(type)) return;
+      const cmd = { type, value: m.args.length ? m.args[0] : undefined };
+      if (controlWin && !controlWin.isDestroyed()) controlWin.webContents.send('remote-cmd', cmd);
+    } catch (e) {}
+  });
+  oscSocket.bind(port, '0.0.0.0', () => { oscPort = port; pushNetworkInfo(); });
+}
+
 function networkInfo() {
-  return { ip: lanIP(), port: serverPort, running: !!serverPort, clients: sseClients.size, token: CMD_TOKEN };
+  return { ip: lanIP(), port: serverPort, running: !!serverPort, clients: sseClients.size, token: CMD_TOKEN, oscPort };
 }
 function pushNetworkInfo() {
   if (controlWin && !controlWin.isDestroyed()) controlWin.webContents.send('network-info', networkInfo());
@@ -397,6 +444,7 @@ app.whenReady().then(() => {
     return;
   }
   startServer(7878);
+  startOSC(7879);
   createControlWindow();
 
   controlWin.webContents.once('did-finish-load', () => createOutputWindow(null));
@@ -509,6 +557,19 @@ app.whenReady().then(() => {
         const gBadType = await getStatus(`/cmd?type=hakuj&t=${CMD_TOKEN}`);
         console.log('HTTP_GET_API_OK=' + (gOK === 200 && afterGet && afterGet.durationMs === 240000 && gNoTok === 403 && gBadType === 400)
           + ` status=${gOK} dur=${afterGet && afterGet.durationMs} noTok=${gNoTok} badType=${gBadType}`);
+        // OSC: pošalji /protimer/setDuration 180000 (int32) na UDP oscPort → stanje se menja
+        const oscBuf = (() => {
+          const pad = (s) => { const b = Buffer.from(s + '\0'); return Buffer.concat([b, Buffer.alloc((4 - (b.length % 4)) % 4)]); };
+          const arg = Buffer.alloc(4); arg.writeInt32BE(180000);
+          return Buffer.concat([pad('/protimer/setDuration'), pad(',i'), arg]);
+        })();
+        await new Promise((resolve) => {
+          const s = require('dgram').createSocket('udp4');
+          s.send(oscBuf, oscPort, '127.0.0.1', () => { s.close(); resolve(); });
+        });
+        await new Promise(r => setTimeout(r, 400));
+        const afterOsc = await readState();
+        console.log('OSC_OK=' + (afterOsc && afterOsc.durationMs === 180000) + ` port=${oscPort} dur=${afterOsc && afterOsc.durationMs}`);
         const backstagePage = await new Promise((resolve) => {
           http.get(`http://127.0.0.1:${serverPort}/backstage`, r => { let d=''; r.on('data',c=>d+=c); r.on('end',()=>resolve(d.includes('Backstage'))); }).on('error',()=>resolve(false));
         });
@@ -568,6 +629,16 @@ app.whenReady().then(() => {
           startOK = s.mode === 'countdown' && s.running === true && s.rem > 0 && s.rem < 540000;
         } catch (e) { gridStartStr = 'ERR ' + e; }
         console.log('GRID_START_OK=' + startOK + ' ' + gridStartStr);
+        // CSV/TSV uvoz rundown-a: zaglavlje se preskače, "," ";" i TAB rade, navodnici čuvaju zarez
+        let csvOK = false, csvStr = '?';
+        try {
+          csvStr = await controlWin.webContents.executeJavaScript(`JSON.stringify(parseRundownCSV(
+            'name,duration,note\\nWelcome,10:00,"Emma, host"\\nSession;25:00;Liam\\nLunch\\t1:00:00\\tlobby\\nbad row,,x\\n'))`);
+          const rows = JSON.parse(csvStr);
+          csvOK = rows.length === 3 && rows[0].durationMs === 600000 && rows[0].note === 'Emma, host'
+            && rows[1].durationMs === 1500000 && rows[2].durationMs === 3600000;
+        } catch (e) { csvStr = 'ERR ' + e; }
+        console.log('CSV_OK=' + csvOK + (csvOK ? '' : ' ' + csvStr));
         console.log('SMOKE_OK');
         app.exit(0);
       } catch (err) { console.error('SMOKE_FAIL', err); app.exit(1); }
