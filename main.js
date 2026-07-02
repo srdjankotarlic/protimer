@@ -8,6 +8,8 @@ const crypto = require('crypto');
 const SMOKE = process.argv.includes('--smoke');
 // token za daljinske komande (/cmd) — samo onaj ko ima ?t=token u linku može da kontroliše
 const CMD_TOKEN = crypto.randomBytes(8).toString('hex');
+// komande koje /cmd prihvata (isti skup koji kontroler ume da primeni)
+const CMD_TYPES = ['start', 'reset', 'adjust', 'go', 'blackout', 'setDuration', 'mode', 'message', 'clearMessage', 'text', 'clearText', 'textOnly'];
 
 let controlWin = null;
 let outputWin = null;
@@ -63,25 +65,34 @@ function startServer(port, attempt = 0) {
       return;
     }
 
-    // komande sa daljinskog (telefon/tablet) → prosledi kontrolnom prozoru
-    if (url === '/cmd' && req.method === 'POST') {
+    // komande sa daljinskog (telefon/tablet) i HTTP API (Stream Deck / Companion / cURL)
+    // POST /cmd {type,value} ili GET /cmd?type=start&value=…&t=TOKEN
+    if (url === '/cmd' && (req.method === 'POST' || req.method === 'GET')) {
       // token: samo onaj ko ima ispravan ?t= / x-pt-token sme da kontroliše
-      const qToken = new URLSearchParams((req.url.split('?')[1] || '')).get('t');
-      const token = req.headers['x-pt-token'] || qToken;
+      const qs = new URLSearchParams(req.url.split('?')[1] || '');
+      const token = req.headers['x-pt-token'] || qs.get('t');
       if (token !== CMD_TOKEN) {
         res.writeHead(403, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
         res.end('{"ok":false,"error":"unauthorized"}');
         return;
       }
+      const dispatch = (cmd) => {
+        const ok = cmd && CMD_TYPES.includes(cmd.type);
+        if (ok && controlWin && !controlWin.isDestroyed()) controlWin.webContents.send('remote-cmd', cmd);
+        res.writeHead(ok ? 200 : 400, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+        res.end(ok ? '{"ok":true}' : '{"ok":false,"error":"unknown type"}');
+      };
+      if (req.method === 'GET') {
+        const v = qs.get('value');
+        dispatch({ type: qs.get('type'), value: v === null ? undefined : (/^-?\d+$/.test(v) ? +v : v) });
+        return;
+      }
       let body = '';
       req.on('data', c => { body += c; if (body.length > 1e5) req.destroy(); });
       req.on('end', () => {
-        try {
-          const cmd = JSON.parse(body || '{}');
-          if (controlWin && !controlWin.isDestroyed()) controlWin.webContents.send('remote-cmd', cmd);
-        } catch (e) {}
-        res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
-        res.end('{"ok":true}');
+        let cmd = null;
+        try { cmd = JSON.parse(body || '{}'); } catch (e) {}
+        dispatch(cmd);
       });
       return;
     }
@@ -487,6 +498,17 @@ app.whenReady().then(() => {
           r.on('error', () => resolve(0)); r.write(data); r.end();
         });
         console.log('CMD_TOKEN_GUARD_OK=' + (noTokStatus === 403));
+        // HTTP GET API (Stream Deck / Companion): GET /cmd?type=…&t=token menja stanje
+        const getStatus = (u) => new Promise((resolve) => {
+          http.get(`http://127.0.0.1:${serverPort}${u}`, r => { r.resume(); resolve(r.statusCode); }).on('error', () => resolve(0));
+        });
+        const gOK = await getStatus(`/cmd?type=setDuration&value=240000&t=${CMD_TOKEN}`);
+        await new Promise(r => setTimeout(r, 400));
+        const afterGet = await readState();
+        const gNoTok = await getStatus(`/cmd?type=reset`);
+        const gBadType = await getStatus(`/cmd?type=hakuj&t=${CMD_TOKEN}`);
+        console.log('HTTP_GET_API_OK=' + (gOK === 200 && afterGet && afterGet.durationMs === 240000 && gNoTok === 403 && gBadType === 400)
+          + ` status=${gOK} dur=${afterGet && afterGet.durationMs} noTok=${gNoTok} badType=${gBadType}`);
         const backstagePage = await new Promise((resolve) => {
           http.get(`http://127.0.0.1:${serverPort}/backstage`, r => { let d=''; r.on('data',c=>d+=c); r.on('end',()=>resolve(d.includes('Backstage'))); }).on('error',()=>resolve(false));
         });

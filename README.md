@@ -24,6 +24,7 @@
 - 📐 **Compact window** — when not fullscreen, the output window can hug the timer: a small timer means a small window, no big black box
 - 📺 **OBS / NDI / vMix** — built-in network output; add it as a Browser Source (transparent background for overlays)
 - 📱 **Phone remote** — start the timer and send messages to the speaker from your hand, over Wi-Fi
+- 🎛️ **Stream Deck / HTTP API** — control the timer from Bitfocus Companion (its built-in *Generic HTTP* module), a Stream Deck, or plain `curl` — no extra plugin needed
 - 🔗 **Share with anyone** — a **QR code** to scan on-site, or a one-click **public link** that works from any network
 - 🗒️ **Rundown** — a run of segments with **durations, notes, colors and planned clock times**
 - 🎭 **Backstage view** — a crew/guest screen with **NOW / NEXT**, the full schedule and live clock times
@@ -54,7 +55,8 @@ ProTimer doesn't try to beat the big tools at everything — it aims to be the s
 | Transparent OBS overlay | ✅ | ✅ | ✅ | ✅ |
 | Phone remote · QR · public link | ✅ | ✅ | partial | ✅ |
 | Rundown + backstage view | ✅ basic | ✅ | ✅ advanced | ✅ |
-| OSC / HTTP / Companion API | ❌ | ✅ | ✅ | ✅ |
+| HTTP API (Stream Deck / Companion) | ✅ | ✅ | ✅ | ✅ |
+| OSC / native Companion module | ❌ | ✅ | ✅ | ✅ |
 | Serbian interface | ✅ | ❌ | ❌ | ❌ |
 
 **Honest take:** if you need deep integrations (OSC, Companion, vMix/Qlab) or multi-operator collaboration, [Ontime](https://www.getontime.no/) and [StageTimer](https://stagetimer.io/) are more mature — they're great tools. ProTimer wins when you want something **free, simple, no-account and bilingual** that you open and use in seconds.
@@ -105,6 +107,17 @@ Open the same URL on any computer/TV on the network as a confidence monitor.
 
 ### 📱 Phone remote
 The same panel has a **Remote** URL (`…:7878/remote`). Open it in your phone's browser (same Wi-Fi). You get big buttons: Start/Pause, Reset, ±time, GO next, blackout, quick durations, and messages to the speaker. *(The main ProTimer must stay open on the computer.)*
+
+### 🎛️ Stream Deck / Companion / HTTP API
+Every command is a simple **HTTP GET** — the network panel shows a ready-made **API** URL (with your session token) to copy:
+
+```
+http://<ip>:7878/cmd?type=start&t=<token>
+```
+
+Available `type` values: `start` (toggles start/pause), `reset`, `go` (next cue), `blackout`, `adjust&value=<seconds>` (e.g. `-60`), `setDuration&value=<ms>`, `mode&value=countdown|countup|clock`, `message&value=<text>`, `clearMessage`, `text&value=<text>`, `clearText`.
+
+**Stream Deck via [Bitfocus Companion](https://bitfocus.io/companion):** add a **Generic HTTP** connection, create a button with an *HTTP GET* action, and paste the API URL (change `type` per button). That's it — Start, Reset, GO and ±1min on physical keys, no plugin required. Works from `curl`, Keyboard Maestro, or any automation too. The token changes on every app launch (security), so re-copy the URL after restarting ProTimer.
 
 ### 🎨 Colors & text
 - **Colors**: pick the background and digit color. "Warning colors" turn yellow/red near the end (you can turn them off).
@@ -163,7 +176,8 @@ Ideas on the list (feedback very welcome — open an issue to vote or suggest):
 - [ ] Signed / notarized builds (no “unidentified developer” warning)
 - [ ] Import a rundown from Excel / Google Sheets / CSV
 - [ ] Groups/blocks in the rundown (e.g. *Morning Sessions*, *Lunch*)
-- [ ] OSC / HTTP control API + Bitfocus Companion module
+- [x] ~~HTTP control API~~ — done (works with Companion's Generic HTTP module + Stream Deck)
+- [ ] Native OSC + dedicated Bitfocus Companion module
 - [ ] More languages
 - [ ] Multiple independent timers
 

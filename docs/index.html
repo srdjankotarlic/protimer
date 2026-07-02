@@ -39,7 +39,7 @@
   "description": "A free, open-source stage timer for live production. Big countdown for the stage, transparent OBS overlay, phone remote and a backstage view.",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
   "downloadUrl": "https://github.com/srdjankotarlic/protimer/releases/latest",
-  "softwareVersion": "1.6.2",
+  "softwareVersion": "1.7.0",
   "license": "https://opensource.org/licenses/MIT",
   "url": "https://srdjankotarlic.github.io/protimer/",
   "image": "https://srdjankotarlic.github.io/protimer/og-banner.png",
@@ -57,7 +57,8 @@
     { "@type": "Question", "name": "Does ProTimer work with OBS?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. ProTimer serves a web page you add as an OBS Browser Source. Enable the transparent background and you get a clean countdown overlay over your scene. It can also be turned into NDI through OBS." } },
     { "@type": "Question", "name": "Which platforms does ProTimer run on?", "acceptedAnswer": { "@type": "Answer", "text": "ProTimer runs on macOS (Apple Silicon) and Windows. Downloads are on the GitHub releases page." } },
     { "@type": "Question", "name": "Can I control the timer from my phone?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. ProTimer gives you a remote URL you open on any phone or tablet on the same Wi-Fi, plus a QR code so others can watch the timer." } },
-    { "@type": "Question", "name": "Is ProTimer a free alternative to StageTimer or Ontime?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. ProTimer is a free, open-source stage timer for live production — a lightweight alternative to tools like StageTimer, Ontime and CueTimer for the core countdown, OBS overlay and phone-remote use case." } }
+    { "@type": "Question", "name": "Is ProTimer a free alternative to StageTimer or Ontime?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. ProTimer is a free, open-source stage timer for live production — a lightweight alternative to tools like StageTimer, Ontime and CueTimer for the core countdown, OBS overlay and phone-remote use case." } },
+    { "@type": "Question", "name": "Can I control ProTimer with a Stream Deck?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. ProTimer has an HTTP GET control API that works with Bitfocus Companion's built-in Generic HTTP module — start, reset, GO and time adjustments on physical Stream Deck keys, with no extra plugin." } }
   ]
 }
 </script>
@@ -159,7 +160,8 @@
         <div class="card"><div class="ic">⏱️</div><h3>Countdown, stopwatch &amp; clock</h3><p>Plus “count down to an exact time”, color warnings (white → yellow → red) and overtime with a flash at zero.</p></div>
         <div class="card"><div class="ic">📺</div><h3>OBS / NDI overlay</h3><p>A transparent output you add as an OBS Browser Source — a clean countdown over your video. NDI through OBS.</p></div>
         <div class="card"><div class="ic">📱</div><h3>Phone remote &amp; QR</h3><p>Run the timer from your phone over Wi-Fi, and share a QR code or link so anyone can watch the timer.</p></div>
-        <div class="card"><div class="ic">🖥️</div><h3>Send to any screen</h3><p>Push the output fullscreen to a second monitor or projector with one click.</p></div>
+        <div class="card"><div class="ic">🖥️</div><h3>Send to any screen</h3><p>Push the output fullscreen to a second monitor or projector with one click — or into an exact grid cell as a small frameless window.</p></div>
+        <div class="card"><div class="ic">🎛️</div><h3>Stream Deck / HTTP API</h3><p>Start, reset, GO and ±time from Bitfocus Companion’s built-in Generic HTTP module — physical Stream Deck keys, no plugin needed.</p></div>
         <div class="card"><div class="ic">🎭</div><h3>Rundown &amp; backstage view</h3><p>A run of show with NOW / NEXT, planned clock times and an over/under “are we on time?” indicator.</p></div>
         <div class="card"><div class="ic">🌍</div><h3>Free &amp; bilingual</h3><p>Completely free, open-source, no sign-up. Interface in English and Serbian. Keyboard shortcuts, low latency.</p></div>
       </div>
@@ -195,6 +197,7 @@
       <details><summary>Which platforms does it run on?</summary><p>macOS (Apple Silicon) and Windows. Grab the installer from the <a href="https://github.com/srdjankotarlic/protimer/releases/latest">releases page</a>.</p></details>
       <details><summary>Can I control it from my phone?</summary><p>Yes. ProTimer gives you a remote URL for any phone or tablet on the same Wi-Fi, plus a QR code so others can pull up the timer on their own screens.</p></details>
       <details><summary>Is it an alternative to StageTimer, Ontime or CueTimer?</summary><p>It’s a free, open-source stage timer that covers the core countdown, OBS overlay and phone-remote use case — a lightweight, no-account alternative for live events, conferences, churches, theatres and streams.</p></details>
+      <details><summary>Does it work with a Stream Deck?</summary><p>Yes — every command is a simple HTTP GET, so Bitfocus Companion’s built-in Generic HTTP module drives it directly: Start, Reset, GO and ±time on physical keys, no plugin required.</p></details>
     </div>
   </section>
 

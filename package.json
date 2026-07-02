@@ -1,7 +1,7 @@
 {
   "name": "pro-timer",
   "productName": "ProTimer",
-  "version": "1.6.2",
+  "version": "1.7.0",
   "description": "Profesionalni stage timer za live produkciju",
   "main": "main.js",
   "author": "Srdjan Kotarlic",

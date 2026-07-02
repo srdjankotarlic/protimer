@@ -344,6 +344,11 @@
         <button class="mini ghost qrbtn" data-qr="netBackstage" title="QR kod">QR</button>
         <button id="btnCopyBackstage" class="mini ghost" data-i18n="copy">Kopiraj</button>
       </div>
+      <div class="lbl" style="margin-bottom:5px" data-i18n="apiLabel">API (Stream Deck / Companion)</div>
+      <div class="net-url">
+        <span id="netApi" style="color:#c9a0ff" data-i18n-title="apiTitle" title="GET komanda za Companion „Generic HTTP“ dugme. type: start · reset · go · blackout · adjust(&value=sek) · setDuration(&value=ms)">—</span>
+        <button id="btnCopyApi" class="mini ghost" data-i18n="copy">Kopiraj</button>
+      </div>
 
       <div id="qrBox" class="qrbox"></div>
 
@@ -398,6 +403,7 @@ const I18N = {
     autoNext:'Auto-prelaz na sledeći', goNext:'GO ▶ SLEDEĆI &nbsp;(N)', noName:'(bez naziva)',
     rundown:'RUNDOWN', showStart:'Start', notePh:'Beleška (opciono)…', nowNextOut:'NOW/NEXT na ekranu',
     backstageLabel:'Backstage (raspored / crew)', onTime:'NA VREME', late:'kasni', early:'ispred',
+    apiLabel:'API (Stream Deck / Companion)', apiTitle:'GET komanda za Companion „Generic HTTP“ dugme. type: start · reset · go · blackout · adjust(&value=sek) · setDuration(&value=ms)',
     nowLabel:'SADA', nextLabel:'SLEDI', endLabel:'Kraj', plannedLabel:'Planirano', projectedLabel:'Procena',
     netTitle:'MREŽA → OBS · TELEFON', screenOBS:'Ekran (OBS / monitor)', copy:'Kopiraj',
     remoteLabel:'Daljinski (telefon / tablet)',
@@ -428,6 +434,7 @@ const I18N = {
     autoNext:'Auto-advance to next', goNext:'GO ▶ NEXT &nbsp;(N)', noName:'(no name)',
     rundown:'RUNDOWN', showStart:'Start', notePh:'Note (optional)…', nowNextOut:'NOW/NEXT on screen',
     backstageLabel:'Backstage (schedule / crew)', onTime:'ON TIME', late:'behind', early:'ahead',
+    apiLabel:'API (Stream Deck / Companion)', apiTitle:'GET command for a Companion "Generic HTTP" button. type: start · reset · go · blackout · adjust(&value=sec) · setDuration(&value=ms)',
     nowLabel:'NOW', nextLabel:'NEXT', endLabel:'End', plannedLabel:'Planned', projectedLabel:'Projected',
     netTitle:'NETWORK → OBS · PHONE', screenOBS:'Screen (OBS / monitor)', copy:'Copy',
     remoteLabel:'Remote (phone / tablet)',
@@ -729,16 +736,18 @@ async function refreshDisplays(){ fillDisplays(await api.getDisplays()); }
 api.onDisplays(fillDisplays);
 
 // ---------- MREŽA ----------
-let netUrl='', remoteUrl='', backstageUrl='';
+let netUrl='', remoteUrl='', backstageUrl='', apiUrl='';
 function showNet(info){
   lastNetInfo = info;
-  if(!info||!info.running){ $('netUrl').textContent='—'; $('netRemote').textContent='—'; $('netBackstage').textContent='—'; $('netStatus').textContent=t('netOff'); $('netDot').classList.remove('on'); return; }
+  if(!info||!info.running){ $('netUrl').textContent='—'; $('netRemote').textContent='—'; $('netBackstage').textContent='—'; $('netApi').textContent='—'; $('netStatus').textContent=t('netOff'); $('netDot').classList.remove('on'); return; }
   netUrl=`http://${info.ip}:${info.port}`;
   remoteUrl=`${netUrl}/remote${info.token?`?t=${info.token}`:''}`;
   backstageUrl=`${netUrl}/backstage`;
+  apiUrl=`${netUrl}/cmd?type=start${info.token?`&t=${info.token}`:''}`;
   $('netUrl').textContent=netUrl;
   $('netRemote').textContent=remoteUrl;
   $('netBackstage').textContent=backstageUrl;
+  $('netApi').textContent=apiUrl;
   $('netDot').classList.add('on');
   const word = info.clients===1?t('deviceOne'):t('deviceMany');
   $('netStatus').textContent=`${t('live')} · ${info.clients} ${word} ${t('connected')}`;
@@ -749,6 +758,7 @@ function copyBtn(btn, getUrl){ btn.addEventListener('click',()=>{ const u=getUrl
 copyBtn($('btnCopyUrl'), ()=>netUrl);
 copyBtn($('btnCopyRemote'), ()=>remoteUrl);
 copyBtn($('btnCopyBackstage'), ()=>backstageUrl);
+copyBtn($('btnCopyApi'), ()=>apiUrl);
 
 // ---------- QR KOD ----------
 let qrShownFor='';
