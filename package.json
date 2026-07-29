@@ -2,12 +2,27 @@
   "name": "pro-timer",
   "productName": "ProTimer",
   "version": "2.0.0",
-  "description": "Profesionalni stage timer za live produkciju",
+  "description": "Free stage timer and speaker countdown for live events, conferences and OBS",
   "main": "main.js",
   "author": "Srdjan Kotarlic",
   "license": "MIT",
   "repository": "https://github.com/srdjankotarlic/protimer",
   "homepage": "https://srdjankotarlic.github.io/protimer/",
+  "bugs": {
+    "url": "https://github.com/srdjankotarlic/protimer/issues"
+  },
+  "keywords": [
+    "stage-timer",
+    "speaker-timer",
+    "conference-timer",
+    "presentation-timer",
+    "countdown-timer",
+    "live-events",
+    "live-production",
+    "obs",
+    "rundown",
+    "stream-deck"
+  ],
   "scripts": {
     "start": "electron .",
     "smoke": "electron . --smoke",

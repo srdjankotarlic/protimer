@@ -1,87 +1,83 @@
-# ⏱️ ProTimer
+<p align="center">
+  <img src="build/icon.png" width="112" alt="ProTimer stage timer icon">
+</p>
 
-**A free, open-source stage timer for live production.** Big, clear countdown on any screen — stage, projector, OBS, or a phone in your hand. Runs on **macOS and Windows**, with a **Serbian / English** interface.
+<h1 align="center">ProTimer</h1>
 
-[![Download latest release](https://img.shields.io/github/v/release/srdjankotarlic/protimer?color=2ea043&label=%E2%AC%87%EF%B8%8F%20download&style=for-the-badge)](https://github.com/srdjankotarlic/protimer/releases/latest)
-&nbsp;
-[![Platforms](https://img.shields.io/badge/macOS%20%C2%B7%20Windows-free-2ea043?style=for-the-badge)](https://github.com/srdjankotarlic/protimer/releases/latest)
-&nbsp;
-[![License: MIT](https://img.shields.io/github/license/srdjankotarlic/protimer?style=for-the-badge&color=555)](LICENSE)
+<p align="center">
+  <strong>A free stage timer and speaker countdown for live events, conferences, presentations and OBS.</strong><br>
+  Send a clear timer to a projector, confidence monitor, browser source or phone from one local app.
+</p>
 
-> ### 👉 [Download for macOS or Windows](https://github.com/srdjankotarlic/protimer/releases/latest) — free, no sign-up
+<p align="center">
+  <a href="https://github.com/srdjankotarlic/protimer/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/srdjankotarlic/protimer/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="https://github.com/srdjankotarlic/protimer/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/srdjankotarlic/protimer?label=stable"></a>
+  <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-2f81f7"></a>
+  <img alt="macOS Apple Silicon" src="https://img.shields.io/badge/macOS-Apple%20Silicon-111827">
+  <img alt="Windows x64" src="https://img.shields.io/badge/Windows-x64-2563eb">
+</p>
 
-![ProTimer stage screen — countdown turning yellow then red, with NOW / NEXT](docs/demo.gif)
+<p align="center">
+  <a href="https://srdjankotarlic.github.io/protimer/"><strong>Product page</strong></a>
+  ·
+  <a href="#download-and-install"><strong>Download</strong></a>
+  ·
+  <a href="#quick-start-30-seconds"><strong>Quick start</strong></a>
+</p>
 
----
+![ProTimer stage screen counting down with warning colors and NOW / NEXT](docs/demo.gif)
 
-## ✨ Features
+## Download and install
 
-- 🟢 **Countdown, stopwatch & clock** — plus "count down to an exact time" (e.g. end the block at 2:30 PM)
-- 🎨 **Clean output screen** — just the time; you pick the background and digit colors
-- 🔴 **Color warnings** — white → yellow → red as the end approaches; counts past zero into the negative with a flash
-- 🖥️ **Any screen** — send the output to a second monitor / projector in fullscreen with one click
-- 🔲 **Grid placement** — pick a cell of a 3×3 / 5×5 / 7×7 / 9×9 grid and the **output window becomes that exact cell of the screen** — a small, frameless timer window sitting precisely where you want it (pair with *Transparent* for a clean see-through corner overlay)
-- 📐 **Compact window** — when not fullscreen, the output window can hug the timer: a small timer means a small window, no big black box
-- 📺 **OBS / NDI / vMix** — built-in network output; add it as a Browser Source (transparent background for overlays)
-- 📱 **Phone remote** — start the timer and send messages to the speaker from your hand, over Wi-Fi
-- 🎛️ **Stream Deck / Companion** — a [dedicated Companion module](https://github.com/srdjankotarlic/companion-module-protimer) with live feedbacks and a time variable, or the built-in *Generic HTTP* module — plus a plain HTTP GET API for `curl` and automations
-- 🎚️ **OSC input** — control from QLab, TouchOSC or any OSC sender (`/protimer/start` on UDP 7879)
-- 📄 **CSV import / export** — build the rundown in Excel or Google Sheets and import it (or just **paste** it in); export back to CSV
-- 🔗 **Share with anyone** — a **QR code** to scan on-site, or a one-click **public link** that works from any network
-- 🗒️ **Rundown** — a run of segments with **durations, notes, colors and planned clock times**
-- 🎭 **Backstage view** — a crew/guest screen with **NOW / NEXT**, the full schedule and live clock times
-- ⏰ **Over / Under** — see at a glance whether the show will finish **ahead or behind** schedule
-- 📍 **NOW / NEXT** on the stage screen — presenters always see what's current and what's next
-- 💬 **Messages to the speaker** + ✍️ **on-screen text** ("BREAK", "WELCOME")
-- 🌍 **Serbian / English** interface, ⌨️ keyboard shortcuts, ⚡ low latency (no lag, no drift)
+> **Download one recommended installer for your computer.** GitHub's automatic `Source code` ZIP and TAR.GZ files are for developers and will not install ProTimer.
 
-The **control window** — your cockpit: transport, modes, colors, rundown and the network/OBS links:
+| Your computer | Recommended download | Install |
+|---|---|---|
+| Apple Silicon Mac (M1 or newer) | **[Download the macOS DMG](https://github.com/srdjankotarlic/protimer/releases/download/v2.0.0/ProTimer-2.0.0-arm64.dmg)** | Open the DMG and drag **ProTimer** to Applications. |
+| Windows 10/11 x64 | **[Download the Windows installer](https://github.com/srdjankotarlic/protimer/releases/download/v2.0.0/ProTimer-Setup-2.0.0.exe)** | Run Setup and follow the installer. |
+
+Need a Windows build that does not install? Use the [portable EXE](https://github.com/srdjankotarlic/protimer/releases/download/v2.0.0/ProTimer-2.0.0-portable.exe). Most Windows users should choose Setup.
+
+<details>
+<summary><strong>First-launch security warning</strong></summary>
+
+The current downloads are not Apple-notarized or Windows Authenticode-signed.
+
+- On macOS, confirm the DMG came from this repository. If Gatekeeper blocks the app, use **System Settings -> Privacy & Security -> Open Anyway**.
+- On Windows, SmartScreen may show **Unknown publisher**. Continue only for the installer downloaded from this repository.
+
+</details>
+
+## What ProTimer does
+
+- **Countdown, stopwatch and clock** with warning colors, overtime and an exact end-time mode.
+- **Dedicated stage output** for a projector, second display or confidence monitor.
+- **Transparent OBS browser-source timer** for livestream and recording overlays.
+- **Phone remote and QR access** over the local production network.
+- **Simple event rundown** with NOW, NEXT, planned times and over/under status.
+- **Backstage view** for crew, green room, stage manager or lobby display.
+- **Stream Deck and automation control** through Bitfocus Companion, HTTP and OSC.
+- **CSV import and export**, speaker messages, grid placement and a compact output window.
+- **English and Serbian interface**, no account, no subscription and no watermark.
+
+ProTimer is designed for small and medium live events that need reliable speaker timing without a complex show-control system.
+
+## ProTimer or ProTimer Studio?
+
+- Choose **ProTimer** when you primarily need a fast countdown, OBS overlay, phone remote and a simple rundown.
+- Choose **[ProTimer Studio](https://github.com/srdjankotarlic/protimer-studio)** when you also need a NEXT/LIVE/GO workflow, lower thirds, screen content and several independently configured outputs.
+
+The **control window** keeps timer transport, display output, rundown and network links in one place:
 
 ![ProTimer control window](docs/screenshot-control.png)
 
-The **Backstage** view — `NOW`, `NEXT`, the schedule and an over/under indicator, on any screen or phone:
+The **Backstage view** shows NOW, NEXT, the schedule and over/under status on any browser:
 
 ![ProTimer backstage view](docs/screenshot-backstage.png)
 
 ---
 
-## ⚖️ How does it compare?
-
-ProTimer doesn't try to beat the big tools at everything — it aims to be the simplest **free** one that just works for the core job.
-
-| | **ProTimer** | StageTimer | Ontime | CueTimer |
-|---|:---:|:---:|:---:|:---:|
-| Price | **Free** | Free → $210–980 | **Free** (cloud paid) | $50+/yr |
-| Open-source | ✅ | ❌ | ✅ | ❌ |
-| Runs locally, no account | ✅ | desktop tier | ✅ | ✅ |
-| Transparent OBS overlay | ✅ | ✅ | ✅ | ✅ |
-| Phone remote · QR · public link | ✅ | ✅ | partial | ✅ |
-| Rundown + backstage view | ✅ basic | ✅ | ✅ advanced | ✅ |
-| HTTP API (Stream Deck / Companion) | ✅ | ✅ | ✅ | ✅ |
-| OSC input | ✅ | ❌ | ✅ | partial |
-| Companion module | ✅ [module](https://github.com/srdjankotarlic/companion-module-protimer) | ✅ | ✅ | ✅ |
-| CSV rundown import/export | ✅ | ✅ | ✅ | ✅ |
-| Serbian interface | ✅ | ❌ | ❌ | ❌ |
-
-**Honest take:** if you need multi-operator collaboration or deep rundown automation, [Ontime](https://www.getontime.no/) and [StageTimer](https://stagetimer.io/) are more mature — they're great tools. ProTimer wins when you want something **free, simple, no-account and bilingual** that you open and use in seconds — and it now covers the pro-AV control stack too (Stream Deck, OSC, HTTP, CSV).
-
----
-
-## ⬇️ Download & install
-
-Grab the latest build from the **[Releases page](../../releases/latest)**:
-
-| System | File | How |
-|---|---|---|
-| 🍎 **macOS** (Apple Silicon) | `ProTimer-*-arm64.dmg` | Open → drag to Applications. First launch: **right-click → Open**. |
-| 🪟 **Windows** | `ProTimer Setup *.exe` | Run the installer. SmartScreen: **More info → Run anyway**. |
-| 🪟 **Windows** (no install) | `ProTimer-*-portable.exe` | Just double-click — nothing gets installed. |
-
-> The app isn't paid-signed (that costs money), hence the "right-click → Open" / "Run anyway" the first time. It's completely safe — the source is right here, open.
-
----
-
-## 🚀 Quick start (30 seconds)
+## Quick start (30 seconds)
 
 1. Open ProTimer — you immediately get **two windows**: *Control* (for you) and *Screen* (clean time).
 2. Type a duration (e.g. `5:00`) or click the `5m` button, then **START** (or `Space`).

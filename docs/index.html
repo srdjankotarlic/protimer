@@ -6,23 +6,31 @@
 <meta name="google-site-verification" content="8XQrjWTrPu_H5qRAX91drrvps-Gkw1Ywux-kTV5GHx0" />
 
 <!-- ===== SEO ===== -->
-<title>ProTimer — Free Stage Timer for OBS & Live Events (Mac & Windows)</title>
-<meta name="description" content="ProTimer is a free, open-source stage timer for live production. Big countdown, transparent OBS overlay, phone remote and a backstage view. Works on macOS and Windows.">
-<meta name="keywords" content="free stage timer, stage timer software, countdown timer for live events, OBS countdown timer, OBS timer overlay, speaker timer, presentation timer, event timer, rundown timer, free StageTimer alternative, open source stage timer">
+<title>Free Stage Timer for Live Events &amp; OBS | ProTimer</title>
+<meta name="description" content="Download ProTimer, a free stage timer and speaker countdown for live events, conferences and OBS. Mac and Windows, phone remote, rundown, no account.">
+<meta name="keywords" content="free stage timer, speaker timer, conference timer, presentation timer, live event countdown, OBS countdown timer, OBS timer overlay, event rundown timer, church stage timer, open source stage timer">
 <link rel="canonical" href="https://srdjankotarlic.github.io/protimer/">
+<link rel="alternate" hreflang="en" href="https://srdjankotarlic.github.io/protimer/">
+<link rel="alternate" hreflang="x-default" href="https://srdjankotarlic.github.io/protimer/">
+<link rel="sitemap" type="application/xml" href="https://srdjankotarlic.github.io/protimer/sitemap.xml">
 <meta name="author" content="Srdjan Kotarlic">
-<meta name="robots" content="index, follow">
+<meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
+<meta name="theme-color" content="#0a0c10">
 
 <!-- Open Graph / social -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="ProTimer">
-<meta property="og:title" content="ProTimer — Free Stage Timer for OBS & Live Events">
-<meta property="og:description" content="A free, open-source stage timer for live production. Big countdown, transparent OBS overlay, phone remote and a backstage view. macOS & Windows.">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="ProTimer | Free Stage Timer for Live Events &amp; OBS">
+<meta property="og:description" content="A clear speaker countdown for projectors, confidence monitors, OBS and phones. Free, open source, no account, for Mac and Windows.">
 <meta property="og:url" content="https://srdjankotarlic.github.io/protimer/">
 <meta property="og:image" content="https://srdjankotarlic.github.io/protimer/og-banner.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ProTimer stage timer and live event rundown">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="ProTimer — Free Stage Timer for OBS & Live Events">
-<meta name="twitter:description" content="A free, open-source stage timer for live production. Transparent OBS overlay, phone remote, backstage view. Mac & Windows.">
+<meta name="twitter:title" content="ProTimer | Free Stage Timer for Live Events &amp; OBS">
+<meta name="twitter:description" content="Free speaker countdown, OBS timer overlay, phone remote and simple rundown for Mac and Windows.">
 <meta name="twitter:image" content="https://srdjankotarlic.github.io/protimer/og-banner.png">
 
 <link rel="icon" type="image/png" href="icon.png">
@@ -35,15 +43,33 @@
   "@type": "SoftwareApplication",
   "name": "ProTimer",
   "applicationCategory": "MultimediaApplication",
-  "operatingSystem": "macOS, Windows",
-  "description": "A free, open-source stage timer for live production. Big countdown for the stage, transparent OBS overlay, phone remote and a backstage view.",
+  "applicationSubCategory": "Stage timer and speaker countdown software",
+  "operatingSystem": "macOS, Windows 10, Windows 11",
+  "description": "A free stage timer and speaker countdown for live events, conferences, presentations and OBS, with phone remote and event rundown.",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-  "downloadUrl": "https://github.com/srdjankotarlic/protimer/releases/latest",
+  "downloadUrl": [
+    "https://github.com/srdjankotarlic/protimer/releases/download/v2.0.0/ProTimer-2.0.0-arm64.dmg",
+    "https://github.com/srdjankotarlic/protimer/releases/download/v2.0.0/ProTimer-Setup-2.0.0.exe"
+  ],
   "softwareVersion": "2.0.0",
+  "softwareRequirements": "Apple Silicon Mac, or Windows 10/11 x64",
   "license": "https://opensource.org/licenses/MIT",
+  "isAccessibleForFree": true,
   "url": "https://srdjankotarlic.github.io/protimer/",
+  "sameAs": "https://github.com/srdjankotarlic/protimer",
   "image": "https://srdjankotarlic.github.io/protimer/og-banner.png",
-  "screenshot": "https://srdjankotarlic.github.io/protimer/screenshot-backstage.png",
+  "screenshot": [
+    "https://srdjankotarlic.github.io/protimer/screenshot-output.png",
+    "https://srdjankotarlic.github.io/protimer/screenshot-control.png",
+    "https://srdjankotarlic.github.io/protimer/screenshot-backstage.png"
+  ],
+  "featureList": [
+    "Speaker countdown, stopwatch and clock",
+    "Transparent OBS browser-source timer",
+    "Phone remote and backstage view",
+    "Event rundown with NOW and NEXT",
+    "Stream Deck, HTTP and OSC control"
+  ],
   "author": { "@type": "Person", "name": "Srdjan Kotarlic", "url": "https://github.com/srdjankotarlic" }
 }
 </script>
@@ -55,10 +81,11 @@
   "mainEntity": [
     { "@type": "Question", "name": "Is ProTimer free?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. ProTimer is completely free and open-source under the MIT license. No sign-up, no subscription." } },
     { "@type": "Question", "name": "Does ProTimer work with OBS?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. ProTimer serves a web page you add as an OBS Browser Source. Enable the transparent background and you get a clean countdown overlay over your scene. It can also be turned into NDI through OBS." } },
-    { "@type": "Question", "name": "Which platforms does ProTimer run on?", "acceptedAnswer": { "@type": "Answer", "text": "ProTimer runs on macOS (Apple Silicon) and Windows. Downloads are on the GitHub releases page." } },
+    { "@type": "Question", "name": "Which ProTimer file should I download?", "acceptedAnswer": { "@type": "Answer", "text": "Apple Silicon Mac users should download the DMG. Windows 10 or 11 x64 users should download the Setup EXE. GitHub Source code archives are for developers and do not install the app." } },
     { "@type": "Question", "name": "Can I control the timer from my phone?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. ProTimer gives you a remote URL you open on any phone or tablet on the same Wi-Fi, plus a QR code so others can watch the timer." } },
     { "@type": "Question", "name": "Is ProTimer a free alternative to StageTimer or Ontime?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. ProTimer is a free, open-source stage timer for live production — a lightweight alternative to tools like StageTimer, Ontime and CueTimer for the core countdown, OBS overlay and phone-remote use case." } },
-    { "@type": "Question", "name": "Can I control ProTimer with a Stream Deck?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. ProTimer has an HTTP GET control API that works with Bitfocus Companion's built-in Generic HTTP module — start, reset, GO and time adjustments on physical Stream Deck keys, with no extra plugin." } }
+    { "@type": "Question", "name": "Can I control ProTimer with a Stream Deck?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. ProTimer has an HTTP GET control API and a Bitfocus Companion module for start, reset, GO, messages and time adjustments." } },
+    { "@type": "Question", "name": "Should I use ProTimer or ProTimer Studio?", "acceptedAnswer": { "@type": "Answer", "text": "Choose ProTimer for a fast stage countdown, OBS overlay, phone remote and simple rundown. Choose ProTimer Studio when you also need a NEXT/LIVE/GO workflow, lower thirds, screen content and multiple independent outputs." } }
   ]
 }
 </script>
@@ -125,6 +152,14 @@
   footer{border-top:1px solid var(--border); padding:34px 0 50px; color:var(--dim); font-size:14px; text-align:center;}
   footer a{color:var(--dim);} footer a:hover{color:var(--text);}
   .dl-row{display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin:30px 0 6px;}
+  .download-grid{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; max-width:860px; margin:28px auto 0; text-align:left;}
+  .download-card{background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:22px;}
+  .download-card h3{font-size:20px; margin-bottom:4px;}
+  .download-card p{color:var(--dim); font-size:14px; margin-bottom:18px;}
+  .download-card .btn{width:100%; text-align:center;}
+  .download-note{max-width:760px; margin:18px auto 0; color:var(--dim); font-size:14px;}
+  .edition-note{max-width:760px; margin:20px auto 0; color:var(--dim); font-size:14px;}
+  @media(max-width:680px){.download-grid{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
@@ -136,19 +171,20 @@
     <a class="lnk" href="#features">Features</a>
     <a class="lnk" href="#faq">FAQ</a>
     <a class="lnk" href="https://github.com/srdjankotarlic/protimer">GitHub</a>
-    <a class="btn primary" href="https://github.com/srdjankotarlic/protimer/releases/latest">Download</a>
+    <a class="btn primary" href="#download">Download</a>
   </div>
 </header>
 
 <main>
   <div class="wrap hero">
-    <h1>A <b>free</b> stage timer for live production</h1>
-    <p class="sub">Big, clear countdown on any screen — stage, projector, OBS or a phone in your hand. Open-source, no sign-up, for <strong>macOS</strong> and <strong>Windows</strong>.</p>
+    <h1><b>Free stage timer</b> for live events and OBS</h1>
+    <p class="sub">A clear speaker countdown for conferences, presentations, churches, theatres and streams. Send it to a projector, confidence monitor, OBS or phone.</p>
     <div class="cta">
-      <a class="btn primary" href="https://github.com/srdjankotarlic/protimer/releases/latest">⬇️ Download for macOS / Windows</a>
-      <a class="btn" href="https://github.com/srdjankotarlic/protimer">View on GitHub</a>
+      <a class="btn primary" href="https://github.com/srdjankotarlic/protimer/releases/download/v2.0.0/ProTimer-2.0.0-arm64.dmg">Download for Mac</a>
+      <a class="btn primary" href="https://github.com/srdjankotarlic/protimer/releases/download/v2.0.0/ProTimer-Setup-2.0.0.exe">Download for Windows</a>
     </div>
-    <small>Free &amp; open-source (MIT) · no account · English &amp; Serbian</small>
+    <small>Free and open source · no account · English and Serbian</small>
+    <p class="edition-note">Need lower thirds, screen content and multiple independent outputs? See <a href="https://srdjankotarlic.github.io/protimer-studio/">ProTimer Studio</a>.</p>
     <div class="shot"><img src="demo.gif" alt="ProTimer stage screen counting down and turning yellow then red, with a NOW / NEXT bar" loading="lazy"></div>
   </div>
 
@@ -194,21 +230,32 @@
       <p class="lead">Free stage timer, OBS overlay, phone remote — the common questions.</p>
       <details open><summary>Is ProTimer free?</summary><p>Yes — completely free and open-source under the MIT license. No sign-up, no subscription, no time limit.</p></details>
       <details><summary>Does it work with OBS?</summary><p>Yes. ProTimer serves a web page you add as an OBS <strong>Browser Source</strong>. Turn on the transparent background and you get a clean countdown overlay over your scene. You can also route it to NDI through OBS.</p></details>
-      <details><summary>Which platforms does it run on?</summary><p>macOS (Apple Silicon) and Windows. Grab the installer from the <a href="https://github.com/srdjankotarlic/protimer/releases/latest">releases page</a>.</p></details>
+      <details><summary>Which file should I download?</summary><p>Apple Silicon Mac users need the DMG. Windows 10/11 x64 users should choose the Setup EXE. Do not download GitHub's Source code ZIP or TAR.GZ files unless you are building the app yourself.</p></details>
       <details><summary>Can I control it from my phone?</summary><p>Yes. ProTimer gives you a remote URL for any phone or tablet on the same Wi-Fi, plus a QR code so others can pull up the timer on their own screens.</p></details>
       <details><summary>Is it an alternative to StageTimer, Ontime or CueTimer?</summary><p>It’s a free, open-source stage timer that covers the core countdown, OBS overlay and phone-remote use case — a lightweight, no-account alternative for live events, conferences, churches, theatres and streams.</p></details>
       <details><summary>Does it work with a Stream Deck?</summary><p>Yes — every command is a simple HTTP GET, so Bitfocus Companion’s built-in Generic HTTP module drives it directly: Start, Reset, GO and ±time on physical keys, no plugin required.</p></details>
+      <details><summary>Should I use ProTimer or ProTimer Studio?</summary><p>Choose ProTimer for a fast countdown, OBS overlay, phone remote and simple rundown. Choose <a href="https://srdjankotarlic.github.io/protimer-studio/">ProTimer Studio</a> when you also need NEXT/LIVE/GO, lower thirds, screen content and several independent outputs.</p></details>
     </div>
   </section>
 
-  <section style="text-align:center;">
+  <section id="download" style="text-align:center;">
     <div class="wrap">
-      <h2>Download ProTimer — free</h2>
-      <p class="lead">No account. No subscription. Open-source.</p>
-      <div class="dl-row">
-        <a class="btn primary" href="https://github.com/srdjankotarlic/protimer/releases/latest">⬇️ macOS &amp; Windows downloads</a>
-        <a class="btn" href="https://github.com/srdjankotarlic/protimer">⭐ Star on GitHub</a>
+      <h2>Download ProTimer for free</h2>
+      <p class="lead">Choose one installer. No account, subscription or watermark.</p>
+      <div class="download-grid">
+        <article class="download-card">
+          <h3>macOS</h3>
+          <p>For Apple Silicon Macs with an M1 chip or newer. Open the DMG and drag ProTimer to Applications.</p>
+          <a class="btn primary" href="https://github.com/srdjankotarlic/protimer/releases/download/v2.0.0/ProTimer-2.0.0-arm64.dmg">Download macOS DMG</a>
+        </article>
+        <article class="download-card">
+          <h3>Windows</h3>
+          <p>For Windows 10 or 11 x64. Run Setup and follow the installer prompts.</p>
+          <a class="btn primary" href="https://github.com/srdjankotarlic/protimer/releases/download/v2.0.0/ProTimer-Setup-2.0.0.exe">Download Windows Setup</a>
+        </article>
       </div>
+      <p class="download-note">Need a no-install Windows build? Use the <a href="https://github.com/srdjankotarlic/protimer/releases/download/v2.0.0/ProTimer-2.0.0-portable.exe">portable EXE</a>. GitHub's Source code archives, YAML files and blockmaps are not installers.</p>
+      <div class="dl-row"><a class="btn" href="https://github.com/srdjankotarlic/protimer">View source on GitHub</a></div>
     </div>
   </section>
 </main>
