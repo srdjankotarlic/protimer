@@ -7,6 +7,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   build:
     strategy:
@@ -25,8 +29,52 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      - name: Build & publish to the release
-        run: npx electron-builder ${{ matrix.args }} --publish always
+      - name: Prepare cloudflared (macOS arm64)
+        if: runner.os == 'macOS'
+        run: node scripts/fetch-cloudflared.js mac
+      - name: Prepare cloudflared (Windows x64)
+        if: runner.os == 'Windows'
+        run: node scripts/fetch-cloudflared.js win
+      - name: Build verified installer
+        run: npx electron-builder ${{ matrix.args }} --publish never
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: installers-${{ matrix.os }}
+          path: |
+            dist-installers/*.dmg
+            dist-installers/*.exe
+          if-no-files-found: error
+          retention-days: 2
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: installers-*
+          path: release-assets
+          merge-multiple: true
+      - name: Verify complete release set
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          test -f "release-assets/ProTimer-${version}-arm64.dmg"
+          test -f "release-assets/ProTimer-Setup-${version}.exe"
+          test -f "release-assets/ProTimer-${version}-portable.exe"
+          test "$(find release-assets -maxdepth 1 -type f | wc -l)" -eq 3
+          find release-assets -maxdepth 1 -type f -print
+      - name: Publish release atomically
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+        run: |
+          tag="${GITHUB_REF_NAME}"
+          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            test "$(gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json isDraft --jq .isDraft)" = true
+            gh release upload "$tag" release-assets/* --clobber --repo "$GITHUB_REPOSITORY"
+          else
+            gh release create "$tag" release-assets/* --draft --verify-tag \
+              --title "ProTimer $tag" --generate-notes --repo "$GITHUB_REPOSITORY"
+          fi
+          gh release edit "$tag" --draft=false --latest --repo "$GITHUB_REPOSITORY"

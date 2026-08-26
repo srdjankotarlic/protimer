@@ -10,25 +10,27 @@ For **security issues**, please don't open a public issue — see [SECURITY.md](
 
 ## Working on the code
 
-You need [Node.js](https://nodejs.org) (18+).
+You need [Node.js](https://nodejs.org) 20 LTS or newer.
 
 ```bash
 git clone https://github.com/srdjankotarlic/protimer.git
 cd protimer
 npm install
 npm start            # run the app
-npm run smoke        # automated test: windows load, server, remote, QR, transparency
+npm run smoke        # automated UI, host-clock sync, SSE/long-poll, remote and output tests
 npm run dist:mac     # build the macOS .dmg
 npm run dist:win     # build the Windows installer + portable
 ```
 
 The whole app is small on purpose:
 
-- `main.js` — Electron main process: windows, the local HTTP/SSE server, the `/cmd` token, the network share.
+- `main.js` — Electron main process: windows, the local HTTP server (LAN SSE + HTTPS long-poll), the `/cmd` token and Cloudflare/localtunnel sharing.
 - `controller.html` — the operator control window (single source of truth for state).
 - `output.html` — the on-screen timer (also served to OBS / browsers).
 - `backstage.html` — the crew schedule view.
 - `remote.html` — the phone remote.
+
+Release builds fetch the pinned official Cloudflare binary with `scripts/fetch-cloudflared.js`; `scripts/verify-packaged-tunnel.js` then verifies the packaged checksum, version and platform signature before an installer can be published.
 
 ## Pull requests
 

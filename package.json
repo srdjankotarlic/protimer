@@ -1,7 +1,7 @@
 {
   "name": "pro-timer",
   "productName": "ProTimer",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Free stage timer and speaker countdown for live events, conferences and OBS",
   "main": "main.js",
   "author": "Srdjan Kotarlic",
@@ -26,8 +26,11 @@
   "scripts": {
     "start": "electron .",
     "smoke": "electron . --smoke",
+    "predist:mac": "node scripts/fetch-cloudflared.js mac",
     "dist:mac": "electron-builder --mac --arm64",
+    "predist:win": "node scripts/fetch-cloudflared.js win",
     "dist:win": "electron-builder --win --x64",
+    "predist:all": "node scripts/fetch-cloudflared.js mac && node scripts/fetch-cloudflared.js win",
     "dist:all": "electron-builder --mac --arm64 --win --x64"
   },
   "devDependencies": {
@@ -43,6 +46,7 @@
   "build": {
     "appId": "com.srdjankotarlic.protimer",
     "productName": "ProTimer",
+    "afterPack": "scripts/verify-packaged-tunnel.js",
     "publish": { "provider": "github", "releaseType": "release" },
     "directories": {
       "buildResources": "build",
@@ -66,7 +70,12 @@
       ],
       "category": "public.app-category.utilities",
       "icon": "build/icon.png",
-      "identity": null
+      "identity": null,
+      "extraResources": [
+        { "from": "vendor/cloudflared-darwin-arm64", "to": "cloudflared" },
+        { "from": "licenses/cloudflared-LICENSE.txt", "to": "licenses/cloudflared-LICENSE.txt" },
+        { "from": "licenses/THIRD_PARTY_NOTICES.md", "to": "licenses/THIRD_PARTY_NOTICES.md" }
+      ]
     },
     "dmg": {
       "title": "ProTimer ${version}"
@@ -82,9 +91,15 @@
           "arch": "x64"
         }
       ],
-      "icon": "build/icon.png"
+      "icon": "build/icon.png",
+      "extraResources": [
+        { "from": "vendor/cloudflared-windows-amd64.exe", "to": "cloudflared.exe" },
+        { "from": "licenses/cloudflared-LICENSE.txt", "to": "licenses/cloudflared-LICENSE.txt" },
+        { "from": "licenses/THIRD_PARTY_NOTICES.md", "to": "licenses/THIRD_PARTY_NOTICES.md" }
+      ]
     },
     "nsis": {
+      "artifactName": "ProTimer-Setup-${version}.exe",
       "oneClick": false,
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,

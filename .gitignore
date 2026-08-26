@@ -2,6 +2,7 @@
 node_modules/
 dist/
 dist-installers/
+/vendor/cloudflared*
 
 # OS / editor
 .DS_Store

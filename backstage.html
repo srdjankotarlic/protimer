@@ -2,6 +2,7 @@
 <html lang="sr">
 <head>
 <meta charset="UTF-8">
+<meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'">
 <title>ProTimer — Backstage</title>
@@ -118,111 +119,186 @@ const T = {
 };
 let lang='sr';
 const tr = k => (T[lang]&&T[lang][k])||T.sr[k]||k;
+const setText=(el,value)=>{ value=String(value); if(el.textContent!==value) el.textContent=value; };
+const setHTML=(el,value)=>{ if(el.innerHTML!==value) el.innerHTML=value; };
 
-let S=null;
+let S=null, plan=null, staticDirty=true, stateSignature='', planDay='', lastScrollCue=null, lastStateVersion=-1, lastServerInstance=null;
+let clockOffsetMs=0, clockSynced=false, clockSyncing=false;
+const hostNow=()=>Date.now()+clockOffsetMs;
+
+async function syncClock(samples=3){
+  if(clockSyncing) return;
+  clockSyncing=true;
+  let best=null;
+  try{
+    for(let i=0;i<samples;i++){
+      const started=Date.now();
+      const aborter=new AbortController();
+      const timeout=setTimeout(()=>aborter.abort(),location.protocol==='https:'?7000:3000);
+      let data;
+      try{
+        const response=await fetch('/time',{cache:'no-store',signal:aborter.signal});
+        if(!response.ok) throw new Error('time '+response.status);
+        data=await response.json();
+      }finally{ clearTimeout(timeout); }
+      const received=Date.now(), rtt=received-started;
+      if(Number.isFinite(data.now)&&(!best||rtt<best.rtt)) best={rtt,offset:data.now-(started+received)/2};
+    }
+    if(best){ clockOffsetMs=best.offset; clockSynced=true; }
+  }catch(_){}
+  clockSyncing=false;
+}
+
+function applyState(next){
+  if(!next||typeof next!=='object') return false;
+  if(typeof next._instance==='string'&&next._instance!==lastServerInstance){
+    lastServerInstance=next._instance;
+    lastStateVersion=-1;
+  }
+  const version=Number(next._version);
+  if(Number.isFinite(version)){
+    if(version<=lastStateVersion) return false;
+    lastStateVersion=version;
+  }
+  if(!clockSynced&&Number.isFinite(next._serverNow)) clockOffsetMs=next._serverNow-Date.now();
+  const signature=JSON.stringify([next.lang,next.text,next.showStart,next.currentCue,next.cues||[]]);
+  if(signature!==stateSignature){ stateSignature=signature; staticDirty=true; }
+  S=next;
+  if(S.lang&&S.lang!==lang){ lang=S.lang; applyStaticLabels(); staticDirty=true; }
+  return true;
+}
+
+let lastPollSuccess=0, pollController=null;
+const markLive=()=>{ $('dot').classList.add('on'); setText($('connTxt'),tr('conn')); };
+const markLost=()=>{
+  if(location.protocol==='https:'&&Date.now()-lastPollSuccess<25000) return;
+  $('dot').classList.remove('on'); setText($('connTxt'),tr('lost'));
+};
 function connect(){
   const es=new EventSource('/events');
-  es.onopen=()=>{ $('dot').classList.add('on'); $('connTxt').textContent=tr('conn'); };
-  es.onmessage=e=>{ try{ S=JSON.parse(e.data); if(S.lang&&S.lang!==lang){ lang=S.lang; applyStaticLabels(); } }catch(_){} };
-  es.onerror=()=>{ $('dot').classList.remove('on'); $('connTxt').textContent=tr('lost'); es.close(); setTimeout(connect,1000); };
+  es.onopen=()=>{ markLive(); syncClock(1); };
+  es.onmessage=e=>{ try{ applyState(JSON.parse(e.data)); }catch(_){} };
+  es.onerror=()=>{ markLost(); es.close(); setTimeout(connect,1000); };
 }
-connect();
+async function pollLoop(){
+  let failures=0;
+  while(true){
+    const aborter=new AbortController();
+    pollController=aborter;
+    const timeout=setTimeout(()=>aborter.abort(),30000);
+    try{
+      const response=await fetch('/poll?since='+encodeURIComponent(lastStateVersion)+'&r='+Date.now(),{cache:'no-store',signal:aborter.signal});
+      if(!response.ok) throw new Error('poll '+response.status);
+      const payload=await response.json();
+      if(payload.state) applyState(payload.state);
+      if(Number.isFinite(payload.version)&&payload.version>lastStateVersion) lastStateVersion=payload.version;
+      failures=0;
+      lastPollSuccess=Date.now(); markLive();
+    }catch(_){
+      markLost();
+      failures=Math.min(failures+1,5);
+      await new Promise(resolve=>setTimeout(resolve,Math.min(5000,500*(2**(failures-1)))+Math.random()*250));
+    }finally{ clearTimeout(timeout); if(pollController===aborter) pollController=null; }
+  }
+}
+if(location.protocol==='https:') pollLoop(); else connect();
+syncClock(location.protocol==='https:'?1:3);
+setInterval(()=>syncClock(1),30000);
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden){ if(pollController)pollController.abort(); syncClock(); } });
+window.addEventListener('online',()=>{ if(pollController)pollController.abort(); syncClock(); });
 
 function applyStaticLabels(){
   document.documentElement.lang=lang;
-  $('lblNow').textContent=tr('timeNow'); $('lblNowTag').textContent=tr('now');
-  $('lblNextTag').textContent=tr('next'); $('lblSched').textContent=tr('sched');
-  if($('dot').classList.contains('on')) $('connTxt').textContent=tr('conn');
+  setText($('lblNow'),tr('timeNow')); setText($('lblNowTag'),tr('now'));
+  setText($('lblNextTag'),tr('next')); setText($('lblSched'),tr('sched'));
+  if($('dot').classList.contains('on')) setText($('connTxt'),tr('conn'));
 }
 applyStaticLabels();
 
 function todayAt(hhmm, now){ if(!hhmm) return null; const [h,m]=hhmm.split(':').map(Number);
   if(isNaN(h)||isNaN(m)) return null; const d=new Date(now); d.setHours(h,m,0,0); return d.getTime(); }
-function schedule(S, now){
-  const list=S.cues||[]; const anchor=todayAt(S.showStart, now); let acc=anchor;
-  const rows=list.map((c,i)=>{ const start=acc; const end=acc==null?null:acc+c.durationMs; acc=end;
+function dayKey(now){ const d=new Date(now); return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`; }
+function buildPlan(state,now){
+  const source=state.cues||[], anchor=todayAt(state.showStart,now); let acc=anchor;
+  const rows=source.map((c,i)=>{ const start=acc, end=acc==null?null:acc+c.durationMs; acc=end;
     return {name:c.name,durationMs:c.durationMs,note:c.note||'',color:c.color||'',plannedStart:start,plannedEnd:end,index:i}; });
-  let curRem=null; if(S.currentCue>=0 && S.mode==='countdown') curRem=S.running?S.endAt-now:S.remMs;
-  let delta=null,plannedEnd=null,projectedEnd=null; const total=list.reduce((a,c)=>a+c.durationMs,0);
-  if(anchor!=null){ plannedEnd=anchor+total;
-    if(S.currentCue>=0 && curRem!=null){ const sumAfter=list.slice(S.currentCue+1).reduce((a,c)=>a+c.durationMs,0);
-      projectedEnd=now+Math.max(0,curRem)+sumAfter; delta=projectedEnd-plannedEnd; } }
-  return {rows,curRem,delta,plannedEnd,projectedEnd};
+  const ci=state.currentCue!=null?state.currentCue:-1;
+  const total=source.reduce((sum,c)=>sum+c.durationMs,0);
+  return {rows,ci,cur:ci>=0?rows[ci]:null,nxt:ci>=0?rows[ci+1]:(rows[0]||null),
+    plannedEnd:anchor==null?null:anchor+total,
+    sumAfter:ci>=0?source.slice(ci+1).reduce((sum,c)=>sum+c.durationMs,0):0};
 }
 
-function render(){
-  requestAnimationFrame(render);
-  const now=Date.now(), d=new Date();
-  $('clock').innerHTML=`${pad(d.getHours())}:${pad(d.getMinutes())}<span class="s">:${pad(d.getSeconds())}</span>`;
-  if(!S) return;
+function renderStatic(now){
+  plan=buildPlan(S,now); planDay=dayKey(now); staticDirty=false;
+  const {rows,ci,cur,nxt}=plan;
 
-  $('title').innerHTML = S.text ? '' : 'PRO<b>TIMER</b>';
-  if(S.text) $('title').textContent = S.text;
+  if(S.text) setText($('title'),S.text);
+  else setHTML($('title'),'PRO<b>TIMER</b>');
+  setText($('nowName'),cur?cur.name:'—');
+  setText($('nowNote'),cur&&cur.note?cur.note:'');
+  setHTML($('nowMeta'),cur&&cur.plannedStart!=null
+    ? `${tr('started')} <b>${clk(cur.plannedStart)}</b> · ${tr('ends')} <b>${clk(cur.plannedEnd)}</b>`:'');
 
-  const sch=schedule(S, now);
-  const list=sch.rows;
-  const ci = (S.currentCue!=null?S.currentCue:-1);
-  const cur = ci>=0?list[ci]:null;
-  const nxt = ci>=0?list[ci+1]:(list.length?list[0]:null);
+  if(nxt&&nxt!==cur){
+    setText($('nextName'),nxt.name); setText($('nextNote'),nxt.note||'');
+    setText($('nextAt'),nxt.plannedStart!=null?clk(nxt.plannedStart):'');
+  } else { setText($('nextName'),tr('noNext')); setText($('nextNote'),''); setText($('nextAt'),''); }
 
-  // NOW
-  $('nowName').textContent = cur?cur.name:'—';
-  $('nowNote').textContent = cur&&cur.note?cur.note:'';
-  // tajmer tekuće tačke
-  let tcol='#fff', ttxt='';
-  if(cur && S.mode==='countdown'){
-    let rem=S.running?S.endAt-now:S.remMs;
-    if(!S.overtime&&rem<0) rem=0;
-    if(S.useWarnColors){ if(rem<=S.redSec*1000) tcol=S.warnRed||'#ff4540'; else if(rem<=S.yellowSec*1000) tcol=S.warnYellow||'#ffc23a'; }
-    if(rem<0) tcol=S.warnRed||'#ff4540';
-    ttxt=fmtMs(rem);
-  }
-  $('nowTimer').textContent=ttxt; $('nowTimer').style.color=tcol;
-  $('nowTimer').style.display = ttxt?'block':'none';
-  // meta: planirano start–kraj
-  let meta='';
-  if(cur && cur.plannedStart!=null) meta=`${tr('started')} <b>${clk(cur.plannedStart)}</b> · ${tr('ends')} <b>${clk(cur.plannedEnd)}</b>`;
-  $('nowMeta').innerHTML=meta;
-
-  // NEXT
-  if(nxt && nxt!==cur){
-    $('nextName').textContent=nxt.name;
-    $('nextNote').textContent=nxt.note||'';
-    $('nextAt').textContent = nxt.plannedStart!=null?clk(nxt.plannedStart):'';
-  } else { $('nextName').textContent=tr('noNext'); $('nextNote').textContent=''; $('nextAt').textContent=''; }
-
-  // SCHEDULE
   const se=$('sched');
-  if(!list.length){ se.innerHTML=`<div class="empty">${tr('empty')}</div>`; }
+  if(!rows.length) setHTML(se,`<div class="empty">${tr('empty')}</div>`);
   else {
-    se.innerHTML = list.map((c,i)=>{
-      const cls = i===ci?'current':(ci>=0&&i<ci?'past':'');
-      const time = c.plannedStart!=null?`${clk(c.plannedStart)}–${clk(c.plannedEnd)}`:fmtMs(c.durationMs);
-      const stripe = c.color?`<span class="stripe" style="background:${c.color}"></span>`:'';
-      const note = c.note?`<span class="nt"></span>`:'';
-      const dur = c.plannedStart!=null?`<span class="dur">${fmtMs(c.durationMs)}</span>`:'';
+    se.innerHTML=rows.map((c,i)=>{
+      const cls=i===ci?'current':(ci>=0&&i<ci?'past':'');
+      const time=c.plannedStart!=null?`${clk(c.plannedStart)}–${clk(c.plannedEnd)}`:fmtMs(c.durationMs);
+      const stripe=c.color?`<span class="stripe" style="background:${c.color}"></span>`:'';
+      const note=c.note?'<span class="nt"></span>':'';
+      const dur=c.plannedStart!=null?`<span class="dur">${fmtMs(c.durationMs)}</span>`:'';
       return `<div class="ev ${cls}" data-i="${i}">${stripe}<span class="time">${time}</span><span class="nm"></span>${note}${dur}</div>`;
     }).join('');
-    // popuni tekst bezbedno
-    se.querySelectorAll('.ev').forEach(ev=>{ const c=list[+ev.dataset.i];
-      ev.querySelector('.nm').textContent=c.name||'—'; const nt=ev.querySelector('.nt'); if(nt) nt.textContent=c.note; });
-    const curEl=se.querySelector('.ev.current'); if(curEl && !se.dataset.scrolled){ curEl.scrollIntoView({block:'nearest'}); }
+    se.querySelectorAll('.ev').forEach(ev=>{ const c=rows[+ev.dataset.i];
+      setText(ev.querySelector('.nm'),c.name||'—'); const nt=ev.querySelector('.nt'); if(nt)setText(nt,c.note); });
+    const curEl=se.querySelector('.ev.current');
+    if(curEl&&lastScrollCue!==ci){ curEl.scrollIntoView({block:'nearest'}); lastScrollCue=ci; }
   }
+  if(ci<0) lastScrollCue=-1;
+}
 
-  // FOOT: over/under
+function renderTick(){
+  const now=hostNow(), d=new Date(now);
+  setHTML($('clock'),`${pad(d.getHours())}:${pad(d.getMinutes())}<span class="s">:${pad(d.getSeconds())}</span>`);
+  if(!S) return;
+  if(dayKey(now)!==planDay) staticDirty=true;
+  if(staticDirty||!plan) renderStatic(now);
+
+  const cur=plan.cur;
+  let tcol='#fff',ttxt='',curRem=null;
+  if(cur&&S.mode==='countdown'){
+    curRem=S.running?S.endAt-now:S.remMs;
+    if(!S.overtime&&curRem<0) curRem=0;
+    if(S.useWarnColors){ if(curRem<=S.redSec*1000)tcol=S.warnRed||'#ff4540'; else if(curRem<=S.yellowSec*1000)tcol=S.warnYellow||'#ffc23a'; }
+    if(curRem<0)tcol=S.warnRed||'#ff4540';
+    ttxt=fmtMs(curRem);
+  }
+  setText($('nowTimer'),ttxt);
+  if($('nowTimer').style.color!==tcol)$('nowTimer').style.color=tcol;
+  const timerDisplay=ttxt?'block':'none'; if($('nowTimer').style.display!==timerDisplay)$('nowTimer').style.display=timerDisplay;
+
   const f=$('foot');
-  if(sch.plannedEnd!=null){
-    let ouHtml='';
-    if(sch.delta!=null){ const sec=Math.round(sch.delta/1000);
-      if(Math.abs(sec)<=5) ouHtml=`<span class="ou ontime">${tr('onTime')}</span>`;
-      else if(sec>0) ouHtml=`<span class="ou late">▲ ${fmtSecs(sec,false)} ${tr('behind')}</span>`;
+  if(plan.plannedEnd!=null){
+    let projectedEnd=null,delta=null,ouHtml='';
+    if(plan.ci>=0&&curRem!=null){ projectedEnd=now+Math.max(0,curRem)+plan.sumAfter; delta=projectedEnd-plan.plannedEnd; }
+    if(delta!=null){ const sec=Math.round(delta/1000);
+      if(Math.abs(sec)<=5)ouHtml=`<span class="ou ontime">${tr('onTime')}</span>`;
+      else if(sec>0)ouHtml=`<span class="ou late">▲ ${fmtSecs(sec,false)} ${tr('behind')}</span>`;
       else ouHtml=`<span class="ou early">▼ ${fmtSecs(-sec,false)} ${tr('ahead')}</span>`;
     }
-    f.innerHTML=`<span>${tr('plannedEnd')}: <b>${clk(sch.plannedEnd)}</b></span>`+
-      (sch.projectedEnd!=null?`<span>${tr('projected')}: <b>${clk(sch.projectedEnd)}</b></span>`:'')+ouHtml;
-  } else f.innerHTML='';
+    setHTML(f,`<span>${tr('plannedEnd')}: <b>${clk(plan.plannedEnd)}</b></span>`+
+      (projectedEnd!=null?`<span>${tr('projected')}: <b>${clk(projectedEnd)}</b></span>`:'')+ouHtml);
+  } else setHTML(f,'');
 }
-requestAnimationFrame(render);
+renderTick();
+setInterval(renderTick,100);
 </script>
 </body>
 </html>

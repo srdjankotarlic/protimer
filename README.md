@@ -33,10 +33,10 @@
 
 | Your computer | Recommended download | Install |
 |---|---|---|
-| Apple Silicon Mac (M1 or newer) | **[Download the macOS DMG](https://github.com/srdjankotarlic/protimer/releases/download/v2.0.0/ProTimer-2.0.0-arm64.dmg)** | Open the DMG and drag **ProTimer** to Applications. |
-| Windows 10/11 x64 | **[Download the Windows installer](https://github.com/srdjankotarlic/protimer/releases/download/v2.0.0/ProTimer-Setup-2.0.0.exe)** | Run Setup and follow the installer. |
+| Apple Silicon Mac (M1 or newer) | **[Download the macOS DMG](https://github.com/srdjankotarlic/protimer/releases/download/v2.0.1/ProTimer-2.0.1-arm64.dmg)** | Open the DMG and drag **ProTimer** to Applications. |
+| Windows 10/11 x64 | **[Download the Windows installer](https://github.com/srdjankotarlic/protimer/releases/download/v2.0.1/ProTimer-Setup-2.0.1.exe)** | Run Setup and follow the installer. |
 
-Need a Windows build that does not install? Use the [portable EXE](https://github.com/srdjankotarlic/protimer/releases/download/v2.0.0/ProTimer-2.0.0-portable.exe). Most Windows users should choose Setup.
+Need a Windows build that does not install? Use the [portable EXE](https://github.com/srdjankotarlic/protimer/releases/download/v2.0.1/ProTimer-2.0.1-portable.exe). Most Windows users should choose Setup.
 
 <details>
 <summary><strong>First-launch security warning</strong></summary>
@@ -146,7 +146,9 @@ Build your run on the right: each item has a **name, duration, an optional note 
 Turn on **"NOW / NEXT on screen"** to show the current and next item under the timer on the stage screen.
 
 ### 🔗 Share with others
-Next to every link in the network panel there's a **QR** button — show it and people scan it with their phone to watch the timer (same Wi-Fi). Need someone **off your network** (a remote client, another venue)? Click **Share online** and ProTimer gives you a public `https://` link that works from anywhere. *(First-time visitors to a public link may see a one-time “Click to continue” page.)*
+Next to every link in the network panel there's a **QR** button — show it and people scan it with their phone to watch the timer (same Wi-Fi). Need someone **off your network** (a remote client, another venue)? Click **Share online** and ProTimer creates a public, view-only `https://` link through a [Cloudflare Quick Tunnel](https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/do-more-with-tunnels/trycloudflare/). The public link is beta and has no uptime guarantee; for a live show, LAN + QR remains the dependable path.
+
+The public viewer receives the timer and rundown state, including cue names and notes, and can open the `/backstage` path. Do not include sensitive notes when sharing online. The command token is not included in the public viewer link. Click **Stop sharing** when the remote viewer is finished.
 
 ### 🎭 Backstage view (crew & guests)
 The network panel has a **Backstage** URL. Open it on any screen, laptop or phone and everyone sees the same picture: the **current item** with its live timer, **what's next**, the **full schedule** with clock times, and the **planned vs projected finish** with the over/under indicator. Ideal for a green room, a stage manager, or a lobby screen.
@@ -167,7 +169,7 @@ Switch between **SR / EN** with the toggle next to the logo, top-left. The choic
 
 ## 🛠️ For developers (run from source)
 
-You need [Node.js](https://nodejs.org).
+You need [Node.js](https://nodejs.org) 20 LTS or newer.
 
 ```bash
 git clone https://github.com/srdjankotarlic/protimer.git
@@ -180,7 +182,7 @@ npm run dist:mac     # build the macOS .dmg
 npm run dist:win     # build the Windows installer + portable
 ```
 
-Clean stack, almost no dependencies: **Electron** + plain HTML/CSS/JS + a Node `http` server (SSE), with `qrcode` and `localtunnel` for the share features. All the logic lives in `controller.html` (control), `output.html` (screen/OBS), `backstage.html` (crew schedule), `remote.html` (phone), and `main.js` (windows + server).
+Clean stack, almost no dependencies: **Electron** + plain HTML/CSS/JS + a Node `http` server. LAN viewers use SSE; public HTTPS viewers use reliable versioned long-polling because Cloudflare Quick Tunnels do not support SSE. Browser clocks synchronise to the ProTimer host, preventing phone-clock drift. `qrcode`, a bundled and verified official `cloudflared` binary and a `localtunnel` fallback provide the share features. All the logic lives in `controller.html` (control), `output.html` (screen/OBS), `backstage.html` (crew schedule), `remote.html` (phone), and `main.js` (windows + server).
 
 ---
 
@@ -201,7 +203,7 @@ Ideas on the list (feedback very welcome — open an issue to vote or suggest):
 Being honest about where it's at:
 
 - **Unsigned builds.** macOS shows “unidentified developer” (right-click → Open) and Windows shows SmartScreen (More info → Run anyway) on first launch. Code signing is on the roadmap.
-- **Network sharing needs the same Wi-Fi** — unless you use the optional **Share online** link, which is **beta** (a tunnel; may show a one-time “continue” page, and reliability depends on the tunnel service). For shows, the LAN + QR path is the dependable one.
+- **Network sharing needs the same Wi-Fi** — unless you use the optional **Share online** link, which is **beta**. It uses a Cloudflare Quick Tunnel (or a labelled fallback), passes viewer traffic through that provider and has no uptime guarantee. The public viewer can see timer/rundown data, including cue names and notes. For shows, LAN + QR is the dependable and private path.
 - **Remote control is link-based.** Anyone with the exact `…/remote?t=…` link can control the timer — share it deliberately.
 - **OSC has no authentication** (UDP, LAN-trusted — same model as QLab/Ontime). Anyone on your network can send OSC commands; use it on networks you control.
 - **Single operator** — no real-time multi-user collaboration (see Ontime/StageTimer if you need that).
@@ -230,4 +232,4 @@ If it helps your show, a ⭐ on the repo means a lot. Issues and ideas are welco
 
 ## 📄 License
 
-© 2026 Srdjan Kotarlic. Released under the [MIT License](LICENSE) — free to use, modify and share, with attribution.
+© 2026 Srdjan Kotarlic. Released under the [MIT License](LICENSE) — free to use, modify and share, with attribution. Bundled third-party components retain their own licenses; see [Third-party notices](licenses/THIRD_PARTY_NOTICES.md).

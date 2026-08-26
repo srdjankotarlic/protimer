@@ -2,6 +2,7 @@
 <html lang="sr">
 <head>
 <meta charset="UTF-8">
+<meta name="referrer" content="no-referrer">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'">
 <title>ProTimer — Ekran</title>
 <style>
@@ -47,6 +48,10 @@
   #nownext .next{opacity:.62;} #nownext .next .ttl{font-size:3vh;}
 
   #blackout{position:absolute; inset:0; background:#000; z-index:80; display:none;}
+  #connection{position:fixed; top:1.5vh; right:1.5vw; z-index:90; display:none;
+    padding:.55em .8em; border-radius:.45em; color:#fff; background:rgba(180,35,35,.9);
+    font:700 12px/1.1 -apple-system,system-ui,sans-serif; letter-spacing:.08em;}
+  body.disconnected #connection{display:block;}
 
   /* providni (frameless) prozor — prevlačenje za pomeranje */
   body.overlay #stage{ -webkit-app-region: drag; }
@@ -61,16 +66,25 @@
   <div id="nownext"></div>
   <div id="prog"></div>
   <div id="blackout"></div>
+  <div id="connection">RECONNECTING…</div>
 
 <script>
 const IS_ELECTRON = !!window.pt;
 const api = window.pt || null;
 
-let S = null, prevRem = null, lastKey = '';
+let S = null, prevRem = null, lastKey = '', lastNowNextKey = '', lastStateVersion = -1, lastServerInstance = null;
 let isFS = false, fitMode = false, lastFitH = 0;   // kompaktan prozor (prati tajmer)
 if (IS_ELECTRON) api.onWinFs(v => { isFS = !!v; lastKey = ''; lastFitH = 0; });
 
 const $ = id => document.getElementById(id);
+const styleCache = new WeakMap();
+function setStyle(el,key,value){
+  let cache=styleCache.get(el); if(!cache){ cache={}; styleCache.set(el,cache); }
+  value=String(value);
+  if(cache[key]!==value){ cache[key]=value; el.style[key]=value; }
+}
+function setText(el,value){ value=String(value); if(el.textContent!==value) el.textContent=value; }
+function setClass(el,value){ if(el.className!==value) el.className=value; }
 function pad(n){ return String(n).padStart(2,'0'); }
 function fmtSecs(s, neg){
   const h=Math.floor(s/3600), m=Math.floor((s%3600)/60), x=s%60;
@@ -79,26 +93,96 @@ function fmtSecs(s, neg){
 function fmtMs(ms){ return ms>=0 ? fmtSecs(Math.ceil(ms/1000),false) : fmtSecs(Math.floor(-ms/1000),true); }
 
 function applyState(s){
+  if (!s || typeof s !== 'object') return false;
+  if (typeof s._instance === 'string' && s._instance !== lastServerInstance){
+    lastServerInstance = s._instance;
+    lastStateVersion = -1;
+  }
+  const version = Number(s._version);
+  if (Number.isFinite(version)){
+    if (version <= lastStateVersion) return false;
+    lastStateVersion = version;
+  }
   if (S && (s.mode!==S.mode || s.durationMs!==S.durationMs)) prevRem = null;
+  if (!clockSynced && Number.isFinite(s._serverNow)) clockOffsetMs=s._serverNow-Date.now();
   S = s;
+  $('connection').textContent = s.lang === 'en' ? 'RECONNECTING…' : 'PONOVNO POVEZIVANJE…';
+  return true;
+}
+
+let clockOffsetMs=0, clockSynced=IS_ELECTRON, clockSyncing=false;
+const hostNow=()=>Date.now()+clockOffsetMs;
+async function syncClock(samples=3){
+  if(IS_ELECTRON||clockSyncing) return;
+  clockSyncing=true;
+  let best=null;
+  try{
+    for(let i=0;i<samples;i++){
+      const started=Date.now();
+      const aborter=new AbortController();
+      const timeout=setTimeout(()=>aborter.abort(),location.protocol==='https:'?7000:3000);
+      let data;
+      try{
+        const response=await fetch('/time',{cache:'no-store',signal:aborter.signal});
+        if(!response.ok) throw new Error('time '+response.status);
+        data=await response.json();
+      }finally{ clearTimeout(timeout); }
+      const received=Date.now(), rtt=received-started;
+      if(Number.isFinite(data.now)&&(!best||rtt<best.rtt)) best={rtt,offset:data.now-(started+received)/2};
+    }
+    if(best){ clockOffsetMs=best.offset; clockSynced=true; }
+  }catch(_){}
+  clockSyncing=false;
 }
 
 // --- prijem stanja: Electron (IPC) ili browser/OBS (SSE) ---
 if (IS_ELECTRON){
   api.onState(applyState);
 } else {
+  let disconnectTimer=null, lastPollSuccess=0, pollController=null;
+  const connected=()=>{ clearTimeout(disconnectTimer); disconnectTimer=null; document.body.classList.remove('disconnected'); };
+  const disconnectedSoon=()=>{ if(!disconnectTimer) disconnectTimer=setTimeout(()=>{
+    disconnectTimer=null;
+    if(location.protocol!=='https:'||Date.now()-lastPollSuccess>25000) document.body.classList.add('disconnected');
+  },2500); };
   const connect = () => {
     const es = new EventSource('/events');
+    es.onopen = () => { connected(); syncClock(1); };
     es.onmessage = e => { try { applyState(JSON.parse(e.data)); } catch(_){} };
-    es.onerror = () => { es.close(); setTimeout(connect, 1000); };
+    es.onerror = () => { disconnectedSoon(); es.close(); setTimeout(connect, 1000); };
   };
-  connect();
+  const pollLoop = async () => {
+    let failures=0;
+    while(true){
+      const aborter=new AbortController();
+      pollController=aborter;
+      const timeout=setTimeout(()=>aborter.abort(),30000);
+      try{
+        const response=await fetch('/poll?since='+encodeURIComponent(lastStateVersion)+'&r='+Date.now(),{cache:'no-store',signal:aborter.signal});
+        if(!response.ok) throw new Error('poll '+response.status);
+        const payload=await response.json();
+        if(payload.state) applyState(payload.state);
+        if(Number.isFinite(payload.version)&&payload.version>lastStateVersion) lastStateVersion=payload.version;
+        failures=0;
+        lastPollSuccess=Date.now(); connected();
+      }catch(_){
+        disconnectedSoon();
+        failures=Math.min(failures+1,5);
+        await new Promise(resolve=>setTimeout(resolve,Math.min(5000,500*(2**(failures-1)))+Math.random()*250));
+      }finally{ clearTimeout(timeout); if(pollController===aborter) pollController=null; }
+    }
+  };
+  disconnectedSoon();
+  if(location.protocol==='https:') pollLoop(); else connect();
+  syncClock(location.protocol==='https:'?1:3);
+  setInterval(()=>syncClock(1),30000);
+  document.addEventListener('visibilitychange',()=>{ if(!document.hidden){ if(pollController)pollController.abort(); syncClock(); } });
+  window.addEventListener('online',()=>{ if(pollController)pollController.abort(); syncClock(); });
 }
 
 function render(){
-  requestAnimationFrame(render);
-  const now = Date.now();
-  const d = new Date();
+  const now = hostNow();
+  const d = new Date(now);
 
   // dok ne stigne stanje — prikaži tačno vreme
   if (!S){ paint(`${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`, '#ffffff', '#000000', false, '', '', false, null); return; }
@@ -138,7 +222,7 @@ function render(){
 
   if (fitMode) requestFit();
   renderNowNext(fg);
-  $('blackout').style.display = S.blackout ? 'block' : 'none';
+  setStyle($('blackout'),'display',S.blackout?'block':'none');
 }
 
 // kompaktan prozor: traži od main-a da visina prozora bude tačno koliko i tajmer (+mali rub)
@@ -155,24 +239,28 @@ function renderNowNext(fg){
   const el = $('nownext');
   const cues = S.cues || [];
   if (!S.showNowNext || S.currentCue == null || S.currentCue < 0 || !cues.length){
-    el.style.display = 'none'; $('msg').style.bottom = '';
+    lastNowNextKey='hidden'; setStyle(el,'display','none'); setStyle($('msg'),'bottom','');
     return;
   }
   const cur = cues[S.currentCue], nxt = cues[S.currentCue + 1];
   const NOW = S.lang === 'en' ? 'NOW' : 'SADA', NEXT = S.lang === 'en' ? 'NEXT' : 'SLEDI';
-  let html = `<div class="nn now"><span class="ttl"></span><span class="tag">${NOW}</span></div>`;
-  if (nxt) html += `<div class="nn next"><span class="ttl"></span><span class="tag">${NEXT}</span></div>`;
-  el.innerHTML = html;
-  el.querySelector('.now .ttl').textContent = cur ? cur.name : '';
-  if (nxt) el.querySelector('.next .ttl').textContent = nxt.name;
-  el.style.color = fg;
-  el.style.bottom = S.showProgress ? '1vh' : '0';
-  el.style.display = 'flex';
-  $('msg').style.bottom = nxt ? '17vh' : '12vh';
+  const key=[S.lang,S.currentCue,cur&&cur.name,nxt&&nxt.name].join('|');
+  if(key!==lastNowNextKey){
+    lastNowNextKey=key;
+    let html = `<div class="nn now"><span class="ttl"></span><span class="tag">${NOW}</span></div>`;
+    if (nxt) html += `<div class="nn next"><span class="ttl"></span><span class="tag">${NEXT}</span></div>`;
+    el.innerHTML = html;
+    setText(el.querySelector('.now .ttl'),cur?cur.name:'');
+    if(nxt) setText(el.querySelector('.next .ttl'),nxt.name);
+  }
+  setStyle(el,'color',fg);
+  setStyle(el,'bottom',S.showProgress?'1vh':'0');
+  setStyle(el,'display','flex');
+  setStyle($('msg'),'bottom',nxt?'17vh':'12vh');
 }
 
 function paint(timeText, fg, bg, neg, bigText, msgText, msgFlash, prog){
-  document.body.style.background = bg;
+  setStyle(document.body,'background',bg);
 
   const tEl = $('timer'), txtEl = $('text'), st = $('stage');
   // veličina referentne oblasti = #stage (ceo ekran, ili kockica grida)
@@ -181,48 +269,48 @@ function paint(timeText, fg, bg, neg, bigText, msgText, msgFlash, prog){
 
   // tekst (labela ili samostalno)
   if (bigText){
-    txtEl.style.display = 'block';
-    txtEl.textContent = bigText;
-    txtEl.style.color = fg;
-    txtEl.style.fontSize = textOnly
+    setStyle(txtEl,'display','block');
+    setText(txtEl,bigText);
+    setStyle(txtEl,'color',fg);
+    setStyle(txtEl,'fontSize',textOnly
       ? Math.min(sw*0.9/Math.max(6, bigText.length*0.55), sh*0.5) + 'px'
-      : Math.min(sh*0.12, sw*0.06) + 'px';
-    txtEl.style.marginBottom = textOnly ? '0' : (sh*0.02)+'px';
+      : Math.min(sh*0.12, sw*0.06) + 'px');
+    setStyle(txtEl,'marginBottom',textOnly?'0':(sh*0.02)+'px');
   } else {
-    txtEl.style.display = 'none';
+    setStyle(txtEl,'display','none');
   }
 
   // tajmer
   if (textOnly){
-    tEl.style.display = 'none';
+    setStyle(tEl,'display','none');
   } else {
-    tEl.style.display = 'block';
-    tEl.textContent = timeText;
-    tEl.style.color = fg;
-    tEl.className = neg ? 'neg' : '';
+    setStyle(tEl,'display','block');
+    setText(tEl,timeText);
+    setStyle(tEl,'color',fg);
+    setClass(tEl,neg?'neg':'');
     if (fitMode){
       // puni širinu prozora; rezervisana dužina (stabilna) da se prozor ne trza po cifri
       const refLen = Math.max(timeText.length, fmtMs(S.durationMs||0).length, 4);
-      tEl.style.fontSize = Math.max(14, sw*0.86/(refLen*0.6)) + 'px';
+      setStyle(tEl,'fontSize',Math.max(14,sw*0.86/(refLen*0.6))+'px');
     } else {
       const key = timeText.length + '|' + Math.round(sw) + 'x' + Math.round(sh) + '|' + (bigText?1:0);
       if (key !== lastKey){
         lastKey = key;
         const avail = bigText ? sh*0.6 : sh*0.7;
-        tEl.style.fontSize = Math.min(sw*0.92/(timeText.length*0.6), avail) + 'px';
+        setStyle(tEl,'fontSize',Math.min(sw*0.92/(timeText.length*0.6),avail)+'px');
       }
     }
   }
 
   // poruka
   const mEl = $('msg');
-  if (msgText){ mEl.style.display='block'; mEl.textContent=msgText; mEl.style.color=fg; mEl.className = msgFlash?'flash':''; }
-  else mEl.style.display='none';
+  if (msgText){ setStyle(mEl,'display','block'); setText(mEl,msgText); setStyle(mEl,'color',fg); setClass(mEl,msgFlash?'flash':''); }
+  else setStyle(mEl,'display','none');
 
   // traka napretka
   const pEl = $('prog');
-  if (prog !== null){ pEl.style.display='block'; pEl.style.width=(prog*100)+'%'; pEl.style.background=fg; }
-  else pEl.style.display='none';
+  if (prog !== null){ setStyle(pEl,'display','block'); setStyle(pEl,'width',(prog*100)+'%'); setStyle(pEl,'background',fg); }
+  else setStyle(pEl,'display','none');
 }
 
 function doFlash(col){
@@ -246,7 +334,8 @@ if (IS_ELECTRON){
 }
 
 window.addEventListener('resize', () => { lastKey=''; });
-requestAnimationFrame(render);
+render();
+setInterval(render,50);
 </script>
 </body>
 </html>
