@@ -35,10 +35,46 @@ module.exports = async function verifyPackagedTunnel(context) {
     if (signature.status !== 0) throw new Error(`Packaged cloudflared signature verification failed: ${signature.stderr}`);
   }
   if (platform === 'win32' && process.platform === 'win32') {
-    const command = `(Get-AuthenticodeSignature -LiteralPath '${binary.replace(/'/g, "''")}').Status`;
-    const signature = spawnSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', command], { encoding: 'utf8', windowsHide: true });
-    if (signature.status !== 0 || String(signature.stdout).trim() !== 'Valid')
-      throw new Error(`Packaged cloudflared signature verification failed: ${signature.stdout || signature.stderr}`);
+    const windowsRoot = process.env.SystemRoot || process.env.WINDIR;
+    if (!windowsRoot) throw new Error('Packaged cloudflared signature verification failed: missing Windows root');
+    const powershell = path.join(windowsRoot, 'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe');
+    const securityModule = path.join(
+      windowsRoot,
+      'System32',
+      'WindowsPowerShell',
+      'v1.0',
+      'Modules',
+      'Microsoft.PowerShell.Security',
+      'Microsoft.PowerShell.Security.psd1'
+    );
+    if (!fs.existsSync(powershell) || !fs.existsSync(securityModule))
+      throw new Error('Packaged cloudflared signature verification failed: missing Windows PowerShell security module');
+
+    const powershellEnv = {
+      ...process.env,
+      PROTIMER_CLOUDFLARED_BINARY: binary,
+      PROTIMER_POWERSHELL_SECURITY_MODULE: securityModule
+    };
+    // A pwsh -> Node -> Windows PowerShell process chain otherwise passes the
+    // PowerShell 7 module path to Windows PowerShell 5.1, breaking autoload.
+    for (const key of Object.keys(powershellEnv)) {
+      if (key.toUpperCase() === 'PSMODULEPATH' || key.toUpperCase() === 'WINPSMODULEPATH')
+        delete powershellEnv[key];
+    }
+    const command = [
+      "$ErrorActionPreference = 'Stop'",
+      'Import-Module -Name $env:PROTIMER_POWERSHELL_SECURITY_MODULE -Force -ErrorAction Stop',
+      '$signature = Microsoft.PowerShell.Security\\Get-AuthenticodeSignature -LiteralPath $env:PROTIMER_CLOUDFLARED_BINARY -ErrorAction Stop',
+      "if ($null -eq $signature -or $signature.Status -ne [System.Management.Automation.SignatureStatus]::Valid -or $null -eq $signature.SignerCertificate) { throw ('Invalid Authenticode signature: ' + $signature.Status) }",
+      "Write-Output 'Valid'"
+    ].join('; ');
+    const signature = spawnSync(
+      powershell,
+      ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', command],
+      { encoding: 'utf8', windowsHide: true, env: powershellEnv, timeout: 60_000 }
+    );
+    if (signature.error || signature.status !== 0 || String(signature.stdout).trim() !== 'Valid')
+      throw new Error(`Packaged cloudflared signature verification failed: ${signature.error || signature.stderr || signature.stdout}`);
   }
   console.log(`Verified packaged cloudflared ${VERSION}: ${binary}`);
 };
