@@ -33,7 +33,7 @@ jobs:
       - name: Prepare smoke output directory (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
-        run: New-Item -ItemType Directory -Force C:\tmp | Out-Null
+        run: New-Item -ItemType Directory -Force (Join-Path (Get-Location).Drive.Root 'tmp') | Out-Null
       - name: Smoke test (Windows)
         if: runner.os == 'Windows'
         run: npm run smoke -- --disable-gpu

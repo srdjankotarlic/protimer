@@ -44,7 +44,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force C:\tmp | Out-Null
+          New-Item -ItemType Directory -Force (Join-Path (Get-Location).Drive.Root 'tmp') | Out-Null
           $process = Start-Process -FilePath ".\dist-installers\win-unpacked\ProTimer.exe" -ArgumentList "--smoke", "--disable-gpu" -Wait -PassThru
           if ($process.ExitCode -ne 0) {
             throw "Packaged Windows smoke test failed with exit code $($process.ExitCode)"
