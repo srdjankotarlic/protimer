@@ -5,10 +5,16 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   smoke:
-    runs-on: ubuntu-latest
+    name: Smoke (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -17,8 +23,17 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Configure Electron sandbox (CI)
+        if: runner.os == 'Linux'
         run: |
           sudo chown root:root node_modules/electron/dist/chrome-sandbox
           sudo chmod 4755 node_modules/electron/dist/chrome-sandbox
-      - name: Smoke test (Electron under Xvfb)
+      - name: Smoke test (Linux under Xvfb)
+        if: runner.os == 'Linux'
         run: xvfb-run --auto-servernum npm run smoke
+      - name: Prepare smoke output directory (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: New-Item -ItemType Directory -Force C:\tmp | Out-Null
+      - name: Smoke test (Windows)
+        if: runner.os == 'Windows'
+        run: npm run smoke -- --disable-gpu

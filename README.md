@@ -9,6 +9,8 @@
   Send a clear timer to a projector, confidence monitor, browser source or phone from one local app.
 </p>
 
+<p align="center"><strong>Latest release: ProTimer 2.1.0 — free, open source, no account and no watermark.</strong></p>
+
 <p align="center">
   <a href="https://github.com/srdjankotarlic/protimer/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/srdjankotarlic/protimer/actions/workflows/ci.yml/badge.svg"></a>
   <a href="https://github.com/srdjankotarlic/protimer/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/srdjankotarlic/protimer?label=stable"></a>
@@ -22,7 +24,7 @@
   ·
   <a href="#download-and-install"><strong>Download</strong></a>
   ·
-  <a href="#quick-start-30-seconds"><strong>Quick start</strong></a>
+  <a href="#quick-start-60-seconds"><strong>Quick start</strong></a>
 </p>
 
 ![ProTimer stage screen counting down with warning colors and NOW / NEXT](docs/demo.gif)
@@ -47,6 +49,24 @@ The current downloads are not Apple-notarized or Windows Authenticode-signed.
 - On Windows, SmartScreen may show **Unknown publisher**. Continue only for the installer downloaded from this repository.
 
 </details>
+
+## New in ProTimer 2.1
+
+- **Clear operator preview:** the timer in Control stays large and centred while grid placement moves only the real audience output.
+- **Faster duration entry:** the main timer and every rundown cue share one clear `HH:MM:SS` picker, step controls and minute presets.
+- **A rundown built for real shows:** **START RUNDOWN** launches cue one, and long rundowns scroll while every cue keeps a readable height.
+- **Cleaner audience output:** the desktop timer is frameless, movable and resizable by mouse; fullscreen remains safely controlled from Control.
+- **QR access for the audience:** show a view-only Timer or Backstage QR directly on the output. Remote-control URLs are never offered to the audience.
+- **Stable phone viewing:** phone clocks synchronise to the ProTimer host and rendering is rate-limited to avoid drift and unnecessary lag.
+
+See the complete [2.1.0 release notes](docs/RELEASE-NOTES-2.1.0.md).
+
+## Quick start (60 seconds)
+
+1. Install and open ProTimer — it creates **Control** for the operator and a clean **Screen** window for the audience.
+2. Open **Duration**, set hours/minutes/seconds (or choose a quick preset), then press **START** or `Space`.
+3. Drag and resize the frameless Screen window, or select a monitor and use **Send to screen** / fullscreen from Control.
+4. To let people follow on phones, open the network panel, select the view-only Timer or Backstage **QR**, then choose **Show QR to audience**.
 
 ## What ProTimer does
 
@@ -74,17 +94,6 @@ The **control window** keeps timer transport, display output, rundown and networ
 The **Backstage view** shows NOW, NEXT, the schedule and over/under status on any browser:
 
 ![ProTimer backstage view](docs/screenshot-backstage.png)
-
----
-
-## Quick start (30 seconds)
-
-1. Open ProTimer — you immediately get **two windows**: *Control* (for you) and *Screen* (clean time).
-2. Click **Duration**, set hours/minutes/seconds (or use a quick `5m` preset), then press **START** or `Space`.
-3. Drag the frameless *Screen* window onto your projector and resize it from its edges — or pick a monitor and use **Send to screen** / the fullscreen control at the top.
-4. Done. Use the `±` buttons to add/remove time live while the timer runs.
-
----
 
 ## 📖 How to use
 

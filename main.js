@@ -1157,7 +1157,8 @@ app.whenReady().then(() => {
         await controlWin.webContents.executeJavaScript("window.pt.exitFullscreen()");
         await new Promise(r => setTimeout(r, 500));
         let fitH0 = 9999, fitH1 = 9999;
-        try { const [w]=outputWin.getContentSize(); outputWin.setContentSize(w,506); } catch(e) {}
+        // Use a fixed windowed size so the check is independent of the CI runner's display width.
+        try { outputWin.setContentSize(640,506); } catch(e) {}
         await new Promise(r => setTimeout(r, 150));
         try { fitH0 = outputWin.getContentSize()[1]; } catch (e) {}
         await controlWin.webContents.executeJavaScript("document.getElementById('chkFit').checked=true; document.getElementById('chkFit').dispatchEvent(new Event('change'));");

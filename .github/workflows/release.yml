@@ -40,6 +40,15 @@ jobs:
         run: npx electron-builder ${{ matrix.args }} --publish never
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: "false"
+      - name: Smoke test packaged Windows app
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force C:\tmp | Out-Null
+          $process = Start-Process -FilePath ".\dist-installers\win-unpacked\ProTimer.exe" -ArgumentList "--smoke", "--disable-gpu" -Wait -PassThru
+          if ($process.ExitCode -ne 0) {
+            throw "Packaged Windows smoke test failed with exit code $($process.ExitCode)"
+          }
       - uses: actions/upload-artifact@v4
         with:
           name: installers-${{ matrix.os }}
