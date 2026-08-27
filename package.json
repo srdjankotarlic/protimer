@@ -1,7 +1,7 @@
 {
   "name": "pro-timer",
   "productName": "ProTimer",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "description": "Free stage timer and speaker countdown for live events, conferences and OBS",
   "main": "main.js",
   "author": "Srdjan Kotarlic",

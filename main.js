@@ -379,7 +379,8 @@ function createOutputWindow(displayId) {
 
   const transparent = !!(lastState && lastState.transparent);
   const grid = !!(lastState && lastState.gridOn);
-  const frameless = transparent || grid;   // grid prozor je takođe bez okvira (čista kockica)
+  const frameless = true;   // publika nikad ne vidi naslovnu traku / okvir operativnog prozora
+  const forceOnTop = transparent || grid;
   outputTransparent = transparent;
   outputFrameless = frameless;
 
@@ -388,22 +389,25 @@ function createOutputWindow(displayId) {
     title: 'ProTimer — Ekran',
     backgroundColor: transparent ? '#00000000' : '#000000',
     transparent: transparent,
-    frame: !frameless,
-    hasShadow: !frameless,
-    alwaysOnTop: frameless,
+    frame: false,
+    hasShadow: false,
+    movable: true,
+    resizable: true,
+    alwaysOnTop: forceOnTop,
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false }
   });
-  if (frameless) outputWin.setAlwaysOnTop(true, 'floating');
+  if (forceOnTop) outputWin.setAlwaysOnTop(true, 'floating');
   outputWin.loadFile('output.html');
   if (SMOKE) outputWin.webContents.on('console-message', (e, l, m, ln) => console.log(`OUT_CONSOLE [${l}] ${m} (line ${ln})`));
   outputWin.webContents.on('did-finish-load', () => {
     if (lastState) outputWin.webContents.send('state', lastState);
+    if (outputQrState) outputWin.webContents.send('audience-qr', outputQrState);
     pushDisplays(); pushOutMode();
   });
   outputWin.on('enter-full-screen', pushOutMode);
   outputWin.on('leave-full-screen', pushOutMode);
   outputWin.once('ready-to-show', () => positionOutput(target));
-  outputWin.on('closed', () => { outputWin = null; pushOutputState(); pushDisplays(); });
+  outputWin.on('closed', () => { outputWin = null; outputQrState = null; pushOutputQrState(); pushOutputState(); pushDisplays(); });
   pushOutputState();
 }
 
@@ -425,16 +429,17 @@ function recreateOutputForTransparency() {
 // ---------------- IPC ----------------
 ipcMain.on('state', (e, s) => {
   const prev = lastState || {};
+  const gridModeChanged = !!prev.gridOn !== !!s.gridOn;
   const gridPosChanged = (prev.gridSize !== s.gridSize) || (prev.gridCell !== s.gridCell);
-  const wantFrameless = !!s.transparent || !!s.gridOn;
   lastState = s;
   stateVersion++;
   if (outputWin && !outputWin.isDestroyed()) {
-    if (!!s.transparent !== outputTransparent || wantFrameless !== outputFrameless) {
-      recreateOutputForTransparency();   // providnost ili okvir (grid uklj/isklj) → novi prozor (sam se pozicionira)
+    if (!!s.transparent !== outputTransparent) {
+      recreateOutputForTransparency();   // Electron transparent svojstvo zahteva novi prozor
     } else {
+      outputWin.setAlwaysOnTop(!!s.transparent || !!s.gridOn, 'floating');
       outputWin.webContents.send('state', s);
-      if (gridPosChanged && s.gridOn) {   // druga kockica / veličina grida → presloži prozor
+      if (gridModeChanged || (gridPosChanged && s.gridOn)) {   // uklj/isklj ili druga kockica → presloži prozor
         const d = screen.getAllDisplays().find(x => x.id === outputTargetId) || screen.getPrimaryDisplay();
         positionOutput(d);
       }
@@ -467,14 +472,47 @@ ipcMain.handle('network-info', () => networkInfo());
 // ---------------- QR KOD + JAVNI LINK (tunel) ----------------
 let tunnel = null, tunnelUrl = null, tunnelStarting = false, tunnelProvider = null;
 let tunnelStartPromise = null, tunnelGeneration = 0, pendingTunnelProcess = null;
+let outputQrState = null;
 
-ipcMain.handle('qr', async (e, text) => {
+async function makeQrSvg(text) {
   try {
     const QRCode = require('qrcode');
     return await QRCode.toString(String(text || ''), {
       type: 'svg', margin: 1, color: { dark: '#0b0d11', light: '#ffffff' }
     });
   } catch (err) { return null; }
+}
+function pushOutputQrState() {
+  if (controlWin && !controlWin.isDestroyed())
+    controlWin.webContents.send('output-qr-state', outputQrState ? { url: outputQrState.url } : null);
+}
+ipcMain.handle('qr', async (e, text) => makeQrSvg(text));
+ipcMain.handle('show-output-qr', async (e, payload) => {
+  try {
+    const raw = String(payload && payload.url || '');
+    const parsed = new URL(raw);
+    if (!['http:', 'https:'].includes(parsed.protocol) || /^\/(?:remote|cmd)(?:\/|$)/i.test(parsed.pathname)) return false;
+    const svg = await makeQrSvg(parsed.toString()); if (!svg) return false;
+    outputQrState = {
+      url: parsed.toString(), svg,
+      label: String(payload && payload.label || '').slice(0, 100),
+      hint: String(payload && payload.hint || '').slice(0, 160)
+    };
+    const displayId = Number(payload && payload.displayId);
+    const d = screen.getAllDisplays().find(x => x.id === displayId);
+    if (!outputWin || outputWin.isDestroyed()) createOutputWindow(d ? d.id : null);
+    else {
+      if (d) positionOutput(d);
+      outputWin.webContents.send('audience-qr', outputQrState);
+    }
+    pushOutputQrState();
+    return true;
+  } catch (_) { return false; }
+});
+ipcMain.on('hide-output-qr', () => {
+  outputQrState = null;
+  if (outputWin && !outputWin.isDestroyed()) outputWin.webContents.send('audience-qr', null);
+  pushOutputQrState();
 });
 
 function pushShare() {
@@ -873,6 +911,47 @@ app.whenReady().then(() => {
         await new Promise(r => setTimeout(r, 1800));
         fs.writeFileSync('/tmp/protimer_ctl.png', (await controlWin.webContents.capturePage()).toPNG());
         fs.writeFileSync('/tmp/protimer_out.png', (await ow.webContents.capturePage()).toPNG());
+        // UI ugovor: uklonjene su samo tražene kontrole, a svi stari operaterski paneli ostaju.
+        let uiContractOK=false, uiContractStr='?';
+        try{
+          uiContractStr=await controlWin.webContents.executeJavaScript(`(function(){
+            var removed=['btnCueImport','btnCueExport','cueFile','btnTarget'].every(function(id){return !document.getElementById(id);});
+            var kept=['preview','btnStart','btnReset','btnBlackout','durTrigger','chips','bgColor','fgColor','chkWarn','warnYellow','warnRed','chkTransparent','textInput','chkTextOnly','btnTextClear','chkGrid','gridSizes','gridSel','yellowInput','redInput','chkFlash','chkSound','chkOver','chkProg','msgInput','chkMsgFlash','btnMsgSend','btnMsgClear','cueList','cueName','cueDurationTrigger','cueNote','cueColors','chkAuto','chkNowNext','btnRundownStart','btnGo','showStartInput','displaySel','btnOpenOut','btnFs','btnCloseOut','chkFit','chkOnTop','netUrl','netRemote','netBackstage','netApi','btnShare'].every(function(id){var el=document.getElementById(id);return !!el&&el.isConnected;});
+            var ids=Array.from(document.querySelectorAll('[id]')).map(function(el){return el.id;});
+            var unique=(new Set(ids)).size===ids.length, grid=document.querySelectorAll('#gridSel .gc').length===S.gridSize*S.gridSize;
+            var card=document.querySelector('.cuewrap').getBoundingClientRect(), start=document.getElementById('btnRundownStart').getBoundingClientRect();
+            var prominent=start.width>card.width*.8&&start.height>=38;
+            var sr=Object.keys(I18N.sr).sort(),en=Object.keys(I18N.en).sort();
+            var refs=Array.from(document.querySelectorAll('[data-i18n],[data-i18n-html],[data-i18n-ph],[data-i18n-title]')).flatMap(function(el){return [el.dataset.i18n,el.dataset.i18nHtml,el.dataset.i18nPh,el.dataset.i18nTitle].filter(Boolean);});
+            var i18n=JSON.stringify(sr)===JSON.stringify(en)&&refs.every(function(k){return k in I18N.sr&&k in I18N.en;});
+            return JSON.stringify({removed:removed,kept:kept,unique:unique,grid:grid,prominent:prominent,i18n:i18n});
+          })()`);
+          const value=JSON.parse(uiContractStr); uiContractOK=Object.values(value).every(Boolean);
+        }catch(e){uiContractStr='ERR '+e;}
+        console.log('UI_CONTRACT_OK='+uiContractOK+' '+uiContractStr);
+        check('UI_CONTRACT_OK',uiContractOK);
+        // Deklarisana minimalna širina kontrole ne sme da odseče topbar ili napravi horizontalni overflow.
+        let controlResponsiveOK=false,controlResponsiveStr='?';
+        try{
+          const originalBounds=controlWin.getBounds(); controlWin.setSize(820,480); await new Promise(r=>setTimeout(r,350));
+          controlResponsiveStr=await controlWin.webContents.executeJavaScript(`(function(){
+            var top=document.querySelector('.topbar'),main=document.querySelector('.main'),target=document.querySelector('.target-control'),transport=document.querySelector('.transport');
+            var visible=Array.from(top.children).filter(function(el){return getComputedStyle(el).display!=='none';});
+            var clipped=visible.some(function(el){var r=el.getBoundingClientRect();return r.left<-1||r.right>innerWidth+1;});
+            var tr=target.getBoundingClientRect(),label=target.querySelector('.lbl').getBoundingClientRect(),input=target.querySelector('input').getBoundingClientRect();
+            var transportRect=transport.getBoundingClientRect(),transportClipped=Array.from(transport.children).some(function(el){var r=el.getBoundingClientRect();return r.left<transportRect.left-1||r.right>transportRect.right+1;});
+            return JSON.stringify({innerWidth:innerWidth,topHeight:Math.round(top.getBoundingClientRect().height),clipped:clipped,
+              mainOverflow:main.scrollWidth>main.clientWidth+1,
+              transportClipped:transportClipped,
+              targetTogether:Math.abs((label.top+label.height/2)-(input.top+input.height/2))<3&&tr.right<=innerWidth+1});
+          })()`);
+          fs.writeFileSync('/tmp/protimer_ctl_min.png', (await controlWin.webContents.capturePage()).toPNG());
+          const value=JSON.parse(controlResponsiveStr);
+          controlResponsiveOK=value.innerWidth>=800&&!value.clipped&&!value.mainOverflow&&!value.transportClipped&&value.targetTogether;
+          controlWin.setBounds(originalBounds); await new Promise(r=>setTimeout(r,200));
+        }catch(e){controlResponsiveStr='ERR '+e;}
+        console.log('CONTROL_RESPONSIVE_OK='+controlResponsiveOK+' '+controlResponsiveStr);
+        check('CONTROL_RESPONSIVE_OK',controlResponsiveOK);
         // snimak backstage stranice (učita živi /backstage preko servera)
         if (demo) {
           const bw = new BrowserWindow({ width:1280, height:720, show:false, backgroundColor:'#0a0c10',
@@ -1087,20 +1166,75 @@ app.whenReady().then(() => {
         const fitOK=fitH1<fitH0-20&&fitH1>60;
         console.log('FIT_OK=' + fitOK + ' FIT_H=' + fitH0 + '→' + fitH1);
         check('FIT_OK',fitOK);
+
+        // Izlaz je bez okvira, pomera se/skalira mišem u prozoru, a fullscreen se pali samo iz Kontrole.
+        let outputControlsOK=false,outputControlsStr='?';
+        try{
+          await controlWin.webContents.executeJavaScript("var fit=document.getElementById('chkFit');fit.checked=false;fit.dispatchEvent(new Event('change'));window.pt.exitFullscreen();");
+          await new Promise(r=>setTimeout(r,450));
+          const windowed=await outputWin.webContents.executeJavaScript(`(function(){var s=document.getElementById('stage');return {body:document.body.classList.contains('windowed'),drag:getComputedStyle(s).webkitAppRegion};})()`);
+          await outputWin.webContents.executeJavaScript("document.dispatchEvent(new MouseEvent('dblclick',{bubbles:true}))");
+          await new Promise(r=>setTimeout(r,250));
+          const dblClickStayedWindowed=!outputWin.isFullScreen();
+          await controlWin.webContents.executeJavaScript("document.getElementById('btnFs').click()");
+          await new Promise(r=>setTimeout(r,700)); const entered=outputWin.isFullScreen();
+          await controlWin.webContents.executeJavaScript("document.getElementById('btnFs').click()");
+          await new Promise(r=>setTimeout(r,700)); const exited=!outputWin.isFullScreen();
+          outputControlsOK=outputFrameless===true&&outputWin.isMovable()&&outputWin.isResizable()&&windowed.body&&windowed.drag==='drag'&&dblClickStayedWindowed&&entered&&exited;
+          outputControlsStr=JSON.stringify({frameless:outputFrameless,movable:outputWin.isMovable(),resizable:outputWin.isResizable(),windowed,dblClickStayedWindowed,entered,exited});
+        }catch(e){outputControlsStr='ERR '+e;}
+        console.log('OUTPUT_CONTROLS_OK='+outputControlsOK+' '+outputControlsStr);
+        check('OUTPUT_CONTROLS_OK',outputControlsOK);
+
+        // Bezbedni viewer QR može na izlaz; remote/control URL sa tokenom main proces odbija.
+        let audienceQrOK=false,audienceQrStr='?';
+        try{
+          const viewerUrl=`http://127.0.0.1:${serverPort}/`;
+          const shown=await controlWin.webContents.executeJavaScript(`window.pt.showOutputQr({url:${JSON.stringify(`http://127.0.0.1:${serverPort}/`)},label:'Skenirajte za tajmer',hint:'Otvorite kameru',displayId:Number(document.getElementById('displaySel').value)||null})`);
+          await new Promise(r=>setTimeout(r,350));
+          const visible=await outputWin.webContents.executeJavaScript(`(function(){var q=document.getElementById('audienceQr');return {display:getComputedStyle(q).display,svg:!!q.querySelector('svg'),url:document.getElementById('audienceQrUrl').textContent,label:document.getElementById('audienceQrLabel').textContent};})()`);
+          const remoteRejected=await controlWin.webContents.executeJavaScript(`window.pt.showOutputQr({url:${JSON.stringify(`http://127.0.0.1:${serverPort}/remote?t=${CMD_TOKEN}`)},label:'unsafe',hint:'unsafe'})`)===false;
+          await controlWin.webContents.executeJavaScript("document.getElementById('btnHideOutputQr').click()");
+          await new Promise(r=>setTimeout(r,200));
+          const hidden=await outputWin.webContents.executeJavaScript("getComputedStyle(document.getElementById('audienceQr')).display==='none'");
+          audienceQrOK=shown===true&&visible.display==='flex'&&visible.svg&&visible.url===viewerUrl&&visible.label==='Skenirajte za tajmer'&&remoteRejected&&hidden&&outputQrState===null;
+          audienceQrStr=JSON.stringify({shown,visible,remoteRejected,hidden});
+        }catch(e){audienceQrStr='ERR '+e;}
+        console.log('AUDIENCE_QR_OK='+audienceQrOK+' '+audienceQrStr);
+        check('AUDIENCE_QR_OK',audienceQrOK);
         // GRID: uključi grid 3×3, kockica 0 (gore-levo) → PROZOR = ta kockica monitora
-        await controlWin.webContents.executeJavaScript("document.getElementById('chkFit').checked=false; document.getElementById('chkFit').dispatchEvent(new Event('change')); var g=document.getElementById('chkGrid'); g.checked=true; g.dispatchEvent(new Event('change')); document.querySelector('#gridSizes button[data-gs=\"3\"]').click(); document.querySelectorAll('#gridSel .gc')[0].click();");
+        await controlWin.webContents.executeJavaScript("S.text=''; S.textOnly=false; S.message={text:'',flash:false}; lastKey=''; render(); document.getElementById('chkFit').checked=false; document.getElementById('chkFit').dispatchEvent(new Event('change')); var g=document.getElementById('chkGrid'); g.checked=true; g.dispatchEvent(new Event('change')); document.querySelector('#gridSizes button[data-gs=\"3\"]').click(); document.querySelectorAll('#gridSel .gc')[0].click();");
         await new Promise(r => setTimeout(r, 800));
         let gridWinOK = false, gbStr = '?';
         try {
           const d = screen.getAllDisplays().find(x => x.id === outputTargetId) || screen.getPrimaryDisplay();
           const gb = outputWin.getBounds();
           const expW = Math.floor(d.bounds.width / 3), expH = Math.floor(d.bounds.height / 3);
+          const drag = await outputWin.webContents.executeJavaScript(`(function(){var s=document.getElementById('stage');return {body:document.body.classList.contains('windowed'),region:getComputedStyle(s).webkitAppRegion};})()`);
           // ključno: prozor je VELIČINE kockice i nije fullscreen (tačan x/y zavisi od rasporeda monitora)
-          gridWinOK = Math.abs(gb.width - expW) < 8 && Math.abs(gb.height - expH) < 8 && !outputWin.isFullScreen();
-          gbStr = `${gb.width}x${gb.height}@${gb.x},${gb.y} (cell≈${expW}x${expH}) frameless=${outputFrameless}`;
+          gridWinOK = Math.abs(gb.width - expW) < 8 && Math.abs(gb.height - expH) < 8 && !outputWin.isFullScreen() && !drag.body && drag.region!=='drag';
+          gbStr = `${gb.width}x${gb.height}@${gb.x},${gb.y} (cell≈${expW}x${expH}) frameless=${outputFrameless} drag=${drag.region||'none'}`;
         } catch (e) {}
         console.log('GRID_WIN_OK=' + gridWinOK + ' ' + gbStr);
         check('GRID_WIN_OK',gridWinOK);
+        // GRID ne sme da umanji/pomeri pregled u Kontroli: operateru vreme mora
+        // ostati veliko i centrirano, dok je pravi izlaz i dalje u kockici iznad.
+        let controllerPreviewOK = false, controllerPreviewStr = '?';
+        try {
+          controllerPreviewStr = await controlWin.webContents.executeJavaScript(`(function(){
+            var p=document.getElementById('preview').getBoundingClientRect();
+            var s=document.getElementById('pvStage').getBoundingClientRect();
+            var t=document.getElementById('pvTime').getBoundingClientRect();
+            var full=Math.abs(s.left-p.left)<4&&Math.abs(s.top-p.top)<4&&Math.abs(s.width-p.width)<4&&Math.abs(s.height-p.height)<4;
+            var centered=Math.abs((t.left+t.width/2)-(s.left+s.width/2))<4&&Math.abs((t.top+t.height/2)-(s.top+s.height/2))<4;
+            var large=t.height>s.height*.35;
+            return JSON.stringify({full:full,centered:centered,large:large,preview:Math.round(p.width)+'x'+Math.round(p.height),timer:Math.round(t.width)+'x'+Math.round(t.height)});
+          })()`);
+          const preview = JSON.parse(controllerPreviewStr);
+          controllerPreviewOK = preview.full && preview.centered && preview.large;
+        } catch (e) { controllerPreviewStr = 'ERR ' + e; }
+        console.log('CONTROLLER_PREVIEW_OK=' + controllerPreviewOK + ' ' + controllerPreviewStr);
+        check('CONTROLLER_PREVIEW_OK',controllerPreviewOK);
         // REGRESIJA: biranje veličine grida NE sme da pokvari mod tajmera.
         // (Grid dugmad su u .tabs kontejneru — ranije su greškom zvala setMode(undefined),
         //  pa je START ostavljao endAt=0 → prikaz ogromnog negativnog vremena.)
@@ -1121,6 +1255,81 @@ app.whenReady().then(() => {
         const outputTargetOK=outputTargetId===expectedTarget;
         console.log('OUTPUT_TARGET_OK='+outputTargetOK+' target='+outputTargetId);
         check('OUTPUT_TARGET_OK',outputTargetOK);
+
+        // Jedan HH:MM:SS picker mora nezavisno da postavi glavni tajmer i trajanje nove rundown stavke.
+        let durationPickerOK=false,durationPickerStr='?';
+        try{
+          durationPickerStr=await controlWin.webContents.executeJavaScript(`(function(){
+            cancelAutoAdvance(); cues=[]; currentCue=-1; S.running=false; renderCues();
+            document.getElementById('durTrigger').click();
+            document.getElementById('durationHours').value='01'; document.getElementById('durationMinutes').value='02'; document.getElementById('durationSeconds').value='03';
+            document.getElementById('durationPickerConfirm').click();
+            var main={duration:S.durationMs,remaining:S.remMs,current:currentCue,label:document.getElementById('durTriggerValue').textContent};
+            document.getElementById('cueDurationTrigger').click();
+            document.getElementById('durationHours').value='00'; document.getElementById('durationMinutes').value='02'; document.getElementById('durationSeconds').value='03';
+            document.getElementById('durationPickerConfirm').click();
+            document.getElementById('cueName').value='Picker cue'; document.getElementById('btnCueAdd').click();
+            return JSON.stringify({main:main,cue:cues[0],liveDuration:S.durationMs,cueLabel:document.getElementById('cueDurationValue').textContent,pickerHidden:document.getElementById('durationPopover').hidden});
+          })()`);
+          const value=JSON.parse(durationPickerStr);
+          durationPickerOK=value.main.duration===3723000&&value.main.remaining===3723000&&value.main.current===-1&&value.main.label==='01:02:03'
+            &&value.cue&&value.cue.durationMs===123000&&value.liveDuration===3723000&&value.cueLabel==='00:02:03'&&value.pickerHidden===true;
+        }catch(e){durationPickerStr='ERR '+e;}
+        console.log('DURATION_PICKER_OK='+durationPickerOK+' '+durationPickerStr);
+        check('DURATION_PICKER_OK',durationPickerOK);
+
+        // Veliki START RUNDOWN uvek pokreće prvu stavku, čak i ako je druga trenutno aktivna.
+        let rundownStartOK=false,rundownStartStr='?';
+        try{
+          rundownStartStr=await controlWin.webContents.executeJavaScript(`(function(){
+            cancelAutoAdvance(); autoNext=false;
+            cues=[{name:'Prva',durationMs:90000,note:'',color:''},{name:'Druga',durationMs:120000,note:'',color:''}];
+            currentCue=1; setDuration(120000); startPause(); renderCues(); document.getElementById('btnRundownStart').click();
+            var rem=S.endAt-Date.now();
+            return JSON.stringify({currentCue:currentCue,name:cues[currentCue]&&cues[currentCue].name,running:S.running,duration:S.durationMs,rem:rem,disabled:document.getElementById('btnRundownStart').disabled});
+          })()`);
+          const value=JSON.parse(rundownStartStr);
+          rundownStartOK=value.currentCue===0&&value.name==='Prva'&&value.running===true&&value.duration===90000&&value.rem>88000&&value.rem<=90000&&value.disabled===false;
+        }catch(e){rundownStartStr='ERR '+e;}
+        console.log('RUNDOWN_START_OK='+rundownStartOK+' '+rundownStartStr);
+        check('RUNDOWN_START_OK',rundownStartOK);
+
+        // Dugačak rundown mora da zadrži punu visinu svake stavke i da skroluje listu,
+        // umesto da sabija redove dok se vremena i dugmad ne preklope.
+        let rundownScrollOK=false,rundownScrollStr='?';
+        try{
+          rundownScrollStr=await controlWin.webContents.executeJavaScript(`(async function(){
+            cancelAutoAdvance(); currentCue=-1; S.running=false;
+            cues=Array.from({length:14},function(_,i){return {name:'Stavka '+(i+1),durationMs:(i+1)*60000,note:'',color:''};});
+            renderCues(); await new Promise(function(resolve){requestAnimationFrame(resolve);});
+            var list=document.getElementById('cueList'),rows=Array.from(list.querySelectorAll('.cue'));
+            var heights=rows.map(function(row){return Math.round(row.getBoundingClientRect().height*10)/10;});
+            list.scrollTop=list.scrollHeight;
+            return JSON.stringify({rows:rows.length,clientHeight:list.clientHeight,scrollHeight:list.scrollHeight,scrollTop:list.scrollTop,
+              overflowY:getComputedStyle(list).overflowY,minHeight:Math.min.apply(null,heights),maxHeight:Math.max.apply(null,heights)});
+          })()`);
+          const value=JSON.parse(rundownScrollStr);
+          rundownScrollOK=value.rows===14&&value.scrollHeight>value.clientHeight&&value.scrollTop>0&&value.overflowY==='auto'
+            &&value.minHeight>=43&&value.maxHeight-value.minHeight<1;
+        }catch(e){rundownScrollStr='ERR '+e;}
+        console.log('RUNDOWN_SCROLL_OK='+rundownScrollOK+' '+rundownScrollStr);
+        check('RUNDOWN_SCROLL_OK',rundownScrollOK);
+
+        // „Kraj u” se armira bez malog Start dugmeta, a veliki START računa tačan završetak u trenutku pokretanja.
+        let endTargetOK=false,endTargetStr='?';
+        try{
+          endTargetStr=await controlWin.webContents.executeJavaScript(`(function(){
+            reset(); var base=new Date(Date.now()+120000),value=String(base.getHours()).padStart(2,'0')+':'+String(base.getMinutes()).padStart(2,'0');
+            var input=document.getElementById('targetInput'); input.value=value; input.dispatchEvent(new Event('change',{bubbles:true}));
+            var armedBefore=targetArmed&&!S.running&&input.classList.contains('armed'); document.getElementById('btnStart').click();
+            var expected=new Date(); var p=value.split(':').map(Number); expected.setHours(p[0],p[1],0,0); if(expected.getTime()<=Date.now())expected.setDate(expected.getDate()+1);
+            var result={armedBefore:armedBefore,running:S.running,armedAfter:targetArmed,delta:Math.abs(S.endAt-expected.getTime()),smallStart:!!document.getElementById('btnTarget')}; reset(); return JSON.stringify(result);
+          })()`);
+          const value=JSON.parse(endTargetStr);
+          endTargetOK=value.armedBefore===true&&value.running===true&&value.armedAfter===false&&value.delta<1000&&value.smallStart===false;
+        }catch(e){endTargetStr='ERR '+e;}
+        console.log('END_TARGET_OK='+endTargetOK+' '+endTargetStr);
+        check('END_TARGET_OK',endTargetOK);
 
         // Brisanje cue-a pre aktivnog čuva isti cue; strelice u SELECT-u ne diraju trajanje.
         let cueDeleteOK=false,selectKeyOK=false,cueDeleteStr='?';
@@ -1234,7 +1443,7 @@ app.whenReady().then(() => {
         app.exit(0);
       } catch (err) { console.error('SMOKE_FAIL', err); app.exit(1); }
     })();
-    setTimeout(() => { console.error('SMOKE_TIMEOUT'); app.exit(1); }, 45000);
+    setTimeout(() => { console.error('SMOKE_TIMEOUT'); app.exit(1); }, 60000);
   }
 });
 

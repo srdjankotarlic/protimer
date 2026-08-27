@@ -33,6 +33,7 @@
     border:1px solid var(--border); border-radius:9px; padding:7px 10px; font-size:13px; outline:none;
     transition:border-color .15s, box-shadow .15s;}
   select:focus,input:focus{border-color:var(--blue); box-shadow:var(--focus);}
+  input.armed{border-color:var(--accent); box-shadow:0 0 0 3px rgba(48,209,88,.16);}
   input[type=color]{width:34px; height:30px; padding:2px; border:1px solid var(--border);
     border-radius:9px; background:rgba(255,255,255,.055); cursor:pointer;}
 
@@ -47,6 +48,7 @@
   button.ghost{background:transparent;}
   button.danger{background:transparent; border-color:rgba(255,69,58,.35); color:#ff8b84;}
   button.danger:hover{border-color:var(--red); background:rgba(255,69,58,.1);}
+  button:disabled{opacity:.42; cursor:default; filter:none; transform:none; box-shadow:none;}
   label.chk{display:flex; align-items:center; gap:6px; color:var(--dim); font-size:12.5px; cursor:pointer; transition:color .15s;}
   label.chk:hover{color:var(--text);}
   label.chk input{accent-color:var(--accent);}
@@ -75,7 +77,7 @@
   .warn-sw .tag{font-size:11px; color:var(--dim2); font-family:"SF Mono",Menlo,monospace; width:11px; text-align:center;}
   .field input.short{width:58px;}
 
-  /* ---- preview (ogledalo izlaza) ---- */
+  /* ---- preview (sadržaj izlaza; u kontroli je uvek velik i centriran) ---- */
   .preview{position:relative; border:1px solid var(--border); border-radius:var(--radius);
     flex:0 0 auto; height:clamp(170px, 26vh, 320px); min-height:170px; overflow:hidden; display:flex; flex-direction:column;
     align-items:center; justify-content:center; background:#000;}
@@ -132,6 +134,42 @@
   input.short{width:62px; text-align:center; font-family:"SF Mono",Menlo,monospace;}
   input.w90{width:92px; text-align:center; font-family:"SF Mono",Menlo,monospace;}
 
+  /* ---- zajednički birač trajanja ---- */
+  .duration-control{display:inline-flex; align-items:center; gap:6px; min-width:0;}
+  .duration-trigger{display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:34px;
+    padding:6px 10px; border-color:var(--border-strong); font-family:"SF Mono",ui-monospace,Menlo,monospace;
+    font-variant-numeric:tabular-nums; letter-spacing:.2px;}
+  .duration-trigger[aria-expanded="true"]{border-color:var(--blue); box-shadow:var(--focus); background:rgba(10,132,255,.12);}
+  .duration-trigger .caption{font-family:-apple-system,"SF Pro Text","Helvetica Neue",system-ui,sans-serif;
+    color:var(--dim); font-size:9.5px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase;}
+  .duration-trigger .value{color:var(--text); font-size:13px;}
+  .duration-trigger.cue-duration{min-width:94px; padding-inline:9px;}
+  .duration-trigger.cue-duration .value{font-size:12.5px;}
+  .target-control{display:inline-flex; align-items:center; gap:7px; flex:0 0 auto; white-space:nowrap;}
+
+  .duration-popover{position:fixed; z-index:80; width:min(456px,calc(100vw - 24px)); padding:17px;
+    background:#1a1a21; border:1px solid var(--border-strong); border-radius:14px;
+    box-shadow:0 22px 60px rgba(0,0,0,.58), inset 0 1px 0 rgba(255,255,255,.045);}
+  .duration-popover[hidden]{display:none;}
+  .duration-popover-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
+  .duration-popover-title{font-size:11px; color:var(--dim); font-weight:700; letter-spacing:1.4px; text-transform:uppercase;}
+  .duration-close{padding:3px 8px; font-size:11px; color:var(--dim); background:transparent;}
+  .duration-readout{display:grid; grid-template-columns:1fr 22px 1fr 22px 1fr; align-items:start;}
+  .duration-unit{display:flex; min-width:0; flex-direction:column; align-items:center; gap:7px;}
+  .duration-segment{width:100%; min-width:0; border:none!important; background:transparent!important; box-shadow:none!important;
+    padding:0!important; color:var(--text); text-align:center; font:700 38px/1.05 "SF Mono",ui-monospace,Menlo,monospace!important;
+    font-variant-numeric:tabular-nums; caret-color:var(--blue);}
+  .duration-segment:focus{color:#fff; text-shadow:0 0 18px rgba(10,132,255,.28);}
+  .duration-unit-label{font-size:9.5px; color:var(--dim); font-weight:700; letter-spacing:1.25px; text-transform:uppercase;}
+  .duration-colon{font:700 34px/1 "SF Mono",ui-monospace,Menlo,monospace; text-align:center; color:var(--dim); padding-top:3px;}
+  .duration-stepper{display:grid; grid-template-columns:1fr 1fr; gap:6px; width:100%; margin-top:1px;}
+  .duration-stepper button{padding:6px 8px; font:600 18px/1 "SF Mono",ui-monospace,Menlo,monospace;}
+  .duration-presets{display:grid; grid-template-columns:repeat(6,1fr); gap:6px; margin:15px 0 12px;}
+  .duration-presets button{padding:7px 4px; font-family:"SF Mono",ui-monospace,Menlo,monospace; color:var(--dim);}
+  .duration-presets button.active{border-color:var(--accent); color:var(--text); background:rgba(48,209,88,.09);}
+  .duration-confirm{width:100%; padding:11px!important; font-size:14px!important; letter-spacing:.8px;}
+  .duration-help{margin-top:8px; text-align:center; color:var(--dim2); font-size:10.5px;}
+
   /* ---- right column ---- */
   .right{display:flex; flex-direction:column; gap:12px; min-width:0;}
   .card{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius);
@@ -141,14 +179,18 @@
   .cuehead{display:flex; align-items:center; gap:7px; margin-bottom:9px; flex-wrap:wrap;}
   .cuehead .mini{padding:3px 8px; font-size:11px;}
   .cuehead input[type=time]{padding:4px 6px; font-size:12px;}
+  .rundown-start{width:100%; padding:12px!important; margin-bottom:9px; font-size:14px!important;
+    font-weight:800!important; letter-spacing:.65px;}
   .ou{font-family:"SF Mono",Menlo,monospace; font-size:11px; font-weight:700; padding:2px 7px; border-radius:6px;
     background:var(--panel2); border:1px solid var(--border); color:var(--dim); white-space:nowrap;}
   .ou.late{background:#3a1f1d; border-color:#5a2b28; color:#ff8b84;}
   .ou.early{background:#16263a; border-color:#1f3a5a; color:#7db8ff;}
   .ou.ontime{background:#13251a; border-color:#1f4a30; color:var(--accent);}
-  .cuelist{overflow-y:auto; display:flex; flex-direction:column; gap:5px; min-height:40px; max-height:34vh; margin-bottom:9px;}
+  .cuelist{overflow-y:auto; overflow-x:hidden; display:flex; flex-direction:column; gap:5px;
+    min-height:40px; max-height:34vh; margin-bottom:9px; scrollbar-gutter:stable;
+    overscroll-behavior:contain;}
   .cuelist::-webkit-scrollbar{width:8px;} .cuelist::-webkit-scrollbar-thumb{background:var(--border); border-radius:4px;}
-  .cue{display:flex; align-items:center; gap:7px; background:rgba(255,255,255,.045); border:1px solid var(--border);
+  .cue{display:flex; flex:0 0 auto; min-height:44px; align-items:center; gap:7px; background:rgba(255,255,255,.045); border:1px solid var(--border);
     border-radius:9px; padding:7px 9px; padding-left:7px; cursor:pointer; position:relative; overflow:hidden;
     transition:background .15s, border-color .15s;}
   .cue:hover{background:rgba(255,255,255,.08);}
@@ -177,6 +219,7 @@
   .qrbox{display:none; background:#fff; border-radius:10px; padding:11px; margin:2px 0 9px; text-align:center;}
   .qrbox svg{width:172px; height:172px; display:block; margin:0 auto;}
   .qrbox .qrlbl{color:#0b0d11; font-size:10.5px; margin-top:7px; word-break:break-all; font-family:"SF Mono",Menlo,monospace; line-height:1.3;}
+  .qrbox .audience-qr-action{width:100%; margin-top:9px;}
   #btnShare.on{background:var(--accent-d); border-color:var(--accent-d); color:#fff; font-weight:600;}
   .net-note{color:var(--dim2); font-size:11px; line-height:1.5;}
   .dot{width:7px; height:7px; border-radius:50%; background:var(--red); display:inline-block;}
@@ -189,6 +232,17 @@
   .lang{display:inline-flex; gap:2px; background:rgba(255,255,255,.05); border:1px solid var(--border); border-radius:9px; padding:2px;}
   .lang button{padding:4px 9px; font-size:11.5px; font-weight:600; border:none; background:transparent; color:var(--dim); border-radius:7px;}
   .lang button.active{background:var(--blue); color:#fff; box-shadow:0 1px 4px rgba(10,132,255,.35);}
+
+  @media (max-width:960px){
+    .topbar{flex-wrap:wrap; padding-block:9px;}
+    .topbar>.grow{flex:0 0 100%; height:0;}
+    .topbar #displaySel{flex:1 1 180px; min-width:150px; max-width:220px!important;}
+    .transport{flex-wrap:wrap;}
+    #btnStart{flex:2 1 160px;}
+    #btnReset{flex:1 1 100px;}
+    #btnBlackout{flex:1 1 120px;}
+    .transport .adjust{order:4; flex:1 0 100%;}
+  }
 </style>
 </head>
 <body>
@@ -250,12 +304,17 @@
           <button data-mode="clock" data-i18n="modeClock">Sat</button>
         </div>
         <div class="sep"></div>
-        <input type="text" id="durInput" class="w90" placeholder="10:00" data-i18n-title="durTitle" title="10 = minuti · 10:00 = MM:SS · 1:00:00 = HH:MM:SS">
-        <button id="btnSetDur" data-i18n="set">Postavi</button>
-        <div class="sep"></div>
-        <span class="lbl" data-i18n="endAt">Kraj u</span>
-        <input type="time" id="targetInput">
-        <button id="btnTarget" data-i18n-title="targetTitle" title="Odbrojavanje do tačnog vremena" data-i18n="startTarget">Start</button>
+        <div class="duration-control">
+          <button id="durTrigger" class="duration-trigger" type="button" aria-haspopup="dialog" aria-controls="durationPopover" aria-expanded="false" data-i18n-title="durTitle" title="Postavi sate, minute i sekunde">
+            <span class="caption" data-i18n="duration">Trajanje</span><span class="value" id="durTriggerValue">00:10:00</span>
+          </button>
+          <button id="btnSetDur" class="ghost" data-i18n="set">Postavi</button>
+        </div>
+        <div class="target-control">
+          <div class="sep"></div>
+          <span class="lbl" data-i18n="endAt">Kraj u</span>
+          <input type="time" id="targetInput" data-i18n-title="targetTitle" title="Izaberi vreme završetka, zatim pokreni velikim START dugmetom">
+        </div>
       </div>
       <div class="field">
         <span class="glabel" data-i18n="quick">Brzo</span>
@@ -325,21 +384,21 @@
   </div>
 
   <div class="right">
-    <div class="card cuewrap" style="flex:1">
+    <div class="card cuewrap" style="flex:1" tabindex="0">
       <div class="cuehead">
         <h3 data-i18n="rundown" style="margin:0">RUNDOWN</h3>
-        <button id="btnCueImport" class="mini ghost" data-i18n="cueImport" data-i18n-title="cueImportTitle" title="Uvezi CSV / nalepi iz Excel-a ili Sheets-a (naziv, trajanje, beleška)">⬆ Uvoz</button>
-        <button id="btnCueExport" class="mini ghost" data-i18n="cueExport" data-i18n-title="cueExportTitle" title="Izvezi rundown kao CSV">⬇ CSV</button>
-        <input type="file" id="cueFile" accept=".csv,.txt,.tsv" style="display:none">
         <div class="grow"></div>
-        <span class="lbl" data-i18n="showStart">Start</span>
+        <span class="lbl" data-i18n="showStart">Planirani početak</span>
         <input type="time" id="showStartInput" title="Planirani početak showa">
         <span id="ouStatus" class="ou"></span>
       </div>
+      <button id="btnRundownStart" class="primary rundown-start" data-i18n="startRundown">▶ START RUNDOWN</button>
       <div class="cuelist" id="cueList"></div>
       <div class="cueadd">
         <input type="text" id="cueName" placeholder="Naziv" data-i18n-ph="namePh" style="flex:1; min-width:40px">
-        <input type="text" id="cueDur" class="short" placeholder="10:00">
+        <button id="cueDurationTrigger" class="duration-trigger cue-duration" type="button" aria-haspopup="dialog" aria-controls="durationPopover" aria-expanded="false" data-i18n-title="cueDurationTitle" title="Postavi trajanje stavke">
+          <span class="value" id="cueDurationValue">00:10:00</span>
+        </button>
         <button id="btnCueAdd" title="Dodaj">+</button>
       </div>
       <div class="cueadd">
@@ -356,7 +415,7 @@
       <div class="lbl" style="margin-bottom:5px" data-i18n="screenOBS">Ekran (OBS / monitor)</div>
       <div class="net-url">
         <span id="netUrl">—</span>
-        <button class="mini ghost qrbtn" data-qr="netUrl" title="QR kod">QR</button>
+        <button class="mini ghost qrbtn" data-qr="netUrl" data-audience-qr="timer" title="QR kod">QR</button>
         <button id="btnCopyUrl" class="mini ghost" data-i18n="copy">Kopiraj</button>
       </div>
       <div class="lbl" style="margin-bottom:5px" data-i18n="remoteLabel">Daljinski (telefon / tablet)</div>
@@ -368,7 +427,7 @@
       <div class="lbl" style="margin-bottom:5px" data-i18n="backstageLabel">Backstage (raspored / crew)</div>
       <div class="net-url">
         <span id="netBackstage" style="color:var(--amber)">—</span>
-        <button class="mini ghost qrbtn" data-qr="netBackstage" title="QR kod">QR</button>
+        <button class="mini ghost qrbtn" data-qr="netBackstage" data-audience-qr="backstage" title="QR kod">QR</button>
         <button id="btnCopyBackstage" class="mini ghost" data-i18n="copy">Kopiraj</button>
       </div>
       <div class="lbl" style="margin-bottom:5px" data-i18n="apiLabel">API (Stream Deck / Companion)</div>
@@ -378,12 +437,13 @@
       </div>
 
       <div id="qrBox" class="qrbox"></div>
+      <button id="btnHideOutputQr" class="danger" style="display:none; width:100%; margin:0 0 8px" data-i18n="hideQrFromScreen">Skloni QR sa ekrana</button>
 
       <button id="btnShare" class="ghost" style="width:100%; margin-top:4px" data-i18n="shareOnline">🌐 Deli online (bilo koja mreža)</button>
       <div class="lbl" id="publicLbl" style="display:none; margin:8px 0 5px"><span data-i18n="publicLabel">Javni link (bilo koja mreža)</span><span id="publicProvider"></span></div>
       <div class="net-url" id="publicRow" style="display:none">
         <span id="netPublic" style="color:#7ee0a0">—</span>
-        <button class="mini ghost qrbtn" data-qr="netPublic" title="QR kod">QR</button>
+        <button class="mini ghost qrbtn" data-qr="netPublic" data-audience-qr="timer" title="QR kod">QR</button>
         <button id="btnCopyPublic" class="mini ghost" data-i18n="copy">Kopiraj</button>
       </div>
 
@@ -394,6 +454,39 @@
       </div>
     </div>
   </div>
+</div>
+
+<div id="durationPopover" class="duration-popover" role="dialog" aria-modal="false" aria-labelledby="durationPickerTitle" hidden>
+  <div class="duration-popover-head">
+    <div id="durationPickerTitle" class="duration-popover-title" data-i18n="durationPickerTitle">Postavi trajanje</div>
+    <button id="durationPickerClose" class="duration-close" type="button" data-i18n-title="cancel" title="Otkaži">✕</button>
+  </div>
+  <div class="duration-readout">
+    <div class="duration-unit">
+      <input id="durationHours" class="duration-segment" type="text" inputmode="numeric" maxlength="2" value="00" autocomplete="off" data-duration-part="hours" data-i18n-title="hours" title="Sati">
+      <span class="duration-unit-label" data-i18n="hours">Sati</span>
+      <div class="duration-stepper"><button type="button" data-duration-step="hours" data-delta="-1">−</button><button type="button" data-duration-step="hours" data-delta="1">+</button></div>
+    </div>
+    <div class="duration-colon">:</div>
+    <div class="duration-unit">
+      <input id="durationMinutes" class="duration-segment" type="text" inputmode="numeric" maxlength="2" value="10" autocomplete="off" data-duration-part="minutes" data-i18n-title="minutes" title="Minuti">
+      <span class="duration-unit-label" data-i18n="minutes">Minuti</span>
+      <div class="duration-stepper"><button type="button" data-duration-step="minutes" data-delta="-1">−</button><button type="button" data-duration-step="minutes" data-delta="1">+</button></div>
+    </div>
+    <div class="duration-colon">:</div>
+    <div class="duration-unit">
+      <input id="durationSeconds" class="duration-segment" type="text" inputmode="numeric" maxlength="2" value="00" autocomplete="off" data-duration-part="seconds" data-i18n-title="seconds" title="Sekunde">
+      <span class="duration-unit-label" data-i18n="seconds">Sekunde</span>
+      <div class="duration-stepper"><button type="button" data-duration-step="seconds" data-delta="-1">−</button><button type="button" data-duration-step="seconds" data-delta="1">+</button></div>
+    </div>
+  </div>
+  <div class="duration-presets">
+    <button type="button" data-duration-preset="1">1m</button><button type="button" data-duration-preset="5">5m</button>
+    <button type="button" data-duration-preset="10">10m</button><button type="button" data-duration-preset="15">15m</button>
+    <button type="button" data-duration-preset="30">30m</button><button type="button" data-duration-preset="60">60m</button>
+  </div>
+  <button id="durationPickerConfirm" class="primary duration-confirm" type="button" data-i18n="confirmDuration">Potvrdi</button>
+  <div class="duration-help" data-i18n="durationHelp">Enter potvrđuje · Esc otkazuje</div>
 </div>
 
 <div class="statusbar" data-i18n-html="shortcuts">
@@ -407,7 +500,7 @@ const api = window.pt || {
   getNetworkInfo:async()=>({}), onDisplays(){}, onOutputState(){}, onNetworkInfo(){},
   onRemoteCmd(){}, sendToDisplay(){},
   qr:async()=>null, shareStart:async()=>({error:'preview'}), shareStop:async()=>true,
-  shareInfo:async()=>({}), onShareInfo(){}
+  shareInfo:async()=>({}), onShareInfo(){}, showOutputQr:async()=>false, hideOutputQr(){}, onOutputQr(){}
 };
 
 // ---------- JEZIK / LANGUAGE ----------
@@ -416,8 +509,11 @@ const I18N = {
     outLabel:'Izlaz na', displayTitle:'Monitor za izlazni ekran', sendScreen:'Pošalji na ekran',
     fsTitle:'Pun ekran (F)', closeTitle:'Zatvori izlazni prozor', onTop:'Na vrhu',
     mode:'Režim', modeCountdown:'Odbrojavanje', modeCountup:'Štoperica', modeClock:'Sat',
-    set:'Postavi', endAt:'Kraj u', startTarget:'Start', targetTitle:'Odbrojavanje do tačnog vremena',
-    durTitle:'10 = minuti · 10:00 = MM:SS · 1:00:00 = HH:MM:SS', quick:'Brzo',
+    set:'Postavi', endAt:'Kraj u', targetTitle:'Izaberi vreme završetka, zatim pokreni velikim START dugmetom',
+    duration:'Trajanje', durTitle:'Postavi sate, minute i sekunde', quick:'Brzo',
+    durationPickerTitle:'Postavi trajanje', durationPickerTimer:'Trajanje glavnog tajmera', durationPickerCue:'Trajanje rundown stavke',
+    hours:'Sati', minutes:'Minuti', seconds:'Sekunde', confirmDuration:'Potvrdi', cancel:'Otkaži',
+    durationHelp:'Enter potvrđuje · Esc otkazuje', cueDurationTitle:'Postavi trajanje stavke',
     colors:'Boje', background:'Pozadina', timeText:'Vreme/tekst', warnColors:'Boje upozorenja',
     tagY:'Ž', tagR:'C', yellow:'Žuto', red:'Crveno', transparent:'Providna pozadina (OBS)',
     grid:'Grid', gridOn:'Pozicija na ekranu', gridHint:'klikni kockicu →',
@@ -427,13 +523,16 @@ const I18N = {
     sound:'Zvuk', overtime:'Minus posle nule', progress:'Traka napretka',
     message:'Poruka', messagePh:'Poruka govorniku… (M za fokus, Enter šalje)', flash:'Treperi', send:'Pošalji',
     cueList:'CUE LISTA', cueEmpty:'Nema tačaka. Dodaj naziv + trajanje ↓', namePh:'Naziv',
-    autoNext:'Auto-prelaz na sledeći', goNext:'GO ▶ SLEDEĆI &nbsp;(N)', noName:'(bez naziva)',
-    rundown:'RUNDOWN', showStart:'Start', notePh:'Beleška (opciono)…', nowNextOut:'NOW/NEXT na ekranu',
-    cueImport:'⬆ Uvoz', cueExport:'⬇ CSV', cueImportTitle:'Uvezi CSV / nalepi iz Excel-a ili Sheets-a (naziv, trajanje, beleška)', cueExportTitle:'Izvezi rundown kao CSV', cueImportNone:'Nijedan red nije prepoznat. Format: naziv, trajanje (10:00), beleška',
+    autoNext:'Auto-prelaz na sledeći', startRundown:'▶ START RUNDOWN', goNext:'GO ▶ SLEDEĆI &nbsp;(N)', noName:'(bez naziva)',
+    rundown:'RUNDOWN', showStart:'Planirani početak', notePh:'Beleška (opciono)…', nowNextOut:'NOW/NEXT na ekranu',
+    cueImportNone:'Nijedan red nije prepoznat. Format: naziv, trajanje (10:00), beleška',
     backstageLabel:'Backstage (raspored / crew)', onTime:'NA VREME', late:'kasni', early:'ispred',
     apiLabel:'API (Stream Deck / Companion)', apiTitle:'GET komanda za Companion „Generic HTTP“ dugme. type: start · reset · go · blackout · adjust(&value=sek) · setDuration(&value=ms)',
     nowLabel:'SADA', nextLabel:'SLEDI', endLabel:'Kraj', plannedLabel:'Planirano', projectedLabel:'Procena',
     netTitle:'MREŽA → OBS · TELEFON', screenOBS:'Ekran (OBS / monitor)', copy:'Kopiraj',
+    showQrOnScreen:'Prikaži QR publici', hideQrFromScreen:'Skloni QR sa ekrana',
+    audienceQrTitle:'Skenirajte za tajmer', audienceQrBackstage:'Skenirajte za backstage',
+    audienceQrHint:'Otvorite kameru na telefonu i skenirajte kod',
     remoteLabel:'Daljinski (telefon / tablet)',
     shareOnline:'🌐 Deli online (bilo koja mreža)', publicLabel:'Javni link (bilo koja mreža)',
     connecting:'⏳ Povezivanje…', cancelSharing:'✕ Otkaži povezivanje', stopSharing:'✕ Prekini deljenje', shareFail:'⚠ Nije uspelo, pokušaj opet',
@@ -448,8 +547,11 @@ const I18N = {
     outLabel:'Output to', displayTitle:'Monitor for the output screen', sendScreen:'Send to screen',
     fsTitle:'Fullscreen (F)', closeTitle:'Close output window', onTop:'On top',
     mode:'Mode', modeCountdown:'Countdown', modeCountup:'Stopwatch', modeClock:'Clock',
-    set:'Set', endAt:'End at', startTarget:'Start', targetTitle:'Countdown to exact time',
-    durTitle:'10 = minutes · 10:00 = MM:SS · 1:00:00 = HH:MM:SS', quick:'Quick',
+    set:'Set', endAt:'End at', targetTitle:'Choose an end time, then use the large START button',
+    duration:'Duration', durTitle:'Set hours, minutes and seconds', quick:'Quick',
+    durationPickerTitle:'Set duration', durationPickerTimer:'Main timer duration', durationPickerCue:'Rundown item duration',
+    hours:'Hours', minutes:'Minutes', seconds:'Seconds', confirmDuration:'Confirm', cancel:'Cancel',
+    durationHelp:'Enter confirms · Esc cancels', cueDurationTitle:'Set item duration',
     colors:'Colors', background:'Background', timeText:'Time/text', warnColors:'Warning colors',
     tagY:'Y', tagR:'R', yellow:'Yellow', red:'Red', transparent:'Transparent background (OBS)',
     grid:'Grid', gridOn:'Position on screen', gridHint:'click a cell →',
@@ -459,13 +561,16 @@ const I18N = {
     sound:'Sound', overtime:'Count past zero', progress:'Progress bar',
     message:'Message', messagePh:'Message to speaker… (M to focus, Enter sends)', flash:'Flash', send:'Send',
     cueList:'CUE LIST', cueEmpty:'No items. Add name + duration ↓', namePh:'Name',
-    autoNext:'Auto-advance to next', goNext:'GO ▶ NEXT &nbsp;(N)', noName:'(no name)',
-    rundown:'RUNDOWN', showStart:'Start', notePh:'Note (optional)…', nowNextOut:'NOW/NEXT on screen',
-    cueImport:'⬆ Import', cueExport:'⬇ CSV', cueImportTitle:'Import CSV / paste from Excel or Sheets (name, duration, note)', cueExportTitle:'Export rundown as CSV', cueImportNone:'No rows recognized. Format: name, duration (10:00), note',
+    autoNext:'Auto-advance to next', startRundown:'▶ START RUNDOWN', goNext:'GO ▶ NEXT &nbsp;(N)', noName:'(no name)',
+    rundown:'RUNDOWN', showStart:'Planned start', notePh:'Note (optional)…', nowNextOut:'NOW/NEXT on screen',
+    cueImportNone:'No rows recognized. Format: name, duration (10:00), note',
     backstageLabel:'Backstage (schedule / crew)', onTime:'ON TIME', late:'behind', early:'ahead',
     apiLabel:'API (Stream Deck / Companion)', apiTitle:'GET command for a Companion "Generic HTTP" button. type: start · reset · go · blackout · adjust(&value=sec) · setDuration(&value=ms)',
     nowLabel:'NOW', nextLabel:'NEXT', endLabel:'End', plannedLabel:'Planned', projectedLabel:'Projected',
     netTitle:'NETWORK → OBS · PHONE', screenOBS:'Screen (OBS / monitor)', copy:'Copy',
+    showQrOnScreen:'Show QR to audience', hideQrFromScreen:'Hide QR from screen',
+    audienceQrTitle:'Scan to follow the timer', audienceQrBackstage:'Scan for backstage',
+    audienceQrHint:'Open your phone camera and scan the code',
     remoteLabel:'Remote (phone / tablet)',
     shareOnline:'🌐 Share online (any network)', publicLabel:'Public link (any network)',
     connecting:'⏳ Connecting…', cancelSharing:'✕ Cancel connection', stopSharing:'✕ Stop sharing', shareFail:'⚠ Failed, try again',
@@ -512,6 +617,7 @@ let S = {
 let lastNetInfo = null, lastDisplays = [];
 let cues = [], currentCue = -1, autoNext = false, zeroFired = false, outputOpen = false;
 let autoAdvanceTimer = null;
+let cueDraftMs = 600000, durationPickerTarget = null, durationPickerAnchor = null, targetArmed = false;
 
 const $ = id => document.getElementById(id);
 function pad(n){ return String(n).padStart(2,'0'); }
@@ -528,7 +634,29 @@ function parseTime(str){
   if(p.length===3) return (p[0]*3600+p[1]*60+p[2])*1000;
   return null;
 }
-function send(){ S.cues=cues; S.currentCue=currentCue; api.sendState(S); saveSettings(); }
+function formatDurationHMS(ms){
+  const total=Math.max(0,Math.round((Number(ms)||0)/1000));
+  const h=Math.floor(total/3600),m=Math.floor((total%3600)/60),s=total%60;
+  return `${String(h).padStart(2,'0')}:${pad(m)}:${pad(s)}`;
+}
+function syncDurationDisplays(){
+  if($('durTriggerValue')) $('durTriggerValue').textContent=formatDurationHMS(S.durationMs);
+  if($('cueDurationValue')) $('cueDurationValue').textContent=formatDurationHMS(cueDraftMs);
+}
+function clearTargetArm(clearValue){
+  targetArmed=false;
+  if($('targetInput')){
+    $('targetInput').classList.remove('armed');
+    if(clearValue) $('targetInput').value='';
+  }
+}
+function durationUntilTarget(value,now){
+  if(!value) return null;
+  const parts=value.split(':').map(Number); if(parts.length<2||parts.some(Number.isNaN)) return null;
+  const d=new Date(now); d.setHours(parts[0],parts[1],0,0); if(d.getTime()<=now) d.setDate(d.getDate()+1);
+  return d.getTime()-now;
+}
+function send(){ S.cues=cues; S.currentCue=currentCue; syncDurationDisplays(); api.sendState(S); saveSettings(); }
 
 // ---------- RASPORED / OVER-UNDER ----------
 function todayAt(hhmm, now){
@@ -561,6 +689,10 @@ function cancelAutoAdvance(){
 }
 function startPause(){
   cancelAutoAdvance();
+  if(!S.running&&targetArmed){
+    const targetMs=durationUntilTarget($('targetInput').value,Date.now());
+    if(targetMs!==null&&targetMs>0){ targetArmed=false; $('targetInput').classList.remove('armed'); setDuration(targetMs,true); }
+  }
   const now=Date.now();
   if(S.mode==='clock') return;
   if(S.running){
@@ -574,18 +706,18 @@ function startPause(){
   }
   send(); updateButtons();
 }
-function reset(){ cancelAutoAdvance(); S.running=false; S.remMs=S.durationMs; S.elapsedMs=0; zeroFired=false; send(); updateButtons(); }
-function setDuration(ms){ cancelAutoAdvance(); S.mode='countdown'; S.durationMs=ms; S.remMs=ms; S.running=false; zeroFired=false; setModeTabs(); send(); updateButtons(); }
+function reset(){ cancelAutoAdvance(); clearTargetArm(true); S.running=false; S.remMs=S.durationMs; S.elapsedMs=0; zeroFired=false; send(); updateButtons(); }
+function setDuration(ms,keepTarget=false){ cancelAutoAdvance(); if(!keepTarget) clearTargetArm(true); S.mode='countdown'; S.durationMs=ms; S.remMs=ms; S.running=false; zeroFired=false; setModeTabs(); send(); updateButtons(); }
 function adjust(sec){
   if(S.mode!=='countdown') return;
-  cancelAutoAdvance();
+  cancelAutoAdvance(); clearTargetArm(true);
   const d=sec*1000;
   if(S.running) S.endAt+=d; else S.remMs=Math.max(0,S.remMs+d);
   S.durationMs=Math.max(1000,S.durationMs+d);
   if((S.running?S.endAt-Date.now():S.remMs)>0) zeroFired=false;
   send();
 }
-function setMode(m){ if(!['countdown','countup','clock'].includes(m)) return; cancelAutoAdvance(); S.mode=m; S.running=false; S.remMs=S.durationMs; S.elapsedMs=0; zeroFired=false; setModeTabs(); send(); updateButtons(); }
+function setMode(m){ if(!['countdown','countup','clock'].includes(m)) return; cancelAutoAdvance(); clearTargetArm(true); S.mode=m; S.running=false; S.remMs=S.durationMs; S.elapsedMs=0; zeroFired=false; setModeTabs(); send(); updateButtons(); }
 function setModeTabs(){ document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('active',b.dataset.mode===S.mode)); }
 
 // ---------- ZVUK ----------
@@ -623,7 +755,8 @@ function render(){
 
   const textOnly = S.textOnly && S.text;
   const txtEl=$('pvText'), tEl=$('pvTime'), ps=$('pvStage');
-  applyGridPreview(ps);
+  // GRID pomera i menja veličinu samo pravog izlaznog prozora. Operaterski
+  // pregled ostaje preko cele površine da bi vreme uvek bilo čitljivo.
   const sw=ps.clientWidth||pv.clientWidth, sh=ps.clientHeight||pv.clientHeight;
 
   if(S.text){
@@ -686,6 +819,8 @@ function updateButtons(){
 function clock(ms){ const d=new Date(ms); return pad(d.getHours())+':'+pad(d.getMinutes()); }
 function renderCues(){
   const el=$('cueList'); el.innerHTML='';
+  $('btnRundownStart').disabled=!cues.length;
+  $('btnGo').disabled=!cues.length||currentCue>=cues.length-1;
   if(!cues.length){ const d=document.createElement('div'); d.className='empty'; d.textContent=t('cueEmpty'); el.appendChild(d); return; }
   const sch=schedule(Date.now());
   cues.forEach((c,i)=>{
@@ -717,6 +852,7 @@ function renderCues(){
 function loadCue(i,autostart){ if(i<0||i>=cues.length) return; cancelAutoAdvance(); currentCue=i; setDuration(cues[i].durationMs); if(autostart) startPause(); renderCues(); }
 function moveCue(i,dir){ const j=i+dir; if(j<0||j>=cues.length) return; [cues[i],cues[j]]=[cues[j],cues[i]];
   if(currentCue===i) currentCue=j; else if(currentCue===j) currentCue=i; saveCues(); send(); renderCues(); }
+function startRundown(){ cancelAutoAdvance(); if(cues.length) loadCue(0,true); }
 function go(){ cancelAutoAdvance(); if(currentCue+1<cues.length) loadCue(currentCue+1,true); }
 
 // ---------- ČUVANJE ----------
@@ -755,11 +891,12 @@ function load(){
   $('redInput').value=fmtSecs(S.redSec,false);
   $('chkFlash').checked=S.flashZero; $('chkSound').checked=S.soundZero;
   $('chkOver').checked=S.overtime; $('chkProg').checked=S.showProgress;
-  $('chkAuto').checked=autoNext; $('durInput').value=fmtMs(S.durationMs);
+  $('chkAuto').checked=autoNext; cueDraftMs=S.durationMs;
   $('bgColor').value=S.bgColor; $('fgColor').value=S.fgColor;
   $('chkWarn').checked=S.useWarnColors; $('warnYellow').value=S.warnYellow; $('warnRed').value=S.warnRed;
   $('chkTextOnly').checked=S.textOnly; $('chkTransparent').checked=S.transparent;
   $('chkFit').checked=S.fitWindow;
+  syncDurationDisplays();
   buildGrid();
   renderCues();
 }
@@ -805,16 +942,34 @@ copyBtn($('btnCopyBackstage'), ()=>backstageUrl);
 copyBtn($('btnCopyApi'), ()=>apiUrl);
 
 // ---------- QR KOD ----------
-let qrShownFor='';
+let qrShownFor='', audienceQrShownFor='';
+function applyOutputQrState(info){
+  audienceQrShownFor=(info&&info.url)||'';
+  $('btnHideOutputQr').style.display=audienceQrShownFor?'block':'none';
+}
+api.onOutputQr(applyOutputQrState);
 document.querySelectorAll('.qrbtn').forEach(b=>b.addEventListener('click',async ()=>{
   const url=$(b.dataset.qr).textContent.trim();
   const box=$('qrBox');
   if(!url||url==='—') return;
   if(qrShownFor===url && box.style.display==='block'){ box.style.display='none'; qrShownFor=''; return; }
   const svg=await api.qr(url);
-  if(svg){ box.innerHTML=svg+'<div class="qrlbl">'+url+'</div>'; box.style.display='block'; qrShownFor=url;
-    box.scrollIntoView({block:'nearest'}); }
+  if(svg){
+    box.innerHTML=svg;
+    const lbl=document.createElement('div'); lbl.className='qrlbl'; lbl.textContent=url; box.appendChild(lbl);
+    if(b.dataset.audienceQr){
+      const action=document.createElement('button'); action.type='button'; action.className='primary audience-qr-action'; action.textContent=t('showQrOnScreen');
+      action.addEventListener('click',async ()=>{
+        const backstage=b.dataset.audienceQr==='backstage';
+        const ok=await api.showOutputQr({url,label:t(backstage?'audienceQrBackstage':'audienceQrTitle'),hint:t('audienceQrHint'),displayId:+$('displaySel').value||null});
+        if(ok!==false) applyOutputQrState({url});
+      });
+      box.appendChild(action);
+    }
+    box.style.display='block'; qrShownFor=url; box.scrollIntoView({block:'nearest'});
+  }
 }));
+$('btnHideOutputQr').addEventListener('click',()=>{ api.hideOutputQr(); applyOutputQrState(null); });
 
 // ---------- JAVNI LINK (tunel) ----------
 let publicUrl='', shareStarting=false, shareProvider=null;
@@ -866,14 +1021,91 @@ api.onRemoteCmd(c=>{
   }
 });
 
+// ---------- ZAJEDNIČKI BIRAČ TRAJANJA ----------
+const DURATION_MAX_SEC=99*3600+59*60+59;
+function durationPickerMs(){
+  const read=(id,max)=>Math.max(0,Math.min(max,parseInt($(id).value,10)||0));
+  return (read('durationHours',99)*3600+read('durationMinutes',59)*60+read('durationSeconds',59))*1000;
+}
+function updateDurationPresetState(){
+  const ms=durationPickerMs();
+  document.querySelectorAll('[data-duration-preset]').forEach(b=>b.classList.toggle('active',ms===+b.dataset.durationPreset*60000));
+  $('durationPickerConfirm').disabled=ms<=0;
+}
+function writeDurationPicker(ms){
+  let total=Math.max(0,Math.min(DURATION_MAX_SEC,Math.round((Number(ms)||0)/1000)));
+  const h=Math.floor(total/3600),m=Math.floor((total%3600)/60),s=total%60;
+  $('durationHours').value=pad(h); $('durationMinutes').value=pad(m); $('durationSeconds').value=pad(s);
+  updateDurationPresetState();
+}
+function positionDurationPopover(){
+  const pop=$('durationPopover'); if(pop.hidden||!durationPickerAnchor) return;
+  const a=durationPickerAnchor.getBoundingClientRect(),w=pop.offsetWidth,h=pop.offsetHeight,margin=12;
+  let left=a.left+a.width/2-w/2; left=Math.max(margin,Math.min(left,innerWidth-w-margin));
+  let top=a.bottom+9; if(top+h>innerHeight-margin) top=Math.max(margin,a.top-h-9);
+  pop.style.left=Math.round(left)+'px'; pop.style.top=Math.round(top)+'px';
+}
+function closeDurationPicker(returnFocus){
+  const pop=$('durationPopover'); if(pop.hidden) return;
+  pop.hidden=true;
+  if(durationPickerAnchor) durationPickerAnchor.setAttribute('aria-expanded','false');
+  const focusTarget=durationPickerAnchor; durationPickerTarget=null; durationPickerAnchor=null;
+  if(returnFocus&&focusTarget) focusTarget.focus();
+}
+function openDurationPicker(target,anchor){
+  closeDurationPicker(false);
+  durationPickerTarget=target; durationPickerAnchor=anchor;
+  $('durationPickerTitle').textContent=t(target==='cue'?'durationPickerCue':'durationPickerTimer');
+  writeDurationPicker(target==='cue'?cueDraftMs:S.durationMs);
+  $('durationPopover').hidden=false; anchor.setAttribute('aria-expanded','true');
+  requestAnimationFrame(()=>{ positionDurationPopover(); $('durationMinutes').focus(); $('durationMinutes').select(); });
+}
+function applyDurationPicker(){
+  const ms=durationPickerMs(); if(ms<=0){ $('durationSeconds').focus(); return; }
+  const target=durationPickerTarget;
+  if(target==='timer'){ currentCue=-1; renderCues(); setDuration(ms); }
+  else if(target==='cue'){ cueDraftMs=ms; syncDurationDisplays(); }
+  closeDurationPicker(true);
+}
+
+$('durTrigger').addEventListener('click',()=>openDurationPicker('timer',$('durTrigger')));
+$('btnSetDur').addEventListener('click',()=>openDurationPicker('timer',$('durTrigger')));
+$('cueDurationTrigger').addEventListener('click',()=>openDurationPicker('cue',$('cueDurationTrigger')));
+$('durationPickerClose').addEventListener('click',()=>closeDurationPicker(true));
+$('durationPickerConfirm').addEventListener('click',applyDurationPicker);
+document.querySelectorAll('[data-duration-step]').forEach(b=>b.addEventListener('click',()=>{
+  const unit={hours:3600,minutes:60,seconds:1}[b.dataset.durationStep]||1;
+  const next=Math.max(0,Math.min(DURATION_MAX_SEC,durationPickerMs()/1000+(+b.dataset.delta||0)*unit));
+  writeDurationPicker(next*1000);
+}));
+document.querySelectorAll('[data-duration-preset]').forEach(b=>b.addEventListener('click',()=>writeDurationPicker(+b.dataset.durationPreset*60000)));
+document.querySelectorAll('[data-duration-part]').forEach(el=>{
+  el.addEventListener('focus',()=>el.select());
+  el.addEventListener('input',()=>{ el.value=el.value.replace(/\D/g,'').slice(0,2); updateDurationPresetState(); });
+  el.addEventListener('blur',()=>writeDurationPicker(durationPickerMs()));
+  el.addEventListener('keydown',e=>{
+    if(e.key==='Enter'){ e.preventDefault(); applyDurationPicker(); }
+    else if(e.key==='Escape'){ e.preventDefault(); closeDurationPicker(true); }
+    else if(e.key==='ArrowUp'||e.key==='ArrowDown'){
+      e.preventDefault(); const unit={hours:3600,minutes:60,seconds:1}[el.dataset.durationPart]||1;
+      writeDurationPicker(Math.max(0,Math.min(DURATION_MAX_SEC,durationPickerMs()/1000+(e.key==='ArrowUp'?unit:-unit)))*1000);
+      el.focus(); el.select();
+    }
+  });
+});
+$('durationPopover').addEventListener('keydown',e=>{ if(e.key==='Escape'){ e.preventDefault(); closeDurationPicker(true); } e.stopPropagation(); });
+document.addEventListener('pointerdown',e=>{
+  const pop=$('durationPopover');
+  if(!pop.hidden&&!pop.contains(e.target)&&!(durationPickerAnchor&&durationPickerAnchor.contains(e.target))) closeDurationPicker(false);
+});
+window.addEventListener('resize',positionDurationPopover);
+document.querySelector('.main').addEventListener('scroll',()=>closeDurationPicker(false));
+
 // ---------- DOGAĐAJI ----------
 $('btnStart').addEventListener('click',startPause);
 $('btnReset').addEventListener('click',reset);
 document.querySelectorAll('[data-adj]').forEach(b=>b.addEventListener('click',()=>adjust(+b.dataset.adj)));
 document.querySelectorAll('.tabs button[data-mode]').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.mode)));
-
-$('btnSetDur').addEventListener('click',()=>{ const ms=parseTime($('durInput').value); if(ms!==null&&ms>0){ currentCue=-1; renderCues(); setDuration(ms); } });
-$('durInput').addEventListener('keydown',e=>{ if(e.key==='Enter') $('btnSetDur').click(); });
 
 [1,2,3,5,10,15,20,30,45,60].forEach(min=>{
   const b=document.createElement('button'); b.textContent=min+'m';
@@ -881,12 +1113,13 @@ $('durInput').addEventListener('keydown',e=>{ if(e.key==='Enter') $('btnSetDur')
   $('chips').appendChild(b);
 });
 
-$('btnTarget').addEventListener('click',()=>{
-  const v=$('targetInput').value; if(!v) return;
-  const [h,m]=v.split(':').map(Number); const now=new Date(); const target=new Date(now);
-  target.setHours(h,m,0,0); if(target<=now) target.setDate(target.getDate()+1);
-  setDuration(target-now); startPause();
-});
+function armEndTarget(){
+  const ms=durationUntilTarget($('targetInput').value,Date.now());
+  if(ms===null){ clearTargetArm(false); return; }
+  currentCue=-1; renderCues(); targetArmed=true; $('targetInput').classList.add('armed'); setDuration(ms,true);
+}
+$('targetInput').addEventListener('change',armEndTarget);
+$('targetInput').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); armEndTarget(); $('btnStart').focus(); } });
 
 $('yellowInput').addEventListener('change',()=>{ const ms=parseTime($('yellowInput').value); if(ms!==null){ S.yellowSec=ms/1000; send(); } });
 $('redInput').addEventListener('change',()=>{ const ms=parseTime($('redInput').value); if(ms!==null){ S.redSec=ms/1000; send(); } });
@@ -907,15 +1140,7 @@ $('textInput').addEventListener('input',e=>{ S.text=e.target.value; send(); });
 $('chkTextOnly').addEventListener('change',e=>{ S.textOnly=e.target.checked; lastKey=''; send(); });
 $('btnTextClear').addEventListener('click',()=>{ S.text=''; $('textInput').value=''; send(); });
 
-// ---------- GRID (pozicija tajmera na ekranu) ----------
-function applyGridPreview(ps){
-  if(S.gridOn && S.gridSize){
-    const n=S.gridSize, cell=Math.max(0,Math.min(n*n-1,S.gridCell||0));
-    const rr=Math.floor(cell/n), cc=cell%n;
-    ps.style.inset='auto'; ps.style.left=(cc*100/n)+'%'; ps.style.top=(rr*100/n)+'%';
-    ps.style.width=(100/n)+'%'; ps.style.height=(100/n)+'%';
-  } else { ps.style.inset='0'; ps.style.left=ps.style.top=ps.style.width=ps.style.height=''; }
-}
+// ---------- GRID (pozicija tajmera na izlaznom ekranu) ----------
 function buildGrid(){
   const n=S.gridSize, sel=$('gridSel');
   sel.style.gridTemplateColumns='repeat('+n+',1fr)';
@@ -960,16 +1185,17 @@ CUE_COLORS.forEach(col=>{
 });
 
 function addCue(){
-  const ms=parseTime($('cueDur').value)??S.durationMs;
+  const ms=cueDraftMs>0?cueDraftMs:S.durationMs;
   cues.push({name:$('cueName').value.trim()||`Cue ${cues.length+1}`, durationMs:ms,
     note:$('cueNote').value.trim(), color:cueColorSel});
-  $('cueName').value=''; $('cueDur').value=''; $('cueNote').value='';
+  $('cueName').value=''; $('cueNote').value='';
   saveCues(); send(); renderCues();
+  requestAnimationFrame(()=>{ const list=$('cueList'); list.scrollTop=list.scrollHeight; });
 }
 $('btnCueAdd').addEventListener('click',addCue);
 
-// ---------- CSV UVOZ / IZVOZ RUNDOWN-a ----------
-// Prihvata CSV (,/;) i TSV (nalepljen iz Excel/Sheets): naziv, trajanje[, beleška[, boja]]
+// ---------- LEPLJENJE RUNDOWN-a IZ EXCEL / SHEETS ----------
+// Prihvata TSV i CSV tekst: naziv, trajanje[, beleška[, boja]]
 // Trajanje: "10" (min), "10:00" (MM:SS), "1:00:00" (HH:MM:SS). Red bez validnog trajanja se preskače.
 function parseRundownCSV(txt){
   const out=[];
@@ -1003,14 +1229,9 @@ function importRundownText(txt){
   const items=parseRundownCSV(txt);
   if(!items.length){ alert(t('cueImportNone')); return 0; }
   cues=cues.concat(items); saveCues(); send(); renderCues();
+  requestAnimationFrame(()=>{ const list=$('cueList'); list.scrollTop=list.scrollHeight; });
   return items.length;
 }
-$('btnCueImport').addEventListener('click',()=>$('cueFile').click());
-$('cueFile').addEventListener('change',e=>{
-  const f=e.target.files[0]; if(!f) return;
-  const r=new FileReader(); r.onload=()=>importRundownText(String(r.result||'')); r.readAsText(f);
-  e.target.value='';
-});
 // nalepi direktno iz Excel/Sheets bilo gde u rundown karticu (TSV)
 document.querySelector('.cuewrap').addEventListener('paste',e=>{
   const tag=(e.target.tagName||'').toLowerCase();
@@ -1018,19 +1239,10 @@ document.querySelector('.cuewrap').addEventListener('paste',e=>{
   const txt=(e.clipboardData||{}).getData?e.clipboardData.getData('text'):'';
   if(txt&&txt.includes('\t')){ e.preventDefault(); importRundownText(txt); }
 });
-$('btnCueExport').addEventListener('click',()=>{
-  const esc=v=>/[",\n]/.test(v)?'"'+String(v).replace(/"/g,'""')+'"':v;
-  const csv=cues.map(c=>{ const s=Math.round(c.durationMs/1000),h=Math.floor(s/3600),m=Math.floor((s%3600)/60),x=s%60;
-    const dur=h>0?`${h}:${pad(m)}:${pad(x)}`:`${m}:${pad(x)}`;
-    return [esc(c.name),dur,esc(c.note||''),c.color||''].join(','); }).join('\n');
-  const a=document.createElement('a');
-  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent('name,duration,note,color\n'+csv);
-  a.download='protimer-rundown.csv'; a.click();
-});
 
-$('cueDur').addEventListener('keydown',e=>{ if(e.key==='Enter') addCue(); });
 $('cueName').addEventListener('keydown',e=>{ if(e.key==='Enter') addCue(); });
 $('cueNote').addEventListener('keydown',e=>{ if(e.key==='Enter') addCue(); });
+$('btnRundownStart').addEventListener('click',startRundown);
 $('btnGo').addEventListener('click',go);
 $('showStartInput').addEventListener('change',e=>{ S.showStart=e.target.value; send(); renderCues(); });
 $('chkNowNext').addEventListener('change',e=>{ S.showNowNext=e.target.checked; send(); });
@@ -1040,7 +1252,7 @@ $('btnCloseOut').addEventListener('click',()=>api.closeOutput());
 $('btnFs').addEventListener('click',()=>api.toggleFullscreen());
 $('chkOnTop').addEventListener('change',e=>api.setOnTop(e.target.checked));
 $('chkFit').addEventListener('change',e=>{ S.fitWindow=e.target.checked; lastKey=''; send(); });
-api.onOutputState(open=>{ outputOpen=open; });
+api.onOutputState(open=>{ outputOpen=open; if(!open) applyOutputQrState(null); });
 api.isOutputOpen().then(open=>{ outputOpen=open; }).catch(()=>{});
 
 // Prečice

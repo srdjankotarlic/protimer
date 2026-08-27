@@ -48,13 +48,24 @@
   #nownext .next{opacity:.62;} #nownext .next .ttl{font-size:3vh;}
 
   #blackout{position:absolute; inset:0; background:#000; z-index:80; display:none;}
+  #audienceQr{position:absolute; inset:0; z-index:70; display:none; align-items:center; justify-content:center;
+    padding:4vh 4vw; background:#000; color:#0b0d11; font-family:-apple-system,"Helvetica Neue",system-ui,sans-serif;}
+  .audience-qr-card{width:min(76vw,760px); max-height:92vh; padding:clamp(18px,3.2vh,38px);
+    display:flex; flex-direction:column; align-items:center; gap:clamp(8px,1.6vh,18px);
+    background:#fff; border-radius:clamp(14px,2.2vh,28px); text-align:center; overflow:hidden;}
+  #audienceQrLabel{font-size:clamp(24px,4.6vh,54px); line-height:1.08; font-weight:800;}
+  #audienceQrSvg{width:min(52vw,52vh,520px); height:min(52vw,52vh,520px); flex:0 1 auto;}
+  #audienceQrSvg svg{display:block; width:100%; height:100%;}
+  #audienceQrHint{font-size:clamp(15px,2.4vh,27px); line-height:1.2; font-weight:600; color:#34343a;}
+  #audienceQrUrl{max-width:100%; font:500 clamp(10px,1.45vh,17px)/1.3 "SF Mono",ui-monospace,Menlo,monospace;
+    color:#696970; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
   #connection{position:fixed; top:1.5vh; right:1.5vw; z-index:90; display:none;
     padding:.55em .8em; border-radius:.45em; color:#fff; background:rgba(180,35,35,.9);
     font:700 12px/1.1 -apple-system,system-ui,sans-serif; letter-spacing:.08em;}
   body.disconnected #connection{display:block;}
 
-  /* providni (frameless) prozor — prevlačenje za pomeranje */
-  body.overlay #stage{ -webkit-app-region: drag; }
+  /* frameless prozor — kad GRID nije aktivan, cela površina služi za prevlačenje mišem */
+  body.windowed #stage,body.windowed #audienceQr{ -webkit-app-region:drag; }
 </style>
 </head>
 <body>
@@ -65,6 +76,14 @@
   <div id="msg"></div>
   <div id="nownext"></div>
   <div id="prog"></div>
+  <div id="audienceQr">
+    <div class="audience-qr-card">
+      <div id="audienceQrLabel"></div>
+      <div id="audienceQrSvg"></div>
+      <div id="audienceQrHint"></div>
+      <div id="audienceQrUrl"></div>
+    </div>
+  </div>
   <div id="blackout"></div>
   <div id="connection">RECONNECTING…</div>
 
@@ -138,6 +157,15 @@ async function syncClock(samples=3){
 // --- prijem stanja: Electron (IPC) ili browser/OBS (SSE) ---
 if (IS_ELECTRON){
   api.onState(applyState);
+  api.onAudienceQr(info=>{
+    const overlay=$('audienceQr');
+    if(!info||!info.svg){ overlay.style.display='none'; $('audienceQrSvg').innerHTML=''; return; }
+    $('audienceQrSvg').innerHTML=info.svg;
+    $('audienceQrLabel').textContent=info.label||'';
+    $('audienceQrHint').textContent=info.hint||'';
+    $('audienceQrUrl').textContent=info.url||'';
+    overlay.style.display='flex';
+  });
 } else {
   let disconnectTimer=null, lastPollSuccess=0, pollController=null;
   const connected=()=>{ clearTimeout(disconnectTimer); disconnectTimer=null; document.body.classList.remove('disconnected'); };
@@ -216,6 +244,7 @@ function render(){
   { const st=$('stage'); if(st.style.left){ st.style.inset='0'; st.style.left=st.style.top=st.style.width=st.style.height=''; } }
   // fit (kompaktan prozor) — samo ako NIJE grid i NIJE fullscreen
   fitMode = IS_ELECTRON && !!S.fitWindow && !isFS && !S.gridOn;
+  document.body.classList.toggle('windowed',IS_ELECTRON&&!isFS&&!S.gridOn);
 
   paint(text, fg, bg, neg, S.text || '', S.message ? S.message.text : '',
         S.message && S.message.flash, S.showProgress ? prog : null);
@@ -322,15 +351,12 @@ document.body.addEventListener('animationend', e => {
   if (e.target === document.body || e.animationName === 'zflash') document.body.classList.remove('flash');
 });
 
-// ---------- Electron-only: čist ekran, BEZ vidljivih kontrola (kontrola je u kontrolnom prozoru) ----------
-// zadržano samo: sakrivanje kursora na mirovanje + nevidljive prečice (Esc / dupli klik za pun ekran)
+// ---------- Electron-only: čist ekran, BEZ vidljivih kontrola (sve je u Kontroli) ----------
 if (IS_ELECTRON){
   let idleT=null;
   const wake = () => { document.body.classList.remove('idle'); clearTimeout(idleT);
     idleT=setTimeout(()=>document.body.classList.add('idle'),2000); };
   document.addEventListener('mousemove', wake); wake();
-  document.addEventListener('keydown', e => { if (e.key==='Escape') api.exitFullscreen(); });
-  document.addEventListener('dblclick', () => api.toggleFullscreen());
 }
 
 window.addEventListener('resize', () => { lastKey=''; });

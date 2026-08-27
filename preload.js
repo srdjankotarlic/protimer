@@ -21,6 +21,10 @@ contextBridge.exposeInMainWorld('pt', {
   shareStop: () => ipcRenderer.invoke('share-stop'),
   shareInfo: () => ipcRenderer.invoke('share-info'),
   onShareInfo: (cb) => ipcRenderer.on('share-info', (e, info) => cb(info)),
+  showOutputQr: (payload) => ipcRenderer.invoke('show-output-qr', payload),
+  hideOutputQr: () => ipcRenderer.send('hide-output-qr'),
+  onOutputQr: (cb) => ipcRenderer.on('output-qr-state', (e, info) => cb(info)),
+  onAudienceQr: (cb) => ipcRenderer.on('audience-qr', (e, info) => cb(info)),
   fitWindow: (h) => ipcRenderer.send('fit-window', h),
   onWinFs: (cb) => ipcRenderer.on('win-fs', (e, v) => cb(v))
 });

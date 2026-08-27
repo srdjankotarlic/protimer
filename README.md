@@ -33,10 +33,10 @@
 
 | Your computer | Recommended download | Install |
 |---|---|---|
-| Apple Silicon Mac (M1 or newer) | **[Download the macOS DMG](https://github.com/srdjankotarlic/protimer/releases/download/v2.0.1/ProTimer-2.0.1-arm64.dmg)** | Open the DMG and drag **ProTimer** to Applications. |
-| Windows 10/11 x64 | **[Download the Windows installer](https://github.com/srdjankotarlic/protimer/releases/download/v2.0.1/ProTimer-Setup-2.0.1.exe)** | Run Setup and follow the installer. |
+| Apple Silicon Mac (M1 or newer) | **[Download the macOS DMG](https://github.com/srdjankotarlic/protimer/releases/download/v2.1.0/ProTimer-2.1.0-arm64.dmg)** | Open the DMG and drag **ProTimer** to Applications. |
+| Windows 10/11 x64 | **[Download the Windows installer](https://github.com/srdjankotarlic/protimer/releases/download/v2.1.0/ProTimer-Setup-2.1.0.exe)** | Run Setup and follow the installer. |
 
-Need a Windows build that does not install? Use the [portable EXE](https://github.com/srdjankotarlic/protimer/releases/download/v2.0.1/ProTimer-2.0.1-portable.exe). Most Windows users should choose Setup.
+Need a Windows build that does not install? Use the [portable EXE](https://github.com/srdjankotarlic/protimer/releases/download/v2.1.0/ProTimer-2.1.0-portable.exe). Most Windows users should choose Setup.
 
 <details>
 <summary><strong>First-launch security warning</strong></summary>
@@ -53,11 +53,11 @@ The current downloads are not Apple-notarized or Windows Authenticode-signed.
 - **Countdown, stopwatch and clock** with warning colors, overtime and an exact end-time mode.
 - **Dedicated stage output** for a projector, second display or confidence monitor.
 - **Transparent OBS browser-source timer** for livestream and recording overlays.
-- **Phone remote and QR access** over the local production network.
+- **Phone remote and QR access** over the local production network, including an audience QR on the stage output.
 - **Simple event rundown** with NOW, NEXT, planned times and over/under status.
 - **Backstage view** for crew, green room, stage manager or lobby display.
 - **Stream Deck and automation control** through Bitfocus Companion, HTTP and OSC.
-- **CSV import and export**, speaker messages, grid placement and a compact output window.
+- **Excel/Sheets rundown paste**, speaker messages, grid placement and a compact output option.
 - **English and Serbian interface**, no account, no subscription and no watermark.
 
 ProTimer is designed for small and medium live events that need reliable speaker timing without a complex show-control system.
@@ -80,8 +80,8 @@ The **Backstage view** shows NOW, NEXT, the schedule and over/under status on an
 ## Quick start (30 seconds)
 
 1. Open ProTimer — you immediately get **two windows**: *Control* (for you) and *Screen* (clean time).
-2. Type a duration (e.g. `5:00`) or click the `5m` button, then **START** (or `Space`).
-3. Drag the *Screen* window onto your projector — or pick a monitor at the top and click **"Send to screen"** for fullscreen.
+2. Click **Duration**, set hours/minutes/seconds (or use a quick `5m` preset), then press **START** or `Space`.
+3. Drag the frameless *Screen* window onto your projector and resize it from its edges — or pick a monitor and use **Send to screen** / the fullscreen control at the top.
 4. Done. Use the `±` buttons to add/remove time live while the timer runs.
 
 ---
@@ -89,13 +89,13 @@ The **Backstage view** shows NOW, NEXT, the schedule and over/under status on an
 ## 📖 How to use
 
 ### Timer modes
-- **Countdown** — the main mode. Enter a duration (`10` = minutes, `10:30` = MM:SS, `1:00:00` = HH:MM:SS).
+- **Countdown** — the main mode. Open **Duration** and set `HH:MM:SS`, use the `+`/`−` controls, or choose a minute preset.
 - **Stopwatch** — counts up from zero.
 - **Clock** — shows the current time of day.
 - **"End at"** — enter a time (e.g. 20:30) and it counts down to that moment.
 
 ### Send to any screen
-At the top, pick a monitor and click **"Send to screen"** — on a second monitor it goes fullscreen automatically. Plug in a projector mid-show? The output jumps to it. On the output window, double-click = fullscreen, `Esc` = back.
+The desktop output is always a clean frameless window: drag anywhere on it to move it and drag its edges or corners to resize it. At the top of **Control**, pick a monitor and click **Send to screen**, or use the fullscreen button / `F`. Fullscreen is deliberately controlled only from **Control**, so accidental clicks on the audience screen cannot change it.
 
 ### 📺 OBS / NDI / streaming
 The **"Network → OBS · Phone"** panel shows a URL (e.g. `http://192.168.1.50:7878`).
@@ -136,17 +136,17 @@ Arguments: int/float/string (first argument = `value`). OSC has no token — it'
 
 ### 🎨 Colors & text
 - **Colors**: pick the background and digit color. "Warning colors" turn yellow/red near the end (you can turn them off).
-- **Transparent background**: makes the screen see-through — for OBS overlays, and the desktop output window itself becomes a frameless floating overlay you can drag onto anything.
+- **Transparent background**: removes the black fill for a clean OBS or desktop overlay. The desktop output remains frameless, movable and resizable with or without transparency.
 - **On-screen text**: type a message (e.g. `BREAK`) — it sits above the time, or enable **"Text only"** to replace the time entirely.
 - **Message to speaker**: a short line at the bottom of the screen, with an optional flash.
 
 ### 🗒️ Rundown
-Build your run on the right: each item has a **name, duration, an optional note and a color**. Set a **Start** time for the show and ProTimer fills in the **planned clock times** for every item. Click an item to load it; **GO** (`N`) jumps to and starts the next one. Optional auto-advance. The **Over / Under** badge shows whether you'll finish ahead or behind your planned end.
+Build your run on the right: each item has a **name, duration, an optional note and a color**. The duration uses the same clear `HH:MM:SS` picker as the main timer. Set a planned show start and ProTimer fills in the clock times for every item. **START RUNDOWN** always starts the first item; **GO** (`N`) jumps to and starts the next one. Long rundowns keep every row at full readable height inside their own scrollable list. Optional auto-advance. The **Over / Under** badge shows whether you'll finish ahead or behind your planned end.
 
 Turn on **"NOW / NEXT on screen"** to show the current and next item under the timer on the stage screen.
 
 ### 🔗 Share with others
-Next to every link in the network panel there's a **QR** button — show it and people scan it with their phone to watch the timer (same Wi-Fi). Need someone **off your network** (a remote client, another venue)? Click **Share online** and ProTimer creates a public, view-only `https://` link through a [Cloudflare Quick Tunnel](https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/do-more-with-tunnels/trycloudflare/). The public link is beta and has no uptime guarantee; for a live show, LAN + QR remains the dependable path.
+Next to every link in the network panel there's a **QR** button. For the view-only Timer and Backstage links, choose **Show QR to audience** to place a large scannable code on the stage output; **Hide QR from screen** restores the timer. The control-only Remote URL can never be sent to the audience output. Need someone **off your network** (a remote client, another venue)? Click **Share online** and ProTimer creates a public, view-only `https://` link through a [Cloudflare Quick Tunnel](https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/do-more-with-tunnels/trycloudflare/). The public link is beta and has no uptime guarantee; for a live show, LAN + QR remains the dependable path.
 
 The public viewer receives the timer and rundown state, including cue names and notes, and can open the `/backstage` path. Do not include sensitive notes when sharing online. The command token is not included in the public viewer link. Click **Stop sharing** when the remote viewer is finished.
 
@@ -157,13 +157,17 @@ The network panel has a **Backstage** URL. Open it on any screen, laptop or phon
 Switch between **SR / EN** with the toggle next to the logo, top-left. The choice is remembered and also applies to the phone remote.
 
 ### ⌨️ Shortcuts
-| Key | Action | | Key | Action |
-|---|---|---|---|---|
-| `Space` | Start / pause | | `B` | Blackout |
-| `R` | Reset | | `F` | Fullscreen |
-| `N` | Next cue | | `M` | Message (Enter sends) |
-| `↑` / `↓` | ± 1 minute | | `C` | Clear message |
-| `←` / `→` | ± 10 seconds | | `Esc` | Exit fullscreen |
+| Key | Action |
+|---|---|
+| `Space` | Start / pause |
+| `R` | Reset |
+| `N` | Next cue |
+| `↑` / `↓` | ± 1 minute |
+| `←` / `→` | ± 10 seconds |
+| `B` | Blackout |
+| `F` | Toggle fullscreen from Control |
+| `M` | Message (Enter sends) |
+| `C` | Clear message |
 
 ---
 
@@ -191,7 +195,7 @@ Clean stack, almost no dependencies: **Electron** + plain HTML/CSS/JS + a Node `
 Ideas on the list (feedback very welcome — open an issue to vote or suggest):
 
 - [ ] Signed / notarized builds (no “unidentified developer” warning)
-- [x] ~~Import a rundown from Excel / Google Sheets / CSV~~ — done (import, paste and export)
+- [x] ~~Paste a rundown from Excel / Google Sheets~~ — done (tab-separated rows paste directly into the rundown card)
 - [ ] Groups/blocks in the rundown (e.g. *Morning Sessions*, *Lunch*)
 - [x] ~~HTTP control API~~ — done (works with Companion's Generic HTTP module + Stream Deck)
 - [x] ~~Native OSC + dedicated Bitfocus Companion module~~ — done ([module repo](https://github.com/srdjankotarlic/companion-module-protimer); official registry submission pending)
