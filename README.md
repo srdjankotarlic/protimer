@@ -90,11 +90,6 @@ See the complete [2.1.0 release notes](docs/RELEASE-NOTES-2.1.0.md).
 
 ProTimer is designed for small and medium live events that need reliable speaker timing without a complex show-control system.
 
-## ProTimer or ProTimer Studio?
-
-- Choose **ProTimer** when you primarily need a fast countdown, OBS overlay, phone remote and a simple rundown.
-- Choose **[ProTimer Studio](https://github.com/srdjankotarlic/protimer-studio)** when you also need a NEXT/LIVE/GO workflow, lower thirds, screen content and several independently configured outputs.
-
 The **control window** keeps timer transport, display output, rundown and network links in one place:
 
 ![ProTimer control window](docs/screenshot-control.png)

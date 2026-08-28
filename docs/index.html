@@ -85,8 +85,7 @@
     { "@type": "Question", "name": "Can I control the timer from my phone?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. ProTimer gives you a remote URL you open on any phone or tablet on the same Wi-Fi, plus a QR code so others can watch the timer." } },
     { "@type": "Question", "name": "Is ProTimer a free alternative to StageTimer or Ontime?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. ProTimer is a free, open-source stage timer for live production — a lightweight alternative to tools like StageTimer, Ontime and CueTimer for the core countdown, OBS overlay and phone-remote use case." } },
     { "@type": "Question", "name": "Can I control ProTimer with a Stream Deck?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. ProTimer has an HTTP GET control API and a Bitfocus Companion module for start, reset, GO, messages and time adjustments." } },
-    { "@type": "Question", "name": "Can people watch from outside the venue Wi-Fi?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. Share Online creates a temporary public HTTPS viewer link. It is a beta third-party tunnel, so LAN remains recommended for show-critical use. Anyone with the link can access the timer and backstage rundown, including cue notes, so do not include sensitive information." } },
-    { "@type": "Question", "name": "Should I use ProTimer or ProTimer Studio?", "acceptedAnswer": { "@type": "Answer", "text": "Choose ProTimer for a fast stage countdown, OBS overlay, phone remote and simple rundown. Choose ProTimer Studio when you also need a NEXT/LIVE/GO workflow, lower thirds, screen content and multiple independent outputs." } }
+    { "@type": "Question", "name": "Can people watch from outside the venue Wi-Fi?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. Share Online creates a temporary public HTTPS viewer link. It is a beta third-party tunnel, so LAN remains recommended for show-critical use. Anyone with the link can access the timer and backstage rundown, including cue notes, so do not include sensitive information." } }
   ]
 }
 </script>
@@ -181,7 +180,6 @@
   .download-card p{color:var(--dim); font-size:14px; margin-bottom:18px;}
   .download-card .btn{width:100%; text-align:center;}
   .download-note{max-width:760px; margin:18px auto 0; color:var(--dim); font-size:14px;}
-  .edition-note{max-width:760px; margin:20px auto 0; color:var(--dim); font-size:14px;}
   @media(max-width:680px){.download-grid{grid-template-columns:1fr;}}
 </style>
 </head>
@@ -212,7 +210,6 @@
     </div>
     <small>Free and open source · no account · no watermark · English and Serbian</small>
     <small><a href="#first-launch">First-launch help for unsigned builds</a></small>
-    <p class="edition-note">Need lower thirds, screen content and multiple independent outputs? See <a href="https://srdjankotarlic.github.io/protimer-studio/">ProTimer Studio</a>.</p>
     <div class="shot"><video id="demo" src="demo.mp4" poster="screenshot-output.png" width="1280" height="720" aria-label="ProTimer stage screen counting down and turning yellow then red, with a NOW / NEXT bar" autoplay muted loop playsinline controls preload="metadata"></video></div>
   </div>
 
@@ -299,7 +296,6 @@
       <details><summary>Is it an alternative to StageTimer, Ontime or CueTimer?</summary><p>It’s a free, open-source stage timer that covers the core countdown, OBS overlay and phone-remote use case — a lightweight, no-account alternative for live events, conferences, churches, theatres and streams.</p></details>
       <details><summary>Does it work with a Stream Deck?</summary><p>Yes — every command is a simple HTTP GET, so Bitfocus Companion’s built-in Generic HTTP module drives it directly: Start, Reset, GO and ±time on physical keys, no plugin required.</p></details>
       <details><summary>Can people watch from outside the venue Wi-Fi?</summary><p>Yes. Share Online creates a temporary public HTTPS viewer link. It is a beta third-party tunnel, so LAN remains recommended for show-critical use. Anyone with the link can access the timer and backstage rundown, including cue notes, so do not include sensitive information.</p></details>
-      <details><summary>Should I use ProTimer or ProTimer Studio?</summary><p>Choose ProTimer for a fast countdown, OBS overlay, phone remote and simple rundown. Choose <a href="https://srdjankotarlic.github.io/protimer-studio/">ProTimer Studio</a> when you also need NEXT/LIVE/GO, lower thirds, screen content and several independent outputs.</p></details>
     </div>
   </section>
 
