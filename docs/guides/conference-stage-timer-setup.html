@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>How to Set Up a Stage Timer for Conference Speakers</title>
+  <meta name="description" content="Set up ProTimer for conference speakers with a confidence screen, rundown, NOW/NEXT, backstage schedule, warning colors, and phone access." />
+  <link rel="canonical" href="https://srdjankotarlic.github.io/protimer/guides/conference-stage-timer-setup.html" />
+  <link rel="icon" type="image/png" href="../favicon.png" />
+  <link rel="stylesheet" href="guide.css" />
+</head>
+<body>
+<header class="site-header"><div class="wrap"><img src="../favicon.png" alt="" /><a class="brand" href="../">ProTimer</a><nav><a href="./">Guides</a><a href="../#features">Features</a><a href="https://github.com/srdjankotarlic/protimer">GitHub</a></nav></div></header>
+<main><article class="wrap">
+  <div class="eyebrow">Conference workflow</div>
+  <h1>Set up a stage timer for conference speakers</h1>
+  <p class="lede">A good timer workflow gives the speaker one clear number, the operator fast control, and the crew a shared view of what is happening next.</p>
+  <div class="meta"><span>Confidence monitor</span><span>Rundown</span><span>Backstage view</span></div>
+  <img class="shot" src="../screenshot-backstage.png" alt="ProTimer backstage view with NOW, NEXT, schedule, and over-under status" width="1280" height="688" />
+  <h2>Prepare the stage output</h2>
+  <ol><li>Connect every display before opening ProTimer.</li><li>Choose the confidence monitor in Control and use <strong>Send to screen</strong>.</li><li>Set background, digit, yellow, and red colors for the room lighting and display.</li><li>Choose the warning thresholds and decide whether overtime should continue below zero.</li></ol>
+  <h2>Build the rundown</h2>
+  <p>Each cue uses four fields: name, duration, optional note, and optional color. You can add cues manually or paste rows from Excel/Google Sheets in this order:</p>
+  <pre><code>Session name    00:20:00    Speaker / operator note    #2563EB</code></pre>
+  <p>Set the planned show start so every row receives a clock time. Enable NOW/NEXT on the stage output if that information helps the speaker.</p>
+  <div class="callout"><strong>Sample file:</strong> start with the <a href="https://github.com/srdjankotarlic/protimer/blob/main/templates/conference-rundown.csv">conference rundown CSV</a>. Open it in Excel or Sheets, edit the rows, copy them, click an empty part of the ProTimer rundown card, and paste.</div>
+  <h2>Give the crew a backstage view</h2>
+  <p>Open the Backstage URL on a stage-manager laptop, green-room display, or phone. It shows the current cue, next cue, full schedule, live remaining time, and whether the projected finish is ahead or behind plan.</p>
+  <h2>Rehearse the operator actions</h2>
+  <ul><li><strong>START RUNDOWN</strong> always loads and starts cue one.</li><li><strong>GO</strong> or the <code>N</code> key loads and starts the next cue.</li><li>Arrow keys adjust the live countdown when Control is focused.</li><li>Speaker messages appear at the bottom without replacing the timer.</li><li>Blackout hides the output when timing should not be visible.</li></ul>
+  <h2>Five-minute pre-show check</h2>
+  <ul><li>Confirm Control and Output are on the intended displays.</li><li>Start cue one, GO to cue two, then Reset.</li><li>Open Backstage on the real crew device.</li><li>Send a speaker message and clear it.</li><li>Verify warning colors and overtime behavior.</li><li>Disable sleep, notifications, and automatic updates.</li></ul>
+  <div class="cta-row"><a class="btn primary" href="https://github.com/srdjankotarlic/protimer/releases/latest">Download ProTimer</a><a class="btn secondary" href="https://github.com/srdjankotarlic/protimer/blob/main/templates/README.md">Open all templates</a></div>
+  <div class="next"><strong>Adding a control surface?</strong> <a href="bitfocus-companion-stage-timer.html">Connect Bitfocus Companion and Stream Deck</a>.</div>
+</article></main>
+<footer><div class="wrap"><a href="./">All ProTimer guides</a> | <a href="https://github.com/srdjankotarlic/protimer/discussions">Setup questions</a></div></footer>
+</body>
+</html>

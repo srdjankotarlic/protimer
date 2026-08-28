@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Free OBS Countdown Timer With a Phone Remote</title>
+  <meta name="description" content="Add ProTimer to OBS as a transparent Browser Source and control the stage countdown from a phone on the same Wi-Fi network." />
+  <link rel="canonical" href="https://srdjankotarlic.github.io/protimer/guides/obs-countdown-timer-phone-remote.html" />
+  <link rel="icon" type="image/png" href="../favicon.png" />
+  <link rel="stylesheet" href="guide.css" />
+</head>
+<body>
+<header class="site-header"><div class="wrap"><img src="../favicon.png" alt="" /><a class="brand" href="../">ProTimer</a><nav><a href="./">Guides</a><a href="../#download">Download</a><a href="https://github.com/srdjankotarlic/protimer">GitHub</a></nav></div></header>
+<main><article class="wrap">
+  <div class="eyebrow">OBS and phone workflow</div>
+  <h1>Add a free countdown timer to OBS and control it from your phone</h1>
+  <p class="lede">ProTimer serves a clean browser output for OBS and a separate token-protected remote for the operator. Both follow the timer running on the show computer.</p>
+  <div class="meta"><span>OBS Browser Source</span><span>Same Wi-Fi</span><span>No account</span></div>
+  <img class="shot" src="../screenshot-output.png" alt="ProTimer clean audience countdown output" width="1554" height="874" />
+  <h2>1. Open the network panel</h2>
+  <p>Start ProTimer and open <strong>Network - OBS / Phone</strong>. The app shows a Timer URL, Remote URL, Backstage URL, and API URL. The port is normally <code>7878</code>, but ProTimer automatically chooses the next free port if needed.</p>
+  <h2>2. Add the timer to OBS</h2>
+  <ol><li>In OBS, choose <strong>Sources + -> Browser</strong>.</li><li>Paste the view-only Timer URL shown by ProTimer.</li><li>Use a 16:9 size such as 1920 x 1080, then fit the source to the canvas.</li><li>Turn on <strong>Transparent background</strong> in ProTimer for a clean overlay over video.</li></ol>
+  <div class="callout"><strong>Keep ProTimer open:</strong> the Browser Source is a live local view served by the app. Closing the app also closes the timer server.</div>
+  <h2>3. Open the phone remote</h2>
+  <ol><li>Connect the phone and ProTimer computer to the same trusted Wi-Fi network.</li><li>Open the Remote URL or scan its QR code.</li><li>Test Start/Pause, Reset, time adjustment, GO, blackout, and speaker messages.</li></ol>
+  <p>The Remote link contains a session token. Treat it as a control credential and do not put that QR on the audience screen. ProTimer only allows view-only Timer and Backstage QR links to be shown publicly.</p>
+  <h2>Production checks</h2>
+  <ul><li>Disable client isolation on the production Wi-Fi or use a network where devices can reach each other.</li><li>Keep the OBS computer wired when practical.</li><li>Re-copy the Remote/API link after restarting ProTimer because the control token changes each launch.</li><li>Use LAN for show-critical timing; Share Online is a beta convenience for off-site viewers.</li></ul>
+  <div class="cta-row"><a class="btn primary" href="https://github.com/srdjankotarlic/protimer/releases/latest">Download ProTimer</a><a class="btn secondary" href="https://github.com/srdjankotarlic/protimer/blob/main/templates/OBS-BROWSER-SOURCE-CHECKLIST.md">OBS setup checklist</a></div>
+  <div class="next"><strong>Running a conference?</strong> <a href="conference-stage-timer-setup.html">Build a complete stage and backstage workflow</a>.</div>
+</article></main>
+<footer><div class="wrap"><a href="./">All ProTimer guides</a> | <a href="https://github.com/srdjankotarlic/protimer/issues">Report an issue</a></div></footer>
+</body>
+</html>

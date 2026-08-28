@@ -7,7 +7,11 @@ const root = path.resolve(__dirname, '..');
 const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
 const version = pkg.version;
 const releaseNotes = `docs/RELEASE-NOTES-${version}.md`;
-const publicFiles = ['README.md', 'README.sr.md', 'SUPPORT.md', 'docs/index.html', releaseNotes];
+const guideDir = path.join(root, 'docs', 'guides');
+const guideFiles = fs.existsSync(guideDir)
+  ? fs.readdirSync(guideDir).filter((file) => file.endsWith('.html')).map((file) => `docs/guides/${file}`)
+  : [];
+const publicFiles = ['README.md', 'README.sr.md', 'SUPPORT.md', 'docs/index.html', releaseNotes, ...guideFiles];
 
 function fail(message) {
   throw new Error(`Public docs check failed: ${message}`);
@@ -52,17 +56,26 @@ try {
   fail(`invalid JSON-LD: ${error.message}`);
 }
 
-for (const match of html.matchAll(/(?:href|src|poster)="([^"]+)"/g)) {
-  const target = match[1];
-  if (/^(?:https?:|#|mailto:|tel:)/.test(target)) continue;
-  const localPath = path.resolve(path.dirname(htmlPath), target.split(/[?#]/)[0]);
-  if (!localPath.startsWith(path.dirname(htmlPath) + path.sep)) fail(`unsafe local target ${target}`);
-  if (!fs.existsSync(localPath)) fail(`missing local target ${target}`);
+for (const file of ['docs/index.html', ...guideFiles]) {
+  const filePath = path.join(root, file);
+  const fileText = fs.readFileSync(filePath, 'utf8');
+  const docsRoot = path.join(root, 'docs');
+  for (const match of fileText.matchAll(/(?:href|src|poster)="([^"]+)"/g)) {
+    const target = match[1];
+    if (/^(?:https?:|#|mailto:|tel:)/.test(target)) continue;
+    const localPath = path.resolve(path.dirname(filePath), target.split(/[?#]/)[0]);
+    if (localPath !== docsRoot && !localPath.startsWith(docsRoot + path.sep)) fail(`unsafe local target ${target} in ${file}`);
+    if (!fs.existsSync(localPath)) fail(`missing local target ${target} in ${file}`);
+  }
 }
 
 const sitemap = fs.readFileSync(path.join(root, 'docs/sitemap.xml'), 'utf8');
 for (const image of ['screenshot-control.png', 'screenshot-output.png', 'screenshot-backstage.png', 'og-banner.jpg']) {
   if (!sitemap.includes(`/protimer/${image}`)) fail(`sitemap is missing ${image}`);
+}
+for (const guide of guideFiles) {
+  const publicPath = guide.replace(/^docs\//, '').replace(/index\.html$/, '');
+  if (!sitemap.includes(`/protimer/${publicPath}`)) fail(`sitemap is missing ${publicPath}`);
 }
 
 console.log(`PUBLIC_DOCS_OK v${version}`);

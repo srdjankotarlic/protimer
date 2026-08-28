@@ -17,4 +17,34 @@
       <image:loc>https://srdjankotarlic.github.io/protimer/og-banner.jpg</image:loc>
     </image:image>
   </url>
+  <url>
+    <loc>https://srdjankotarlic.github.io/protimer/guides/</loc>
+    <lastmod>2026-08-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://srdjankotarlic.github.io/protimer/guides/obs-countdown-timer-phone-remote.html</loc>
+    <lastmod>2026-08-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://srdjankotarlic.github.io/protimer/guides/conference-stage-timer-setup.html</loc>
+    <lastmod>2026-08-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://srdjankotarlic.github.io/protimer/guides/bitfocus-companion-stage-timer.html</loc>
+    <lastmod>2026-08-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://srdjankotarlic.github.io/protimer/guides/warning-colors-overtime-speaker-messages.html</loc>
+    <lastmod>2026-08-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
 </urlset>

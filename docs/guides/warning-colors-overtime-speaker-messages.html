@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Stage Timer Warning Colors, Overtime, and Speaker Messages</title>
+  <meta name="description" content="Configure ProTimer warning thresholds, overtime display, zero alerts, blackout, and concise speaker messages for live events." />
+  <link rel="canonical" href="https://srdjankotarlic.github.io/protimer/guides/warning-colors-overtime-speaker-messages.html" />
+  <link rel="icon" type="image/png" href="../favicon.png" />
+  <link rel="stylesheet" href="guide.css" />
+</head>
+<body>
+<header class="site-header"><div class="wrap"><img src="../favicon.png" alt="" /><a class="brand" href="../">ProTimer</a><nav><a href="./">Guides</a><a href="../#download">Download</a><a href="https://github.com/srdjankotarlic/protimer">GitHub</a></nav></div></header>
+<main><article class="wrap">
+  <div class="eyebrow">Speaker communication</div>
+  <h1>Set warning colors, overtime, and speaker messages</h1>
+  <p class="lede">The stage display should communicate urgency at a glance without pulling attention away from the talk.</p>
+  <div class="meta"><span>Warning thresholds</span><span>Overtime</span><span>Speaker messages</span></div>
+  <h2>Choose simple warning thresholds</h2>
+  <p>A practical starting point for a 20-minute session is yellow at 5:00 and red at 2:00. Shorter talks need proportionally shorter thresholds. ProTimer lets you choose both times and colors, or turn warning colors off.</p>
+  <table><thead><tr><th>Session length</th><th>Yellow</th><th>Red</th></tr></thead><tbody>
+    <tr><td>5 minutes</td><td>1:30</td><td>0:30</td></tr>
+    <tr><td>15-20 minutes</td><td>5:00</td><td>2:00</td></tr>
+    <tr><td>45-60 minutes</td><td>10:00</td><td>5:00</td></tr>
+  </tbody></table>
+  <p>These are starting points, not rules. Confirm them with the stage manager or client before the event.</p>
+  <h2>Decide what happens at zero</h2>
+  <ul><li><strong>Overtime on:</strong> the display continues below zero so speaker and crew can see the overrun.</li><li><strong>Overtime off:</strong> the countdown stops visually at zero.</li><li><strong>Flash at zero:</strong> adds a stronger visual cue; use it only when appropriate for the room.</li><li><strong>Sound at zero:</strong> belongs on the operator machine, not an audio path that reaches the audience.</li></ul>
+  <h2>Use short speaker messages</h2>
+  <p>Messages sit below the main timer, so keep them brief and unambiguous. Useful examples:</p>
+  <pre><code>5 MINUTES
+WRAP UP
+LAST QUESTION
+PAUSE
+THANK YOU</code></pre>
+  <p>Use on-screen text such as <code>BREAK</code> when you want to replace or supplement the normal timer for the audience. Use the speaker-message field for private confidence-monitor direction.</p>
+  <div class="callout"><strong>Rehearse the tone:</strong> speakers react better when they know the color sequence and messages before going on stage. Include the timing rules in the speaker briefing.</div>
+  <h2>Keep control actions obvious</h2>
+  <ul><li>Put Clear Message next to the message buttons.</li><li>Make Blackout visually distinct and test its active feedback.</li><li>Do not place Reset next to GO without a clear label or button guard.</li><li>Give the operator +1 minute and -1 minute controls for live corrections.</li></ul>
+  <div class="cta-row"><a class="btn primary" href="https://github.com/srdjankotarlic/protimer/releases/latest">Download ProTimer</a><a class="btn secondary" href="bitfocus-companion-stage-timer.html">Companion setup</a></div>
+  <div class="next"><strong>Planning the full show?</strong> <a href="conference-stage-timer-setup.html">Set up the conference rundown and backstage view</a>.</div>
+</article></main>
+<footer><div class="wrap"><a href="./">All ProTimer guides</a> | <a href="https://github.com/srdjankotarlic/protimer/discussions">Setup questions</a></div></footer>
+</body>
+</html>
