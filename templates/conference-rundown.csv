@@ -1,0 +1,8 @@
+Session,Duration,Operator note,Color
+Doors open,00:15:00,House open and walk-in music,#2563EB
+Welcome,00:05:00,Host at lectern,#22C55E
+Opening keynote,00:30:00,Give a five-minute warning,#8B5CF6
+Panel discussion,00:40:00,Leave ten minutes for audience questions,#F59E0B
+Coffee break,00:20:00,Show BREAK text on stage output,#64748B
+Session two,00:25:00,Check next presenter microphone,#06B6D4
+Closing remarks,00:10:00,Show THANK YOU after final cue,#EF4444

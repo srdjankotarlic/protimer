@@ -100,6 +100,14 @@ The **Backstage view** shows NOW, NEXT, the schedule and over/under status on an
 
 ![ProTimer backstage view](docs/screenshot-backstage.png)
 
+## Practical Guides and Templates
+
+- [Add a free OBS countdown timer with a phone remote](https://srdjankotarlic.github.io/protimer/guides/obs-countdown-timer-phone-remote.html)
+- [Set up a stage timer for conference speakers](https://srdjankotarlic.github.io/protimer/guides/conference-stage-timer-setup.html)
+- [Control ProTimer with Bitfocus Companion and Stream Deck](https://srdjankotarlic.github.io/protimer/guides/bitfocus-companion-stage-timer.html)
+- [Configure warning colors, overtime, and speaker messages](https://srdjankotarlic.github.io/protimer/guides/warning-colors-overtime-speaker-messages.html)
+- [Sample conference rundown CSV](templates/conference-rundown.csv) and [OBS Browser Source checklist](templates/OBS-BROWSER-SOURCE-CHECKLIST.md)
+
 <details>
 <summary><strong>📖 Open the full operator guide</strong> — display, OBS, phones, rundown, automation and shortcuts</summary>
 
@@ -243,6 +251,8 @@ Issues and pull requests are welcome — bug reports, feature ideas, translation
 3. Keep it simple — the whole point of ProTimer is that it stays small and obvious.
 
 If you use ProTimer on a show, a ⭐ or a quick note about what worked (or didn't) genuinely helps.
+
+For PowerPoint and PDF presentation playback inside OBS, see [PPTBridge SK](https://srdjankotarlic.github.io/pptbridge-sk-obs/), the free presentation-source plugin from the same author.
 
 ---
 
