@@ -20,7 +20,8 @@
   <ol><li>Open ProTimer's <strong>Network - OBS / Phone</strong> panel.</li><li>Find the API row and note the computer IP, port, and the value after <code>t=</code>.</li><li>Keep ProTimer and Companion on the same trusted network.</li></ol>
   <div class="callout"><strong>Session token:</strong> the token changes whenever ProTimer restarts. Update the Companion connection after an app restart or use the newly shown API URL.</div>
   <h2>Dedicated module</h2>
-  <p>The module repository is <a href="https://github.com/srdjankotarlic/companion-module-protimer">companion-module-protimer</a>. Until the module is accepted into the official Companion registry, install it through Companion's developer-modules path and enter the host, port, and token from ProTimer.</p>
+  <ol><li><a href="https://github.com/srdjankotarlic/companion-module-protimer/releases/download/v1.1.0/protimer-1.1.0.tgz">Download the ProTimer module package</a>.</li><li>In Companion 4, open <strong>Modules → Import module package</strong>.</li><li>Select the downloaded <code>protimer-1.1.0.tgz</code> file, add a ProTimer connection, then enter the host, port, and token shown by ProTimer.</li></ol>
+  <p>This packaged install works while the module waits for acceptance into the official Companion registry. The <a href="https://github.com/srdjankotarlic/companion-module-protimer">source repository</a> remains available for development and review.</p>
   <p>Core actions include Start/Pause, Reset, GO next cue, Blackout, time adjustment, set duration, mode, on-screen text, and speaker messages. Variables and feedback expose the live timer and connection state.</p>
   <h2>Suggested first page</h2>
   <table><thead><tr><th>Button</th><th>Purpose</th></tr></thead><tbody>
@@ -38,7 +39,7 @@ http://&lt;protimer-ip&gt;:7878/cmd?type=go&amp;t=&lt;token&gt;
 http://&lt;protimer-ip&gt;:7878/cmd?type=adjust&amp;value=-60&amp;t=&lt;token&gt;</code></pre>
   <h2>Test the page</h2>
   <ol><li>Start the timer and confirm the live time variable updates.</li><li>Pause and verify running feedback turns off.</li><li>Load a two-cue rundown and press GO.</li><li>Toggle Blackout twice and verify both the stage output and button feedback.</li><li>Restart ProTimer, update the token, and confirm the connection recovers.</li></ol>
-  <div class="cta-row"><a class="btn primary" href="https://github.com/srdjankotarlic/companion-module-protimer">Open the Companion module</a><a class="btn secondary" href="https://github.com/srdjankotarlic/protimer/releases/latest">Download ProTimer</a></div>
+  <div class="cta-row"><a class="btn primary" href="https://github.com/srdjankotarlic/companion-module-protimer/releases/download/v1.1.0/protimer-1.1.0.tgz">Download the Companion module</a><a class="btn secondary" href="https://github.com/srdjankotarlic/protimer/releases/latest">Download ProTimer</a></div>
   <div class="next"><strong>Fine-tuning the stage display?</strong> <a href="warning-colors-overtime-speaker-messages.html">Configure warning colors, overtime, and messages</a>.</div>
 </article></main>
 <footer><div class="wrap"><a href="./">All ProTimer guides</a> | <a href="https://github.com/srdjankotarlic/protimer/issues">Report an issue</a></div></footer>

@@ -23,4 +23,4 @@ Use [`OBS-BROWSER-SOURCE-CHECKLIST.md`](OBS-BROWSER-SOURCE-CHECKLIST.md) to set 
 
 ## Bitfocus Companion
 
-The dedicated [ProTimer Companion module](https://github.com/srdjankotarlic/companion-module-protimer) includes starter presets for transport, GO, time adjustment, blackout, and speaker messages. Generic HTTP remains available if you do not want to install a developer module.
+The dedicated [ProTimer Companion module package](https://github.com/srdjankotarlic/companion-module-protimer/releases/download/v1.1.0/protimer-1.1.0.tgz) includes starter presets for transport, GO, time adjustment, blackout, and speaker messages. In Companion 4, use **Modules → Import module package** and select the downloaded `.tgz`. Generic HTTP remains available as a zero-install fallback.

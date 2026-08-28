@@ -25,7 +25,9 @@ const publicText = publicFiles
   .map((file) => fs.readFileSync(path.join(root, file), 'utf8'))
   .join('\n');
 
-for (const match of publicText.matchAll(/releases\/download\/v([^/]+)/g)) {
+const proTimerReleaseDownloads =
+  /github\.com\/srdjankotarlic\/protimer\/releases\/download\/v([^/]+)/g;
+for (const match of publicText.matchAll(proTimerReleaseDownloads)) {
   if (match[1] !== version) fail(`found v${match[1]} download in current public docs; package version is ${version}`);
 }
 
