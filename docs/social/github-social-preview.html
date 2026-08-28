@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=1280, initial-scale=1">
+<title>ProTimer GitHub social preview</title>
+<style>
+  *{box-sizing:border-box}
+  html,body{width:1280px;height:640px;margin:0;overflow:hidden;background:#070b0e}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:#f5f7f8}
+  .canvas{position:relative;width:1280px;height:640px;overflow:hidden;background:#070b0e url("protimer-event-background.png") center/cover no-repeat}
+  .canvas::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(4,8,10,.2),rgba(4,8,10,.76) 60%,rgba(4,8,10,.28));pointer-events:none}
+  .content{position:relative;z-index:1;display:grid;grid-template-columns:690px 1fr;gap:62px;width:100%;height:100%;padding:58px 66px}
+  .left{display:flex;flex-direction:column}
+  .brand{display:flex;align-items:center;gap:16px;font-size:26px;font-weight:850;letter-spacing:5px}
+  .brand img{width:52px;height:52px;border-radius:12px}
+  .green{color:#45d368}
+  h1{margin:76px 0 0;font-size:67px;line-height:1.02;letter-spacing:-2.6px;max-width:680px}
+  h1 span{color:#45d368}
+  .sub{margin:22px 0 0;color:#c7d0d5;font-size:24px;font-weight:560}
+  .meta{margin-top:auto;color:#9eabb2;font-size:19px;font-weight:700;letter-spacing:.2px}
+  .visual{display:flex;align-items:center;justify-content:center}
+  .screen{width:440px;border:1px solid rgba(255,255,255,.15);border-radius:23px;overflow:hidden;background:#000;box-shadow:0 34px 85px rgba(0,0,0,.58)}
+  .screen img{display:block;width:100%;height:auto}
+</style>
+</head>
+<body>
+  <main class="canvas" aria-label="ProTimer GitHub social preview">
+    <div class="content">
+      <section class="left">
+        <div class="brand"><img src="../icon.png" alt="">PRO<span class="green">TIMER</span></div>
+        <h1><span>Free stage timer</span><br>for live events</h1>
+        <p class="sub">Audience screen · OBS · phone · rundown</p>
+        <p class="meta">Open source · macOS · Windows · no account</p>
+      </section>
+      <aside class="visual" aria-hidden="true"><div class="screen"><img src="../screenshot-output.png" alt=""></div></aside>
+    </div>
+  </main>
+</body>
+</html>

@@ -107,6 +107,7 @@
   .btn.primary{background:var(--accent2); border-color:var(--accent2); color:#fff;}
   .btn.primary:hover{background:#1f762f; border-color:#1f762f;}
   a:focus-visible,.btn:focus-visible,summary:focus-visible{outline:3px solid var(--blue); outline-offset:3px; border-radius:8px;}
+  @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto;}.btn{transition:none;}}
 
   header{border-bottom:1px solid var(--border); position:sticky; top:0; background:rgba(10,12,16,.85); backdrop-filter:blur(10px); z-index:10;}
   .nav{display:flex; align-items:center; gap:14px; height:62px;}
@@ -130,7 +131,7 @@
   .security-note{max-width:760px; margin:20px auto 0; padding:14px 16px; border:1px solid #4a3f24;
     border-radius:12px; color:#d6c9a8; background:#17150f; font-size:13.5px; text-align:left;}
   .shot{margin:34px auto 0; max-width:920px; border:1px solid var(--border); border-radius:16px; overflow:hidden; box-shadow:0 24px 70px rgba(0,0,0,.5);}
-  .shot img{width:100%; display:block;}
+  .shot img,.shot video{width:100%; display:block;}
 
   section{padding:54px 0; border-top:1px solid var(--border);}
   h2{font-size:clamp(24px,4vw,34px); font-weight:800; letter-spacing:-.3px; margin-bottom:8px; text-align:center;}
@@ -187,16 +188,17 @@
 <body>
 
 <header>
-  <div class="wrap nav">
+  <nav class="wrap nav" aria-label="Primary navigation">
     <div class="brand"><img src="icon.png" alt="ProTimer logo"> PRO<span>TIMER</span></div>
     <div class="grow"></div>
     <a class="lnk" href="#new">New in 2.1</a>
     <a class="lnk" href="#start">Quick start</a>
     <a class="lnk" href="#features">Features</a>
     <a class="lnk" href="#faq">FAQ</a>
+    <a class="lnk" href="https://github.com/srdjankotarlic/protimer/blob/main/README.sr.md" lang="sr">SR</a>
     <a class="lnk" href="https://github.com/srdjankotarlic/protimer">GitHub</a>
     <a class="btn primary" href="#download">Download</a>
-  </div>
+  </nav>
 </header>
 
 <main>
@@ -209,9 +211,9 @@
       <a class="btn primary" href="https://github.com/srdjankotarlic/protimer/releases/download/v2.1.0/ProTimer-2.1.0-arm64.dmg">macOS DMG · Apple Silicon</a>
     </div>
     <small>Free and open source · no account · no watermark · English and Serbian</small>
-    <div class="security-note"><strong>First launch:</strong> the current builds are not code-signed. On Windows choose <strong>More info → Run anyway</strong> in SmartScreen. On macOS use <strong>System Settings → Privacy &amp; Security → Open Anyway</strong>. Continue only with files downloaded from this site.</div>
+    <small><a href="#first-launch">First-launch help for unsigned builds</a></small>
     <p class="edition-note">Need lower thirds, screen content and multiple independent outputs? See <a href="https://srdjankotarlic.github.io/protimer-studio/">ProTimer Studio</a>.</p>
-    <div class="shot"><img src="demo.gif" alt="ProTimer stage screen counting down and turning yellow then red, with a NOW / NEXT bar" loading="lazy"></div>
+    <div class="shot"><video id="demo" src="demo.mp4" poster="screenshot-output.png" width="1280" height="720" aria-label="ProTimer stage screen counting down and turning yellow then red, with a NOW / NEXT bar" autoplay muted loop playsinline controls preload="metadata"></video></div>
   </div>
 
   <section id="new">
@@ -258,7 +260,7 @@
 
   <section>
     <div class="wrap two">
-      <img src="screenshot-backstage.png" alt="ProTimer backstage view showing NOW, NEXT, the full schedule and an over/under indicator" loading="lazy">
+      <img src="screenshot-backstage.png" width="1280" height="688" alt="ProTimer backstage view showing NOW, NEXT, the full schedule and an over/under indicator" loading="lazy">
       <div>
         <h3>A backstage screen for the whole crew</h3>
         <p>Put the rundown on any screen or phone: what’s on now, what’s next, the full schedule with clock times, and whether the show will finish ahead of or behind plan. Ideal for a green room, a stage manager or a lobby display.</p>
@@ -272,13 +274,13 @@
         <h3>One clean control window</h3>
         <p>Transport, the clear duration picker, colors, text, a scrollable cue-by-cue rundown, and network links for OBS and phones — all in one place. The preview stays large and centred while the real stage output can sit anywhere.</p>
       </div>
-      <img src="screenshot-control.png" alt="ProTimer control window with transport, modes, colors, rundown and network links" loading="lazy">
+      <img src="screenshot-control.png" width="1120" height="708" alt="ProTimer control window with transport, modes, colors, rundown and network links" loading="lazy">
     </div>
   </section>
 
   <section>
     <div class="wrap two">
-      <img src="screenshot-output.png" alt="Clean frameless ProTimer audience output with a large readable countdown" loading="lazy">
+      <img src="screenshot-output.png" width="1554" height="874" alt="Clean frameless ProTimer audience output with a large readable countdown" loading="lazy">
       <div>
         <h3>A clean screen for the audience</h3>
         <p>No title bar or on-screen controls. Move and resize the output directly with the mouse, then switch it to fullscreen from Control. For phones, place a view-only Timer or Backstage QR on the same output.</p>
@@ -319,8 +321,8 @@
           <a class="btn primary" href="https://github.com/srdjankotarlic/protimer/releases/download/v2.1.0/ProTimer-Setup-2.1.0.exe">Download Windows Setup</a>
         </article>
       </div>
-      <p class="download-note">Need a no-install Windows build? Use the <a href="https://github.com/srdjankotarlic/protimer/releases/download/v2.1.0/ProTimer-2.1.0-portable.exe">portable EXE</a>. GitHub's Source code archives, YAML files and blockmaps are not installers.</p>
-      <div class="security-note"><strong>Unsigned builds:</strong> Windows may show SmartScreen; choose <strong>More info → Run anyway</strong>. macOS may require <strong>System Settings → Privacy &amp; Security → Open Anyway</strong>. Only continue when the filename and download source match this page.</div>
+      <p class="download-note">Need a no-install Windows build? Use the <a href="https://github.com/srdjankotarlic/protimer/releases/download/v2.1.0/ProTimer-2.1.0-portable.exe">portable EXE</a>. GitHub's Source code archives, YAML files and blockmaps are not installers. <a href="https://github.com/srdjankotarlic/protimer/releases/download/v2.1.0/ProTimer-2.1.0-SHA256SUMS.txt">Verify SHA-256 checksums</a>.</p>
+      <div class="security-note" id="first-launch"><strong>Unsigned builds:</strong> Windows may show SmartScreen; choose <strong>More info → Run anyway</strong>. macOS may require <strong>System Settings → Privacy &amp; Security → Open Anyway</strong>. Only continue when the filename and download source match this page.</div>
       <div class="dl-row"><a class="btn" href="https://github.com/srdjankotarlic/protimer">View source on GitHub</a></div>
     </div>
   </section>
@@ -331,10 +333,20 @@
     Made by <a href="https://github.com/srdjankotarlic">Srdjan Kotarlic</a> ·
     <a href="https://www.linkedin.com/in/srdjan-kotarlic-82904012b/">LinkedIn</a> ·
     <a href="https://github.com/srdjankotarlic/protimer">GitHub</a> ·
+    <a href="https://github.com/srdjankotarlic/protimer/blob/main/README.sr.md" lang="sr">Srpski</a> ·
+    <a href="https://github.com/srdjankotarlic/protimer/blob/main/SUPPORT.md">Support</a> ·
     <a href="https://github.com/srdjankotarlic/protimer/blob/main/LICENSE">MIT License</a><br><br>
     ProTimer — a free, open-source stage timer / countdown timer for live production, OBS and live events. © 2026
   </div>
 </footer>
+
+<script>
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const demo = document.getElementById('demo');
+    demo.removeAttribute('autoplay');
+    demo.pause();
+  }
+</script>
 
 </body>
 </html>

@@ -1,5 +1,3 @@
-# ProTimer 2.1.0
-
 This release makes the operator view clearer and the audience output safer to use live.
 
 ## Download one file
@@ -8,9 +6,10 @@ This release makes the operator view clearer and the audience output safer to us
 |---|---|---|
 | Apple Silicon Mac (M1 or newer) | `ProTimer-2.1.0-arm64.dmg` | [Download macOS DMG](https://github.com/srdjankotarlic/protimer/releases/download/v2.1.0/ProTimer-2.1.0-arm64.dmg) |
 | Windows 10/11 x64 | `ProTimer-Setup-2.1.0.exe` | [Download Windows Setup](https://github.com/srdjankotarlic/protimer/releases/download/v2.1.0/ProTimer-Setup-2.1.0.exe) |
-| Windows 10/11 x64, no installation | `ProTimer-2.1.0-portable.exe` | [Download portable Windows EXE](https://github.com/srdjankotarlic/protimer/releases/download/v2.1.0/ProTimer-2.1.0-portable.exe) |
 
-Most Windows users should choose **Setup**. GitHub's automatic **Source code** ZIP and TAR.GZ files are for developers and do not install ProTimer.
+Need Windows without installation? Use the [portable Windows EXE](https://github.com/srdjankotarlic/protimer/releases/download/v2.1.0/ProTimer-2.1.0-portable.exe). Most Windows users should choose **Setup**. GitHub's automatic **Source code** ZIP and TAR.GZ files are for developers and do not install ProTimer.
+
+Verify any download with the [ProTimer 2.1.0 SHA-256 checksums](https://github.com/srdjankotarlic/protimer/releases/download/v2.1.0/ProTimer-2.1.0-SHA256SUMS.txt).
 
 The builds are not code-signed yet. On Windows, SmartScreen may show **Unknown publisher**; continue only if the file came from this release. On macOS, if Gatekeeper blocks the app, use **System Settings → Privacy & Security → Open Anyway** after confirming the DMG came from this repository.
 

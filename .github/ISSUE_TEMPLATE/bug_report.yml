@@ -1,0 +1,76 @@
+name: Bug report
+description: Report something that is not working in ProTimer.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve ProTimer. Please remove private event details, remote tokens and public-share URLs before posting.
+  - type: dropdown
+    id: operating-system
+    attributes:
+      label: Operating system
+      options:
+        - macOS (Apple Silicon)
+        - Windows 11 x64
+        - Windows 10 x64
+        - Other / browser-only viewer
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: ProTimer version
+      placeholder: "2.1.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where did it happen?
+      options:
+        - Control window
+        - Audience screen / projector
+        - OBS browser source
+        - Phone timer view
+        - Phone remote
+        - Backstage view
+        - Share online
+        - Rundown
+        - Installation or first launch
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      placeholder: Tell us what you saw and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open ...
+        2. Select ...
+        3. Press ...
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Screenshots, video or notes
+      description: Drag files here if they help. Do not include private links, tokens or sensitive rundown notes.
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Quick checks
+      options:
+        - label: I downloaded ProTimer from this repository or the official product page.
+          required: true
+        - label: I checked that this issue has not already been reported.
+          required: true

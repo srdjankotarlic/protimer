@@ -1,0 +1,36 @@
+name: Help or question
+description: Ask for help using or installing ProTimer.
+title: "[Help]: "
+labels:
+  - question
+body:
+  - type: markdown
+    attributes:
+      value: Start with the Quick Start and Support links shown on this page. If you are still stuck, include enough detail for someone else to reproduce the situation.
+  - type: dropdown
+    id: topic
+    attributes:
+      label: What do you need help with?
+      options:
+        - Download or installation
+        - Sending the timer to a display
+        - OBS browser source
+        - Phone remote or audience QR
+        - Rundown or Backstage
+        - Stream Deck, HTTP or OSC
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: setup
+    attributes:
+      label: Your setup
+      placeholder: "Example: ProTimer 2.1.0, Windows 11, OBS 32"
+    validations:
+      required: true
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+    validations:
+      required: true

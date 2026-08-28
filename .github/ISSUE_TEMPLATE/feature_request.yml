@@ -1,0 +1,41 @@
+name: Feature request
+description: Suggest a focused improvement for ProTimer.
+title: "[Idea]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: ProTimer stays intentionally small, fast and obvious. Show-focused ideas with a clear workflow are especially useful.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What live-show problem would this solve?
+      placeholder: Describe the situation before describing the feature.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like ProTimer to do?
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Main area
+      options:
+        - Timer control
+        - Audience output / OBS
+        - Phone remote or viewer
+        - Rundown / Backstage
+        - Integrations / automation
+        - Installation / documentation
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Current workaround or reference
+      description: How do you handle this now? A screenshot or example from another tool is welcome.

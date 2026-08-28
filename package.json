@@ -6,6 +6,9 @@
   "main": "main.js",
   "author": "Srdjan Kotarlic",
   "license": "MIT",
+  "engines": {
+    "node": ">=24"
+  },
   "repository": "https://github.com/srdjankotarlic/protimer",
   "homepage": "https://srdjankotarlic.github.io/protimer/",
   "bugs": {

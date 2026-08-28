@@ -1,5 +1,11 @@
-blank_issues_enabled: true
+blank_issues_enabled: false
 contact_links:
   - name: ⬇️ Download ProTimer
     url: https://srdjankotarlic.github.io/protimer/
     about: Get the latest free macOS / Windows build.
+  - name: 📖 Quick start and full guide
+    url: https://github.com/srdjankotarlic/protimer#quick-start-60-seconds
+    about: Installation, display, OBS, phone, QR and rundown instructions.
+  - name: 🔒 Report a security problem privately
+    url: https://github.com/srdjankotarlic/protimer/security/advisories/new
+    about: Do not post vulnerabilities, remote tokens or private event data in a public issue.

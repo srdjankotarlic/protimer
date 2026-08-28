@@ -10,7 +10,7 @@ For **security issues**, please don't open a public issue — see [SECURITY.md](
 
 ## Working on the code
 
-You need [Node.js](https://nodejs.org) 20 LTS or newer.
+You need [Node.js](https://nodejs.org) 24 LTS or newer.
 
 ```bash
 git clone https://github.com/srdjankotarlic/protimer.git

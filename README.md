@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="build/icon.png" width="112" alt="ProTimer stage timer icon">
+  <img src="docs/icon.png" width="112" alt="ProTimer stage timer icon">
 </p>
 
 <h1 align="center">ProTimer</h1>
@@ -20,11 +20,17 @@
 </p>
 
 <p align="center">
+  <a href="README.sr.md"><strong>Srpski</strong></a>
+  ·
   <a href="https://srdjankotarlic.github.io/protimer/"><strong>Product page</strong></a>
   ·
   <a href="#download-and-install"><strong>Download</strong></a>
   ·
   <a href="#quick-start-60-seconds"><strong>Quick start</strong></a>
+  ·
+  <a href="SUPPORT.md"><strong>Support</strong></a>
+  ·
+  <a href="CHANGELOG.md"><strong>Changelog</strong></a>
 </p>
 
 ![ProTimer stage screen counting down with warning colors and NOW / NEXT](docs/demo.gif)
@@ -39,6 +45,8 @@
 | Windows 10/11 x64 | **[Download the Windows installer](https://github.com/srdjankotarlic/protimer/releases/download/v2.1.0/ProTimer-Setup-2.1.0.exe)** | Run Setup and follow the installer. |
 
 Need a Windows build that does not install? Use the [portable EXE](https://github.com/srdjankotarlic/protimer/releases/download/v2.1.0/ProTimer-2.1.0-portable.exe). Most Windows users should choose Setup.
+
+Every installer is built by the public release workflow. You can verify a download with the [ProTimer 2.1.0 SHA-256 checksums](https://github.com/srdjankotarlic/protimer/releases/download/v2.1.0/ProTimer-2.1.0-SHA256SUMS.txt).
 
 <details>
 <summary><strong>First-launch security warning</strong></summary>
@@ -95,7 +103,12 @@ The **Backstage view** shows NOW, NEXT, the schedule and over/under status on an
 
 ![ProTimer backstage view](docs/screenshot-backstage.png)
 
-## 📖 How to use
+<details>
+<summary><strong>📖 Open the full operator guide</strong> — display, OBS, phones, rundown, automation and shortcuts</summary>
+
+<a id="how-to-use"></a>
+
+## How to use
 
 ### Timer modes
 - **Countdown** — the main mode. Open **Duration** and set `HH:MM:SS`, use the `+`/`−` controls, or choose a minute preset.
@@ -178,11 +191,13 @@ Switch between **SR / EN** with the toggle next to the logo, top-left. The choic
 | `M` | Message (Enter sends) |
 | `C` | Clear message |
 
+</details>
+
 ---
 
 ## 🛠️ For developers (run from source)
 
-You need [Node.js](https://nodejs.org) 20 LTS or newer.
+You need [Node.js](https://nodejs.org) 24 LTS or newer.
 
 ```bash
 git clone https://github.com/srdjankotarlic/protimer.git
