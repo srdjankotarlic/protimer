@@ -16,7 +16,7 @@ Harassment, discrimination, threats, sexualised attention, personal attacks, del
 
 ## Reporting and enforcement
 
-If something happens in this project that violates this code, report it privately through GitHub's [private advisory form](../../security/advisories/new). Include links or screenshots where useful, but do not post sensitive material publicly.
+If something happens in this project that violates this code, contact the maintainer privately through [LinkedIn](https://www.linkedin.com/in/srdjan-kotarlic-82904012b/). Include links or screenshots where useful, but do not post sensitive material publicly. Use GitHub's private security-advisory form only for software vulnerabilities.
 
 The maintainer may edit or remove comments, issues, pull requests or other contributions that do not follow this code, and may temporarily or permanently restrict participation. Reports will be reviewed as promptly and fairly as a solo-maintained project allows.
 

@@ -33,7 +33,7 @@
   <a href="CHANGELOG.md"><strong>Changelog</strong></a>
 </p>
 
-![ProTimer stage screen counting down with warning colors and NOW / NEXT](docs/demo.gif)
+![ProTimer — free stage timer for live events, OBS, phones and rundowns](docs/og-banner.jpg)
 
 ## Download and install
 
@@ -75,6 +75,8 @@ See the complete [2.1.0 release notes](docs/RELEASE-NOTES-2.1.0.md).
 2. Open **Duration**, set hours/minutes/seconds (or choose a quick preset), then press **START** or `Space`.
 3. Drag and resize the frameless Screen window, or select a monitor and use **Send to screen** / fullscreen from Control.
 4. To let people follow on phones, open the network panel, select the view-only Timer or Backstage **QR**, then choose **Show QR to audience**.
+
+![ProTimer stage screen counting down with warning colors and NOW / NEXT](docs/demo.gif)
 
 ## What ProTimer does
 
@@ -236,7 +238,7 @@ Being honest about where it's at:
 
 Issues and pull requests are welcome — bug reports, feature ideas, translations, docs.
 
-1. Open an [issue](../../issues) (there are templates for bugs and features).
+1. Open an [issue](https://github.com/srdjankotarlic/protimer/issues/new/choose) (there are templates for bugs and features).
 2. For code: fork, `npm install`, make your change, run `npm run smoke`, open a PR.
 3. Keep it simple — the whole point of ProTimer is that it stays small and obvious.
 

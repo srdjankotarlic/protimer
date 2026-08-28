@@ -4,7 +4,7 @@
 
 Please **don't** open a public issue for security problems.
 
-Use GitHub's **[Report a vulnerability](../../security/advisories/new)** (Security tab → Advisories) to report privately. I'll respond as soon as I can — this is a solo project, so please allow a little time.
+Use GitHub's **[Report a vulnerability](https://github.com/srdjankotarlic/protimer/security/advisories/new)** (Security tab → Advisories) to report privately. I'll respond as soon as I can — this is a solo project, so please allow a little time.
 
 ## How ProTimer handles security
 
@@ -18,4 +18,4 @@ ProTimer is a local desktop app with a small built-in web server (default port `
 
 ## Supported versions
 
-The latest release on the [Releases page](../../releases/latest) is the supported version.
+The latest release on the [Releases page](https://github.com/srdjankotarlic/protimer/releases/latest) is the supported version.

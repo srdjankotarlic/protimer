@@ -32,4 +32,4 @@ The current packages are not Apple-notarized or Windows Authenticode-signed. Con
 - macOS: use **System Settings -> Privacy & Security -> Open Anyway** if Gatekeeper blocks the app.
 - Windows: SmartScreen may show **Unknown publisher**.
 
-Start with the [product page](https://srdjankotarlic.github.io/protimer/), read the [README](https://github.com/srdjankotarlic/protimer#readme), or open a reproducible [bug report](https://github.com/srdjankotarlic/protimer/issues/new?template=bug_report.md).
+Start with the [product page](https://srdjankotarlic.github.io/protimer/), read the [README](https://github.com/srdjankotarlic/protimer#readme), or open a reproducible [bug report](https://github.com/srdjankotarlic/protimer/issues/new/choose).

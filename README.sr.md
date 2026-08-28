@@ -13,7 +13,7 @@
   <a href="#pokretanje-za-60-sekundi"><strong>Brzi početak</strong></a>
 </p>
 
-![ProTimer ekran sa odbrojavanjem](docs/demo.gif)
+![ProTimer — besplatan stage timer za događaje uživo, OBS, telefone i rundown](docs/og-banner.jpg)
 
 ## Preuzimanje
 
@@ -46,6 +46,8 @@ Svaki instalacioni fajl možeš da proveriš pomoću [ProTimer 2.1.0 SHA-256 che
 3. Pomeri i povećaj Ekran mišem, ili izaberi monitor i uključi prikaz preko celog ekrana iz Kontrole.
 4. Za publiku na telefonima izaberi **QR** za Tajmer ili Backstage (samo za praćenje), pa **Prikaži QR publici**.
 
-Kompletno uputstvo je u [engleskom README vodiču](README.md#how-to-use). Za pomoć koristi [Support](SUPPORT.md) ili otvori precizan [GitHub issue](../../issues/new/choose).
+![ProTimer ekran sa odbrojavanjem](docs/demo.gif)
+
+Kompletno uputstvo je u [engleskom README vodiču](README.md#how-to-use). Za pomoć koristi [Support](SUPPORT.md) ili otvori precizan [GitHub issue](https://github.com/srdjankotarlic/protimer/issues/new/choose).
 
 ProTimer je otvorenog koda pod [MIT licencom](LICENSE).

@@ -4,7 +4,7 @@ Thanks for your interest — bug reports, feature ideas, translations and docs a
 
 ## Reporting bugs / requesting features
 
-Open an [issue](../../issues/new/choose). There are templates for **bug reports** and **feature requests** — filling them in (OS, version, steps) helps a lot.
+Open an [issue](https://github.com/srdjankotarlic/protimer/issues/new/choose). There are templates for **bug reports** and **feature requests** — filling them in (OS, version, steps) helps a lot.
 
 For **security issues**, please don't open a public issue — see [SECURITY.md](SECURITY.md).
 
@@ -17,6 +17,7 @@ git clone https://github.com/srdjankotarlic/protimer.git
 cd protimer
 npm install
 npm start            # run the app
+npm run check:public-docs # verify the landing page, release links and version references
 npm run smoke        # automated UI, host-clock sync, SSE/long-poll, remote and output tests
 npm run dist:mac     # build the macOS .dmg
 npm run dist:win     # build the Windows installer + portable
@@ -35,7 +36,7 @@ Release builds fetch the pinned official Cloudflare binary with `scripts/fetch-c
 ## Pull requests
 
 1. Fork, create a branch, make your change.
-2. Run `npm run smoke` and make sure it prints `SMOKE_OK`.
+2. Run `npm run check:public-docs` and `npm run smoke`; make sure they print `PUBLIC_DOCS_OK` and `SMOKE_OK`.
 3. Keep the diff focused and the UI consistent with what's there.
 4. Open the PR with a short description of what and why.
 

@@ -11,7 +11,7 @@ ProTimer is free and maintained as an open-source project, so support is communi
 
 ## Ask for help or report a bug
 
-Use the guided [issue forms](../../issues/new/choose) and include:
+Use the guided [issue forms](https://github.com/srdjankotarlic/protimer/issues/new/choose) and include:
 
 - your ProTimer version and operating system;
 - where the problem appears (Control, Screen, OBS, phone, remote or Backstage);
@@ -22,4 +22,4 @@ Before posting, remove remote-control tokens, temporary public-share URLs, priva
 
 ## Security problems
 
-Do not open a public issue for a vulnerability. Follow [SECURITY.md](SECURITY.md) and use GitHub's [private vulnerability report](../../security/advisories/new).
+Do not open a public issue for a vulnerability. Follow [SECURITY.md](SECURITY.md) and use GitHub's [private vulnerability report](https://github.com/srdjankotarlic/protimer/security/advisories/new).

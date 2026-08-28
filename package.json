@@ -29,6 +29,7 @@
   "scripts": {
     "start": "electron .",
     "smoke": "electron . --smoke",
+    "check:public-docs": "node scripts/check-public-docs.js",
     "predist:mac": "node scripts/fetch-cloudflared.js mac",
     "dist:mac": "electron-builder --mac --arm64",
     "predist:win": "node scripts/fetch-cloudflared.js win",

@@ -1,6 +1,6 @@
 # Changelog
 
-Notable ProTimer changes are listed here. The complete notes and installers are available on the [Releases page](../../releases).
+Notable ProTimer changes are listed here. The complete notes and installers are available on the [Releases page](https://github.com/srdjankotarlic/protimer/releases).
 
 ## 2.1.0 — 2026-08-27
 
