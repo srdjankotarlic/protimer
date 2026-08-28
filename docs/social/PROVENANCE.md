@@ -2,7 +2,7 @@
 
 ## ProTimer 2.1 LinkedIn — clean update
 
-- Output: `protimer-2.1-linkedin-clean.png`
+- Output: `protimer-2.1-linkedin-clean.jpg`
 - Size: 1200 × 627 px
 - Deterministic layout: `protimer-2.1-linkedin-clean.html`
 - Product sources: `../icon.png`, `../screenshot-output.png`
@@ -16,7 +16,7 @@ The text and product UI are not AI-generated. They are composed from exact copy 
 
 ## GitHub social preview
 
-- Output: `github-social-preview.png`
+- Output: `github-social-preview.jpg`
 - Size: 1280 × 640 px
 - Deterministic layout: `github-social-preview.html`
 - Uses the same source assets and generated background.

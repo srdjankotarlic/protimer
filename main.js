@@ -884,6 +884,17 @@ app.whenReady().then(() => {
     const waitOutput = () => new Promise(res => {
       const t = setInterval(() => { if (outputWin) { clearInterval(t); res(outputWin); } }, 50);
     });
+    const waitWindowEvent = (win, event, timeout = 6000) => new Promise(res => {
+      let timer = null;
+      const done = ok => {
+        if (timer) clearTimeout(timer);
+        win.removeListener(event, onEvent);
+        res(ok);
+      };
+      const onEvent = () => done(true);
+      win.once(event, onEvent);
+      timer = setTimeout(() => done(false), timeout);
+    });
     (async () => {
       try {
         const smokeFailures = [];
@@ -1174,15 +1185,19 @@ app.whenReady().then(() => {
           await controlWin.webContents.executeJavaScript("var fit=document.getElementById('chkFit');fit.checked=false;fit.dispatchEvent(new Event('change'));window.pt.exitFullscreen();");
           await new Promise(r=>setTimeout(r,450));
           const windowed=await outputWin.webContents.executeJavaScript(`(function(){var s=document.getElementById('stage');return {body:document.body.classList.contains('windowed'),drag:getComputedStyle(s).webkitAppRegion};})()`);
+          const resizableBefore=outputWin.isResizable();
           await outputWin.webContents.executeJavaScript("document.dispatchEvent(new MouseEvent('dblclick',{bubbles:true}))");
           await new Promise(r=>setTimeout(r,250));
           const dblClickStayedWindowed=!outputWin.isFullScreen();
+          const enterEvent=waitWindowEvent(outputWin,'enter-full-screen');
           await controlWin.webContents.executeJavaScript("document.getElementById('btnFs').click()");
-          await new Promise(r=>setTimeout(r,700)); const entered=outputWin.isFullScreen();
+          const entered=(await enterEvent)&&outputWin.isFullScreen();
+          const leaveEvent=waitWindowEvent(outputWin,'leave-full-screen');
           await controlWin.webContents.executeJavaScript("document.getElementById('btnFs').click()");
-          await new Promise(r=>setTimeout(r,700)); const exited=!outputWin.isFullScreen();
-          outputControlsOK=outputFrameless===true&&outputWin.isMovable()&&outputWin.isResizable()&&windowed.body&&windowed.drag==='drag'&&dblClickStayedWindowed&&entered&&exited;
-          outputControlsStr=JSON.stringify({frameless:outputFrameless,movable:outputWin.isMovable(),resizable:outputWin.isResizable(),windowed,dblClickStayedWindowed,entered,exited});
+          const exited=(await leaveEvent)&&!outputWin.isFullScreen();
+          const resizableAfter=outputWin.isResizable();
+          outputControlsOK=outputFrameless===true&&outputWin.isMovable()&&resizableBefore&&resizableAfter&&windowed.body&&windowed.drag==='drag'&&dblClickStayedWindowed&&entered&&exited;
+          outputControlsStr=JSON.stringify({frameless:outputFrameless,movable:outputWin.isMovable(),resizableBefore,resizableAfter,windowed,dblClickStayedWindowed,entered,exited});
         }catch(e){outputControlsStr='ERR '+e;}
         console.log('OUTPUT_CONTROLS_OK='+outputControlsOK+' '+outputControlsStr);
         check('OUTPUT_CONTROLS_OK',outputControlsOK);

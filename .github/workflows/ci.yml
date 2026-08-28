@@ -32,6 +32,9 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      - name: Download Electron runtime (Linux)
+        if: runner.os == 'Linux'
+        run: npx install-electron --no
       - name: Configure Electron sandbox (CI)
         if: runner.os == 'Linux'
         run: |
