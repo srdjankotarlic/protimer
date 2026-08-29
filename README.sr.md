@@ -9,6 +9,7 @@
 <p align="center">
   <a href="README.md"><strong>English</strong></a> ·
   <a href="https://srdjankotarlic.github.io/protimer/"><strong>Stranica proizvoda</strong></a> ·
+  <a href="https://alternativeto.net/software/protimer/about/"><strong>AlternativeTo</strong></a> ·
   <a href="#preuzimanje"><strong>Preuzimanje</strong></a> ·
   <a href="#pokretanje-za-60-sekundi"><strong>Brzi početak</strong></a>
 </p>

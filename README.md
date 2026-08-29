@@ -24,6 +24,8 @@
   ·
   <a href="https://srdjankotarlic.github.io/protimer/"><strong>Product page</strong></a>
   ·
+  <a href="https://alternativeto.net/software/protimer/about/"><strong>AlternativeTo</strong></a>
+  ·
   <a href="#download-and-install"><strong>Download</strong></a>
   ·
   <a href="#quick-start-60-seconds"><strong>Quick start</strong></a>
