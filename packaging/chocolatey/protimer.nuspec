@@ -25,7 +25,7 @@ ProTimer runs locally and does not require an account or subscription.
 
 ## Notes
 
-This package installs the current-user Windows x64 build. Windows may show a SmartScreen warning because the upstream installer is not yet code-signed.
+This package uses the official Windows x64 portable build and creates Start Menu and Desktop shortcuts. Windows may show a SmartScreen warning because the upstream executable is not yet code-signed.
 ]]></description>
     <projectUrl>https://srdjankotarlic.github.io/protimer/</projectUrl>
     <projectSourceUrl>https://github.com/srdjankotarlic/protimer</projectSourceUrl>
@@ -35,7 +35,7 @@ This package installs the current-user Windows x64 build. Windows may show a Sma
     <licenseUrl>https://github.com/srdjankotarlic/protimer/blob/main/LICENSE</licenseUrl>
     <releaseNotes>https://github.com/srdjankotarlic/protimer/releases/tag/v2.1.0</releaseNotes>
     <iconUrl>https://srdjankotarlic.github.io/protimer/favicon.png</iconUrl>
-    <tags>protimer stage-timer countdown live-events obs broadcast presentation rundown companion foss</tags>
+    <tags>protimer stage-timer countdown live-events obs broadcast presentation rundown companion portable foss</tags>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
   </metadata>
   <files>
