@@ -32,6 +32,7 @@ if (!scoop.autoupdate?.architecture?.['64bit']?.url.includes('ProTimer-$version-
 const nuspec = fs.readFileSync(path.join(root, 'packaging', 'chocolatey', 'protimer.nuspec'), 'utf8');
 const install = fs.readFileSync(path.join(root, 'packaging', 'chocolatey', 'tools', 'chocolateyInstall.ps1'), 'utf8');
 const uninstall = fs.readFileSync(path.join(root, 'packaging', 'chocolatey', 'tools', 'chocolateyUninstall.ps1'), 'utf8');
+const verification = fs.readFileSync(path.join(root, 'packaging', 'chocolatey', 'tools', 'VERIFICATION.txt'), 'utf8');
 const skipAutoUninstall = path.join(root, 'packaging', 'chocolatey', 'tools', '.skipAutoUninstall');
 const guiMarker = path.join(root, 'packaging', 'chocolatey', 'tools', 'ProTimer.exe.gui');
 const windowsAppGuid = 'a586f9c7-78e4-598c-bbc6-2ce3633e949f';
@@ -43,6 +44,12 @@ if (!nuspec.includes('<packageSourceUrl>https://github.com/srdjankotarlic/protim
 if (!install.includes(`/v${version}/${portableName}`)) fail('Chocolatey URL does not target the current portable build');
 if (!install.includes(`$checksum64 = '${checksums.get(portableName)}'`)) {
   fail('Chocolatey checksum does not match the release checksum');
+}
+if (!verification.includes(`/v${version}/${portableName}`)) {
+  fail('Chocolatey verification URL does not target the current portable build');
+}
+if (!verification.includes(checksums.get(portableName))) {
+  fail('Chocolatey verification checksum does not match the release checksum');
 }
 if (!install.includes('Get-ChocolateyWebFile @downloadArgs')) fail('Chocolatey verified download helper is missing');
 if (!install.includes("$appPath = Join-Path $toolsDir 'ProTimer.exe'")) fail('Chocolatey portable target is missing');

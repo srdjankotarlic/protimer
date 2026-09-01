@@ -1,17 +1,17 @@
 VERIFICATION
 
-The installer is downloaded directly from the ProTimer GitHub release owned by
-the upstream developer. It is not embedded in this Chocolatey package.
+The portable executable is downloaded directly from the ProTimer GitHub release
+owned by the upstream developer. It is not embedded in this Chocolatey package.
 
-Installer:
-  https://github.com/srdjankotarlic/protimer/releases/download/v2.1.0/ProTimer-Setup-2.1.0.exe
+Portable executable:
+  https://github.com/srdjankotarlic/protimer/releases/download/v2.1.0/ProTimer-2.1.0-portable.exe
 
 SHA-256:
-  0265a9871f78c33499992e63876d2110f0912fdaae977233441ea58177c9b899
+  424486fc05b50610af1fa747e9259386d7d3ba42eb1f0ef77f4998c7a694244a
 
 The checksum can be verified with either:
 
-  Get-FileHash .\ProTimer-Setup-2.1.0.exe -Algorithm SHA256
+  Get-FileHash .\ProTimer-2.1.0-portable.exe -Algorithm SHA256
 
 or against the checksum file attached to the upstream release:
 
