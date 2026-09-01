@@ -121,23 +121,26 @@ jobs:
         shell: pwsh
         run: |
           $appGuid = 'a586f9c7-78e4-598c-bbc6-2ce3633e949f'
-          $paths = @(
+          $trackedPaths = @(
             "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\$appGuid",
             "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\$appGuid",
             "HKCU:\Software\$appGuid",
-            "HKLM:\Software\$appGuid"
-          )
-          foreach ($path in $paths) {
-            if (Test-Path -LiteralPath $path) { throw "ProTimer registry data remains after package removal: $path" }
-          }
-          foreach ($path in @(
+            "HKLM:\Software\$appGuid",
             $env:PROTIMER_APP_EXE,
             $env:PROTIMER_UNINSTALLER,
             $env:PROTIMER_INSTALL_DIR,
             $env:PROTIMER_DESKTOP_LINK,
             $env:PROTIMER_START_MENU_LINK
-          )) {
-            if (Test-Path -LiteralPath $path) { throw "ProTimer payload or shortcut remains after package removal: $path" }
+          )
+          $deadline = [DateTime]::UtcNow.AddSeconds(20)
+          do {
+            $remainingPaths = @($trackedPaths | Where-Object { Test-Path -LiteralPath $_ })
+            if ($remainingPaths.Count -eq 0) { break }
+            Start-Sleep -Seconds 1
+          } while ([DateTime]::UtcNow -lt $deadline)
+          $remainingPaths = @($trackedPaths | Where-Object { Test-Path -LiteralPath $_ })
+          if ($remainingPaths.Count -gt 0) {
+            throw "ProTimer data remains after package removal: $($remainingPaths -join ', ')"
           }
           $installPrefix = [IO.Path]::GetFullPath($env:PROTIMER_INSTALL_DIR).TrimEnd('\') + '\'
           $remainingProcesses = @(

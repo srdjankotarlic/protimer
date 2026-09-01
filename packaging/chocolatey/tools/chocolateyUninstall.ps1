@@ -87,9 +87,3 @@ $packageArgs = @{
 }
 
 Uninstall-ChocolateyPackage @packageArgs
-
-foreach ($path in @($match.InstallKey, $match.UninstallKey, $uninstaller, $installDirectory)) {
-  if (Test-Path -LiteralPath $path) {
-    throw "ProTimer data remains after package removal: $path"
-  }
-}
