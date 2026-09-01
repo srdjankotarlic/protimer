@@ -53,18 +53,58 @@ jobs:
       - name: Verify installed application registration
         shell: pwsh
         run: |
-          $roots = @(
-            'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*',
-            'HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*',
-            'HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*'
-          )
-          $entry = Get-ItemProperty $roots -ErrorAction SilentlyContinue |
-            Where-Object { $_.DisplayName -like 'ProTimer*' } |
-            Select-Object -First 1
-          if (-not $entry) { throw 'ProTimer uninstall registration was not created' }
-          if ([string]::IsNullOrWhiteSpace($entry.UninstallString)) {
-            throw 'ProTimer uninstall registration has no uninstall command'
+          $appGuid = 'a586f9c7-78e4-598c-bbc6-2ce3633e949f'
+          $version = node -p "require('./package.json').version"
+          $installKey = "HKCU:\Software\$appGuid"
+          $uninstallKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\$appGuid"
+          if (-not (Test-Path -LiteralPath $installKey)) {
+            throw 'Exact ProTimer install metadata was not created'
           }
+          if (-not (Test-Path -LiteralPath $uninstallKey)) {
+            throw 'Exact ProTimer uninstall registration was not created'
+          }
+          foreach ($machinePath in @(
+            "HKLM:\Software\$appGuid",
+            "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\$appGuid"
+          )) {
+            if (Test-Path -LiteralPath $machinePath) {
+              throw "Silent current-user installation unexpectedly wrote machine metadata: $machinePath"
+            }
+          }
+
+          $metadata = Get-ItemProperty -LiteralPath $installKey
+          $entry = Get-ItemProperty -LiteralPath $uninstallKey
+          if ($entry.DisplayName -cne "ProTimer $version") { throw "Unexpected DisplayName: $($entry.DisplayName)" }
+          if ($entry.DisplayVersion -cne $version) { throw "Unexpected DisplayVersion: $($entry.DisplayVersion)" }
+          if ([string]::IsNullOrWhiteSpace([string]$metadata.InstallLocation)) {
+            throw 'Exact ProTimer install metadata has no InstallLocation'
+          }
+          $installDir = [IO.Path]::GetFullPath([string]$metadata.InstallLocation)
+          $appExe = Join-Path $installDir 'ProTimer.exe'
+          $uninstaller = Join-Path $installDir 'Uninstall ProTimer.exe'
+          $desktopLink = Join-Path ([Environment]::GetFolderPath('Desktop')) 'ProTimer.lnk'
+          $startMenuLink = Join-Path ([Environment]::GetFolderPath('Programs')) 'ProTimer.lnk'
+          if (-not (Test-Path -LiteralPath $uninstaller -PathType Leaf)) {
+            throw "Installed ProTimer uninstaller is missing: $uninstaller"
+          }
+          if (-not (Test-Path -LiteralPath $appExe -PathType Leaf)) {
+            throw "Installed ProTimer executable is missing: $appExe"
+          }
+          $shell = New-Object -ComObject WScript.Shell
+          foreach ($shortcut in @($desktopLink, $startMenuLink)) {
+            if (-not (Test-Path -LiteralPath $shortcut -PathType Leaf)) {
+              throw "Expected ProTimer shortcut is missing: $shortcut"
+            }
+            $target = [IO.Path]::GetFullPath($shell.CreateShortcut($shortcut).TargetPath)
+            if (-not [StringComparer]::OrdinalIgnoreCase.Equals($target, $appExe)) {
+              throw "ProTimer shortcut targets an unexpected executable: $shortcut -> $target"
+            }
+          }
+          "PROTIMER_INSTALL_DIR=$installDir" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "PROTIMER_UNINSTALLER=$uninstaller" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "PROTIMER_APP_EXE=$appExe" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "PROTIMER_DESKTOP_LINK=$desktopLink" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "PROTIMER_START_MENU_LINK=$startMenuLink" | Out-File -FilePath $env:GITHUB_ENV -Append
           Write-Output "Installed $($entry.DisplayName) $($entry.DisplayVersion)"
       - name: Exercise upgrade path
         shell: pwsh
@@ -80,15 +120,38 @@ jobs:
       - name: Verify application removal
         shell: pwsh
         run: |
-          $roots = @(
-            'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*',
-            'HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*',
-            'HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*'
+          $appGuid = 'a586f9c7-78e4-598c-bbc6-2ce3633e949f'
+          $paths = @(
+            "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\$appGuid",
+            "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\$appGuid",
+            "HKCU:\Software\$appGuid",
+            "HKLM:\Software\$appGuid"
           )
-          $remaining = Get-ItemProperty $roots -ErrorAction SilentlyContinue |
-            Where-Object { $_.DisplayName -like 'ProTimer*' } |
-            Select-Object -First 1
-          if ($remaining) { throw 'ProTimer uninstall registration remains after package removal' }
+          foreach ($path in $paths) {
+            if (Test-Path -LiteralPath $path) { throw "ProTimer registry data remains after package removal: $path" }
+          }
+          foreach ($path in @(
+            $env:PROTIMER_APP_EXE,
+            $env:PROTIMER_UNINSTALLER,
+            $env:PROTIMER_INSTALL_DIR,
+            $env:PROTIMER_DESKTOP_LINK,
+            $env:PROTIMER_START_MENU_LINK
+          )) {
+            if (Test-Path -LiteralPath $path) { throw "ProTimer payload or shortcut remains after package removal: $path" }
+          }
+          $installPrefix = [IO.Path]::GetFullPath($env:PROTIMER_INSTALL_DIR).TrimEnd('\') + '\'
+          $remainingProcesses = @(
+            Get-CimInstance Win32_Process | Where-Object {
+              $_.ExecutablePath -and
+              [IO.Path]::GetFullPath($_.ExecutablePath).StartsWith(
+                $installPrefix,
+                [StringComparison]::OrdinalIgnoreCase
+              )
+            }
+          )
+          if ($remainingProcesses.Count -gt 0) {
+            throw 'A process from the exact ProTimer installation directory remains running'
+          }
           Write-Output 'CHOCOLATEY_WINDOWS_OK'
       - name: Upload validated package
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

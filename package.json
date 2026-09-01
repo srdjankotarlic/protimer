@@ -106,6 +106,7 @@
       ]
     },
     "nsis": {
+      "guid": "a586f9c7-78e4-598c-bbc6-2ce3633e949f",
       "artifactName": "ProTimer-Setup-${version}.exe",
       "oneClick": false,
       "perMachine": false,
