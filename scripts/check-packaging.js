@@ -31,6 +31,9 @@ if (!scoop.autoupdate?.architecture?.['64bit']?.url.includes('ProTimer-$version-
 
 const nuspec = fs.readFileSync(path.join(root, 'packaging', 'chocolatey', 'protimer.nuspec'), 'utf8');
 const install = fs.readFileSync(path.join(root, 'packaging', 'chocolatey', 'tools', 'chocolateyInstall.ps1'), 'utf8');
+const uninstall = fs.readFileSync(path.join(root, 'packaging', 'chocolatey', 'tools', 'chocolateyUninstall.ps1'), 'utf8');
+const skipAutoUninstall = path.join(root, 'packaging', 'chocolatey', 'tools', '.skipAutoUninstall');
+const windowsAppGuid = 'a586f9c7-78e4-598c-bbc6-2ce3633e949f';
 if (!nuspec.includes('<id>protimer</id>')) fail('Chocolatey package id is missing');
 if (!nuspec.includes(`<version>${version}</version>`)) fail('Chocolatey version does not match package.json');
 if (!nuspec.includes('<packageSourceUrl>https://github.com/srdjankotarlic/protimer/tree/main/packaging/chocolatey</packageSourceUrl>')) {
@@ -42,5 +45,13 @@ if (!install.includes(`checksum64     = '${checksums.get(setupName)}'`)) {
   fail('Chocolatey checksum does not match the release checksum');
 }
 if (!install.includes("silentArgs     = '/S'")) fail('Chocolatey silent install argument is missing');
+if (!install.includes(`softwareName   = 'ProTimer ${version}'`)) fail('Chocolatey softwareName must be exact');
+if (!install.includes('$maxAttempts = 3')) fail('Chocolatey transient NSIS retry is missing');
+if (!fs.existsSync(skipAutoUninstall)) fail('Chocolatey automatic uninstaller must be disabled');
+if (pkg.build?.nsis?.guid !== windowsAppGuid) fail('NSIS application GUID changed');
+if (!uninstall.includes(`$appGuid = '${windowsAppGuid}'`)) {
+  fail('Chocolatey uninstall script is not bound to the NSIS application GUID');
+}
+if (!uninstall.includes("$productName = 'ProTimer'")) fail('Chocolatey uninstall display name must be exact');
 
 console.log(`PACKAGING_OK v${version}`);
