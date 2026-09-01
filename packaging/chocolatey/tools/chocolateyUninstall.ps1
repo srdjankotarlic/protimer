@@ -87,3 +87,25 @@ $packageArgs = @{
 }
 
 Uninstall-ChocolateyPackage @packageArgs
+
+$cleanupDeadline = [DateTime]::UtcNow.AddSeconds(20)
+do {
+  $remainingItems = if (Test-Path -LiteralPath $installDirectory -PathType Container) {
+    @(Get-ChildItem -LiteralPath $installDirectory -Force -Recurse)
+  } else {
+    @()
+  }
+  if ($remainingItems.Count -eq 0) {
+    break
+  }
+  Start-Sleep -Seconds 1
+} while ([DateTime]::UtcNow -lt $cleanupDeadline)
+
+if ($remainingItems.Count -gt 0) {
+  $sample = @($remainingItems | Select-Object -First 10 -ExpandProperty FullName)
+  throw "ProTimer payload remains after package removal: $($sample -join ', ')"
+}
+
+if (Test-Path -LiteralPath $installDirectory -PathType Container) {
+  Remove-Item -LiteralPath $installDirectory -Force
+}
