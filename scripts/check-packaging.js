@@ -32,26 +32,33 @@ if (!scoop.autoupdate?.architecture?.['64bit']?.url.includes('ProTimer-$version-
 const nuspec = fs.readFileSync(path.join(root, 'packaging', 'chocolatey', 'protimer.nuspec'), 'utf8');
 const install = fs.readFileSync(path.join(root, 'packaging', 'chocolatey', 'tools', 'chocolateyInstall.ps1'), 'utf8');
 const uninstall = fs.readFileSync(path.join(root, 'packaging', 'chocolatey', 'tools', 'chocolateyUninstall.ps1'), 'utf8');
+const verification = fs.readFileSync(path.join(root, 'packaging', 'chocolatey', 'tools', 'VERIFICATION.txt'), 'utf8');
 const skipAutoUninstall = path.join(root, 'packaging', 'chocolatey', 'tools', '.skipAutoUninstall');
+const guiMarker = path.join(root, 'packaging', 'chocolatey', 'tools', 'ProTimer.exe.gui');
 const windowsAppGuid = 'a586f9c7-78e4-598c-bbc6-2ce3633e949f';
 if (!nuspec.includes('<id>protimer</id>')) fail('Chocolatey package id is missing');
 if (!nuspec.includes(`<version>${version}</version>`)) fail('Chocolatey version does not match package.json');
 if (!nuspec.includes('<packageSourceUrl>https://github.com/srdjankotarlic/protimer/tree/main/packaging/chocolatey</packageSourceUrl>')) {
   fail('Chocolatey packageSourceUrl is missing');
 }
-const setupName = `ProTimer-Setup-${version}.exe`;
-if (!install.includes(`/v${version}/${setupName}`)) fail('Chocolatey URL does not target the current installer');
-if (!install.includes(`checksum64     = '${checksums.get(setupName)}'`)) {
+if (!install.includes(`/v${version}/${portableName}`)) fail('Chocolatey URL does not target the current portable build');
+if (!install.includes(`$checksum64 = '${checksums.get(portableName)}'`)) {
   fail('Chocolatey checksum does not match the release checksum');
 }
-if (!install.includes("silentArgs     = '/S'")) fail('Chocolatey silent install argument is missing');
-if (!install.includes(`softwareName   = 'ProTimer ${version}'`)) fail('Chocolatey softwareName must be exact');
-if (!install.includes('$maxAttempts = 3')) fail('Chocolatey transient NSIS retry is missing');
-if (!fs.existsSync(skipAutoUninstall)) fail('Chocolatey automatic uninstaller must be disabled');
-if (pkg.build?.nsis?.guid !== windowsAppGuid) fail('NSIS application GUID changed');
-if (!uninstall.includes(`$appGuid = '${windowsAppGuid}'`)) {
-  fail('Chocolatey uninstall script is not bound to the NSIS application GUID');
+if (!verification.includes(`/v${version}/${portableName}`)) {
+  fail('Chocolatey verification URL does not target the current portable build');
 }
-if (!uninstall.includes("$productName = 'ProTimer'")) fail('Chocolatey uninstall display name must be exact');
+if (!verification.includes(checksums.get(portableName))) {
+  fail('Chocolatey verification checksum does not match the release checksum');
+}
+if (!install.includes('Get-ChocolateyWebFile @downloadArgs')) fail('Chocolatey verified download helper is missing');
+if (!install.includes("$appPath = Join-Path $toolsDir 'ProTimer.exe'")) fail('Chocolatey portable target is missing');
+if (!install.includes('Install-ChocolateyShortcut')) fail('Chocolatey shortcut creation is missing');
+if (!fs.existsSync(skipAutoUninstall)) fail('Chocolatey automatic uninstaller must be disabled');
+if (!fs.existsSync(guiMarker)) fail('Chocolatey GUI shim marker is missing');
+if (pkg.build?.nsis?.guid !== windowsAppGuid) fail('NSIS application GUID changed');
+if (!uninstall.includes('[StringComparer]::OrdinalIgnoreCase.Equals($target, $appPath)')) {
+  fail('Chocolatey uninstall must only remove package-owned shortcuts');
+}
 
 console.log(`PACKAGING_OK v${version}`);

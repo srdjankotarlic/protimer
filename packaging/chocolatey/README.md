@@ -6,9 +6,9 @@ Chocolatey Community Repository. It is not published yet.
 ## Automated Windows validation
 
 The repository's `Chocolatey package` workflow runs on a clean GitHub-hosted
-Windows runner. It packs the package, performs a silent install, checks the
-Windows uninstall registration, exercises the upgrade path, uninstalls the app
-and confirms that the registration is removed.
+Windows runner. It packs the package, downloads the checksum-verified official
+portable build, checks its shim and shortcuts, smoke-launches the packaged app,
+exercises the upgrade path, uninstalls it and confirms complete removal.
 
 Before publishing, run the workflow successfully for the exact release and also
 perform one manual launch check for the controller, audience output, local phone
@@ -23,12 +23,13 @@ choco pack .\protimer.nuspec
 choco install protimer --source . --version 2.1.0 -y --debug --verbose
 choco upgrade protimer --source . -y --debug --verbose
 choco uninstall protimer -y --debug --verbose
-choco install protimer --source . --version 2.1.0 -y --force --install-arguments='/S'
+choco install protimer --source . --version 2.1.0 -y --force
 ```
 
 After installation, launch ProTimer and verify the controller, audience output,
 local phone links and Windows Firewall prompt. Confirm that uninstall removes the
-application and Start Menu/Desktop shortcuts without leaving a running process.
+portable application, command shim and Start Menu/Desktop shortcuts without
+leaving a running process.
 
 Publishing also requires a Chocolatey Community account and API key:
 

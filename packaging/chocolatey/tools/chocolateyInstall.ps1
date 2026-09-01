@@ -1,30 +1,27 @@
 $ErrorActionPreference = 'Stop'
 
-$packageArgs = @{
-  packageName    = $env:ChocolateyPackageName
-  fileType       = 'exe'
-  url64bit       = 'https://github.com/srdjankotarlic/protimer/releases/download/v2.1.0/ProTimer-Setup-2.1.0.exe'
-  checksum64     = '0265a9871f78c33499992e63876d2110f0912fdaae977233441ea58177c9b899'
+$packageName = $env:ChocolateyPackageName
+$toolsDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
+$appPath = Join-Path $toolsDir 'ProTimer.exe'
+$url64bit = 'https://github.com/srdjankotarlic/protimer/releases/download/v2.1.0/ProTimer-2.1.0-portable.exe'
+$checksum64 = '424486fc05b50610af1fa747e9259386d7d3ba42eb1f0ef77f4998c7a694244a'
+
+$downloadArgs = @{
+  packageName    = $packageName
+  fileFullPath   = $appPath
+  url64bit       = $url64bit
+  checksum64     = $checksum64
   checksumType64 = 'sha256'
-  softwareName   = 'ProTimer 2.1.0'
-  silentArgs     = '/S'
-  validExitCodes = @(0)
 }
 
-# Assisted electron-builder NSIS installers can sporadically terminate with
-# 0xC0000005 during a fresh per-user install. Retry only that exact transient
-# failure; every other installer error remains fatal.
-$maxAttempts = 3
-for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
-  try {
-    Install-ChocolateyPackage @packageArgs
-    break
-  } catch {
-    $isTransientAccessViolation = $_.Exception.Message -match '(-1073741819|0xC0000005)'
-    if (-not $isTransientAccessViolation -or $attempt -eq $maxAttempts) {
-      throw
-    }
-    Write-Warning "ProTimer installer hit a transient access violation (attempt $attempt of $maxAttempts). Retrying."
-    Start-Sleep -Seconds 5
-  }
+Get-ChocolateyWebFile @downloadArgs
+
+$desktopLink = Join-Path ([Environment]::GetFolderPath('Desktop')) 'ProTimer.lnk'
+$startMenuLink = Join-Path ([Environment]::GetFolderPath('Programs')) 'ProTimer.lnk'
+foreach ($shortcut in @($desktopLink, $startMenuLink)) {
+  Install-ChocolateyShortcut `
+    -ShortcutFilePath $shortcut `
+    -TargetPath $appPath `
+    -WorkingDirectory $toolsDir `
+    -Description 'Free stage timer for live events and OBS'
 }
