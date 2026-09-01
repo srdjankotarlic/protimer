@@ -10,6 +10,7 @@
   <a href="README.md"><strong>English</strong></a> ·
   <a href="https://srdjankotarlic.github.io/protimer/"><strong>Stranica proizvoda</strong></a> ·
   <a href="https://alternativeto.net/software/protimer/about/"><strong>AlternativeTo</strong></a> ·
+  <a href="https://github.com/srdjankotarlic/protimer/discussions"><strong>Zajednica</strong></a> ·
   <a href="#preuzimanje"><strong>Preuzimanje</strong></a> ·
   <a href="#pokretanje-za-60-sekundi"><strong>Brzi početak</strong></a>
 </p>
@@ -49,6 +50,6 @@ Svaki instalacioni fajl možeš da proveriš pomoću [ProTimer 2.1.0 SHA-256 che
 
 ![ProTimer ekran sa odbrojavanjem](docs/demo.gif)
 
-Kompletno uputstvo je u [engleskom README vodiču](README.md#how-to-use). Za pomoć koristi [Support](SUPPORT.md) ili otvori precizan [GitHub issue](https://github.com/srdjankotarlic/protimer/issues/new/choose).
+Kompletno uputstvo je u [engleskom README vodiču](README.md#how-to-use). Za pomoć koristi [Support](SUPPORT.md), postavi pitanje u [GitHub Discussions](https://github.com/srdjankotarlic/protimer/discussions) ili otvori precizan [GitHub issue](https://github.com/srdjankotarlic/protimer/issues/new/choose).
 
 ProTimer je otvorenog koda pod [MIT licencom](LICENSE).

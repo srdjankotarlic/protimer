@@ -71,4 +71,14 @@
       <image:caption>ProTimer Companion and Stream Deck setup guide</image:caption>
     </image:image>
   </url>
+  <url>
+    <loc>https://srdjankotarlic.github.io/protimer/press/</loc>
+    <lastmod>2026-09-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+    <image:image>
+      <image:loc>https://srdjankotarlic.github.io/protimer/og-banner.jpg</image:loc>
+      <image:caption>ProTimer press image for the free stage timer</image:caption>
+    </image:image>
+  </url>
 </urlset>

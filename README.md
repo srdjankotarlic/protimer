@@ -32,6 +32,10 @@
   ·
   <a href="SUPPORT.md"><strong>Support</strong></a>
   ·
+  <a href="https://github.com/srdjankotarlic/protimer/discussions"><strong>Community</strong></a>
+  ·
+  <a href="https://srdjankotarlic.github.io/protimer/press/"><strong>Press kit</strong></a>
+  ·
   <a href="CHANGELOG.md"><strong>Changelog</strong></a>
 </p>
 
