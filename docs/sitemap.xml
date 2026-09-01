@@ -3,7 +3,7 @@
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://srdjankotarlic.github.io/protimer/</loc>
-    <lastmod>2026-08-29</lastmod>
+    <lastmod>2026-09-01</lastmod>
     <image:image>
       <image:loc>https://srdjankotarlic.github.io/protimer/screenshot-control.png</image:loc>
     </image:image>
@@ -37,7 +37,7 @@
   </url>
   <url>
     <loc>https://srdjankotarlic.github.io/protimer/guides/bitfocus-companion-stage-timer.html</loc>
-    <lastmod>2026-08-28</lastmod>
+    <lastmod>2026-09-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -46,5 +46,29 @@
     <lastmod>2026-08-28</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://srdjankotarlic.github.io/protimer/free-stage-timer/</loc>
+    <lastmod>2026-09-01</lastmod>
+    <image:image>
+      <image:loc>https://srdjankotarlic.github.io/protimer/screenshot-control.png</image:loc>
+      <image:caption>ProTimer free stage timer control for live events</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://srdjankotarlic.github.io/protimer/obs-stage-timer/</loc>
+    <lastmod>2026-09-01</lastmod>
+    <image:image>
+      <image:loc>https://srdjankotarlic.github.io/protimer/screenshot-output.png</image:loc>
+      <image:caption>ProTimer countdown output for an OBS Browser Source</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://srdjankotarlic.github.io/protimer/companion-stage-timer/</loc>
+    <lastmod>2026-09-01</lastmod>
+    <image:image>
+      <image:loc>https://srdjankotarlic.github.io/protimer/screenshot-backstage.png</image:loc>
+      <image:caption>ProTimer Companion and Stream Deck setup guide</image:caption>
+    </image:image>
   </url>
 </urlset>

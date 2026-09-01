@@ -1,0 +1,53 @@
+*{box-sizing:border-box}
+html,body{width:1270px;height:760px;margin:0;overflow:hidden;background:#070b0e}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:#f4f7f9}
+.canvas{position:relative;width:1270px;height:760px;overflow:hidden;background:#070b0e url("protimer-event-background.png") center/cover no-repeat}
+.canvas::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,rgba(5,9,11,.9),rgba(6,11,16,.58) 55%,rgba(5,9,11,.82));pointer-events:none}
+.content{position:relative;z-index:1;width:100%;height:100%;padding:58px 64px}
+.brand{display:flex;align-items:center;gap:14px;font-size:23px;font-weight:900;letter-spacing:4.5px}
+.brand img{width:48px;height:48px;border-radius:11px;box-shadow:0 10px 26px rgba(0,0,0,.4)}
+.green{color:#45d368}
+.badge{display:inline-flex;padding:8px 13px;border:1px solid rgba(69,211,104,.55);border-radius:999px;background:rgba(24,109,50,.24);color:#91eea7;font-size:14px;font-weight:850;letter-spacing:1.4px;text-transform:uppercase}
+h1{margin:0;font-size:70px;line-height:1;letter-spacing:-2.6px}
+.sub{margin:15px 0 0;color:#c8d1d7;font-size:25px;font-weight:620;line-height:1.35}
+.pills{display:flex;gap:10px;flex-wrap:wrap}
+.pill{padding:9px 13px;border:1px solid rgba(255,255,255,.15);border-radius:9px;background:rgba(19,27,34,.8);color:#dce4e9;font-size:15px;font-weight:750}
+.pill.primary{border-color:rgba(69,211,104,.35);background:rgba(27,99,49,.85);color:#ddffe5}
+.url{color:#aeb9bf;font-size:17px;font-weight:650;letter-spacing:.1px}
+.screen{overflow:hidden;border:1px solid rgba(255,255,255,.18);border-radius:20px;background:#000;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+.screen img{display:block;width:100%;height:100%;object-fit:cover;object-position:center}
+.label{color:#8eefa6;font-size:13px;font-weight:850;letter-spacing:1.6px;text-transform:uppercase}
+.dot-list{display:grid;gap:14px;margin:0;padding:0;list-style:none;font-size:20px;font-weight:650}
+.dot-list li{display:flex;align-items:center;gap:13px}
+.dot-list li::before{content:"";width:9px;height:9px;border-radius:50%;background:#45d368;box-shadow:0 0 16px rgba(69,211,104,.75);flex:none}
+.hero-layout{display:grid;grid-template-columns:540px 1fr;gap:54px;height:100%;align-items:center}
+.hero-copy{display:flex;height:100%;padding-top:2px;flex-direction:column}
+.hero-copy .badge{align-self:flex-start;margin-top:74px}
+.hero-copy h1{margin-top:17px;font-size:76px}
+.hero-copy .sub{font-size:26px}
+.hero-copy .pills{margin-top:26px}
+.hero-copy .url{margin-top:auto;padding-bottom:4px}
+.hero-visual{display:flex;flex-direction:column;align-items:flex-end;justify-content:center}
+.hero-visual .screen{width:556px;height:394px;transform:rotate(.7deg)}
+.hero-visual .screen img{object-position:50% 49%}
+.hero-visual .caption{width:556px;margin-top:18px;color:#dce4e8;font-size:18px;font-weight:720;text-align:center}
+.topline{display:flex;align-items:center;justify-content:space-between}
+.slide-title{margin-top:34px;max-width:1040px;font-size:58px}
+.control-layout{display:grid;grid-template-columns:300px 1fr;gap:40px;margin-top:31px;align-items:center}
+.control-copy .dot-list{font-size:18px}
+.control-copy .url{display:block;margin-top:36px;font-size:15px}
+.control-layout .screen{width:822px;height:520px}
+.control-layout .screen img{object-fit:cover;object-position:top center}
+.screens-layout{display:grid;grid-template-columns:1.08fr .92fr;gap:22px;margin-top:22px}
+.visual-card{padding:15px;border:1px solid rgba(255,255,255,.12);border-radius:20px;background:rgba(12,17,22,.82)}
+.visual-card .label{display:block;margin:2px 0 12px 3px}
+.visual-card .screen{width:100%;height:318px;border-radius:14px}
+.visual-card .screen img{object-fit:contain;object-position:center}
+.screens-footer{display:flex;margin-top:18px;align-items:center;justify-content:space-between}
+.screens-footer .pills{max-width:760px}
+.benefits{display:grid;grid-template-columns:490px 1fr;gap:50px;margin-top:40px;align-items:center}
+.benefit-copy h1{font-size:68px}
+.benefit-copy .dot-list{margin-top:34px}
+.benefit-copy .pills{margin-top:34px}
+.benefits .screen{width:620px;height:480px}
+.benefits .screen img{object-fit:cover;object-position:top center}

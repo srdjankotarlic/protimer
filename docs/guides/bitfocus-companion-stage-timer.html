@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>How to Control a Stage Timer With Bitfocus Companion</title>
-  <meta name="description" content="Control ProTimer from Bitfocus Companion and Stream Deck with actions, live timer variables, running and blackout feedback, or Generic HTTP commands." />
+  <title>Import the ProTimer Module Package in Companion 4</title>
+  <meta name="description" content="Import the packaged ProTimer module in Companion 4, connect it securely and build a practical first Stream Deck page with live feedback." />
   <link rel="canonical" href="https://srdjankotarlic.github.io/protimer/guides/bitfocus-companion-stage-timer.html" />
   <link rel="icon" type="image/png" href="../favicon.png" />
   <link rel="stylesheet" href="guide.css" />
@@ -13,7 +13,7 @@
 <header class="site-header"><div class="wrap"><img src="../favicon.png" alt="" /><a class="brand" href="../">ProTimer</a><nav><a href="./">Guides</a><a href="../#features">Features</a><a href="https://github.com/srdjankotarlic/protimer">GitHub</a></nav></div></header>
 <main><article class="wrap">
   <div class="eyebrow">Stream Deck and show control</div>
-  <h1>Control ProTimer with Bitfocus Companion</h1>
+  <h1>Import the ProTimer module package in Companion 4</h1>
   <p class="lede">The dedicated ProTimer module gives Companion named actions, live status, timer variables, and starter presets. Generic HTTP remains a useful zero-install fallback.</p>
   <div class="meta"><span>Bitfocus Companion</span><span>Stream Deck</span><span>Live feedback</span></div>
   <h2>Get the connection details</h2>
@@ -21,7 +21,8 @@
   <div class="callout"><strong>Session token:</strong> the token changes whenever ProTimer restarts. Update the Companion connection after an app restart or use the newly shown API URL.</div>
   <h2>Dedicated module</h2>
   <ol><li><a href="https://github.com/srdjankotarlic/companion-module-protimer/releases/download/v1.1.0/protimer-1.1.0.tgz">Download the ProTimer module package</a>.</li><li>In Companion 4, open <strong>Modules → Import module package</strong>.</li><li>Select the downloaded <code>protimer-1.1.0.tgz</code> file, add a ProTimer connection, then enter the host, port, and token shown by ProTimer.</li></ol>
-  <p>This packaged install works while the module waits for acceptance into the official Companion registry. Follow <a href="https://github.com/bitfocus/companion-module-requests/issues/2110">registry request #2110</a> for review status; the <a href="https://github.com/srdjankotarlic/companion-module-protimer">source repository</a> remains available for development and review.</p>
+  <p>This packaged install works now. The official Bitfocus repository has been requested, while catalogue submission remains pending. Follow <a href="https://github.com/bitfocus/companion-module-requests/issues/2110">request #2110</a> for status; the <a href="https://github.com/srdjankotarlic/companion-module-protimer">source repository</a> remains available for development and review.</p>
+  <p>For current integration status and the Generic HTTP option, see the <a href="../companion-stage-timer/">ProTimer Companion overview</a>.</p>
   <p>Core actions include Start/Pause, Reset, GO next cue, Blackout, time adjustment, set duration, mode, on-screen text, and speaker messages. Variables and feedback expose the live timer and connection state.</p>
   <h2>Suggested first page</h2>
   <table><thead><tr><th>Button</th><th>Purpose</th></tr></thead><tbody>

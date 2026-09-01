@@ -6,8 +6,8 @@
 <meta name="google-site-verification" content="8XQrjWTrPu_H5qRAX91drrvps-Gkw1Ywux-kTV5GHx0">
 
 <!-- ===== SEO ===== -->
-<title>Free Stage Timer for Live Events &amp; OBS | ProTimer</title>
-<meta name="description" content="Download ProTimer, a free stage timer and speaker countdown for live events, conferences and OBS. Mac and Windows, phone remote, rundown, no account.">
+<title>ProTimer Stage Timer App for Live Events | Mac &amp; Windows</title>
+<meta name="description" content="Download ProTimer for Mac or Windows: a free, open-source stage timer app with audience output, OBS overlay, phone viewing and a simple rundown.">
 <link rel="canonical" href="https://srdjankotarlic.github.io/protimer/">
 <link rel="alternate" hreflang="en" href="https://srdjankotarlic.github.io/protimer/">
 <link rel="alternate" hreflang="x-default" href="https://srdjankotarlic.github.io/protimer/">
@@ -22,8 +22,8 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="ProTimer">
 <meta property="og:locale" content="en_US">
-<meta property="og:title" content="ProTimer | Free Stage Timer for Live Events &amp; OBS">
-<meta property="og:description" content="A clear speaker countdown for projectors, confidence monitors, OBS and phones. Free, open source, no account, for Mac and Windows.">
+<meta property="og:title" content="ProTimer Stage Timer App for Live Events">
+<meta property="og:description" content="One free app for speaker countdowns, projectors, confidence monitors, OBS, phones and event rundowns on Mac and Windows.">
 <meta property="og:url" content="https://srdjankotarlic.github.io/protimer/">
 <meta property="og:image" content="https://srdjankotarlic.github.io/protimer/og-banner.jpg">
 <meta property="og:image:secure_url" content="https://srdjankotarlic.github.io/protimer/og-banner.jpg">
@@ -32,8 +32,8 @@
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="ProTimer stage timer and live event rundown">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="ProTimer | Free Stage Timer for Live Events &amp; OBS">
-<meta name="twitter:description" content="Free speaker countdown, OBS timer overlay, phone remote and simple rundown for Mac and Windows.">
+<meta name="twitter:title" content="ProTimer Stage Timer App for Live Events">
+<meta name="twitter:description" content="A free speaker countdown, audience screen, OBS overlay, phone viewer and simple rundown for Mac and Windows.">
 <meta name="twitter:image" content="https://srdjankotarlic.github.io/protimer/og-banner.jpg">
 
 <link rel="icon" type="image/png" sizes="192x192" href="favicon.png">
@@ -48,10 +48,10 @@
       "@type": "WebPage",
       "@id": "https://srdjankotarlic.github.io/protimer/#webpage",
       "url": "https://srdjankotarlic.github.io/protimer/",
-      "name": "Free Stage Timer for Live Events and OBS | ProTimer",
-      "description": "Download ProTimer, a free stage timer and speaker countdown for live events, conferences and OBS, with phone remote and rundown.",
+      "name": "ProTimer Stage Timer App for Live Events | Mac and Windows",
+      "description": "Download ProTimer for Mac or Windows: a free, open-source stage timer app with audience output, OBS overlay, phone viewing and a simple rundown.",
       "inLanguage": "en",
-      "dateModified": "2026-08-29",
+      "dateModified": "2026-09-01",
       "primaryImageOfPage": { "@id": "https://srdjankotarlic.github.io/protimer/#primaryimage" },
       "author": { "@id": "https://srdjankotarlic.github.io/protimer/#author" }
     },
@@ -73,6 +73,28 @@
         "https://github.com/srdjankotarlic",
         "https://www.linkedin.com/in/srdjan-kotarlic-82904012b/"
       ]
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://srdjankotarlic.github.io/protimer/#software",
+      "name": "ProTimer",
+      "url": "https://srdjankotarlic.github.io/protimer/",
+      "applicationCategory": "UtilitiesApplication",
+      "applicationSubCategory": "Stage timer",
+      "operatingSystem": "Windows 10, Windows 11, macOS (Apple Silicon)",
+      "softwareVersion": "2.1.0",
+      "description": "Free, open-source stage timer and speaker countdown for live events, OBS, projectors and phones.",
+      "downloadUrl": [
+        "https://github.com/srdjankotarlic/protimer/releases/download/v2.1.0/ProTimer-Setup-2.1.0.exe",
+        "https://github.com/srdjankotarlic/protimer/releases/download/v2.1.0/ProTimer-2.1.0-arm64.dmg"
+      ],
+      "license": "https://github.com/srdjankotarlic/protimer/blob/main/LICENSE",
+      "author": { "@id": "https://srdjankotarlic.github.io/protimer/#author" },
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      }
     }
   ]
 }
@@ -152,6 +174,17 @@
     font-size:11px; font-weight:800; letter-spacing:.8px; text-transform:uppercase;}
   .card h3{font-size:17px; margin:10px 0 6px;}
   .card p{color:var(--dim); font-size:14.5px;}
+  .card p a,.guide-card a{font-weight:750;}
+
+  .guide-grid{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px;}
+  .guide-card{display:flex; flex-direction:column; min-height:220px; padding:22px; border:1px solid var(--border);
+    border-radius:16px; color:var(--text); background:linear-gradient(145deg,#141922,#101318);}
+  .guide-card:hover{border-color:rgba(63,185,80,.62); transform:translateY(-2px);}
+  .guide-card .eyebrow{color:#79d88a; font-size:12px; font-weight:850; letter-spacing:.9px; text-transform:uppercase;}
+  .guide-card h3{margin:12px 0 8px; font-size:20px;}
+  .guide-card p{color:var(--dim); font-size:14.5px;}
+  .guide-card .guide-cta{margin-top:auto; padding-top:18px; color:#79d88a; font-weight:800;}
+  @media(max-width:760px){.guide-grid{grid-template-columns:1fr;}}
 
   .trust-strip{display:flex; align-items:center; justify-content:center; gap:10px 22px; flex-wrap:wrap;
     margin-top:18px; padding:16px 20px; border:1px solid rgba(63,185,80,.28); border-radius:14px;
@@ -267,8 +300,8 @@
 <main id="main-content">
   <div class="wrap hero">
     <div class="version-pill">PROTIMER 2.1.0 · LATEST RELEASE</div>
-    <h1><b>Free stage timer</b> for live events and OBS</h1>
-    <p class="sub">A clear speaker countdown for conferences, presentations, churches, theatres and streams. Send it to a projector, confidence monitor, OBS or phone.</p>
+    <h1><b>ProTimer</b> stage timer for live events and OBS</h1>
+    <p class="sub">One free app for a clear speaker countdown, audience output, OBS overlay, phone viewing and a simple run of show.</p>
     <div class="cta">
       <a class="btn primary" href="https://github.com/srdjankotarlic/protimer/releases/download/v2.1.0/ProTimer-Setup-2.1.0.exe">Windows Setup · recommended</a>
       <a class="btn primary" href="https://github.com/srdjankotarlic/protimer/releases/download/v2.1.0/ProTimer-2.1.0-arm64.dmg">macOS DMG · Apple Silicon</a>
@@ -311,15 +344,27 @@
       <p class="lead">Built from real live-production work — not a generic countdown app.</p>
       <div class="grid">
         <article class="card"><div class="ic">Timer</div><h3>Countdown, stopwatch &amp; clock</h3><p>Plus “count down to an exact time”, color warnings (white → yellow → red) and overtime with a flash at zero.</p></article>
-        <article class="card"><div class="ic">OBS</div><h3>OBS overlay · NDI via OBS</h3><p>A transparent output you add as an OBS Browser Source — a clean countdown over your video, with NDI routing available through OBS.</p></article>
+        <article class="card"><div class="ic">OBS</div><h3>OBS overlay · NDI via OBS</h3><p>A transparent Browser Source countdown over your video, with NDI routing available through OBS. <a href="obs-stage-timer/">Open the OBS guide →</a></p></article>
         <article class="card"><div class="ic">Phone</div><h3>Phone remote &amp; QR</h3><p>Run the timer over Wi-Fi, put a scannable viewer QR on the stage output, or share a clock-synchronised public link without phone-clock drift.</p></article>
         <article class="card"><div class="ic">Screen</div><h3>Send to any screen</h3><p>Move and resize the clean frameless output by mouse, push it fullscreen from Control, or place it in an exact grid cell.</p></article>
-        <article class="card"><div class="ic">Control</div><h3>Stream Deck · OSC · API</h3><p>Use Bitfocus Companion, the HTTP GET API or OSC input from QLab and TouchOSC. Import the packaged Companion module for named actions, presets, variables, and live feedback.</p></article>
+        <article class="card"><div class="ic">Control</div><h3>Stream Deck · OSC · API</h3><p>Import the packaged Companion module, build Generic HTTP buttons, or use OSC from QLab and TouchOSC. <a href="companion-stage-timer/">Open the Companion guide →</a></p></article>
         <article class="card"><div class="ic">Rundown</div><h3>Rundown &amp; backstage view</h3><p>A run of show with NOW / NEXT, planned times and an over/under “are we on time?” indicator.</p></article>
       </div>
       <ul class="trust-strip" aria-label="ProTimer trust points">
         <li><strong>Completely free</strong></li><li>Open source</li><li>No account</li><li>No watermark</li><li>English + Serbian</li><li>Low latency</li>
       </ul>
+    </div>
+  </section>
+
+  <section id="solutions">
+    <div class="wrap">
+      <h2>Choose the setup you need</h2>
+      <p class="lead">Focused guides for downloading ProTimer, adding it to OBS and controlling it from Bitfocus Companion.</p>
+      <div class="guide-grid">
+        <a class="guide-card" href="free-stage-timer/"><span class="eyebrow">Download</span><h3>Free stage timer</h3><p>See what is included, which installer to choose and how to put a speaker countdown on a stage screen in about a minute.</p><span class="guide-cta">Open the free timer guide →</span></a>
+        <a class="guide-card" href="obs-stage-timer/"><span class="eyebrow">Streaming</span><h3>OBS stage timer</h3><p>Add the view-only timer as a Browser Source, make the background transparent and keep control off the broadcast canvas.</p><span class="guide-cta">Open the OBS guide →</span></a>
+        <a class="guide-card" href="companion-stage-timer/"><span class="eyebrow">Stream Deck</span><h3>Companion stage timer</h3><p>Import the packaged module now for actions and live feedback, or build Start, Reset, GO and time-adjust buttons with Generic HTTP.</p><span class="guide-cta">Open the Companion guide →</span></a>
+      </div>
     </div>
   </section>
 
@@ -423,6 +468,9 @@
     <a href="https://www.linkedin.com/in/srdjan-kotarlic-82904012b/" rel="me">LinkedIn</a> ·
     <a href="https://github.com/srdjankotarlic/protimer">GitHub</a> ·
     <a href="https://alternativeto.net/software/protimer/about/">AlternativeTo</a> ·
+    <a href="free-stage-timer/">Free stage timer</a> ·
+    <a href="obs-stage-timer/">OBS guide</a> ·
+    <a href="companion-stage-timer/">Companion guide</a> ·
     <a href="https://github.com/srdjankotarlic/protimer/blob/main/README.sr.md" lang="sr">Srpski</a> ·
     <a href="https://github.com/srdjankotarlic/protimer/blob/main/SUPPORT.md">Support</a> ·
     <a href="https://github.com/srdjankotarlic/protimer/blob/main/LICENSE">MIT License</a><br><br>
