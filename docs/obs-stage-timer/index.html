@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OBS Stage Timer &amp; Transparent Countdown Overlay | ProTimer</title>
+<meta name="description" content="Add a free stage timer to OBS as a transparent Browser Source. ProTimer keeps countdown controls off-canvas while OBS receives a clean, view-only live timer over your scene.">
+<link rel="canonical" href="https://srdjankotarlic.github.io/protimer/obs-stage-timer/">
+<meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
+<meta name="theme-color" content="#0a0c10">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="ProTimer">
+<meta property="og:title" content="Add a Transparent Stage Timer to OBS">
+<meta property="og:description" content="A free Browser Source countdown for livestreams and recordings, controlled from the separate ProTimer operator window.">
+<meta property="og:url" content="https://srdjankotarlic.github.io/protimer/obs-stage-timer/">
+<meta property="og:image" content="https://srdjankotarlic.github.io/protimer/screenshot-output.png">
+<meta property="og:image:alt" content="ProTimer stage timer output for an OBS Browser Source">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="OBS Stage Timer and Transparent Countdown Overlay">
+<meta name="twitter:description" content="Put a clean, view-only ProTimer countdown over an OBS scene in four steps.">
+<meta name="twitter:image" content="https://srdjankotarlic.github.io/protimer/screenshot-output.png">
+<link rel="icon" type="image/png" sizes="192x192" href="../favicon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
+<link rel="stylesheet" href="../guide.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "HowTo",
+      "@id": "https://srdjankotarlic.github.io/protimer/obs-stage-timer/#howto",
+      "name": "Add ProTimer to OBS as a Browser Source",
+      "description": "Connect the ProTimer view-only timer to OBS and enable a transparent countdown overlay.",
+      "totalTime": "PT5M",
+      "step": [
+        { "@type": "HowToStep", "position": 1, "name": "Open the network panel", "text": "Start ProTimer and find the Timer URL in Network - OBS / Phone." },
+        { "@type": "HowToStep", "position": 2, "name": "Add a Browser Source", "text": "In OBS, add a Browser Source and paste the Timer URL." },
+        { "@type": "HowToStep", "position": 3, "name": "Enable transparency", "text": "Turn on Transparent background in ProTimer when the timer should sit over video." },
+        { "@type": "HowToStep", "position": 4, "name": "Test the scene", "text": "Start, pause, reset and change warning states while checking the final OBS program output." }
+      ]
+    },
+    {
+      "@type": "WebPage",
+      "@id": "https://srdjankotarlic.github.io/protimer/obs-stage-timer/#webpage",
+      "url": "https://srdjankotarlic.github.io/protimer/obs-stage-timer/",
+      "name": "OBS Stage Timer and Transparent Countdown Overlay | ProTimer",
+      "description": "A practical guide to using ProTimer as a transparent, view-only OBS Browser Source countdown.",
+      "inLanguage": "en",
+      "dateModified": "2026-09-01",
+      "mainEntity": { "@id": "https://srdjankotarlic.github.io/protimer/obs-stage-timer/#howto" },
+      "breadcrumb": { "@id": "https://srdjankotarlic.github.io/protimer/obs-stage-timer/#breadcrumb" }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://srdjankotarlic.github.io/protimer/obs-stage-timer/#breadcrumb",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "ProTimer", "item": "https://srdjankotarlic.github.io/protimer/" },
+        { "@type": "ListItem", "position": 2, "name": "OBS stage timer", "item": "https://srdjankotarlic.github.io/protimer/obs-stage-timer/" }
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to content</a>
+<header>
+  <nav class="wrap nav" aria-label="Primary navigation">
+    <a class="brand" href="../" aria-label="ProTimer home"><img src="../favicon.png" alt="" width="31" height="31"><span class="brand-word">PRO<b>TIMER</b></span></a>
+    <div class="nav-links">
+      <a href="../free-stage-timer/">Free timer guide</a>
+      <a href="../companion-stage-timer/">Companion guide</a>
+      <a href="https://github.com/srdjankotarlic/protimer">GitHub</a>
+      <a class="button primary" href="../#download">Download free</a>
+    </div>
+  </nav>
+</header>
+
+<main id="main-content">
+  <div class="wrap hero">
+    <span class="eyebrow">OBS Browser Source · transparent output</span>
+    <h1>Add a <strong>stage timer to OBS</strong></h1>
+    <p class="lead">ProTimer sends a clean, view-only countdown to OBS while Start, Reset, GO, messages and the rundown stay in the separate operator control window.</p>
+    <div class="cta">
+      <a class="button primary" href="../#download">Download ProTimer free</a>
+      <a class="button" href="#setup">See the OBS setup</a>
+    </div>
+    <ul class="proof" aria-label="OBS integration facts"><li>Browser Source</li><li>Transparent background</li><li>Warning colors</li><li>NDI through OBS</li></ul>
+    <img class="hero-shot" src="../screenshot-output.png" width="1554" height="874" alt="Clean ProTimer countdown output ready for OBS">
+  </div>
+
+  <section id="setup">
+    <div class="wrap">
+      <h2>OBS setup in four steps</h2>
+      <p class="section-lead">Keep ProTimer open on the show computer and connect over the same local network.</p>
+      <div class="grid-4">
+        <article class="step"><span class="step-number">1</span><h3>Copy the Timer URL</h3><p>In ProTimer, open <strong>Network → OBS · Phone</strong> and copy the view-only Timer address, such as <code>http://192.168.1.50:7878</code>.</p></article>
+        <article class="step"><span class="step-number">2</span><h3>Add Browser Source</h3><p>In OBS, add a new Browser Source to the scene and paste that URL into its URL field.</p></article>
+        <article class="step"><span class="step-number">3</span><h3>Choose the look</h3><p>Turn on <strong>Transparent background</strong> in ProTimer for an overlay, or leave the background solid for a full-frame timer.</p></article>
+        <article class="step"><span class="step-number">4</span><h3>Run a rehearsal</h3><p>Test white, yellow, red and overtime states, plus blackout and text, while watching the final program canvas.</p></article>
+      </div>
+      <div class="note"><strong>Keep control private:</strong> OBS needs the Timer URL, not the Remote URL. The Timer page is view-only; the Remote link contains the session token used for operator commands.</div>
+    </div>
+  </section>
+
+  <section id="why-browser-source">
+    <div class="wrap detail">
+      <div class="detail-copy">
+        <h2>A clean overlay without screen capture</h2>
+        <p>The Browser Source receives the current timer state directly from ProTimer. Window chrome, the mouse pointer and the operator controls never need to enter the OBS scene.</p>
+        <ul>
+          <li>Transparent or solid background from the same source.</li>
+          <li>Large timer digits that adapt to the Browser Source canvas.</li>
+          <li>Optional NOW/NEXT labels and on-screen messages.</li>
+          <li>Warning colors and overtime update with the live timer.</li>
+        </ul>
+      </div>
+      <img src="../screenshot-control.png" width="1120" height="708" loading="lazy" alt="ProTimer operator controls kept separate from the OBS output">
+    </div>
+  </section>
+
+  <section id="reliable">
+    <div class="wrap">
+      <h2>Build a reliable show setup</h2>
+      <p class="section-lead">A few production habits prevent most Browser Source problems.</p>
+      <div class="grid-3">
+        <article class="card"><h3>Use the local address</h3><p>For a show-critical OBS source, use the LAN URL displayed by ProTimer. Keep the ProTimer computer and OBS computer on a network you control.</p></article>
+        <article class="card"><h3>Open ProTimer first</h3><p>The local page is served by the desktop app. If ProTimer closes or its IP changes, refresh the Browser Source with the new address.</p></article>
+        <article class="card"><h3>Rehearse state changes</h3><p>Confirm the transparent background, warning thresholds, fonts and NOW/NEXT layout in the actual scene resolution before doors open.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section id="ndi">
+    <div class="wrap detail reverse">
+      <img src="../screenshot-backstage.png" width="1280" height="688" loading="lazy" alt="ProTimer backstage view that can be opened on another production screen">
+      <div class="detail-copy">
+        <h2>Need NDI or another screen?</h2>
+        <p>ProTimer does not emit NDI directly. Add the Timer URL to OBS first, then send the finished OBS scene through an NDI output such as the DistroAV plugin.</p>
+        <p>The same local web output can also open in a normal browser on another computer or TV, while the Backstage URL provides the full NOW/NEXT schedule for the crew.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq">
+    <div class="wrap faq">
+      <h2>OBS stage timer FAQ</h2>
+      <p class="section-lead">Answers for common production setups.</p>
+      <details open><summary>Is the OBS timer free?</summary><p>Yes. ProTimer is free and open source, and the Browser Source output has no watermark, account or subscription.</p></details>
+      <details><summary>Can OBS and ProTimer run on different computers?</summary><p>Yes, when both computers can reach the local Timer URL. Use a stable production LAN and test the address before the show.</p></details>
+      <details><summary>Can I show only the digits?</summary><p>Use the transparent background for an overlay and leave optional NOW/NEXT and text elements off. Resize and position the Browser Source inside OBS.</p></details>
+      <details><summary>Why is the Browser Source blank?</summary><p>Confirm ProTimer is open, paste the current Timer URL again, verify both computers are on the same reachable network and refresh the OBS Browser Source.</p></details>
+    </div>
+  </section>
+
+  <section id="next">
+    <div class="wrap">
+      <h2>More ProTimer setups</h2>
+      <p class="section-lead">Choose the next guide for your production.</p>
+      <div class="grid-2 next-guides">
+        <a href="../free-stage-timer/"><h3>Free stage timer for Mac and Windows</h3><p>See every included feature, supported platform and the one-minute stage setup.</p><span>Open the free timer guide →</span></a>
+        <a href="../guides/obs-countdown-timer-phone-remote.html"><h3>Control the OBS timer from a phone</h3><p>Follow the step-by-step Browser Source and token-protected phone remote workflow.</p><span>Open the phone workflow →</span></a>
+      </div>
+      <div class="cta"><a class="button primary" href="../#download">Download ProTimer 2.1</a><a class="button" href="../companion-stage-timer/">Open the Companion guide</a></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><a href="../">ProTimer home</a> · <a href="../free-stage-timer/">Free stage timer</a> · <a href="../companion-stage-timer/">Companion guide</a> · <a href="https://github.com/srdjankotarlic/protimer">GitHub</a></p>
+    <p>Free and open source under the MIT license. © 2026 Srdjan Kotarlic.</p>
+  </div>
+</footer>
+</body>
+</html>

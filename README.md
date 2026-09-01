@@ -102,8 +102,11 @@ The **Backstage view** shows NOW, NEXT, the schedule and over/under status on an
 
 ![ProTimer backstage view](docs/screenshot-backstage.png)
 
-## Practical Guides and Templates
+## Setup guides and templates
 
+- [Free stage timer for Mac and Windows](https://srdjankotarlic.github.io/protimer/free-stage-timer/)
+- [OBS stage timer and transparent countdown overlay](https://srdjankotarlic.github.io/protimer/obs-stage-timer/)
+- [Bitfocus Companion stage timer for Stream Deck](https://srdjankotarlic.github.io/protimer/companion-stage-timer/)
 - [Add a free OBS countdown timer with a phone remote](https://srdjankotarlic.github.io/protimer/guides/obs-countdown-timer-phone-remote.html)
 - [Set up a stage timer for conference speakers](https://srdjankotarlic.github.io/protimer/guides/conference-stage-timer-setup.html)
 - [Control ProTimer with Bitfocus Companion and Stream Deck](https://srdjankotarlic.github.io/protimer/guides/bitfocus-companion-stage-timer.html)
@@ -147,7 +150,7 @@ http://<ip>:7878/cmd?type=start&t=<token>
 Available `type` values: `start` (toggles start/pause), `reset`, `go` (next cue), `blackout`, `adjust&value=<seconds>` (e.g. `-60`), `setDuration&value=<ms>`, `mode&value=countdown|countup|clock`, `message&value=<text>`, `clearMessage`, `text&value=<text>`, `clearText`.
 
 **Stream Deck via [Bitfocus Companion](https://bitfocus.io/companion):** two options:
-1. **Dedicated module** — [download the packaged ProTimer module](https://github.com/srdjankotarlic/companion-module-protimer/releases/download/v1.1.0/protimer-1.1.0.tgz), then in Companion 4 open **Modules → Import module package** and select the `.tgz` file. It adds named actions, starter presets, live feedbacks (running = green, blackout = red), and a `$(protimer:time)` variable for the button face. [Official registry submission is pending](https://github.com/bitfocus/companion-module-requests/issues/2110).
+1. **Dedicated module** — [download the packaged ProTimer module](https://github.com/srdjankotarlic/companion-module-protimer/releases/download/v1.1.0/protimer-1.1.0.tgz), then in Companion 4 open **Modules → Import module package** and select the `.tgz` file. It adds named actions, starter presets, live feedbacks (running = green, blackout = red), and a `$(protimer:time)` variable for the button face. The [official repository has been requested](https://github.com/bitfocus/companion-module-requests/issues/2110); catalogue submission remains pending.
 2. **Zero-install** — add a **Generic HTTP** connection, create a button with an *HTTP GET* action, and paste the API URL (change `type` per button).
 
 Works from `curl`, Keyboard Maestro, or any automation too. The token changes on every app launch (security), so re-copy the URL after restarting ProTimer.
@@ -229,7 +232,7 @@ Ideas on the list (feedback very welcome — open an issue to vote or suggest):
 - [x] ~~Paste a rundown from Excel / Google Sheets~~ — done (tab-separated rows paste directly into the rundown card)
 - [ ] Groups/blocks in the rundown (e.g. *Morning Sessions*, *Lunch*)
 - [x] ~~HTTP control API~~ — done (works with Companion's Generic HTTP module + Stream Deck)
-- [x] ~~Native OSC + dedicated Bitfocus Companion module~~ — done ([module repo](https://github.com/srdjankotarlic/companion-module-protimer); [official registry request #2110](https://github.com/bitfocus/companion-module-requests/issues/2110) pending)
+- [x] ~~Native OSC + dedicated Bitfocus Companion module~~ — done ([module repo](https://github.com/srdjankotarlic/companion-module-protimer); [official repository request #2110](https://github.com/bitfocus/companion-module-requests/issues/2110) open, catalogue submission pending)
 - [ ] More languages
 - [ ] Multiple independent timers
 

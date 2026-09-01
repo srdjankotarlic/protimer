@@ -1219,7 +1219,7 @@ app.whenReady().then(() => {
         console.log('AUDIENCE_QR_OK='+audienceQrOK+' '+audienceQrStr);
         check('AUDIENCE_QR_OK',audienceQrOK);
         // GRID: uključi grid 3×3, kockica 0 (gore-levo) → PROZOR = ta kockica monitora
-        await controlWin.webContents.executeJavaScript("S.text=''; S.textOnly=false; S.message={text:'',flash:false}; lastKey=''; render(); document.getElementById('chkFit').checked=false; document.getElementById('chkFit').dispatchEvent(new Event('change')); var g=document.getElementById('chkGrid'); g.checked=true; g.dispatchEvent(new Event('change')); document.querySelector('#gridSizes button[data-gs=\"3\"]').click(); document.querySelectorAll('#gridSel .gc')[0].click();");
+        await controlWin.webContents.executeJavaScript("S.text=''; S.textOnly=false; S.message={text:'',flash:false}; lastKey=''; render(); document.getElementById('chkFit').checked=false; document.getElementById('chkFit').dispatchEvent(new Event('change')); var g=document.getElementById('chkGrid'); g.checked=false; g.dispatchEvent(new Event('change')); g.checked=true; g.dispatchEvent(new Event('change')); document.querySelector('#gridSizes button[data-gs=\"3\"]').click(); document.querySelectorAll('#gridSel .gc')[0].click();");
         await new Promise(r => setTimeout(r, 800));
         let gridWinOK = false, gbStr = '?';
         try {

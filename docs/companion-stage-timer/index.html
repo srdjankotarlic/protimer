@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bitfocus Companion Stage Timer for Stream Deck | ProTimer</title>
+<meta name="description" content="Control ProTimer from Bitfocus Companion and Stream Deck. Import the packaged module now or build Start, Reset, GO and time-adjust buttons with Generic HTTP.">
+<link rel="canonical" href="https://srdjankotarlic.github.io/protimer/companion-stage-timer/">
+<meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
+<meta name="theme-color" content="#0a0c10">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="ProTimer">
+<meta property="og:title" content="Control ProTimer with Bitfocus Companion">
+<meta property="og:description" content="Put Start, Reset, GO, time adjustment and live timer feedback on Stream Deck for a faster show workflow.">
+<meta property="og:url" content="https://srdjankotarlic.github.io/protimer/companion-stage-timer/">
+<meta property="og:image" content="https://srdjankotarlic.github.io/protimer/screenshot-control.png">
+<meta property="og:image:alt" content="ProTimer control window for Bitfocus Companion and Stream Deck workflows">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Bitfocus Companion Stage Timer for Stream Deck">
+<meta name="twitter:description" content="Control ProTimer with dedicated actions, live feedbacks or Companion Generic HTTP buttons.">
+<meta name="twitter:image" content="https://srdjankotarlic.github.io/protimer/screenshot-control.png">
+<link rel="icon" type="image/png" sizes="192x192" href="../favicon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
+<link rel="stylesheet" href="../guide.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "@id": "https://srdjankotarlic.github.io/protimer/companion-stage-timer/#webpage",
+      "url": "https://srdjankotarlic.github.io/protimer/companion-stage-timer/",
+      "name": "Bitfocus Companion Stage Timer for Stream Deck | ProTimer",
+      "description": "A practical guide to controlling ProTimer from Bitfocus Companion and Stream Deck with Generic HTTP or the dedicated module.",
+      "inLanguage": "en",
+      "dateModified": "2026-09-01",
+      "breadcrumb": { "@id": "https://srdjankotarlic.github.io/protimer/companion-stage-timer/#breadcrumb" }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://srdjankotarlic.github.io/protimer/companion-stage-timer/#breadcrumb",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "ProTimer", "item": "https://srdjankotarlic.github.io/protimer/" },
+        { "@type": "ListItem", "position": 2, "name": "Companion stage timer", "item": "https://srdjankotarlic.github.io/protimer/companion-stage-timer/" }
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to content</a>
+<header>
+  <nav class="wrap nav" aria-label="Primary navigation">
+    <a class="brand" href="../" aria-label="ProTimer home"><img src="../favicon.png" alt="" width="31" height="31"><span class="brand-word">PRO<b>TIMER</b></span></a>
+    <div class="nav-links">
+      <a href="../free-stage-timer/">Free timer guide</a>
+      <a href="../obs-stage-timer/">OBS guide</a>
+      <a href="https://github.com/srdjankotarlic/companion-module-protimer">Module source</a>
+      <a class="button primary" href="../#download">Download ProTimer</a>
+    </div>
+  </nav>
+</header>
+
+<main id="main-content">
+  <div class="wrap hero">
+    <span class="eyebrow">Bitfocus Companion · Stream Deck · HTTP</span>
+    <h1>Control ProTimer with <strong>Bitfocus Companion</strong></h1>
+    <p class="lead">Put the stage timer controls under your fingers: Start/Pause, Reset, GO to the next cue, blackout, time adjustments and speaker messages.</p>
+    <div class="cta">
+      <a class="button primary" href="https://github.com/srdjankotarlic/companion-module-protimer/releases/download/v1.1.0/protimer-1.1.0.tgz">Download Companion module</a>
+      <a class="button" href="#generic-http">Use Generic HTTP</a>
+    </div>
+    <ul class="proof" aria-label="Companion integration facts"><li>Companion 4</li><li>Packaged module now</li><li>Generic HTTP fallback</li><li>Official repository requested</li></ul>
+    <img class="hero-shot" src="../screenshot-control.png" width="1120" height="708" alt="ProTimer operator control with network links for Companion and Stream Deck">
+  </div>
+
+  <section id="status">
+    <div class="wrap">
+      <h2>Two ways to connect now</h2>
+      <p class="section-lead">Import the packaged ProTimer module in Companion 4 for ready-made controls, or use Generic HTTP without installing a module. The official Bitfocus repository has been requested; catalogue submission will follow.</p>
+      <div class="grid-2">
+        <article class="card"><h3>Packaged module — available now</h3><p>Download the tested <code>.tgz</code>, import it from <strong>Modules → Import module package</strong>, then use ready-made actions, presets, feedback colors and timer variables.</p></article>
+        <article class="card"><h3>Generic HTTP — no module install</h3><p>Every ProTimer command is an authenticated GET URL. Add Companion’s Generic HTTP module, paste the command URL into a button and use it from any supported surface.</p></article>
+      </div>
+      <div class="note"><strong>Current status:</strong> manual package import works now. Do not search for ProTimer in the Companion catalogue yet: the official repository has been requested and catalogue submission remains pending. Follow <a href="https://github.com/bitfocus/companion-module-requests/issues/2110">request #2110</a> for status.</div>
+    </div>
+  </section>
+
+  <section id="install-module">
+    <div class="wrap">
+      <h2>Import the packaged module</h2>
+      <p class="section-lead">Use the official ProTimer release asset and rehearse the connection before the show.</p>
+      <div class="grid-4">
+        <article class="step"><span class="step-number">1</span><h3>Download</h3><p>Save <a href="https://github.com/srdjankotarlic/companion-module-protimer/releases/download/v1.1.0/protimer-1.1.0.tgz"><code>protimer-1.1.0.tgz</code></a> from the module release.</p></article>
+        <article class="step"><span class="step-number">2</span><h3>Import</h3><p>In Companion 4, open <strong>Modules → Import module package</strong> and select the downloaded file.</p></article>
+        <article class="step"><span class="step-number">3</span><h3>Connect</h3><p>Add ProTimer, then enter the host, port and current token shown in ProTimer’s network panel.</p></article>
+        <article class="step"><span class="step-number">4</span><h3>Rehearse</h3><p>Test Start, Reset, GO, blackout, live feedback and the timer variable before doors open.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section id="generic-http">
+    <div class="wrap">
+      <h2>Build a Companion button now</h2>
+      <p class="section-lead">The API URL contains a temporary token, so copy it again after each ProTimer restart.</p>
+      <div class="grid-4">
+        <article class="step"><span class="step-number">1</span><h3>Copy the API URL</h3><p>In ProTimer, open <strong>Network → OBS · Phone</strong> and copy the API link with its current token.</p></article>
+        <article class="step"><span class="step-number">2</span><h3>Add Generic HTTP</h3><p>In Companion, add a Generic HTTP connection and create a button with an HTTP GET action.</p></article>
+        <article class="step"><span class="step-number">3</span><h3>Paste the command</h3><p>Use the copied URL, then set the command type for Start, Reset, GO, blackout or time adjustment.</p></article>
+        <article class="step"><span class="step-number">4</span><h3>Rehearse</h3><p>Press every button while watching ProTimer and confirm the show computer stays reachable on the production LAN.</p></article>
+      </div>
+      <div class="note warning"><strong>Keep the token private:</strong> anyone with the current command URL can control the timer. Do not place it in screenshots, audience QR codes or public documentation.</div>
+    </div>
+  </section>
+
+  <section id="commands">
+    <div class="wrap detail">
+      <div class="detail-copy">
+        <h2>Useful buttons for a live show</h2>
+        <p>A small page covers most operator workflows:</p>
+        <ul>
+          <li><code>start</code> — toggle Start/Pause</li>
+          <li><code>reset</code> — return to the set duration</li>
+          <li><code>go</code> — start the next rundown cue</li>
+          <li><code>adjust&amp;value=60</code> — add one minute</li>
+          <li><code>adjust&amp;value=-10</code> — subtract ten seconds</li>
+          <li><code>blackout</code> — hide or restore the audience output</li>
+          <li><code>message&amp;value=WRAP%20UP</code> — send a speaker message</li>
+        </ul>
+      </div>
+      <img src="../screenshot-backstage.png" width="1280" height="688" loading="lazy" alt="ProTimer rundown and backstage status controlled by GO buttons">
+    </div>
+  </section>
+
+  <section id="module">
+    <div class="wrap">
+      <h2>What the dedicated module adds</h2>
+      <p class="section-lead">The module reduces setup time and makes button states easier to read during a show.</p>
+      <div class="grid-3">
+        <article class="card"><h3>Ready-made actions</h3><p>Start/Pause, Reset, GO, blackout, duration and time changes, on-screen text and speaker messages without assembling each URL by hand.</p></article>
+        <article class="card"><h3>Live feedbacks</h3><p>Connection, running, warning colors, overtime, blackout and active-message states can change the Stream Deck button appearance.</p></article>
+        <article class="card"><h3>Timer variables</h3><p>Button presets can display the live time plus current and next rundown cue. The downloadable v1.1.0 package uses <code>$(protimer:time)</code>; the prepared official-repository update uses connection-relative <code>$(this:time)</code>.</p></article>
+      </div>
+      <p class="section-lead"><a href="../guides/bitfocus-companion-stage-timer.html">Open the detailed manual-import and first-button-page walkthrough →</a></p>
+    </div>
+  </section>
+
+  <section id="faq">
+    <div class="wrap faq">
+      <h2>Companion stage timer FAQ</h2>
+      <p class="section-lead">What works now and what is still under review.</p>
+      <details open><summary>Can I control ProTimer from Stream Deck today?</summary><p>Yes. Import the packaged ProTimer module in Companion 4, or use Generic HTTP and map ProTimer’s authenticated command URLs to buttons.</p></details>
+      <details><summary>Is the dedicated module in the Companion catalogue?</summary><p>Not yet. Manual package import works now. The official Bitfocus repository has been requested, and catalogue submission remains a later step.</p></details>
+      <details><summary>Which Companion version does it support?</summary><p>The packaged release works with Companion 4. The prepared official-repository update targets Companion 4.3 or newer, Node 22 and Companion module API 2.0.</p></details>
+      <details><summary>Why did my buttons stop after restarting ProTimer?</summary><p>The security token changes on every ProTimer launch. Generic HTTP buttons need the new API URL. The dedicated module reads the current host, port and token from its connection configuration.</p></details>
+    </div>
+  </section>
+
+  <section id="next">
+    <div class="wrap">
+      <h2>Complete the stage setup</h2>
+      <p class="section-lead">Connect the operator controls to a clear output for the audience.</p>
+      <div class="grid-2 next-guides">
+        <a href="../free-stage-timer/"><h3>Download the free stage timer</h3><p>Install ProTimer on Windows or Apple Silicon Mac and create the first countdown.</p><span>Open the free timer guide →</span></a>
+        <a href="../obs-stage-timer/"><h3>Add the timer to OBS</h3><p>Use the separate view-only page as a transparent Browser Source over the program scene.</p><span>Open the OBS guide →</span></a>
+      </div>
+      <div class="cta"><a class="button primary" href="../#download">Download ProTimer 2.1</a></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><a href="../">ProTimer home</a> · <a href="../free-stage-timer/">Free stage timer</a> · <a href="../obs-stage-timer/">OBS guide</a> · <a href="https://github.com/srdjankotarlic/companion-module-protimer">Module source</a></p>
+    <p>Free and open source under the MIT license. © 2026 Srdjan Kotarlic.</p>
+  </div>
+</footer>
+</body>
+</html>
