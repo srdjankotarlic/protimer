@@ -90,3 +90,10 @@ jobs:
             Select-Object -First 1
           if ($remaining) { throw 'ProTimer uninstall registration remains after package removal' }
           Write-Output 'CHOCOLATEY_WINDOWS_OK'
+      - name: Upload validated package
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: protimer-chocolatey-package
+          path: ${{ env.PACKAGE_DIR }}/protimer.*.nupkg
+          if-no-files-found: error
+          retention-days: 14
