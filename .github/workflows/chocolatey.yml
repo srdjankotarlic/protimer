@@ -83,7 +83,7 @@ jobs:
               throw "ProTimer shortcut targets an unexpected executable: $shortcut -> $target"
             }
           }
-          $smoke = Start-Process -FilePath $appExe -ArgumentList '--smoke' -Wait -PassThru
+          $smoke = Start-Process -FilePath $appExe -ArgumentList '--smoke', '--disable-gpu' -Wait -PassThru
           if ($smoke.ExitCode -ne 0) { throw "Installed ProTimer smoke launch failed with exit code $($smoke.ExitCode)" }
           "PROTIMER_APP_EXE=$appExe" | Out-File -FilePath $env:GITHUB_ENV -Append
           "PROTIMER_GUI_MARKER=$guiMarker" | Out-File -FilePath $env:GITHUB_ENV -Append
