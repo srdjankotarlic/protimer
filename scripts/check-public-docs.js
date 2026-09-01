@@ -51,6 +51,7 @@ const publicFiles = [
   'docs/guide.css',
   'docs/guides/guide.css',
   'docs/robots.txt',
+  'docs/1791077afc203704cce5645579f7f15c.txt',
   ...htmlPages.map((page) => page.file),
   releaseNotes
 ];
@@ -154,6 +155,11 @@ if (!robots.includes('Sitemap: https://srdjankotarlic.github.io/protimer/sitemap
 const landing = fs.readFileSync(path.join(root, 'docs/index.html'), 'utf8');
 if (!landing.includes('"@type": "VideoObject"') || !landing.includes('/protimer/demo.mp4')) {
   fail('landing page is missing demo VideoObject structured data');
+}
+
+const indexNowKey = fs.readFileSync(path.join(root, 'docs/1791077afc203704cce5645579f7f15c.txt'), 'utf8').trim();
+if (indexNowKey !== '1791077afc203704cce5645579f7f15c') {
+  fail('IndexNow ownership file does not match the configured key');
 }
 
 console.log(`PUBLIC_DOCS_OK v${version}`);
