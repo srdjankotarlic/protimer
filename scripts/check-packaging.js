@@ -41,11 +41,13 @@ if (!nuspec.includes('<packageSourceUrl>https://github.com/srdjankotarlic/protim
 }
 const setupName = `ProTimer-Setup-${version}.exe`;
 if (!install.includes(`/v${version}/${setupName}`)) fail('Chocolatey URL does not target the current installer');
-if (!install.includes(`checksum64     = '${checksums.get(setupName)}'`)) {
+if (!install.includes(`$checksum64 = '${checksums.get(setupName)}'`)) {
   fail('Chocolatey checksum does not match the release checksum');
 }
-if (!install.includes("silentArgs     = '/S'")) fail('Chocolatey silent install argument is missing');
-if (!install.includes(`softwareName   = 'ProTimer ${version}'`)) fail('Chocolatey softwareName must be exact');
+if (!install.includes("$silentArgs = '/S'")) fail('Chocolatey silent install argument is missing');
+if (!install.includes('Get-ChocolateyWebFile @downloadArgs')) fail('Chocolatey verified download helper is missing');
+if (!install.includes('Start-Process -FilePath $installerPath')) fail('Chocolatey direct installer launch is missing');
+if (install.includes('Install-ChocolateyPackage')) fail('Chocolatey installer retry must not use sticky global helper state');
 if (!install.includes('$maxAttempts = 3')) fail('Chocolatey transient NSIS retry is missing');
 if (!fs.existsSync(skipAutoUninstall)) fail('Chocolatey automatic uninstaller must be disabled');
 if (pkg.build?.nsis?.guid !== windowsAppGuid) fail('NSIS application GUID changed');
