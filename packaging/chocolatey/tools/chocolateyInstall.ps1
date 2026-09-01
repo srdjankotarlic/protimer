@@ -11,4 +11,20 @@ $packageArgs = @{
   validExitCodes = @(0)
 }
 
-Install-ChocolateyPackage @packageArgs
+# Assisted electron-builder NSIS installers can sporadically terminate with
+# 0xC0000005 during a fresh per-user install. Retry only that exact transient
+# failure; every other installer error remains fatal.
+$maxAttempts = 3
+for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
+  try {
+    Install-ChocolateyPackage @packageArgs
+    break
+  } catch {
+    $isTransientAccessViolation = $_.Exception.Message -match '(-1073741819|0xC0000005)'
+    if (-not $isTransientAccessViolation -or $attempt -eq $maxAttempts) {
+      throw
+    }
+    Write-Warning "ProTimer installer hit a transient access violation (attempt $attempt of $maxAttempts). Retrying."
+    Start-Sleep -Seconds 5
+  }
+}
