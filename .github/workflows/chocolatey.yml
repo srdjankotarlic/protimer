@@ -1,0 +1,99 @@
+name: Chocolatey package
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - packaging/chocolatey/**
+      - .github/workflows/chocolatey.yml
+  push:
+    branches: [main]
+    paths:
+      - packaging/chocolatey/**
+      - .github/workflows/chocolatey.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: chocolatey-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Install, upgrade and uninstall
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+      - name: Check manifest metadata and checksums
+        run: npm run check:packaging
+      - name: Pack Chocolatey package
+        shell: pwsh
+        run: |
+          $packageDir = Join-Path $env:RUNNER_TEMP 'protimer-chocolatey'
+          New-Item -ItemType Directory -Force $packageDir | Out-Null
+          choco pack .\packaging\chocolatey\protimer.nuspec --outputdirectory $packageDir
+          if ($LASTEXITCODE -ne 0) { throw "choco pack failed with exit code $LASTEXITCODE" }
+          $package = Get-ChildItem $packageDir -Filter 'protimer.*.nupkg' | Select-Object -First 1
+          if (-not $package) { throw 'Chocolatey did not create a ProTimer package' }
+          "PACKAGE_DIR=$packageDir" | Out-File -FilePath $env:GITHUB_ENV -Append
+      - name: Install package silently
+        shell: pwsh
+        run: |
+          $version = node -p "require('./package.json').version"
+          choco install protimer --version $version --source $env:PACKAGE_DIR -y --no-progress
+          if ($LASTEXITCODE -ne 0) { throw "Chocolatey install failed with exit code $LASTEXITCODE" }
+      - name: Verify installed application registration
+        shell: pwsh
+        run: |
+          $roots = @(
+            'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*',
+            'HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*',
+            'HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*'
+          )
+          $entry = Get-ItemProperty $roots -ErrorAction SilentlyContinue |
+            Where-Object { $_.DisplayName -like 'ProTimer*' } |
+            Select-Object -First 1
+          if (-not $entry) { throw 'ProTimer uninstall registration was not created' }
+          if ([string]::IsNullOrWhiteSpace($entry.UninstallString)) {
+            throw 'ProTimer uninstall registration has no uninstall command'
+          }
+          Write-Output "Installed $($entry.DisplayName) $($entry.DisplayVersion)"
+      - name: Exercise upgrade path
+        shell: pwsh
+        run: |
+          $version = node -p "require('./package.json').version"
+          choco upgrade protimer --version $version --source $env:PACKAGE_DIR -y --force --no-progress
+          if ($LASTEXITCODE -ne 0) { throw "Chocolatey upgrade failed with exit code $LASTEXITCODE" }
+      - name: Uninstall package silently
+        shell: pwsh
+        run: |
+          choco uninstall protimer -y --no-progress
+          if ($LASTEXITCODE -ne 0) { throw "Chocolatey uninstall failed with exit code $LASTEXITCODE" }
+      - name: Verify application removal
+        shell: pwsh
+        run: |
+          $roots = @(
+            'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*',
+            'HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*',
+            'HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*'
+          )
+          $remaining = Get-ItemProperty $roots -ErrorAction SilentlyContinue |
+            Where-Object { $_.DisplayName -like 'ProTimer*' } |
+            Select-Object -First 1
+          if ($remaining) { throw 'ProTimer uninstall registration remains after package removal' }
+          Write-Output 'CHOCOLATEY_WINDOWS_OK'
+      - name: Upload validated package
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: protimer-chocolatey-package
+          path: ${{ env.PACKAGE_DIR }}/protimer.*.nupkg
+          if-no-files-found: error
+          retention-days: 14

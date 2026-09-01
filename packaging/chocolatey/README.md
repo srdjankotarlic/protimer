@@ -3,7 +3,18 @@
 This directory is the public source for the proposed ProTimer package in the
 Chocolatey Community Repository. It is not published yet.
 
-## Required Windows validation before publishing
+## Automated Windows validation
+
+The repository's `Chocolatey package` workflow runs on a clean GitHub-hosted
+Windows runner. It packs the package, performs a silent install, checks the
+Windows uninstall registration, exercises the upgrade path, uninstalls the app
+and confirms that the registration is removed.
+
+Before publishing, run the workflow successfully for the exact release and also
+perform one manual launch check for the controller, audience output, local phone
+links and Windows Firewall prompt.
+
+## Manual release check
 
 Run these commands from an elevated PowerShell prompt in a clean Windows VM:
 
