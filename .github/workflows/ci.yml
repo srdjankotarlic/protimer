@@ -35,6 +35,9 @@ jobs:
       - name: Check public docs and release links
         if: runner.os == 'Linux'
         run: npm run check:public-docs
+      - name: Check distribution manifests
+        if: runner.os == 'Linux'
+        run: npm run check:packaging
       - name: Download Electron runtime (Linux)
         if: runner.os == 'Linux'
         run: npx install-electron --no

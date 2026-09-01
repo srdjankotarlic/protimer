@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
+  <metadata>
+    <id>protimer</id>
+    <version>2.1.0</version>
+    <title>ProTimer</title>
+    <authors>Srdjan Kotarlic</authors>
+    <owners>Srdjan Kotarlic</owners>
+    <summary>Free stage timer for live events, presentations, OBS and production crews.</summary>
+    <description><![CDATA[
+ProTimer is a free, open-source stage timer for conferences, presentations, churches, theatres, broadcasts and live streams.
+
+## Features
+
+* Countdown, stopwatch and clock modes
+* Scrollable rundown with cue timing and automatic advance
+* Clean audience output for projectors and confidence monitors
+* OBS Browser Source and transparent-background support
+* View-only timer, backstage rundown and remote control on phones
+* QR codes that can be displayed for audience access
+* Bitfocus Companion integration, HTTP API and OSC control
+* English and Serbian interface
+
+ProTimer runs locally and does not require an account or subscription.
+
+## Notes
+
+This package installs the current-user Windows x64 build. Windows may show a SmartScreen warning because the upstream installer is not yet code-signed.
+]]></description>
+    <projectUrl>https://srdjankotarlic.github.io/protimer/</projectUrl>
+    <projectSourceUrl>https://github.com/srdjankotarlic/protimer</projectSourceUrl>
+    <packageSourceUrl>https://github.com/srdjankotarlic/protimer/tree/main/packaging/chocolatey</packageSourceUrl>
+    <docsUrl>https://srdjankotarlic.github.io/protimer/#start</docsUrl>
+    <bugTrackerUrl>https://github.com/srdjankotarlic/protimer/issues</bugTrackerUrl>
+    <licenseUrl>https://github.com/srdjankotarlic/protimer/blob/main/LICENSE</licenseUrl>
+    <releaseNotes>https://github.com/srdjankotarlic/protimer/releases/tag/v2.1.0</releaseNotes>
+    <iconUrl>https://srdjankotarlic.github.io/protimer/favicon.png</iconUrl>
+    <tags>protimer stage-timer countdown live-events obs broadcast presentation rundown companion foss</tags>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+  </metadata>
+  <files>
+    <file src="tools\**" target="tools" />
+  </files>
+</package>
