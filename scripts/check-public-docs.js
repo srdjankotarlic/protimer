@@ -32,6 +32,11 @@ const focusedPages = [
     file: 'docs/companion-stage-timer/index.html',
     canonical: 'https://srdjankotarlic.github.io/protimer/companion-stage-timer/',
     structuredData: true
+  },
+  {
+    file: 'docs/press/index.html',
+    canonical: 'https://srdjankotarlic.github.io/protimer/press/',
+    structuredData: true
   }
 ];
 const guidePages = guideFiles.map((file) => ({
@@ -45,6 +50,7 @@ const publicFiles = [
   'SUPPORT.md',
   'docs/guide.css',
   'docs/guides/guide.css',
+  'docs/robots.txt',
   ...htmlPages.map((page) => page.file),
   releaseNotes
 ];
@@ -135,6 +141,19 @@ for (const page of htmlPages) {
 }
 for (const image of ['screenshot-control.png', 'screenshot-output.png', 'screenshot-backstage.png', 'og-banner.jpg']) {
   if (!sitemap.includes(`/protimer/${image}`)) fail(`sitemap is missing ${image}`);
+}
+
+const robots = fs.readFileSync(path.join(root, 'docs/robots.txt'), 'utf8');
+if (!robots.includes('User-agent: *') || !robots.includes('Allow: /')) {
+  fail('robots.txt must allow public crawling');
+}
+if (!robots.includes('Sitemap: https://srdjankotarlic.github.io/protimer/sitemap.xml')) {
+  fail('robots.txt must point to the canonical sitemap');
+}
+
+const landing = fs.readFileSync(path.join(root, 'docs/index.html'), 'utf8');
+if (!landing.includes('"@type": "VideoObject"') || !landing.includes('/protimer/demo.mp4')) {
+  fail('landing page is missing demo VideoObject structured data');
 }
 
 console.log(`PUBLIC_DOCS_OK v${version}`);
