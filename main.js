@@ -8,6 +8,7 @@ const crypto = require('crypto');
 const dns = require('dns');
 const { spawn } = require('child_process');
 const TimerTools = require('./timer-tools');
+const { leaveFullscreen: leaveOutputFullscreen } = require('./window-tools');
 
 const SMOKE = process.argv.includes('--smoke');
 // UI tests must never overwrite the operator's saved rundown or preferences.
@@ -25,7 +26,6 @@ let outputTransparent = false;   // da li je trenutni Ekran prozor providan
 let outputFrameless = false;     // da li je bez okvira (providan ili grid)
 let outputTargetId = null;       // na kom monitoru je Ekran
 let outputPlacementVersion = 0;
-const fullscreenExits = new WeakMap();
 
 // ---------------- MREŽNI IZLAZ (OBS Browser Source / NDI most / confidence monitor) ----------------
 let server = null;
@@ -370,18 +370,6 @@ function outputGeometry() {
 function pushOutputGeometry() {
   if (controlWin && !controlWin.isDestroyed()) controlWin.webContents.send('output-geometry', outputGeometry());
 }
-async function leaveOutputFullscreen(win) {
-  if (fullscreenExits.has(win)) return fullscreenExits.get(win);
-  if (!win.isFullScreen()) return true;
-  const pending = new Promise(resolve => {
-    const done = () => { clearTimeout(timer); fullscreenExits.delete(win); win.removeListener('leave-full-screen', done); resolve(!win.isDestroyed() && !win.isFullScreen()); };
-    const timer = setTimeout(done, 4000);
-    win.once('leave-full-screen', done);
-    win.setFullScreen(false);
-  });
-  fullscreenExits.set(win, pending);
-  return pending;
-}
 
 function createControlWindow() {
   controlWin = new BrowserWindow({
@@ -462,8 +450,8 @@ function createOutputWindow(displayId) {
     if (outputQrState) outputWin.webContents.send('audience-qr', outputQrState);
     pushDisplays(); pushOutMode();
   });
-  outputWin.on('enter-full-screen', pushOutMode);
-  outputWin.on('leave-full-screen', pushOutMode);
+  outputWin.on('enter-full-screen', () => setImmediate(pushOutMode));
+  outputWin.on('leave-full-screen', () => setImmediate(pushOutMode));
   outputWin.on('resize', pushOutputGeometry);
   outputWin.on('move', pushOutputGeometry);
   outputWin.once('ready-to-show', () => positionOutput(target));

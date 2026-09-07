@@ -26,9 +26,9 @@ module.exports = async function smokeLayout({ controlWin, getOutput, serverPort,
   report('INVALID_OUTPUT_SIZE_OK', rejected.ok === false, rejected);
   // Native fullscreen may be asynchronous (especially on macOS).
   getOutput().setFullScreen(true);
-  await waitFor(getOutput(), 'isFS');
+  const fullscreenEntered = await waitFor(getOutput(), 'isFS');
   const resizedFromFS = await ctl(`(async()=>{ $('outputWidth').value=1280; $('outputHeight').value=720; await applyOutputSize(); return await api.getOutputGeometry(); })()`);
-  report('RESIZE_FROM_FULLSCREEN_OK', resizedFromFS.width === 1280 && resizedFromFS.height === 720 && !resizedFromFS.fullscreen, resizedFromFS);
+  report('RESIZE_FROM_FULLSCREEN_OK', fullscreenEntered && resizedFromFS.width === 1280 && resizedFromFS.height === 720 && !resizedFromFS.fullscreen, {fullscreenEntered,...resizedFromFS});
   await waitFor(getOutput(), 'innerWidth===1280&&innerHeight===720&&!isFS');
   await out('render()');
 
@@ -78,7 +78,7 @@ module.exports = async function smokeLayout({ controlWin, getOutput, serverPort,
     const unauthorized = await waitFor(mobile, `authError && $('btnStart').disabled && !$('connectionHelp').hidden`);
     report('PHONE_AUTH_FEEDBACK_OK', unauthorized, await mobile.webContents.executeJavaScript(`$('connectionHelpText').textContent`));
     await mobile.loadURL(base + '/remote?t=' + token);
-    const connected = await waitFor(mobile, `authorized && connectionHealthy && !!S && !$('btnStart').disabled`);
+    const connected = await waitFor(mobile, `authorized && connectionHealthy && !!S && !$('btnStart').disabled && !$('secondaryRemote').hidden`);
     report('PHONE_AUTH_CONNECT_OK', connected, await mobile.webContents.executeJavaScript(`({overflow:document.documentElement.scrollWidth>innerWidth,dual:!$('secondaryRemote').hidden})`));
     await mobile.webContents.executeJavaScript(`$('btnBothStart').click()`);
     const remoteStarted = await waitFor(controlWin, `S.running&&S.secondary.running`);
