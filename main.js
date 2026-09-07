@@ -5,14 +5,18 @@ const http = require('http');
 const https = require('https');
 const os = require('os');
 const crypto = require('crypto');
+const dns = require('dns');
 const { spawn } = require('child_process');
+const TimerTools = require('./timer-tools');
 
 const SMOKE = process.argv.includes('--smoke');
+// UI tests must never overwrite the operator's saved rundown or preferences.
+if (SMOKE) app.setPath('userData', fs.mkdtempSync(path.join(os.tmpdir(), 'protimer-smoke-')));
 // token za daljinske komande (/cmd) — samo onaj ko ima ?t=token u linku može da kontroliše
 const CMD_TOKEN = crypto.randomBytes(16).toString('hex');
 const SERVER_INSTANCE = crypto.randomBytes(16).toString('hex');
 // komande koje /cmd prihvata (isti skup koji kontroler ume da primeni)
-const CMD_TYPES = ['start', 'reset', 'adjust', 'go', 'blackout', 'setDuration', 'mode', 'message', 'clearMessage', 'text', 'clearText', 'textOnly'];
+const CMD_TYPES = ['start', 'reset', 'adjust', 'go', 'blackout', 'setDuration', 'mode', 'message', 'clearMessage', 'text', 'clearText', 'textOnly', 'secondaryRunning', 'secondaryReset', 'secondaryDuration', 'primaryRunning', 'bothRunning', 'bothReset'];
 
 let controlWin = null;
 let outputWin = null;
@@ -20,6 +24,8 @@ let lastState = null;
 let outputTransparent = false;   // da li je trenutni Ekran prozor providan
 let outputFrameless = false;     // da li je bez okvira (providan ili grid)
 let outputTargetId = null;       // na kom monitoru je Ekran
+let outputPlacementVersion = 0;
+const fullscreenExits = new WeakMap();
 
 // ---------------- MREŽNI IZLAZ (OBS Browser Source / NDI most / confidence monitor) ----------------
 let server = null;
@@ -45,15 +51,21 @@ function pushPoll(state) {
   for (const waiter of [...pollWaiters]) finishPoll(waiter, state);
 }
 
-function lanIP() {
+function lanAddresses() {
   const ifaces = os.networkInterfaces();
+  const addresses = [];
   for (const name of Object.keys(ifaces)) {
     for (const i of ifaces[name]) {
-      if (i.family === 'IPv4' && !i.internal) return i.address;
+      if ((i.family === 'IPv4' || i.family === 4) && !i.internal) {
+        const virtual = /^(utun|tun|tap|tailscale|wg|docker|veth|vmnet|vbox|bridge|awdl|llw|zt)|vpn|virtual/i.test(name);
+        const linkLocal = i.address.startsWith('169.254.');
+        addresses.push({ name, ip: i.address, priority: (virtual ? 2 : 0) + (linkLocal ? 4 : 0) });
+      }
     }
   }
-  return '127.0.0.1';
+  return addresses.sort((a, b) => a.priority - b.priority);
 }
+function lanIP() { return lanAddresses()[0]?.ip || '127.0.0.1'; }
 
 function startServer(port, attempt = 0) {
   const outputHtml = () => {
@@ -68,6 +80,21 @@ function startServer(port, attempt = 0) {
 
   server = http.createServer((req, res) => {
     const url = (req.url || '/').split('?')[0];
+
+    if (url === '/timer-tools.js') {
+      res.writeHead(200, { 'Content-Type': 'application/javascript', 'Cache-Control': 'no-store' });
+      res.end(fs.readFileSync(path.join(__dirname, 'timer-tools.js')));
+      return;
+    }
+
+    // Authentication can be checked without issuing a command or exposing the token in state.
+    if (url === '/control-status') {
+      const ok = req.headers['x-pt-token'] === CMD_TOKEN;
+      const ready = !!controlWin && !controlWin.isDestroyed() && !!lastState;
+      res.writeHead(ok ? (ready ? 200 : 503) : 403, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
+      res.end(JSON.stringify({ ok: ok && ready, error: !ok ? 'unauthorized' : !ready ? 'controller unavailable' : undefined, instance: SERVER_INSTANCE }));
+      return;
+    }
 
     if (url === '/' || url === '/output.html') {
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
@@ -124,7 +151,13 @@ function startServer(port, attempt = 0) {
 
     // HTTPS tuneli ponekad baferuju SSE. Long-poll završava HTTP odgovor na svaku promenu,
     // pa javni viewer dobija pouzdan rezervni kanal bez stalnog agresivnog polling-a.
-    if (url === '/poll') {
+    if (url === '/poll' || url === '/control-poll') {
+      if (url === '/control-poll' && (req.headers['x-pt-token'] !== CMD_TOKEN || !controlWin || controlWin.isDestroyed() || !lastState)) {
+        const unauthorized = req.headers['x-pt-token'] !== CMD_TOKEN;
+        res.writeHead(unauthorized ? 403 : 503, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
+        res.end(JSON.stringify({ error: unauthorized ? 'unauthorized' : 'controller unavailable' }));
+        return;
+      }
       const qs = new URLSearchParams((req.url || '').split('?')[1] || '');
       const sinceValue = qs.get('since');
       const since = sinceValue === null ? NaN : Number(sinceValue);
@@ -134,7 +167,7 @@ function startServer(port, attempt = 0) {
         'Access-Control-Allow-Origin': '*',
         'X-Accel-Buffering': 'no'
       };
-      if (!Number.isFinite(since) || since !== stateVersion) {
+      if (!Number.isFinite(since) || since !== stateVersion || (url === '/control-poll' && qs.get('instance') !== SERVER_INSTANCE)) {
         res.writeHead(200, pollHeaders);
         res.end(JSON.stringify({ version: stateVersion, state: wireState(lastState), serverNow: Date.now() }));
         return;
@@ -147,7 +180,7 @@ function startServer(port, attempt = 0) {
       res.writeHead(200, pollHeaders);
       const waiter = { res, timer: null };
       pollWaiters.add(waiter);
-      waiter.timer = setTimeout(() => finishPoll(waiter, null), 20000);
+      waiter.timer = setTimeout(() => finishPoll(waiter, null), url === '/control-poll' ? 8000 : 20000);
       const cleanup = () => { if (pollWaiters.delete(waiter)) clearTimeout(waiter.timer); };
       req.on('aborted', cleanup);
       res.on('close', cleanup);
@@ -168,9 +201,10 @@ function startServer(port, attempt = 0) {
       }
       const dispatch = (cmd) => {
         const ok = cmd && CMD_TYPES.includes(cmd.type);
-        if (ok && controlWin && !controlWin.isDestroyed()) controlWin.webContents.send('remote-cmd', cmd);
-        res.writeHead(ok ? 200 : 400, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
-        res.end(ok ? '{"ok":true}' : '{"ok":false,"error":"unknown type"}');
+        const ready = !!controlWin && !controlWin.isDestroyed() && !!lastState;
+        if (ok && ready) controlWin.webContents.send('remote-cmd', cmd);
+        res.writeHead(!ok ? 400 : ready ? 200 : 503, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'Access-Control-Allow-Origin': '*' });
+        res.end(JSON.stringify({ ok: ok && ready, error: !ok ? 'unknown type' : !ready ? 'controller unavailable' : undefined }));
       };
       if (req.method === 'GET') {
         const v = qs.get('value');
@@ -292,7 +326,7 @@ function startOSC(port, attempt = 0) {
 }
 
 function networkInfo() {
-  return { ip: lanIP(), port: serverPort, running: !!serverPort,
+  return { ip: lanIP(), addresses: lanAddresses(), port: serverPort, running: !!serverPort,
     clients: sseClients.size + pollWaiters.size, token: CMD_TOKEN, oscPort };
 }
 function pushNetworkInfo() {
@@ -325,6 +359,28 @@ function broadcast(channel, payload) {
 function pushDisplays() { broadcast('displays', displayList()); }
 function pushOutputState() {
   if (controlWin && !controlWin.isDestroyed()) controlWin.webContents.send('output-state', !!outputWin);
+  pushOutputGeometry();
+}
+
+function outputGeometry() {
+  if (!outputWin || outputWin.isDestroyed()) return null;
+  const [width, height] = outputWin.getContentSize();
+  return { width, height, fullscreen: outputWin.isFullScreen(), scaleFactor: screen.getDisplayMatching(outputWin.getBounds()).scaleFactor };
+}
+function pushOutputGeometry() {
+  if (controlWin && !controlWin.isDestroyed()) controlWin.webContents.send('output-geometry', outputGeometry());
+}
+async function leaveOutputFullscreen(win) {
+  if (fullscreenExits.has(win)) return fullscreenExits.get(win);
+  if (!win.isFullScreen()) return true;
+  const pending = new Promise(resolve => {
+    const done = () => { clearTimeout(timer); fullscreenExits.delete(win); win.removeListener('leave-full-screen', done); resolve(!win.isDestroyed() && !win.isFullScreen()); };
+    const timer = setTimeout(done, 4000);
+    win.once('leave-full-screen', done);
+    win.setFullScreen(false);
+  });
+  fullscreenExits.set(win, pending);
+  return pending;
 }
 
 function createControlWindow() {
@@ -341,9 +397,11 @@ function createControlWindow() {
   });
 }
 
-function positionOutput(target) {
+async function positionOutput(target) {
   if (!outputWin || outputWin.isDestroyed()) return;
+  const win = outputWin, revision = ++outputPlacementVersion;
   outputTargetId = target.id;
+  if (!await leaveOutputFullscreen(win) || win !== outputWin || revision !== outputPlacementVersion) return;
   const ctlId = controlDisplayId();
   const g = lastState || {};
   if (g.gridOn && g.gridSize) {
@@ -352,14 +410,13 @@ function positionOutput(target) {
     const r = Math.floor(cell / n), c = cell % n;
     const b = target.bounds;
     const cw = Math.floor(b.width / n), ch = Math.floor(b.height / n);
-    if (outputWin.isFullScreen()) outputWin.setFullScreen(false);
     outputWin.setBounds({ x: b.x + c * cw, y: b.y + r * ch, width: cw, height: ch });
+  } else if (TimerTools.size(g.outputSize)) {
+    outputWin.setBounds({ x: target.workArea.x, y: target.workArea.y, ...g.outputSize });
   } else if (target.id !== ctlId) {
-    outputWin.setFullScreen(false);
     outputWin.setBounds(target.bounds);
     outputWin.setFullScreen(true);
   } else {
-    if (outputWin.isFullScreen()) outputWin.setFullScreen(false);
     const b = target.workArea;
     const w = Math.min(900, Math.floor(b.width * 0.45));
     const h = Math.floor(w * 9 / 16);
@@ -393,6 +450,7 @@ function createOutputWindow(displayId) {
     hasShadow: false,
     movable: true,
     resizable: true,
+    enableLargerThanScreen: true,
     alwaysOnTop: forceOnTop,
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false }
   });
@@ -406,6 +464,8 @@ function createOutputWindow(displayId) {
   });
   outputWin.on('enter-full-screen', pushOutMode);
   outputWin.on('leave-full-screen', pushOutMode);
+  outputWin.on('resize', pushOutputGeometry);
+  outputWin.on('move', pushOutputGeometry);
   outputWin.once('ready-to-show', () => positionOutput(target));
   outputWin.on('closed', () => { outputWin = null; outputQrState = null; pushOutputQrState(); pushOutputState(); pushDisplays(); });
   pushOutputState();
@@ -414,6 +474,7 @@ function createOutputWindow(displayId) {
 // javi izlazu da li je u punom ekranu (da odluči: grid vs kompaktan prozor)
 function pushOutMode() {
   if (outputWin && !outputWin.isDestroyed()) outputWin.webContents.send('win-fs', outputWin.isFullScreen());
+  pushOutputGeometry();
 }
 
 // Electron ne može da uključi/isključi `transparent` naživo → presozdaj prozor
@@ -457,6 +518,25 @@ ipcMain.on('send-to-display', (e, displayId) => {
 ipcMain.on('close-output', () => { if (outputWin && !outputWin.isDestroyed()) outputWin.close(); });
 ipcMain.on('toggle-fullscreen', () => { if (outputWin && !outputWin.isDestroyed()) outputWin.setFullScreen(!outputWin.isFullScreen()); });
 ipcMain.on('exit-fullscreen', () => { if (outputWin && !outputWin.isDestroyed()) outputWin.setFullScreen(false); });
+ipcMain.handle('output-geometry', () => outputGeometry());
+ipcMain.handle('resize-output', async (e, requested) => {
+  if (!controlWin || e.sender !== controlWin.webContents) return { ok: false };
+  const size = TimerTools.size(requested);
+  if (!size) return { ok: false, error: 'invalid size' };
+  if (!outputWin || outputWin.isDestroyed()) {
+    createOutputWindow(requested.displayId || null);
+    const win = outputWin;
+    await new Promise(resolve => win.once('ready-to-show', resolve));
+  }
+  const win = outputWin;
+  ++outputPlacementVersion; // an explicit size wins over any older monitor/grid move
+  if (!await leaveOutputFullscreen(win) || win !== outputWin || win.isDestroyed()) return { ok: false };
+  if (lastState?.gridOn || lastState?.fitWindow) return { ok: false, error: 'automatic size enabled' };
+  win.setContentSize(size.width, size.height);
+  pushOutputGeometry();
+  const actual = outputGeometry();
+  return { ok: actual.width === size.width && actual.height === size.height, ...actual };
+});
 // kompaktan prozor: izlaz traži da visina prozora prati visinu tajmera (samo kad NIJE fullscreen)
 ipcMain.on('fit-window', (e, h) => {
   if (!outputWin || outputWin.isDestroyed() || outputWin.isFullScreen()) return;
@@ -695,19 +775,32 @@ function tunnelTransportOK(baseUrl, timeoutMs = 3500) {
   });
 }
 
-async function waitForTunnel(baseUrl, totalMs = 18000) {
+async function tunnelDnsReady(baseUrl, timeoutMs) {
+  // Query the configured DNS servers before invoking getaddrinfo: a newly issued
+  // Quick Tunnel name can otherwise enter the OS negative cache too early.
+  // No resolver override and no changes to the computer's network settings.
+  const resolver = new dns.promises.Resolver({ timeout: Math.max(200, timeoutMs), tries: 1 });
+  const timer = setTimeout(() => resolver.cancel(), timeoutMs);
+  try { return (await resolver.resolve4(new URL(baseUrl).hostname)).length > 0; }
+  catch (_) { return false; }
+  finally { clearTimeout(timer); }
+}
+
+async function waitForTunnel(baseUrl, totalMs = 30000, generation = tunnelGeneration) {
   // URL se odštampa malo pre nego što je nova edge ruta svuda spremna.
   const deadline = Date.now() + Math.max(1000, totalMs);
   await new Promise(resolve => setTimeout(resolve, Math.min(1500, Math.max(0, deadline - Date.now()))));
-  for (let attempt = 0; attempt < 6 && Date.now() < deadline; attempt++) {
+  for (let attempt = 0; Date.now() < deadline && generation === tunnelGeneration; attempt++) {
     let remaining = deadline - Date.now();
     if (remaining < 300) break;
-    const timeOK = await tunnelTimeOK(baseUrl, Math.min(4000, remaining));
+    const dnsReady = await tunnelDnsReady(baseUrl, Math.min(2500, remaining));
+    remaining = deadline - Date.now();
+    const timeOK = dnsReady && remaining >= 300 && await tunnelTimeOK(baseUrl, Math.min(4000, remaining));
     remaining = deadline - Date.now();
     if (timeOK && remaining >= 300 && await tunnelTransportOK(baseUrl, Math.min(4000, remaining))) return true;
     remaining = deadline - Date.now();
-    if (attempt < 5 && remaining > 0)
-      await new Promise(resolve => setTimeout(resolve, Math.min(1000, remaining)));
+    if (remaining > 0 && generation === tunnelGeneration)
+      await new Promise(resolve => setTimeout(resolve, Math.min(750 + attempt * 250, 2000, remaining)));
   }
   return false;
 }
@@ -735,7 +828,7 @@ async function activateTunnel(candidate, generation, deadline) {
   tunnel = candidate;
   tunnelProvider = candidate.provider;
   const remaining = Math.max(0, deadline - Date.now());
-  const healthy = remaining >= 1000 && await waitForTunnel(candidate.url, Math.min(18000, remaining));
+  const healthy = remaining >= 1000 && await waitForTunnel(candidate.url, Math.min(30000, remaining), generation);
   if (generation !== tunnelGeneration || tunnel !== candidate) {
     closeTunnel(candidate);
     return null;
@@ -751,7 +844,7 @@ async function activateTunnel(candidate, generation, deadline) {
 
 async function beginShare() {
   const generation = ++tunnelGeneration;
-  const deadline = Date.now() + 60000;
+  const deadline = Date.now() + 90000;
   tunnelStarting = true; pushShare();
   try {
     let candidate = null;
@@ -1454,12 +1547,13 @@ app.whenReady().then(() => {
         } catch (e) { csvStr = 'ERR ' + e; }
         console.log('CSV_OK=' + csvOK + (csvOK ? '' : ' ' + csvStr));
         check('CSV_OK',csvOK);
+        await require('./scripts/smoke-layout')({ controlWin, getOutput:()=>outputWin, serverPort, token:CMD_TOKEN, check });
         if(smokeFailures.length) throw new Error('Failed checks: '+smokeFailures.join(', '));
         console.log('SMOKE_OK');
         app.exit(0);
       } catch (err) { console.error('SMOKE_FAIL', err); app.exit(1); }
     })();
-    setTimeout(() => { console.error('SMOKE_TIMEOUT'); app.exit(1); }, 60000);
+    setTimeout(() => { console.error('SMOKE_TIMEOUT'); app.exit(1); }, process.env.PROTIMER_TEST_ONLINE === '1' ? 180000 : 90000);
   }
 });
 

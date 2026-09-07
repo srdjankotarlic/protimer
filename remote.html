@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="referrer" content="no-referrer">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0b0d11">
 <title>ProTimer — Daljinski</title>
@@ -49,11 +49,19 @@
   button.bk.on{background:var(--red); border-color:var(--red); color:#fff;}
   button.adj{font-family:"SF Mono",Menlo,monospace; font-size:15px; padding:14px 4px;}
   .sec{font-size:11px; letter-spacing:1.5px; color:var(--dim); text-transform:uppercase; margin:4px 2px 8px;}
+  #quickTarget{background:var(--panel2); color:var(--text); border:1px solid var(--border); border-radius:8px; padding:10px; font-size:16px; margin-bottom:10px;}
   .msgrow{display:flex; gap:8px;}
   .msgrow input{flex:1; background:var(--panel2); border:1px solid var(--border); color:var(--text);
     border-radius:12px; padding:14px; font-size:16px; outline:none;}
   .preset{background:var(--panel); font-size:14px; padding:12px 6px;}
   .foot{text-align:center; color:#566070; font-size:12px; margin:16px 0 8px;}
+  [hidden]{display:none!important;}
+  button:disabled{opacity:.4; cursor:not-allowed;}
+  #connectionHelp{padding:12px; margin-bottom:12px; background:var(--panel); border:1px solid var(--amber); border-radius:12px; font-size:14px;}
+  #connectionHelp button{margin-top:10px; padding:10px 18px;}
+  #commandStatus{font-size:13px; color:var(--amber); margin:8px 0; min-height:18px;}
+  #secondaryRemote{border-top:1px solid var(--border); padding-top:14px;}
+  #secondaryTime{font:700 58px/1.2 "SF Mono",Menlo,monospace; text-align:center; margin:10px 0;}
 </style>
 </head>
 <body>
@@ -62,6 +70,8 @@
     <div class="conn"><span class="dot" id="dot"></span><span id="connTxt">…</span></div>
   </div>
 
+  <div id="connectionHelp" role="alert"><span id="connectionHelpText"></span><br><button id="btnReconnect" data-i18n="reconnect">Poveži ponovo</button></div>
+  <div id="commandStatus" role="status" aria-live="polite"></div>
   <div class="disp">
     <div class="lbl" id="lbl"></div>
     <div class="t" id="time">--:--</div>
@@ -87,7 +97,15 @@
   </div>
 
   <div class="sec" data-i18n="quickDur">Brzo trajanje</div>
+  <select id="quickTarget" aria-label="Timer" hidden><option value="primary" data-i18n="timerOne">Tajmer 1</option><option value="secondary" data-i18n="timerTwo">Tajmer 2</option></select>
   <div class="grid g4" id="chips"></div>
+
+  <div id="secondaryRemote" hidden>
+    <div class="sec" data-i18n="timerTwo">Tajmer 2</div>
+    <div id="secondaryTime">--:--</div>
+    <div class="grid g2"><button id="btnSecondaryStart" class="start">▶ START 2</button><button id="btnSecondaryReset">↺ RESET 2</button></div>
+    <div class="grid g2"><button id="btnBothStart" data-i18n="startBoth">▶ Pokreni oba</button><button id="btnBothPause" data-i18n="pauseBoth">⏸ Pauziraj oba</button></div>
+  </div>
 
   <div class="sec" data-i18n="msgToSpeaker">Poruka govorniku</div>
   <div class="grid g3" style="margin-bottom:9px">
@@ -103,6 +121,7 @@
 
   <div class="foot" data-i18n="foot">Kontrola radi dok je glavni ProTimer otvoren na računaru.</div>
 
+<script src="timer-tools.js"></script>
 <script>
 const $ = id => document.getElementById(id);
 function pad(n){ return String(n).padStart(2,'0'); }
@@ -116,12 +135,20 @@ const I18N = {
     start:'▶ START', pause:'⏸ PAUZA', correction:'Korekcija', goNext:'GO ▶ SLEDEĆI',
     quickDur:'Brzo trajanje', msgToSpeaker:'Poruka govorniku',
     preset1:'Ubrzaj', preset2:'Završavaj', preset3:'STOP', ownMsg:'Svoja poruka…', send:'Pošalji',
-    foot:'Kontrola radi dok je glavni ProTimer otvoren na računaru.' },
+    foot:'Kontrola radi dok je glavni ProTimer otvoren na računaru.',
+    reconnect:'Poveži ponovo', authLost:'Link za kontrolu nije važeći. Skeniraj NOVI Daljinski QR iz aplikacije na računaru (ne javni QR za publiku).',
+    networkLost:'Nema veze sa računarom. Proveri istu Wi-Fi mrežu, dozvolu za lokalnu mrežu/firewall i VPN. Ako mreža blokira pristup, koristi PRIVATNU online kontrolu iz aplikacije.',
+    checking:'Proveravam vezu i dozvolu za kontrolu…', commandFailed:'Komanda nije potvrđena. Proveri prikaz tajmera pre ponovnog pokušaja.', commandSent:'Komanda poslata', sending:'Šaljem…',
+    timerOne:'Tajmer 1', timerTwo:'Tajmer 2', startBoth:'▶ Pokreni oba', pauseBoth:'⏸ Pauziraj oba' },
   en: { remoteWord:'Remote', connecting:'connecting…', live:'live', lost:'connection lost…',
     start:'▶ START', pause:'⏸ PAUSE', correction:'Adjust', goNext:'GO ▶ NEXT',
     quickDur:'Quick duration', msgToSpeaker:'Message to speaker',
     preset1:'Speed up', preset2:'Wrap up', preset3:'STOP', ownMsg:'Your message…', send:'Send',
-    foot:'Works while the main ProTimer is open on the computer.' }
+    foot:'Works while the main ProTimer is open on the computer.',
+    reconnect:'Reconnect', authLost:'This control link is not valid. Scan a NEW Remote QR from the desktop app (not the public audience QR).',
+    networkLost:'Cannot reach the computer. Check the same Wi-Fi, local-network/firewall permissions and VPN. If direct access is blocked, use PRIVATE online control from the desktop app.',
+    checking:'Checking connection and control access…', commandFailed:'Command not confirmed. Check the timer before trying again.', commandSent:'Command sent', sending:'Sending…',
+    timerOne:'Timer 1', timerTwo:'Timer 2', startBoth:'▶ Start both', pauseBoth:'⏸ Pause both' }
 };
 let lang = 'sr';
 function tr(key){ return (I18N[lang] && I18N[lang][key]) || I18N.sr[key] || key; }
@@ -158,9 +185,23 @@ async function syncClock(samples=3){
   }catch(_){}
   clockSyncing=false;
 }
-function cmd(type, value){
-  fetch('/cmd', { method:'POST', headers:{'Content-Type':'application/json','x-pt-token':TOKEN},
-    body: JSON.stringify({ type, value }) }).catch(()=>{});
+let authorized=false, connectionHealthy=false, commandPending=false, authError=false;
+function updateAvailability(){
+  document.querySelectorAll('button:not(#btnReconnect)').forEach(b=>b.disabled=!authorized||!connectionHealthy||commandPending||!S);
+  if(S?.mode==='clock') $('btnStart').disabled=true;
+}
+async function cmd(type, value){
+  if(!authorized||!connectionHealthy||commandPending||!S) return;
+  commandPending=true; updateAvailability(); $('commandStatus').textContent=tr('sending');
+  const aborter=new AbortController(), timeout=setTimeout(()=>aborter.abort(),10000);
+  try{
+    const response=await fetch('/cmd', { method:'POST', headers:{'Content-Type':'application/json','x-pt-token':TOKEN},
+      body:JSON.stringify({type,value}),signal:aborter.signal });
+    if(response.status===403){ authError=true; authorized=false; markLost(); }
+    if(!response.ok||!(await response.json()).ok) throw new Error('command failed');
+    $('commandStatus').textContent=tr('commandSent');
+  }catch(_){ $('commandStatus').textContent=tr('commandFailed'); }
+  finally{ clearTimeout(timeout); commandPending=false; updateAvailability(); }
 }
 
 function applyState(next){
@@ -180,27 +221,27 @@ function applyState(next){
   return true;
 }
 
-// prijem stanja (SSE + HTTPS long-poll rezerva za javni link)
-let lastPollSuccess=0, pollController=null;
-const markLive=()=>{ $('dot').classList.add('on'); $('connTxt').textContent=tr('live'); };
-const markLost=()=>{
-  if(location.protocol==='https:'&&Date.now()-lastPollSuccess<25000) return;
-  $('dot').classList.remove('on'); $('connTxt').textContent=tr('lost');
+// Authenticated, finite HTTP responses work on LAN and on buffering HTTPS proxies.
+// A visible timer alone never implies permission to control it.
+let lastPollSuccess=0, pollController=null, retryWake=null;
+const markLive=()=>{
+  authorized=true; authError=false; connectionHealthy=true;
+  $('dot').classList.add('on'); $('connTxt').textContent=tr('live'); $('connectionHelp').hidden=true; updateAvailability();
 };
-function connect(){
-  const es = new EventSource('/events');
-  es.onopen = () => { markLive(); syncClock(1); };
-  es.onmessage = e => { try { applyState(JSON.parse(e.data)); } catch(_){} };
-  es.onerror = () => { markLost(); es.close(); setTimeout(connect,1000); };
-}
+const markLost=()=>{
+  connectionHealthy=false;
+  $('dot').classList.remove('on'); $('connTxt').textContent=tr('lost');
+  $('connectionHelp').hidden=false; $('connectionHelpText').textContent=tr(authError?'authLost':'networkLost'); updateAvailability();
+};
 async function pollLoop(){
   let failures=0;
   while(true){
     const aborter=new AbortController();
     pollController=aborter;
-    const timeout=setTimeout(()=>aborter.abort(),30000);
+    const timeout=setTimeout(()=>aborter.abort(),15000);
     try{
-      const response=await fetch('/poll?since='+encodeURIComponent(lastStateVersion)+'&r='+Date.now(),{cache:'no-store',signal:aborter.signal});
+      const response=await fetch('/control-poll?since='+encodeURIComponent(lastStateVersion)+'&instance='+encodeURIComponent(lastServerInstance||'')+'&r='+Date.now(),{cache:'no-store',headers:{'x-pt-token':TOKEN},signal:aborter.signal});
+      if(response.status===403){ authorized=false; authError=true; }
       if(!response.ok) throw new Error('poll '+response.status);
       const payload=await response.json();
       if(payload.state) applyState(payload.state);
@@ -208,21 +249,46 @@ async function pollLoop(){
       failures=0;
       lastPollSuccess=Date.now(); markLive();
     }catch(_){
+      clearTimeout(timeout);
+      lastStateVersion=-1; // a retry needs an immediate snapshot, not an 8-second idle wait
       markLost();
       failures=Math.min(failures+1,5);
-      await new Promise(resolve=>setTimeout(resolve,Math.min(5000,500*(2**(failures-1)))+Math.random()*250));
+      await new Promise(resolve=>{
+        const timer=setTimeout(done,authError?10000:Math.min(5000,500*(2**(failures-1))));
+        function done(){ clearTimeout(timer); retryWake=null; resolve(); }
+        retryWake=done;
+      });
     }finally{ clearTimeout(timeout); if(pollController===aborter) pollController=null; }
   }
 }
 $('connTxt').textContent = tr('connecting');
-if(location.protocol==='https:') pollLoop(); else connect();
+$('connectionHelpText').textContent=tr('checking'); updateAvailability();
+pollLoop();
 syncClock(location.protocol==='https:'?1:3);
 setInterval(()=>syncClock(1),30000);
-document.addEventListener('visibilitychange',()=>{ if(!document.hidden){ if(pollController)pollController.abort(); syncClock(); } });
-window.addEventListener('online',()=>{ if(pollController)pollController.abort(); syncClock(); });
+function reconnect(){
+  lastStateVersion=-1;
+  if(retryWake) retryWake(); else if(pollController) pollController.abort();
+  syncClock(1);
+}
+$('btnReconnect').addEventListener('click',reconnect);
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden){ markLost(); reconnect(); } });
+window.addEventListener('online',reconnect);
+window.addEventListener('offline',()=>{ markLost(); if(pollController) pollController.abort(); });
+setInterval(()=>{ if(connectionHealthy&&Date.now()-lastPollSuccess>16000) markLost(); },1000);
 
 function render(){
   if(!S) return;
+  $('secondaryRemote').hidden=!S.dualTimer;
+  $('quickTarget').hidden=!S.dualTimer;
+  if(!S.dualTimer) $('quickTarget').value='primary';
+  if(S.dualTimer&&S.secondary){
+    let rem=TimerTools.remaining(S.secondary,hostNow()); if(!S.overtime) rem=Math.max(0,rem);
+    $('secondaryTime').textContent=fmtMs(rem);
+    $('secondaryTime').style.fontSize=Math.min(58,($('secondaryRemote').clientWidth-16)/(fmtMs(rem).length*.62))+'px';
+    $('secondaryTime').style.color=S.useWarnColors?(rem<=S.redSec*1000?S.warnRed:rem<=S.yellowSec*1000?S.warnYellow:S.fgColor):S.fgColor;
+    $('btnSecondaryStart').textContent=(S.secondary.running?tr('pause'):tr('start'))+' 2';
+  }
   const now=hostNow(); let text, neg=false, col='#fff';
   if(S.mode==='clock'){ const d=new Date(now); text=`${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`; }
   else if(S.mode==='countup'){ const el=S.running?S.elapsedMs+(now-S.startAt):S.elapsedMs; text=fmtSecs(Math.floor(el/1000),false); }
@@ -233,6 +299,7 @@ function render(){
     text=fmtMs(rem);
   }
   const t=$('time'); if(t.textContent!==text)t.textContent=text; if(t.style.color!==col)t.style.color=col;
+  t.style.fontSize=Math.min(118,innerWidth*.21,(t.clientWidth-8)/(text.length*.62))+'px';
   const tClass='t'+(neg?' neg':''); if(t.className!==tClass)t.className=tClass;
   const label=S.text||'', message=S.message?S.message.text:'';
   if($('lbl').textContent!==label)$('lbl').textContent=label;
@@ -245,14 +312,18 @@ render();
 setInterval(render,50);
 
 // kontrole
-$('btnStart').addEventListener('click', ()=>cmd('start'));
+$('btnStart').addEventListener('click', ()=>cmd('primaryRunning',!S?.running));
+$('btnSecondaryStart').addEventListener('click',()=>cmd('secondaryRunning',!S?.secondary?.running));
+$('btnSecondaryReset').addEventListener('click',()=>cmd('secondaryReset'));
+$('btnBothStart').addEventListener('click',()=>cmd('bothRunning',true));
+$('btnBothPause').addEventListener('click',()=>cmd('bothRunning',false));
 $('btnReset').addEventListener('click', ()=>cmd('reset'));
 $('btnGo').addEventListener('click', ()=>cmd('go'));
 $('btnBk').addEventListener('click', ()=>cmd('blackout'));
 document.querySelectorAll('[data-adj]').forEach(b=>b.addEventListener('click',()=>cmd('adjust',+b.dataset.adj)));
 [1,2,5,10,15,20,30,45].forEach(min=>{
   const b=document.createElement('button'); b.className='adj'; b.textContent=min+'m';
-  b.addEventListener('click',()=>cmd('setDuration',min*60000)); $('chips').appendChild(b);
+  b.addEventListener('click',()=>cmd(S?.dualTimer&&$('quickTarget').value==='secondary'?'secondaryDuration':'setDuration',min*60000)); $('chips').appendChild(b);
 });
 document.querySelectorAll('.preset').forEach(b=>b.addEventListener('click',()=>cmd('message',b.textContent)));
 $('btnMsg').addEventListener('click', ()=>{ const v=$('msgIn').value.trim(); if(v){ cmd('message',v); $('msgIn').value=''; $('msgIn').blur(); } });

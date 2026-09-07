@@ -29,6 +29,7 @@
   "scripts": {
     "start": "electron .",
     "smoke": "electron . --smoke",
+    "test": "node --test test/*.test.js",
     "check:public-docs": "node scripts/check-public-docs.js",
     "check:indexnow": "node scripts/submit-indexnow.js --dry-run",
     "check:packaging": "node scripts/check-packaging.js",
@@ -62,6 +63,8 @@
     "files": [
       "main.js",
       "preload.js",
+      "timer-tools.js",
+      "scripts/smoke-layout.js",
       "controller.html",
       "output.html",
       "remote.html",

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="referrer" content="no-referrer">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'">
 <title>ProTimer — Ekran</title>
 <style>
   *{box-sizing:border-box; user-select:none; margin:0;}
@@ -17,6 +17,16 @@
 
   #stage{position:absolute; inset:0; display:flex; flex-direction:column;
     align-items:center; justify-content:center;}
+  #stage{align-items:stretch;}
+  .timer-pane{position:relative; flex:1 1 0; min-width:0; min-height:0; overflow:hidden;}
+  .timer-content{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; transform-origin:center;}
+  #secondaryPane{display:none;}
+  #stage.dual.columns{flex-direction:row;}
+  #stage.dual #secondaryPane{display:block;}
+  #stage.dual.columns #secondaryPane{box-shadow:inset 1px 0 0 rgba(128,128,128,.25);}
+  #stage.dual.rows #secondaryPane{box-shadow:inset 0 1px 0 rgba(128,128,128,.25);}
+  #secondaryTimer{font-family:"SF Mono",ui-monospace,Menlo,monospace; font-weight:700; font-variant-numeric:tabular-nums; line-height:.95; white-space:nowrap;}
+  #secondaryTimer.neg{animation:pulse 1s steps(2,start) infinite;}
 
   /* gornji tekst (labela / naziv koji korisnik ubaci) */
   #text{font-weight:600; line-height:1.1; text-align:center; padding:0 5vw;
@@ -70,8 +80,11 @@
 </head>
 <body>
   <div id="stage">
+    <div class="timer-pane" id="primaryPane"><div class="timer-content" id="primaryContent">
     <div id="text"></div>
     <div id="timer">--:--</div>
+    </div></div>
+    <div class="timer-pane" id="secondaryPane"><div class="timer-content" id="secondaryContent"><div id="secondaryTimer">--:--</div></div></div>
   </div>
   <div id="msg"></div>
   <div id="nownext"></div>
@@ -87,6 +100,7 @@
   <div id="blackout"></div>
   <div id="connection">RECONNECTING…</div>
 
+<script src="timer-tools.js"></script>
 <script>
 const IS_ELECTRON = !!window.pt;
 const api = window.pt || null;
@@ -243,15 +257,32 @@ function render(){
   // tajmer UVEK puni prozor; grid se realizuje veličinom/pozicijom samog PROZORA (main proces)
   { const st=$('stage'); if(st.style.left){ st.style.inset='0'; st.style.left=st.style.top=st.style.width=st.style.height=''; } }
   // fit (kompaktan prozor) — samo ako NIJE grid i NIJE fullscreen
-  fitMode = IS_ELECTRON && !!S.fitWindow && !isFS && !S.gridOn;
+  fitMode = IS_ELECTRON && !!S.fitWindow && !isFS && !S.gridOn && !S.dualTimer;
   document.body.classList.toggle('windowed',IS_ELECTRON&&!isFS&&!S.gridOn);
+  setClass($('stage'),S.dualTimer?'dual '+(S.dualSplit==='rows'?'rows':'columns'):'');
 
   paint(text, fg, bg, neg, S.text || '', S.message ? S.message.text : '',
         S.message && S.message.flash, S.showProgress ? prog : null);
+  applyLayout($('primaryContent'),S.outputLayout);
+  if(S.dualTimer&&S.secondary) renderSecondary(now);
 
   if (fitMode) requestFit();
   renderNowNext(fg);
   setStyle($('blackout'),'display',S.blackout?'block':'none');
+}
+
+function applyLayout(element,value){
+  const layout=TimerTools.layout(value);
+  setStyle(element,'transform',`translate(${layout.x}%, ${layout.y}%) scale(${layout.scale/100})`);
+}
+function renderSecondary(now){
+  const timer=S.secondary, pane=$('secondaryPane'), el=$('secondaryTimer');
+  let rem=TimerTools.remaining(timer,now); if(!S.overtime) rem=Math.max(0,rem);
+  const text=fmtMs(rem);
+  const fg=rem<0?S.warnRed:S.useWarnColors?(rem<=S.redSec*1000?S.warnRed:rem<=S.yellowSec*1000?S.warnYellow:S.fgColor):S.fgColor;
+  setText(el,text); setStyle(el,'color',fg); setClass(el,rem<0?'neg':'');
+  setStyle(el,'fontSize',Math.min(pane.clientWidth*0.92/(text.length*0.6),pane.clientHeight*0.7)+'px');
+  applyLayout($('secondaryContent'),timer.layout);
 }
 
 // kompaktan prozor: traži od main-a da visina prozora bude tačno koliko i tajmer (+mali rub)
@@ -291,7 +322,7 @@ function renderNowNext(fg){
 function paint(timeText, fg, bg, neg, bigText, msgText, msgFlash, prog){
   setStyle(document.body,'background',bg);
 
-  const tEl = $('timer'), txtEl = $('text'), st = $('stage');
+  const tEl = $('timer'), txtEl = $('text'), st = $('primaryPane');
   // veličina referentne oblasti = #stage (ceo ekran, ili kockica grida)
   const sw = st.clientWidth || innerWidth, sh = st.clientHeight || innerHeight;
   const textOnly = S && S.textOnly && bigText;

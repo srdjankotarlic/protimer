@@ -32,6 +32,7 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      - run: npm test
       - name: Check public docs and release links
         if: runner.os == 'Linux'
         run: npm run check:public-docs
