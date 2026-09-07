@@ -76,7 +76,9 @@ module.exports = async function smokeLayout({ controlWin, getOutput, serverPort,
   await image(controlWin, 'protimer-layout-controls.png');
 
   const mobile = new BrowserWindow({ width:390, height:844, useContentSize:true, show:false, webPreferences:{contextIsolation:true} });
-  const base = `http://127.0.0.1:${serverPort}`;
+  // Exercise the address encoded in the local QR, not only localhost. This also
+  // checks browser access to the LAN listener and the host's network permission.
+  const base = `http://${localCheck.self.ip}:${serverPort}`;
   try {
     await mobile.loadURL(base + '/remote?t=invalid');
     const unauthorized = await waitFor(mobile, `authError && $('btnStart').disabled && !$('connectionHelp').hidden`);
