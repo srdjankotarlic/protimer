@@ -41,6 +41,8 @@ The remote verifies control permission before enabling buttons. Invalid or old l
 
 Scan a **new** control QR after restarting ProTimer. Online URLs are temporary and stop working when sharing stops or the app closes. ProTimer cannot override a venue’s network isolation, firewall or lack of internet. Rehearse on the actual show network; a local connection generally has less latency than an internet tunnel.
 
+If **Share online** fails while local control works, the network may block temporary tunnel hostnames through its DNS policy. ProTimer does not change or bypass that policy. Ask the network administrator to permit the service, or test on an approved network. Do not rely on online sharing as the only control path for a show.
+
 ## Kratko uputstvo (SR)
 
 - **IZLAZNI PROZOR I CIFRE:** unesi širinu i visinu, pa Primeni veličinu. To su logički pikseli sadržaja; Retina/Windows skaliranje može razlikovati fizičku rezoluciju.

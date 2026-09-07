@@ -4,6 +4,11 @@ on:
   push:
     tags: ['v*']
   workflow_dispatch:
+    inputs:
+      test_online:
+        description: 'Also test real HTTPS phone control (requires tunnel-provider availability)'
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -33,6 +38,7 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      - run: npm test
       - name: Prepare cloudflared (macOS arm64)
         if: runner.os == 'macOS'
         run: node scripts/fetch-cloudflared.js mac
@@ -46,8 +52,12 @@ jobs:
       - name: Smoke test packaged macOS app
         if: runner.os == 'macOS'
         run: dist-installers/mac-arm64/ProTimer.app/Contents/MacOS/ProTimer --smoke --disable-gpu
+        env:
+          PROTIMER_TEST_ONLINE: ${{ inputs.test_online && '1' || '0' }}
       - name: Smoke test packaged Windows app
         if: runner.os == 'Windows'
+        env:
+          PROTIMER_TEST_ONLINE: ${{ inputs.test_online && '1' || '0' }}
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force (Join-Path (Get-Location).Drive.Root 'tmp') | Out-Null
