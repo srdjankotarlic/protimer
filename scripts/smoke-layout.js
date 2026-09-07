@@ -46,19 +46,21 @@ module.exports = async function smokeLayout({ controlWin, getOutput, serverPort,
   report('DIGIT_SCALE_POSITION_OK', Math.abs(after.width / before.width - .5) < .01 && Math.abs(after.x - before.x - before.pw * .125) < 2 && Math.abs(after.y - before.y + before.ph * .1) < 2 && Math.abs(previewBefore - previewAfter) < 1, { before, after, previewBefore, previewAfter });
   await image(getOutput(), 'protimer-layout-position.png');
   await ctl(`$('btnLayoutReset').click(); $('chkDual').checked=true; $('chkDual').dispatchEvent(new Event('change')); $('secondaryDurationTrigger').click(); $('durationHours').value=0; $('durationMinutes').value=5; $('durationSeconds').value=30; $('durationPickerConfirm').click();`);
-  await delay(150);
+  // Occluded macOS CI windows may defer a paint. Wait for the actual rendered
+  // state, while keeping a bounded deadline and the same geometry assertions.
+  const columnsReady = await waitFor(getOutput(), `$('stage').classList.contains('columns') && $('secondaryTimer').textContent==='5:30' && $('secondaryPane').getBoundingClientRect().width>0`);
   const columns = await out(`(()=>{let a=$('primaryPane').getBoundingClientRect(),b=$('secondaryPane').getBoundingClientRect();return {aw:a.width,bw:b.width,ah:a.height,bh:b.height,ax:a.x,bx:b.x,time:$('secondaryTimer').textContent};})()`);
-  report('DUAL_COLUMNS_OK', columns.aw === columns.bw && columns.ah === columns.bh && columns.bx > columns.ax && columns.time === '5:30', columns);
+  report('DUAL_COLUMNS_OK', columnsReady && columns.aw === columns.bw && columns.ah === columns.bh && columns.bx > columns.ax && columns.time === '5:30', columns);
   await image(getOutput(), 'protimer-dual-columns.png');
   await ctl(`$('dualSplit').value='rows'; $('dualSplit').dispatchEvent(new Event('change'));`);
-  await delay(150);
+  const rowsReady = await waitFor(getOutput(), `$('stage').classList.contains('rows') && $('secondaryPane').getBoundingClientRect().y>0`);
   const rows = await out(`(()=>{let a=$('primaryPane').getBoundingClientRect(),b=$('secondaryPane').getBoundingClientRect();return {aw:a.width,bw:b.width,ah:a.height,bh:b.height,ay:a.y,by:b.y};})()`);
-  report('DUAL_ROWS_OK', rows.aw === rows.bw && rows.ah === rows.bh && rows.by > rows.ay, rows);
+  report('DUAL_ROWS_OK', rowsReady && rows.aw === rows.bw && rows.ah === rows.bh && rows.by > rows.ay, rows);
   await image(getOutput(), 'protimer-dual-rows.png');
   await ctl(`$('layoutTarget').value='secondary'; syncLayoutUI(); $('timerScaleValue').value=70; $('timerScaleValue').dispatchEvent(new Event('input')); $('timerXValue').value=-5; $('timerXValue').dispatchEvent(new Event('input'));`);
-  await delay(100);
+  const layoutReady = await waitFor(getOutput(), `$('secondaryContent').style.transform==='translate(-5%, 0%) scale(0.7)'`);
   const separateLayout = await out(`({primary:$('primaryContent').style.transform,secondary:$('secondaryContent').style.transform})`);
-  report('INDEPENDENT_DIGIT_LAYOUT_OK', separateLayout.primary === 'translate(0%, 0%) scale(1)' && separateLayout.secondary === 'translate(-5%, 0%) scale(0.7)', separateLayout);
+  report('INDEPENDENT_DIGIT_LAYOUT_OK', layoutReady && separateLayout.primary === 'translate(0%, 0%) scale(1)' && separateLayout.secondary === 'translate(-5%, 0%) scale(0.7)', separateLayout);
   await ctl(`$('btnBothStart').click();`);
   await delay(250);
   const running = await ctl(`({a:S.running,b:S.secondary.running,remaining:TimerTools.remaining(S.secondary,Date.now())})`);
