@@ -1,11 +1,9 @@
-const { app, BrowserWindow, ipcMain, screen } = require('electron');
+const { app, BrowserWindow, ipcMain, screen, net } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const http = require('http');
-const https = require('https');
 const os = require('os');
 const crypto = require('crypto');
-const dns = require('dns');
 const { spawn } = require('child_process');
 const TimerTools = require('./timer-tools');
 const { leaveFullscreen: leaveOutputFullscreen } = require('./window-tools');
@@ -707,71 +705,34 @@ function validTunnelURL(candidate) {
 }
 
 function tunnelTimeOK(baseUrl, timeoutMs = 3500) {
-  return new Promise((resolve) => {
-    let settled = false;
-    const done = (ok) => {
-      if (settled) return;
-      settled = true;
-      resolve(ok);
-    };
-    try {
-      const u = new URL('/time', baseUrl);
-      const transport = u.protocol === 'https:' ? https : http;
-      const req = transport.get(u, {
-        headers: {
-          'User-Agent': 'ProTimer tunnel check',
-          'bypass-tunnel-reminder': 'true'
-        }
-      }, (res) => {
-        let body = '';
-        res.on('data', (chunk) => { body += chunk; if (body.length > 4096) req.destroy(); });
-        res.on('end', () => {
-          let value = null;
-          try { value = JSON.parse(body); } catch (e) {}
-          const ok = res.statusCode === 200 && value && value.instance === SERVER_INSTANCE && Number.isFinite(value.now)
-            && Math.abs(Date.now() - value.now) < 60000;
-          if (!ok) console.warn(`[share] /time probe failed (HTTP ${res.statusCode || 0})`);
-          done(ok);
-        });
-      });
-      req.setTimeout(timeoutMs, () => { console.warn('[share] /time probe timed out'); req.destroy(); done(false); });
-      req.on('error', (error) => { console.warn(`[share] /time probe error: ${error.code || error.message}`); done(false); });
-    } catch (e) { done(false); }
-  });
+  return probeTunnel(new URL('/time', baseUrl), timeoutMs, value =>
+    value.instance === SERVER_INSTANCE && Number.isFinite(value.now) && Math.abs(Date.now() - value.now) < 60000);
 }
 
 function tunnelTransportOK(baseUrl, timeoutMs = 3500) {
-  return new Promise((resolve) => {
-    let settled = false;
-    const done = (ok) => { if (!settled) { settled = true; resolve(ok); } };
-    try {
-      const u = new URL(`/transport-probe?instance=${encodeURIComponent(SERVER_INSTANCE)}`, baseUrl);
-      const req = https.get(u, {
-        headers: { 'User-Agent': 'ProTimer tunnel check', 'bypass-tunnel-reminder': 'true', 'Cache-Control': 'no-cache' }
-      }, (res) => {
-        let body = '';
-        res.on('data', (chunk) => { body += chunk; if (body.length > 4096) req.destroy(); });
-        res.on('end', () => {
-          let value = null; try { value = JSON.parse(body); } catch (e) {}
-          const ok = res.statusCode === 200 && value && value.ok === true && value.instance === SERVER_INSTANCE;
-          if (!ok) console.warn(`[share] transport probe failed (HTTP ${res.statusCode || 0})`);
-          done(ok);
-        });
-      });
-      req.setTimeout(timeoutMs, () => { console.warn('[share] transport probe timed out'); req.destroy(); done(false); });
-      req.on('error', (error) => { console.warn(`[share] transport probe error: ${error.code || error.message}`); done(false); });
-    } catch (e) { done(false); }
-  });
+  return probeTunnel(new URL(`/transport-probe?instance=${encodeURIComponent(SERVER_INSTANCE)}`, baseUrl), timeoutMs,
+    value => value.ok === true && value.instance === SERVER_INSTANCE);
 }
 
-async function tunnelDnsReady(baseUrl, timeoutMs) {
-  // Query the configured DNS servers before invoking getaddrinfo: a newly issued
-  // Quick Tunnel name can otherwise enter the OS negative cache too early.
-  // No resolver override and no changes to the computer's network settings.
-  const resolver = new dns.promises.Resolver({ timeout: Math.max(200, timeoutMs), tries: 1 });
-  const timer = setTimeout(() => resolver.cancel(), timeoutMs);
-  try { return (await resolver.resolve4(new URL(baseUrl).hostname)).length > 0; }
-  catch (_) { return false; }
+async function probeTunnel(url, timeoutMs, validate) {
+  // Use the same Chromium networking stack as the remote/browser, including the
+  // computer's proxy and DNS settings. Raw UDP DNS probes can be blocked on macOS
+  // independently of web access and must not gate an otherwise usable HTTPS link.
+  const aborter = new AbortController();
+  const timer = setTimeout(() => aborter.abort(), timeoutMs);
+  try {
+    const response = await net.fetch(url.toString(), { signal: aborter.signal, cache: 'no-store', redirect: 'error',
+      headers: { 'User-Agent': 'ProTimer tunnel check', 'bypass-tunnel-reminder': 'true' } });
+    if (!response.ok) throw new Error('HTTP ' + response.status);
+    let body = '';
+    const decoder = new TextDecoder();
+    for await (const chunk of response.body) {
+      body += decoder.decode(chunk, {stream:true});
+      if (body.length > 4096) { aborter.abort(); return false; }
+    }
+    const value = JSON.parse(body + decoder.decode());
+    return !!value && validate(value);
+  } catch (error) { console.warn('[share] HTTPS probe: ' + (error.code || error.message)); return false; }
   finally { clearTimeout(timer); }
 }
 
@@ -782,10 +743,7 @@ async function waitForTunnel(baseUrl, totalMs = 30000, generation = tunnelGenera
   for (let attempt = 0; Date.now() < deadline && generation === tunnelGeneration; attempt++) {
     let remaining = deadline - Date.now();
     if (remaining < 300) break;
-    const dnsReady = await tunnelDnsReady(baseUrl, Math.min(2500, remaining));
-    if (!dnsReady && attempt === 0) console.warn('[share] Waiting for tunnel DNS readiness');
-    remaining = deadline - Date.now();
-    const timeOK = dnsReady && remaining >= 300 && await tunnelTimeOK(baseUrl, Math.min(4000, remaining));
+    const timeOK = await tunnelTimeOK(baseUrl, Math.min(4000, remaining));
     remaining = deadline - Date.now();
     if (timeOK && remaining >= 300 && await tunnelTransportOK(baseUrl, Math.min(4000, remaining))) return true;
     remaining = deadline - Date.now();
