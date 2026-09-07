@@ -65,6 +65,7 @@
       "preload.js",
       "timer-tools.js",
       "window-tools.js",
+      "tunnel-tools.js",
       "scripts/smoke-layout.js",
       "controller.html",
       "output.html",

@@ -7,6 +7,7 @@ const crypto = require('crypto');
 const { spawn } = require('child_process');
 const TimerTools = require('./timer-tools');
 const { leaveFullscreen: leaveOutputFullscreen } = require('./window-tools');
+const { waitForTunnelReady } = require('./tunnel-tools');
 
 const SMOKE = process.argv.includes('--smoke');
 // UI tests must never overwrite the operator's saved rundown or preferences.
@@ -753,20 +754,9 @@ async function probeTunnel(url, timeoutMs, validate) {
 }
 
 async function waitForTunnel(baseUrl, totalMs = 30000, generation = tunnelGeneration) {
-  // URL se odštampa malo pre nego što je nova edge ruta svuda spremna.
-  const deadline = Date.now() + Math.max(1000, totalMs);
-  await new Promise(resolve => setTimeout(resolve, Math.min(1500, Math.max(0, deadline - Date.now()))));
-  for (let attempt = 0; Date.now() < deadline && generation === tunnelGeneration; attempt++) {
-    let remaining = deadline - Date.now();
-    if (remaining < 300) break;
-    const timeOK = await tunnelTimeOK(baseUrl, Math.min(4000, remaining));
-    remaining = deadline - Date.now();
-    if (timeOK && remaining >= 300 && await tunnelTransportOK(baseUrl, Math.min(4000, remaining))) return true;
-    remaining = deadline - Date.now();
-    if (remaining > 0 && generation === tunnelGeneration)
-      await new Promise(resolve => setTimeout(resolve, Math.min(750 + attempt * 250, 2000, remaining)));
-  }
-  return false;
+  return waitForTunnelReady({ url: baseUrl, totalMs,
+    isCurrent: () => generation === tunnelGeneration,
+    probeTime: tunnelTimeOK, probeTransport: tunnelTransportOK });
 }
 
 function closeTunnel(candidate) {

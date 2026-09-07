@@ -61,10 +61,16 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force (Join-Path (Get-Location).Drive.Root 'tmp') | Out-Null
-          $process = Start-Process -FilePath ".\dist-installers\win-unpacked\ProTimer.exe" -ArgumentList "--smoke", "--disable-gpu" -Wait -PassThru
+          $stdout = Join-Path $env:RUNNER_TEMP 'protimer-smoke-stdout.log'
+          $stderr = Join-Path $env:RUNNER_TEMP 'protimer-smoke-stderr.log'
+          $process = Start-Process -FilePath ".\dist-installers\win-unpacked\ProTimer.exe" -ArgumentList "--smoke", "--disable-gpu" -Wait -PassThru -RedirectStandardOutput $stdout -RedirectStandardError $stderr
+          Get-Content $stdout
+          Get-Content $stderr
           if ($process.ExitCode -ne 0) {
             throw "Packaged Windows smoke test failed with exit code $($process.ExitCode)"
           }
+          if (-not (Select-String -Path $stdout -Pattern '^SMOKE_OK$' -Quiet)) { throw 'Smoke completion marker missing' }
+          if ($env:PROTIMER_TEST_ONLINE -eq '1' -and -not (Select-String -Path $stdout -Pattern '^PHONE_REAL_HTTPS_OK=true' -Quiet)) { throw 'Online control was not verified' }
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: installers-${{ matrix.os }}
