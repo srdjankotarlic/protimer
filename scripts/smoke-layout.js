@@ -3,12 +3,16 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
-module.exports = async function smokeLayout({ controlWin, getOutput, serverPort, token, check }) {
+module.exports = async function smokeLayout({ controlWin, getOutput, serverPort, token, check, tunnelTimeOK, tunnelTransportOK }) {
   const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
   const ctl = code => controlWin.webContents.executeJavaScript(code);
   const out = code => getOutput().webContents.executeJavaScript(code);
   const report = (name, ok, detail) => { console.log(name + '=' + !!ok + ' ' + JSON.stringify(detail)); check(name, ok); };
   const image = async (win, name) => fs.writeFileSync(path.join(os.tmpdir(), name), (await win.webContents.capturePage()).toPNG());
+  const nativeProbes = await tunnelTimeOK(`http://127.0.0.1:${serverPort}`) && await tunnelTransportOK(`http://127.0.0.1:${serverPort}`);
+  report('NATIVE_NETWORK_PROBES_OK', nativeProbes, nativeProbes);
+  const localCheck = await ctl(`(async()=>{const info=await api.getNetworkInfo(); return {self:await api.checkLocalNetwork(info.ip),foreign:await api.checkLocalNetwork('192.0.2.1')};})()`);
+  report('LOCAL_NETWORK_DIAGNOSTIC_OK', localCheck.self.ok && !localCheck.foreign.ok, localCheck);
   const waitFor = async (win, condition) => {
     for (let i = 0; i < 60; i++) {
       if (await win.webContents.executeJavaScript(condition)) return true;

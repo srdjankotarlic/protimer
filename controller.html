@@ -472,6 +472,8 @@
       <h3 data-i18n="netTitle">MREŽA → OBS · TELEFON</h3>
       <label class="lbl" for="networkSel" data-i18n="networkAddress">Mreža računara (ista mreža kao telefon)</label>
       <select id="networkSel"></select>
+      <button id="btnCheckLocal" class="ghost" style="width:100%; margin-bottom:8px" data-i18n="checkLocal">Proveri lokalnu adresu</button>
+      <p id="localCheckStatus" class="panel-help" role="status" style="margin:0 0 10px"></p>
       <div class="lbl" style="margin-bottom:5px" data-i18n="screenOBS">Ekran (OBS / monitor)</div>
       <div class="net-url">
         <span id="netUrl">—</span>
@@ -566,6 +568,7 @@ const api = window.pt || {
   exitFullscreen(){}, setOnTop(){}, getDisplays:async()=>[], isOutputOpen:async()=>false,
   resizeOutput:async()=>({ok:false}), getOutputGeometry:async()=>null, onOutputGeometry(){},
   getNetworkInfo:async()=>({}), onDisplays(){}, onOutputState(){}, onNetworkInfo(){},
+  checkLocalNetwork:async()=>({ok:false}),
   onRemoteCmd(){}, sendToDisplay(){},
   qr:async()=>null, shareStart:async()=>({error:'preview'}), shareStop:async()=>true,
   shareInfo:async()=>({}), onShareInfo(){}, showOutputQr:async()=>false, hideOutputQr(){}, onOutputQr(){}
@@ -574,6 +577,9 @@ const api = window.pt || {
 // ---------- JEZIK / LANGUAGE ----------
 const I18N = {
   sr: {
+    checkLocal:'Proveri lokalnu adresu', checkingLocal:'Proveravam lokalni server…',
+    localCheckOK:'Server odgovara na ovoj adresi. Skeniraj NOVI Daljinski QR. Ako telefon i dalje ne otvara stranicu, proveri izolaciju uređaja na Wi-Fi mreži i dozvole/firewall. Ova provera važi za računar, ne potvrđuje pristup sa telefona.',
+    localCheckFailed:'Lokalna adresa ne odgovara. Izaberi drugu mrežu iznad i proveri dozvolu za lokalnu mrežu/firewall. Na Macu: System Settings → Privacy & Security → Local Network → ProTimer.',
     shareFailureHelp:'Online servis nije dostupan. Proveri internet/VPN i pokušaj ponovo. Lokalna kontrola ostaje dostupna na istoj mreži.',
     outputLayoutTitle:'IZLAZNI PROZOR I CIFRE', widthPx:'Širina (px)', heightPx:'Visina (px)', applySize:'Primeni veličinu',
     sizeHelp:'Veličina sadržaja u logičkim pikselima (kao OBS Browser Source). Primena izlazi iz punog ekrana i isključuje Grid/Kompaktan. F uključuje pun ekran.',
@@ -625,6 +631,9 @@ const I18N = {
     shortcuts:'<kbd>Space</kbd> start/pauza · <kbd>R</kbd> reset · <kbd>N</kbd> sledeći · <kbd>↑↓</kbd> ±1m · <kbd>←→</kbd> ±10s · <kbd>B</kbd> blackout · <kbd>F</kbd> pun ekran · <kbd>M</kbd> poruka · <kbd>C</kbd> obriši poruku'
   },
   en: {
+    checkLocal:'Check local address', checkingLocal:'Checking local server…',
+    localCheckOK:'The server responds at this address. Scan a NEW Remote QR. If the phone still cannot open the page, check Wi-Fi device isolation and permissions/firewall. This checks the computer, not access from the phone.',
+    localCheckFailed:'The local address does not respond. Select another network above and check local-network/firewall permissions. On Mac: System Settings → Privacy & Security → Local Network → ProTimer.',
     shareFailureHelp:'The online service is unavailable. Check internet/VPN and retry. Local control remains available on the same network.',
     outputLayoutTitle:'OUTPUT WINDOW & DIGITS', widthPx:'Width (px)', heightPx:'Height (px)', applySize:'Apply size',
     sizeHelp:'Content size in logical pixels (like an OBS Browser Source). Applying exits fullscreen and disables Grid/Compact. F toggles fullscreen.',
@@ -1112,7 +1121,7 @@ function showNet(info){
   }
   const previousUrl=netUrl;
   netUrl=`http://${selectedNetworkIp}:${info.port}`;
-  if(previousUrl&&previousUrl!==netUrl){ $('qrBox').style.display='none'; qrShownFor=''; }
+  if(previousUrl&&previousUrl!==netUrl){ $('qrBox').style.display='none'; qrShownFor=''; $('localCheckStatus').textContent=''; }
   remoteUrl=`${netUrl}/remote${info.token?`?t=${info.token}`:''}`;
   backstageUrl=`${netUrl}/backstage`;
   apiUrl=`${netUrl}/cmd?type=start${info.token?`&t=${info.token}`:''}`;
@@ -1127,6 +1136,12 @@ function showNet(info){
   updatePublicRemote();
 }
 $('networkSel').addEventListener('change',e=>{ selectedNetworkIp=e.target.value; localStorage.setItem('pt_network_ip',selectedNetworkIp); showNet(lastNetInfo); });
+$('btnCheckLocal').addEventListener('click',async()=>{
+  const ip=selectedNetworkIp; $('btnCheckLocal').disabled=true; $('localCheckStatus').textContent=t('checkingLocal');
+  try{ const result=await api.checkLocalNetwork(ip); if(ip===selectedNetworkIp) $('localCheckStatus').textContent=t(result?.ok?'localCheckOK':'localCheckFailed'); }
+  catch(_){ $('localCheckStatus').textContent=t('localCheckFailed'); }
+  finally{ $('btnCheckLocal').disabled=false; }
+});
 api.onNetworkInfo(showNet);
 api.getNetworkInfo().then(showNet).catch(()=>{});
 function copyBtn(btn, getUrl){ btn.addEventListener('click',()=>{ const u=getUrl(); if(u){ navigator.clipboard.writeText(u); const o=btn.textContent; btn.textContent='✓'; setTimeout(()=>btn.textContent=o,1200); } }); }

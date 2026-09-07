@@ -534,6 +534,22 @@ ipcMain.on('ctl-on-top', (e, flag) => { if (controlWin && !controlWin.isDestroye
 ipcMain.handle('displays', () => displayList());
 ipcMain.handle('output-open', () => !!outputWin);
 ipcMain.handle('network-info', () => networkInfo());
+ipcMain.handle('check-local-network', (e, ip) => {
+  if (!controlWin || e.sender !== controlWin.webContents || !lanAddresses().some(a => a.ip === ip))
+    return { ok: false, error: 'not a local interface' };
+  return new Promise(resolve => {
+    let settled = false;
+    const finish = (ok) => { if (!settled) { settled = true; clearTimeout(timer); resolve({ok,ip,port:serverPort}); } };
+    const req = http.get(`http://${ip}:${serverPort}/control-status`, {headers:{'x-pt-token':CMD_TOKEN}}, res => {
+      let body = '';
+      res.on('data', chunk => { body += chunk; if (body.length > 4096) req.destroy(); });
+      res.on('end', () => { try { const data=JSON.parse(body); finish(res.statusCode===200&&data.ok&&data.instance===SERVER_INSTANCE); } catch (_) { finish(false); } });
+      res.on('error', () => finish(false));
+    });
+    const timer = setTimeout(() => { req.destroy(); finish(false); }, 3000);
+    req.on('error', () => finish(false));
+  });
+});
 
 // ---------------- QR KOD + JAVNI LINK (tunel) ----------------
 let tunnel = null, tunnelUrl = null, tunnelStarting = false, tunnelProvider = null;
@@ -1495,7 +1511,7 @@ app.whenReady().then(() => {
         } catch (e) { csvStr = 'ERR ' + e; }
         console.log('CSV_OK=' + csvOK + (csvOK ? '' : ' ' + csvStr));
         check('CSV_OK',csvOK);
-        await require('./scripts/smoke-layout')({ controlWin, getOutput:()=>outputWin, serverPort, token:CMD_TOKEN, check });
+        await require('./scripts/smoke-layout')({ controlWin, getOutput:()=>outputWin, serverPort, token:CMD_TOKEN, check, tunnelTimeOK, tunnelTransportOK });
         if(smokeFailures.length) throw new Error('Failed checks: '+smokeFailures.join(', '));
         console.log('SMOKE_OK');
         app.exit(0);

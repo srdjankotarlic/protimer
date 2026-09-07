@@ -15,6 +15,7 @@ contextBridge.exposeInMainWorld('pt', {
   getDisplays: () => ipcRenderer.invoke('displays'),
   isOutputOpen: () => ipcRenderer.invoke('output-open'),
   getNetworkInfo: () => ipcRenderer.invoke('network-info'),
+  checkLocalNetwork: (ip) => ipcRenderer.invoke('check-local-network', ip),
   onDisplays: (cb) => ipcRenderer.on('displays', (e, list) => cb(list)),
   onOutputState: (cb) => ipcRenderer.on('output-state', (e, open) => cb(open)),
   onNetworkInfo: (cb) => ipcRenderer.on('network-info', (e, info) => cb(info)),
