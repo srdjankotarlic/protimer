@@ -1,6 +1,6 @@
 # Output layout, two timers and phone control
 
-These controls are introduced on the `codex/output-layout-dual-timer` development branch. The public v2.1.0 installers do not include them yet.
+These controls are available in ProTimer 2.2.0 for macOS Apple Silicon and Windows x64.
 
 ## Exact output size
 
@@ -42,6 +42,8 @@ The remote verifies control permission before enabling buttons. Invalid or old l
 Scan a **new** control QR after restarting ProTimer. Online URLs are temporary and stop working when sharing stops or the app closes. ProTimer cannot override a venue’s network isolation, firewall or lack of internet. Rehearse on the actual show network; a local connection generally has less latency than an internet tunnel.
 
 If **Share online** fails while local control works, the network may block temporary tunnel hostnames through its DNS policy. ProTimer does not change or bypass that policy. Ask the network administrator to permit the service, or test on an approved network. Do not rely on online sharing as the only control path for a show.
+
+Online startup deliberately waits at least 15 seconds after a Quick Tunnel registers before checking its hostname, to avoid caching a premature “domain not found” response. The link is shown only after both connectivity checks succeed; you can cancel startup at any time.
 
 ## Kratko uputstvo (SR)
 

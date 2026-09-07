@@ -37,6 +37,8 @@ The whole app is small on purpose:
 
 Release builds fetch the pinned official Cloudflare binary with `scripts/fetch-cloudflared.js`; `scripts/verify-packaged-tunnel.js` then verifies the packaged checksum, version and platform signature before an installer can be published.
 
+Distribution manifests and their checksums describe the last published binaries, independently of an upcoming app version. After publishing a release, update Scoop, Chocolatey and `docs/checksums` together from the actual release asset hashes, then rerun the packaging/lifecycle checks. Never invent checksums for a build that does not exist yet. The Release workflow can be dispatched with `test_online=true` to validate packaged HTTPS control without publishing.
+
 ## Pull requests
 
 1. Fork, create a branch, make your change.

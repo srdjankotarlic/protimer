@@ -9,7 +9,7 @@
   Send a clear timer to a projector, confidence monitor, browser source or phone from one local app.
 </p>
 
-<p align="center"><strong>Latest release: ProTimer 2.1.0 — free, open source, no account and no watermark.</strong></p>
+<p align="center"><strong>Latest release: ProTimer 2.2.0 — free, open source, no account and no watermark.</strong></p>
 
 <p align="center">
   <a href="https://github.com/srdjankotarlic/protimer/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/srdjankotarlic/protimer/actions/workflows/ci.yml/badge.svg"></a>
@@ -47,12 +47,12 @@
 
 | Your computer | Recommended download | Install |
 |---|---|---|
-| Apple Silicon Mac (M1 or newer) | **[Download the macOS DMG](https://github.com/srdjankotarlic/protimer/releases/download/v2.1.0/ProTimer-2.1.0-arm64.dmg)** | Open the DMG and drag **ProTimer** to Applications. |
-| Windows 10/11 x64 | **[Download the Windows installer](https://github.com/srdjankotarlic/protimer/releases/download/v2.1.0/ProTimer-Setup-2.1.0.exe)** | Run Setup and follow the installer. |
+| Apple Silicon Mac (M1 or newer) | **[Download the macOS DMG](https://github.com/srdjankotarlic/protimer/releases/download/v2.2.0/ProTimer-2.2.0-arm64.dmg)** | Open the DMG and drag **ProTimer** to Applications. |
+| Windows 10/11 x64 | **[Download the Windows installer](https://github.com/srdjankotarlic/protimer/releases/download/v2.2.0/ProTimer-Setup-2.2.0.exe)** | Run Setup and follow the installer. |
 
-Need a Windows build that does not install? Use the [portable EXE](https://github.com/srdjankotarlic/protimer/releases/download/v2.1.0/ProTimer-2.1.0-portable.exe). Most Windows users should choose Setup.
+Need a Windows build that does not install? Use the [portable EXE](https://github.com/srdjankotarlic/protimer/releases/download/v2.2.0/ProTimer-2.2.0-portable.exe). Most Windows users should choose Setup.
 
-Every installer is built by the public release workflow. You can verify a download with the [ProTimer 2.1.0 SHA-256 checksums](https://github.com/srdjankotarlic/protimer/releases/download/v2.1.0/ProTimer-2.1.0-SHA256SUMS.txt).
+Every installer is built by the public release workflow. You can verify a download with the [ProTimer 2.2.0 SHA-256 checksums](https://github.com/srdjankotarlic/protimer/releases/download/v2.2.0/ProTimer-2.2.0-SHA256SUMS.txt).
 
 <details>
 <summary><strong>First-launch security warning</strong></summary>
@@ -64,16 +64,19 @@ The current downloads are not Apple-notarized or Windows Authenticode-signed.
 
 </details>
 
-## New in ProTimer 2.1
+## New in ProTimer 2.2
 
-- **Clear operator preview:** the timer in Control stays large and centred while grid placement moves only the real audience output.
-- **Faster duration entry:** the main timer and every rundown cue share one clear `HH:MM:SS` picker, step controls and minute presets.
-- **A rundown built for real shows:** **START RUNDOWN** launches cue one, and long rundowns scroll while every cue keeps a readable height.
-- **Cleaner audience output:** the desktop timer is frameless, movable and resizable by mouse; fullscreen remains safely controlled from Control.
-- **QR access for the audience:** show a view-only Timer or Backstage QR directly on the output. Remote-control URLs are never offered to the audience.
-- **Stable phone viewing:** phone clocks synchronise to the ProTimer host and rendering is rate-limited to avoid drift and unnecessary lag.
+- **Exact output size:** type the window width and height, or choose HD / Full HD. The frameless screen still moves and resizes with the mouse.
+- **Precise digits:** scale and position the timer independently of its window, while the operator preview stays large and centred.
+- **Two timers on one screen:** independent durations and transport controls, split left/right or top/bottom, with separate digit layouts.
+- **Clearer phone control:** choose the right network address, check the local server, reconnect automatically and see invalid-link or command errors.
+- **Safer online startup:** wait for a new tunnel hostname to become ready before its first lookup. Online sharing remains experimental; keep a local control path for shows.
 
-See the complete [2.1.0 release notes](docs/RELEASE-NOTES-2.1.0.md).
+The scrollable rundown, duration picker, Colors/Text, Grid, Thresholds, Message, audience QR and Backstage controls remain available.
+
+See the complete [2.2.0 release notes](docs/RELEASE-NOTES-2.2.0.md).
+
+[How to size the output, position digits, use two timers and connect a phone →](docs/OUTPUT-AND-PHONE-CONTROL.md)
 
 ## Quick start (60 seconds)
 
@@ -143,6 +146,8 @@ Open the same URL on any computer/TV on the network as a confidence monitor.
 
 ### 📱 Phone remote
 The same panel has a **Remote** URL (`…:7878/remote`). Open it in your phone's browser (same Wi-Fi). You get big buttons: Start/Pause, Reset, ±time, GO next, blackout, quick durations, and messages to the speaker. *(The main ProTimer must stay open on the computer.)*
+
+Choose the correct network adapter and use **Check local address** before scanning the Remote QR. Allow local-network access in macOS privacy settings / the Windows firewall. Guest Wi-Fi can isolate devices even when they share the same network name. Scan a fresh QR after restarting ProTimer; never give the private control link to the audience. [Connection and dual-timer guide](docs/OUTPUT-AND-PHONE-CONTROL.md#phone-control-before-a-show).
 
 ### 🎛️ Stream Deck / Companion / HTTP API
 Every command is a simple **HTTP GET** — the network panel shows a ready-made **API** URL (with your session token) to copy:

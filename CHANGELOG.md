@@ -2,6 +2,17 @@
 
 Notable ProTimer changes are listed here. The complete notes and installers are available on the [Releases page](https://github.com/srdjankotarlic/protimer/releases).
 
+## 2.2.0 — 2026-09-07
+
+- Added exact output width/height, HD/Full HD presets and fullscreen-safe resizing.
+- Added independent digit scaling and X/Y positioning without moving the operator preview.
+- Added two independent countdowns with left/right or top/bottom splits.
+- Added network adapter selection, local-address diagnostics and authenticated phone reconnection/error states.
+- Prevented early Quick Tunnel DNS lookups from caching a not-yet-published hostname.
+- Isolated automated tests from the operator’s saved settings and rundown.
+
+[Full 2.2.0 notes](docs/RELEASE-NOTES-2.2.0.md)
+
 ## 2.1.0 — 2026-08-27
 
 - Kept the Control preview large and centred while grid placement affects only the audience output.
