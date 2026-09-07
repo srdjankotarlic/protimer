@@ -1,0 +1,3 @@
+977ff2d1bf709b24ea3270bf874886502c5fe36f49a4ba87cf18d156cf3a4201  ProTimer-2.2.0-arm64.dmg
+81bf26678bc2f991349bba7f562e18a1cb8e246e21e841aeb9b9aaf82351f525  ProTimer-Setup-2.2.0.exe
+38ddfceb8546def91f14a444de5f92b70ee509a48aa85cff95a435aac70a9add  ProTimer-2.2.0-portable.exe

@@ -53,13 +53,13 @@ jobs:
       - name: Install package
         shell: pwsh
         run: |
-          $version = node -p "require('./package.json').version"
+          $version = node -p "require('./packaging/scoop/protimer.json').version"
           choco install protimer --version $version --source $env:PACKAGE_DIR -y --no-progress
           if ($LASTEXITCODE -ne 0) { throw "Chocolatey install failed with exit code $LASTEXITCODE" }
       - name: Verify installed portable application
         shell: pwsh
         run: |
-          $version = node -p "require('./package.json').version"
+          $version = node -p "require('./packaging/scoop/protimer.json').version"
           $toolsDir = Join-Path $env:ChocolateyInstall 'lib\protimer\tools'
           $appExe = Join-Path $toolsDir 'ProTimer.exe'
           $guiMarker = "$appExe.gui"
@@ -97,7 +97,7 @@ jobs:
       - name: Exercise upgrade path
         shell: pwsh
         run: |
-          $version = node -p "require('./package.json').version"
+          $version = node -p "require('./packaging/scoop/protimer.json').version"
           choco upgrade protimer --version $version --source $env:PACKAGE_DIR -y --force --no-progress
           if ($LASTEXITCODE -ne 0) { throw "Chocolatey upgrade failed with exit code $LASTEXITCODE" }
       - name: Uninstall package

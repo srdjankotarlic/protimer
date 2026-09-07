@@ -17,6 +17,7 @@ git clone https://github.com/srdjankotarlic/protimer.git
 cd protimer
 npm install
 npm start            # run the app
+npm test             # timer/layout rules and script syntax checks
 npm run check:public-docs # verify the landing page, release links and version references
 npm run smoke        # automated UI, host-clock sync, SSE/long-poll, remote and output tests
 npm run dist:mac     # build the macOS .dmg
@@ -30,8 +31,13 @@ The whole app is small on purpose:
 - `output.html` — the on-screen timer (also served to OBS / browsers).
 - `backstage.html` — the crew schedule view.
 - `remote.html` — the phone remote.
+- `timer-tools.js` — shared duration, layout and independent countdown rules.
+
+`npm run smoke` uses an isolated temporary profile, never your saved rundown. It also tests exact output sizes, dual layouts and authenticated phone reconnection. With a prepared Cloudflare binary, set `PROTIMER_TEST_ONLINE=1` to additionally exercise real HTTPS phone commands through a temporary tunnel; the test closes that tunnel when finished.
 
 Release builds fetch the pinned official Cloudflare binary with `scripts/fetch-cloudflared.js`; `scripts/verify-packaged-tunnel.js` then verifies the packaged checksum, version and platform signature before an installer can be published.
+
+Distribution manifests and their checksums describe the last published binaries, independently of an upcoming app version. After publishing a release, update Scoop, Chocolatey and `docs/checksums` together from the actual release asset hashes, then rerun the packaging/lifecycle checks. Never invent checksums for a build that does not exist yet. The Release workflow can be dispatched with `test_online=true` to validate packaged HTTPS control without publishing.
 
 ## Pull requests
 

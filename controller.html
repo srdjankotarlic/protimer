@@ -2,7 +2,7 @@
 <html lang="sr">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'unsafe-inline'">
 <title>ProTimer — Kontrola</title>
 <style>
   :root{
@@ -29,7 +29,7 @@
   .brand b{color:var(--accent); font-weight:700;}
   .grow{flex:1;}
 
-  select,input[type=text],input[type=time]{background:rgba(255,255,255,.055); color:var(--text);
+  select,input[type=text],input[type=time],input[type=number]{background:rgba(255,255,255,.055); color:var(--text);
     border:1px solid var(--border); border-radius:9px; padding:7px 10px; font-size:13px; outline:none;
     transition:border-color .15s, box-shadow .15s;}
   select:focus,input:focus{border-color:var(--blue); box-shadow:var(--focus);}
@@ -232,6 +232,22 @@
   .lang{display:inline-flex; gap:2px; background:rgba(255,255,255,.05); border:1px solid var(--border); border-radius:9px; padding:2px;}
   .lang button{padding:4px 9px; font-size:11.5px; font-weight:600; border:none; background:transparent; color:var(--dim); border-radius:7px;}
   .lang button.active{background:var(--blue); color:#fff; box-shadow:0 1px 4px rgba(10,132,255,.35);}
+  [hidden]{display:none!important;}
+  .layout-head{display:flex; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:14px;}
+  .layout-head h3{margin:0; font-size:12px; letter-spacing:1.3px; color:var(--dim);}
+  .layout-row{display:flex; align-items:center; flex-wrap:wrap; gap:10px; margin:10px 0;}
+  .layout-row label{display:flex; align-items:center; gap:8px; color:var(--dim); font-size:12px;}
+  .layout-row input[type=number]{width:84px; min-width:0; font:14px "SF Mono",Menlo,monospace;}
+  .layout-slider{display:grid; grid-template-columns:120px minmax(60px,1fr) 78px; gap:12px; align-items:center; margin:12px 0;}
+  .layout-slider label{color:var(--dim); font-size:12px;}
+  .layout-slider input{width:100%; min-width:0;}
+  .layout-slider input[type=range]{padding:0; accent-color:var(--blue);}
+  .panel-help{font-size:11px; color:var(--dim); line-height:1.5; margin:8px 0 0;}
+  #outputSizeStatus{color:var(--accent);}
+  .secondary-readout{font:700 clamp(32px,5vw,64px)/1.2 "SF Mono",Menlo,monospace; text-align:center; padding:12px; background:#000; border-radius:8px;}
+  #networkSel{width:100%; margin:6px 0 12px; font-size:12px;}
+  .network-help summary{cursor:pointer; color:var(--blue); margin-top:10px;}
+  .network-help p{font-size:12px; color:var(--dim); line-height:1.5;}
 
   @media (max-width:960px){
     .topbar{flex-wrap:wrap; padding-block:9px;}
@@ -320,6 +336,48 @@
         <span class="glabel" data-i18n="quick">Brzo</span>
         <div class="chips" id="chips"></div>
       </div>
+    </div>
+
+    <div class="panel" id="dualPanel">
+      <div class="layout-head">
+        <h3 data-i18n="dualTitle">DVA TAJMERA</h3>
+        <label class="chk"><input type="checkbox" id="chkDual"> <span data-i18n="dualEnable">Prikaži drugi tajmer</span></label>
+      </div>
+      <div id="dualOptions" hidden>
+        <div class="layout-row">
+          <label><span data-i18n="splitLabel">Podela</span><select id="dualSplit"><option value="columns" data-i18n="splitColumns">Levo / desno │</option><option value="rows" data-i18n="splitRows">Gore / dole ─</option></select></label>
+          <button id="secondaryDurationTrigger" class="duration-trigger" type="button" aria-haspopup="dialog" aria-controls="durationPopover" aria-expanded="false">
+            <span class="caption" data-i18n="timerTwo">Tajmer 2</span><span class="value" id="secondaryDurationValue">00:10:00</span>
+          </button>
+        </div>
+        <div id="secondaryReadout" class="secondary-readout">10:00</div>
+        <div class="layout-row">
+          <button id="btnSecondaryStart" class="primary">▶ START 2</button><button id="btnSecondaryReset">↺ RESET 2</button>
+          <button id="btnBothStart" data-i18n="startBoth">▶ Pokreni oba</button><button id="btnBothPause" data-i18n="pauseBoth">⏸ Pauziraj oba</button><button id="btnBothReset" data-i18n="resetBoth">↺ Resetuj oba</button>
+        </div>
+        <p class="panel-help" data-i18n="dualHelp">Glavni START i rundown upravljaju tajmerom 1. Tajmer 2 ima nezavisno trajanje i kontrole.</p>
+      </div>
+    </div>
+
+    <div class="panel" id="outputLayoutPanel">
+      <div class="layout-head"><h3 data-i18n="outputLayoutTitle">IZLAZNI PROZOR I CIFRE</h3></div>
+      <div class="layout-row">
+        <label><span data-i18n="widthPx">Širina (px)</span><input id="outputWidth" type="number" min="80" max="7680" step="1" value="1920"></label>
+        <span>×</span>
+        <label><span data-i18n="heightPx">Visina (px)</span><input id="outputHeight" type="number" min="60" max="4320" step="1" value="1080"></label>
+        <button id="btnOutputSize" class="primary" data-i18n="applySize">Primeni veličinu</button>
+        <button data-output-size="1920,1080">Full HD</button><button data-output-size="1280,720">HD</button>
+      </div>
+      <div id="outputSizeStatus" class="panel-help" role="status"></div>
+      <p class="panel-help" data-i18n="sizeHelp">Veličina sadržaja u logičkim pikselima (kao OBS Browser Source). Primena izlazi iz punog ekrana i isključuje Grid/Kompaktan. F uključuje pun ekran.</p>
+      <div class="layout-row">
+        <label><span data-i18n="adjustDigits">Podesi cifre</span><select id="layoutTarget"><option value="primary" data-i18n="timerOne">Tajmer 1</option><option value="secondary" data-i18n="timerTwo" disabled>Tajmer 2</option></select></label>
+        <button id="btnLayoutReset" data-i18n="centerReset">Centriraj · 100%</button>
+      </div>
+      <div class="layout-slider"><label for="timerScale" data-i18n="digitScale">Veličina cifara (%)</label><input id="timerScale" type="range" min="10" max="200" step="1" value="100" aria-label="Scale"><input id="timerScaleValue" type="number" min="10" max="200" step="1" value="100" aria-label="Scale percent"></div>
+      <div class="layout-slider"><label for="timerX" data-i18n="digitX">Levo / desno (%)</label><input id="timerX" type="range" min="-100" max="100" step="0.1" value="0" aria-label="X"><input id="timerXValue" type="number" min="-100" max="100" step="0.1" value="0" aria-label="X percent"></div>
+      <div class="layout-slider"><label for="timerY" data-i18n="digitY">Gore / dole (%)</label><input id="timerY" type="range" min="-100" max="100" step="0.1" value="0" aria-label="Y"><input id="timerYValue" type="number" min="-100" max="100" step="0.1" value="0" aria-label="Y percent"></div>
+      <p class="panel-help" data-i18n="layoutHelp">0 = centar. Položaj je procenat širine/visine svakog dela ekrana. Promene važe i za OBS/telefon; pregled u kontroli ostaje centriran. Prevelika skala ili pomeranje mogu iseći cifre.</p>
     </div>
 
     <div class="panel">
@@ -412,6 +470,10 @@
 
     <div class="card">
       <h3 data-i18n="netTitle">MREŽA → OBS · TELEFON</h3>
+      <label class="lbl" for="networkSel" data-i18n="networkAddress">Mreža računara (ista mreža kao telefon)</label>
+      <select id="networkSel"></select>
+      <button id="btnCheckLocal" class="ghost" style="width:100%; margin-bottom:8px" data-i18n="checkLocal">Proveri lokalnu adresu</button>
+      <p id="localCheckStatus" class="panel-help" role="status" style="margin:0 0 10px"></p>
       <div class="lbl" style="margin-bottom:5px" data-i18n="screenOBS">Ekran (OBS / monitor)</div>
       <div class="net-url">
         <span id="netUrl">—</span>
@@ -440,12 +502,18 @@
       <button id="btnHideOutputQr" class="danger" style="display:none; width:100%; margin:0 0 8px" data-i18n="hideQrFromScreen">Skloni QR sa ekrana</button>
 
       <button id="btnShare" class="ghost" style="width:100%; margin-top:4px" data-i18n="shareOnline">🌐 Deli online (bilo koja mreža)</button>
+      <p id="shareError" class="panel-help" role="alert" hidden data-i18n="shareFailureHelp">Online servis nije dostupan. Proveri internet/VPN i pokušaj ponovo. Lokalna kontrola ostaje dostupna na istoj mreži.</p>
       <div class="lbl" id="publicLbl" style="display:none; margin:8px 0 5px"><span data-i18n="publicLabel">Javni link (bilo koja mreža)</span><span id="publicProvider"></span></div>
       <div class="net-url" id="publicRow" style="display:none">
         <span id="netPublic" style="color:#7ee0a0">—</span>
         <button class="mini ghost qrbtn" data-qr="netPublic" data-audience-qr="timer" title="QR kod">QR</button>
         <button id="btnCopyPublic" class="mini ghost" data-i18n="copy">Kopiraj</button>
       </div>
+      <div id="publicRemoteSection" hidden>
+        <div class="lbl" style="margin:8px 0 5px" data-i18n="publicRemoteLabel">Privatna online kontrola · ne deli publici</div>
+        <div class="net-url"><span id="netPublicRemote" style="color:var(--blue)">—</span><button class="mini ghost qrbtn" data-qr="netPublicRemote">QR</button><button id="btnCopyPublicRemote" class="mini ghost" data-i18n="copy">Kopiraj</button></div>
+      </div>
+      <details class="network-help"><summary data-i18n="phoneHelpTitle">Telefon se ne povezuje?</summary><p data-i18n="phoneHelp">1. Računar i telefon poveži na istu privatnu Wi-Fi mrežu i izaberi tu adresu iznad. Ne koristi gostujuću mrežu sa izolacijom uređaja. 2. Dozvoli ProTimer-u pristup lokalnoj mreži/firewall-u; privremeno isključi VPN. 3. Ako ne može direktno, uključi Deli online i skeniraj PRIVATNU online kontrolu. Za nju oba uređaja moraju imati internet. Posle ponovnog pokretanja aplikacije skeniraj novi QR.</p></details>
 
       <div class="net-note">
         <span class="dot" id="netDot"></span> <span id="netStatus">pokrećem…</span><br>
@@ -493,11 +561,14 @@
   <kbd>Space</kbd> start/pauza · <kbd>R</kbd> reset · <kbd>N</kbd> sledeći · <kbd>↑↓</kbd> ±1m · <kbd>←→</kbd> ±10s · <kbd>B</kbd> blackout · <kbd>F</kbd> pun ekran · <kbd>M</kbd> poruka · <kbd>C</kbd> obriši poruku
 </div>
 
+<script src="timer-tools.js"></script>
 <script>
 const api = window.pt || {
   sendState(){}, onState(){}, openOutput(){}, closeOutput(){}, toggleFullscreen(){},
   exitFullscreen(){}, setOnTop(){}, getDisplays:async()=>[], isOutputOpen:async()=>false,
+  resizeOutput:async()=>({ok:false}), getOutputGeometry:async()=>null, onOutputGeometry(){},
   getNetworkInfo:async()=>({}), onDisplays(){}, onOutputState(){}, onNetworkInfo(){},
+  checkLocalNetwork:async()=>({ok:false}),
   onRemoteCmd(){}, sendToDisplay(){},
   qr:async()=>null, shareStart:async()=>({error:'preview'}), shareStop:async()=>true,
   shareInfo:async()=>({}), onShareInfo(){}, showOutputQr:async()=>false, hideOutputQr(){}, onOutputQr(){}
@@ -506,6 +577,22 @@ const api = window.pt || {
 // ---------- JEZIK / LANGUAGE ----------
 const I18N = {
   sr: {
+    checkLocal:'Proveri lokalnu adresu', checkingLocal:'Proveravam lokalni server…',
+    localCheckOK:'Server odgovara na ovoj adresi. Skeniraj NOVI Daljinski QR. Ako telefon i dalje ne otvara stranicu, proveri izolaciju uređaja na Wi-Fi mreži i dozvole/firewall. Ova provera važi za računar, ne potvrđuje pristup sa telefona.',
+    localCheckFailed:'Lokalna adresa ne odgovara. Izaberi drugu mrežu iznad i proveri dozvolu za lokalnu mrežu/firewall. Na Macu: System Settings → Privacy & Security → Local Network → ProTimer.',
+    shareFailureHelp:'Online servis nije dostupan. Proveri internet/VPN i pokušaj ponovo. Lokalna kontrola ostaje dostupna na istoj mreži.',
+    outputLayoutTitle:'IZLAZNI PROZOR I CIFRE', widthPx:'Širina (px)', heightPx:'Visina (px)', applySize:'Primeni veličinu',
+    sizeHelp:'Veličina sadržaja u logičkim pikselima (kao OBS Browser Source). Primena izlazi iz punog ekrana i isključuje Grid/Kompaktan. F uključuje pun ekran.',
+    actualSize:'Trenutni izlaz', sizeFailed:'Veličina nije primenjena. Proveri dimenzije i pokušaj ponovo.', sizeInvalid:'Unesi cele brojeve: širina 80–7680 i visina 60–4320.',
+    adjustDigits:'Podesi cifre', timerOne:'Tajmer 1', timerTwo:'Tajmer 2', centerReset:'Centriraj · 100%',
+    digitScale:'Veličina cifara (%)', digitX:'Levo / desno (%)', digitY:'Gore / dole (%)',
+    layoutHelp:'0 = centar. Položaj je procenat širine/visine svakog dela ekrana. Promene važe i za OBS/telefon; pregled u kontroli ostaje centriran. Prevelika skala ili pomeranje mogu iseći cifre.',
+    dualTitle:'DVA TAJMERA', dualEnable:'Prikaži drugi tajmer', splitLabel:'Podela', splitColumns:'Levo / desno │', splitRows:'Gore / dole ─',
+    startBoth:'▶ Pokreni oba', pauseBoth:'⏸ Pauziraj oba', resetBoth:'↺ Resetuj oba',
+    dualHelp:'Glavni START i rundown upravljaju tajmerom 1. Tajmer 2 ima nezavisno trajanje i kontrole.',
+    networkAddress:'Mreža računara (ista mreža kao telefon)', noNetwork:'Nema lokalne mreže — poveži Wi-Fi/Ethernet',
+    publicRemoteLabel:'Privatna online kontrola · ne deli publici', phoneHelpTitle:'Telefon se ne povezuje?',
+    phoneHelp:'1. Računar i telefon poveži na istu privatnu Wi-Fi mrežu i izaberi tu adresu iznad. Ne koristi gostujuću mrežu sa izolacijom uređaja. 2. Dozvoli ProTimer-u pristup lokalnoj mreži/firewall-u; privremeno isključi VPN. 3. Ako ne može direktno, uključi Deli online i skeniraj PRIVATNU online kontrolu. Za nju oba uređaja moraju imati internet. Posle ponovnog pokretanja aplikacije skeniraj novi QR.',
     outLabel:'Izlaz na', displayTitle:'Monitor za izlazni ekran', sendScreen:'Pošalji na ekran',
     fsTitle:'Pun ekran (F)', closeTitle:'Zatvori izlazni prozor', onTop:'Na vrhu',
     mode:'Režim', modeCountdown:'Odbrojavanje', modeCountup:'Štoperica', modeClock:'Sat',
@@ -544,6 +631,22 @@ const I18N = {
     shortcuts:'<kbd>Space</kbd> start/pauza · <kbd>R</kbd> reset · <kbd>N</kbd> sledeći · <kbd>↑↓</kbd> ±1m · <kbd>←→</kbd> ±10s · <kbd>B</kbd> blackout · <kbd>F</kbd> pun ekran · <kbd>M</kbd> poruka · <kbd>C</kbd> obriši poruku'
   },
   en: {
+    checkLocal:'Check local address', checkingLocal:'Checking local server…',
+    localCheckOK:'The server responds at this address. Scan a NEW Remote QR. If the phone still cannot open the page, check Wi-Fi device isolation and permissions/firewall. This checks the computer, not access from the phone.',
+    localCheckFailed:'The local address does not respond. Select another network above and check local-network/firewall permissions. On Mac: System Settings → Privacy & Security → Local Network → ProTimer.',
+    shareFailureHelp:'The online service is unavailable. Check internet/VPN and retry. Local control remains available on the same network.',
+    outputLayoutTitle:'OUTPUT WINDOW & DIGITS', widthPx:'Width (px)', heightPx:'Height (px)', applySize:'Apply size',
+    sizeHelp:'Content size in logical pixels (like an OBS Browser Source). Applying exits fullscreen and disables Grid/Compact. F toggles fullscreen.',
+    actualSize:'Current output', sizeFailed:'Size was not applied. Check the dimensions and try again.', sizeInvalid:'Enter whole numbers: width 80–7680 and height 60–4320.',
+    adjustDigits:'Adjust digits', timerOne:'Timer 1', timerTwo:'Timer 2', centerReset:'Center · 100%',
+    digitScale:'Digit size (%)', digitX:'Left / right (%)', digitY:'Up / down (%)',
+    layoutHelp:'0 = center. Position is a percentage of each pane’s width/height. Applies to OBS/phones too; the control preview stays centered. Large scale or offsets can crop the digits.',
+    dualTitle:'TWO TIMERS', dualEnable:'Show second timer', splitLabel:'Split', splitColumns:'Left / right │', splitRows:'Top / bottom ─',
+    startBoth:'▶ Start both', pauseBoth:'⏸ Pause both', resetBoth:'↺ Reset both',
+    dualHelp:'The main START and rundown control timer 1. Timer 2 has its own duration and controls.',
+    networkAddress:'Computer network (same network as phone)', noNetwork:'No local network — connect Wi-Fi/Ethernet',
+    publicRemoteLabel:'Private online control · do not share with audience', phoneHelpTitle:'Phone cannot connect?',
+    phoneHelp:'1. Connect the computer and phone to the same private Wi-Fi and select its address above. Avoid guest networks with device isolation. 2. Allow ProTimer through local-network permissions/firewall; temporarily disconnect VPN. 3. If direct access fails, enable Share online and scan PRIVATE online control. Both devices need internet for this. Scan a new QR after restarting the app.',
     outLabel:'Output to', displayTitle:'Monitor for the output screen', sendScreen:'Send to screen',
     fsTitle:'Fullscreen (F)', closeTitle:'Close output window', onTop:'On top',
     mode:'Mode', modeCountdown:'Countdown', modeCountup:'Stopwatch', modeClock:'Clock',
@@ -610,6 +713,8 @@ let S = {
   gridOn:false, gridSize:3, gridCell:4,
   // kompaktan prozor (prozor prati veličinu tajmera kad nije fullscreen)
   fitWindow:false,
+  outputSize:null, outputLayout:TimerTools.layout(),
+  dualTimer:false, dualSplit:'columns', secondary:TimerTools.secondary(),
   // rundown / raspored
   cues:[], currentCue:-1, showStart:'', showNowNext:false,
   lang:lang
@@ -640,6 +745,7 @@ function formatDurationHMS(ms){
   return `${String(h).padStart(2,'0')}:${pad(m)}:${pad(s)}`;
 }
 function syncDurationDisplays(){
+  if($('secondaryDurationValue')) $('secondaryDurationValue').textContent=formatDurationHMS(S.secondary.durationMs);
   if($('durTriggerValue')) $('durTriggerValue').textContent=formatDurationHMS(S.durationMs);
   if($('cueDurationValue')) $('cueDurationValue').textContent=formatDurationHMS(cueDraftMs);
 }
@@ -720,6 +826,76 @@ function adjust(sec){
 function setMode(m){ if(!['countdown','countup','clock'].includes(m)) return; cancelAutoAdvance(); clearTargetArm(true); S.mode=m; S.running=false; S.remMs=S.durationMs; S.elapsedMs=0; zeroFired=false; setModeTabs(); send(); updateButtons(); }
 function setModeTabs(){ document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('active',b.dataset.mode===S.mode)); }
 
+function secondaryRunning(running){
+  if(!S.dualTimer) return;
+  TimerTools.setRunning(S.secondary,!!running,Date.now()); send();
+}
+function secondaryDuration(ms){
+  if(!Number.isFinite(ms)||ms<1000||ms>TimerTools.MAX_DURATION) return;
+  S.secondary.durationMs=ms; TimerTools.reset(S.secondary); send();
+}
+function primaryRunning(running){ if(S.mode!=='clock'&&S.running!==!!running) startPause(); }
+function bothRunning(running){ primaryRunning(running); if(S.dualTimer) secondaryRunning(running); }
+function syncDualUI(){
+  $('chkFit').disabled=S.dualTimer;
+  $('chkDual').checked=S.dualTimer; $('dualOptions').hidden=!S.dualTimer;
+  $('dualSplit').value=S.dualSplit;
+  $('layoutTarget').querySelector('[value=secondary]').disabled=!S.dualTimer;
+  if(!S.dualTimer) $('layoutTarget').value='primary';
+  syncLayoutUI();
+}
+function selectedLayout(){ return $('layoutTarget').value==='secondary'?S.secondary.layout:S.outputLayout; }
+function syncLayoutUI(){
+  const layout=selectedLayout();
+  for(const [id,key] of [['timerScale','scale'],['timerX','x'],['timerY','y']]){
+    $(id).value=layout[key]; $(id+'Value').value=layout[key];
+  }
+}
+for(const [id,key] of [['timerScale','scale'],['timerX','x'],['timerY','y']]){
+  for(const suffix of ['','Value']) $(id+suffix).addEventListener('input',e=>{
+    if(e.target.value===''||!e.target.validity.valid) return;
+    Object.assign(selectedLayout(),TimerTools.layout({...selectedLayout(),[key]:Number(e.target.value)}));
+    $(id+(suffix?'':'Value')).value=selectedLayout()[key]; send();
+  });
+}
+$('layoutTarget').addEventListener('change',syncLayoutUI);
+$('btnLayoutReset').addEventListener('click',()=>{ Object.assign(selectedLayout(),TimerTools.layout()); syncLayoutUI(); send(); });
+$('chkDual').addEventListener('change',e=>{
+  S.dualTimer=e.target.checked;
+  if(!S.dualTimer) TimerTools.setRunning(S.secondary,false,Date.now());
+  if(S.dualTimer){ S.fitWindow=false; $('chkFit').checked=false; }
+  syncDualUI(); send();
+});
+$('dualSplit').addEventListener('change',e=>{ S.dualSplit=e.target.value==='rows'?'rows':'columns'; send(); });
+$('btnSecondaryStart').addEventListener('click',()=>secondaryRunning(!S.secondary.running));
+$('btnSecondaryReset').addEventListener('click',()=>{ TimerTools.reset(S.secondary); send(); });
+$('btnBothStart').addEventListener('click',()=>bothRunning(true));
+$('btnBothPause').addEventListener('click',()=>bothRunning(false));
+$('btnBothReset').addEventListener('click',()=>{ TimerTools.reset(S.secondary); reset(); });
+let lastOutputGeometry=null;
+function showOutputGeometry(info){
+  lastOutputGeometry=info;
+  $('outputSizeStatus').textContent=info?`${t('actualSize')}: ${info.width} × ${info.height} px${info.fullscreen?' · '+t('fsTitle'):''}`:t('outClosed');
+}
+api.onOutputGeometry(showOutputGeometry);
+api.getOutputGeometry().then(showOutputGeometry).catch(()=>{});
+async function applyOutputSize(){
+  const size=TimerTools.size({width:Number($('outputWidth').value),height:Number($('outputHeight').value)});
+  if(!size){ $('outputSizeStatus').textContent=t('sizeInvalid'); return; }
+  $('btnOutputSize').disabled=true;
+  S.outputSize=size; S.gridOn=false; S.fitWindow=false; $('chkFit').checked=false; buildGrid(); send();
+  try{
+    const result=await api.resizeOutput({...size,displayId:+$('displaySel').value||null});
+    if(result?.ok) showOutputGeometry(result); else $('outputSizeStatus').textContent=t('sizeFailed');
+  }catch(_){ $('outputSizeStatus').textContent=t('sizeFailed'); }
+  finally{ $('btnOutputSize').disabled=false; }
+}
+$('btnOutputSize').addEventListener('click',applyOutputSize);
+for(const id of ['outputWidth','outputHeight']) $(id).addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); applyOutputSize(); } });
+document.querySelectorAll('[data-output-size]').forEach(b=>b.addEventListener('click',()=>{
+  const [w,h]=b.dataset.outputSize.split(','); $('outputWidth').value=w; $('outputHeight').value=h; applyOutputSize();
+}));
+
 // ---------- ZVUK ----------
 function beep(){
   try{
@@ -747,6 +923,12 @@ function calc(now){
 let lastKey='';
 function render(){
   const now=Date.now(), r=calc(now);
+  if(S.dualTimer){
+    let rem=TimerTools.remaining(S.secondary,now); if(!S.overtime) rem=Math.max(0,rem);
+    $('secondaryReadout').textContent=fmtMs(rem);
+    $('secondaryReadout').style.color=S.useWarnColors?(rem<=S.redSec*1000?S.warnRed:rem<=S.yellowSec*1000?S.warnYellow:S.fgColor):S.fgColor;
+    $('btnSecondaryStart').textContent=(S.secondary.running?t('pause'):t('start'))+' 2';
+  }
   const pv=$('preview');
 
   // pozadina
@@ -864,7 +1046,9 @@ function saveSettings(){
     bgColor:S.bgColor,fgColor:S.fgColor,useWarnColors:S.useWarnColors,
     warnYellow:S.warnYellow,warnRed:S.warnRed,textOnly:S.textOnly,transparent:S.transparent,
     showStart:S.showStart,showNowNext:S.showNowNext,
-    gridOn:S.gridOn,gridSize:S.gridSize,gridCell:S.gridCell,fitWindow:S.fitWindow
+    gridOn:S.gridOn,gridSize:S.gridSize,gridCell:S.gridCell,fitWindow:S.fitWindow,
+    outputSize:S.outputSize,outputLayout:S.outputLayout,dualTimer:S.dualTimer,dualSplit:S.dualSplit,
+    secondary:{durationMs:S.secondary.durationMs,layout:S.secondary.layout}
   }));
 }
 function load(){
@@ -881,7 +1065,9 @@ function load(){
       textOnly:st.textOnly??S.textOnly, transparent:st.transparent??S.transparent,
       showStart:st.showStart??S.showStart, showNowNext:st.showNowNext??S.showNowNext,
       gridOn:st.gridOn??S.gridOn, gridSize:st.gridSize??S.gridSize, gridCell:st.gridCell??S.gridCell,
-      fitWindow:st.fitWindow??S.fitWindow
+      fitWindow:st.fitWindow??S.fitWindow,
+      outputSize:TimerTools.size(st.outputSize),outputLayout:TimerTools.layout(st.outputLayout),
+      dualTimer:!!st.dualTimer,dualSplit:st.dualSplit==='rows'?'rows':'columns',secondary:TimerTools.secondary(st.secondary)
     });
     S.remMs=S.durationMs; autoNext=!!st.autoNext;
     cues=JSON.parse(localStorage.getItem('pt_cues')||'[]');
@@ -896,6 +1082,8 @@ function load(){
   $('chkWarn').checked=S.useWarnColors; $('warnYellow').value=S.warnYellow; $('warnRed').value=S.warnRed;
   $('chkTextOnly').checked=S.textOnly; $('chkTransparent').checked=S.transparent;
   $('chkFit').checked=S.fitWindow;
+  if(S.outputSize){ $('outputWidth').value=S.outputSize.width; $('outputHeight').value=S.outputSize.height; }
+  syncDualUI();
   syncDurationDisplays();
   buildGrid();
   renderCues();
@@ -918,10 +1106,22 @@ api.onDisplays(fillDisplays);
 
 // ---------- MREŽA ----------
 let netUrl='', remoteUrl='', backstageUrl='', apiUrl='';
+let selectedNetworkIp=localStorage.getItem('pt_network_ip')||'', lastAddressKey='';
 function showNet(info){
   lastNetInfo = info;
   if(!info||!info.running){ $('netUrl').textContent='—'; $('netRemote').textContent='—'; $('netBackstage').textContent='—'; $('netApi').textContent='—'; $('netStatus').textContent=t('netOff'); $('netDot').classList.remove('on'); return; }
-  netUrl=`http://${info.ip}:${info.port}`;
+  const addresses=info.addresses||[{ip:info.ip,name:''}];
+  if(!addresses.some(a=>a.ip===selectedNetworkIp)) selectedNetworkIp=info.ip;
+  const addressKey=JSON.stringify(addresses)+'|'+selectedNetworkIp+'|'+lang;
+  if(addressKey!==lastAddressKey){
+    lastAddressKey=addressKey; $('networkSel').replaceChildren();
+    for(const a of addresses){ const option=document.createElement('option'); option.value=a.ip; option.textContent=`${a.ip} · ${a.name}`; $('networkSel').appendChild(option); }
+    if(!addresses.length){ const option=document.createElement('option'); option.textContent=t('noNetwork'); $('networkSel').appendChild(option); }
+    $('networkSel').value=selectedNetworkIp;
+  }
+  const previousUrl=netUrl;
+  netUrl=`http://${selectedNetworkIp}:${info.port}`;
+  if(previousUrl&&previousUrl!==netUrl){ $('qrBox').style.display='none'; qrShownFor=''; $('localCheckStatus').textContent=''; }
   remoteUrl=`${netUrl}/remote${info.token?`?t=${info.token}`:''}`;
   backstageUrl=`${netUrl}/backstage`;
   apiUrl=`${netUrl}/cmd?type=start${info.token?`&t=${info.token}`:''}`;
@@ -932,7 +1132,16 @@ function showNet(info){
   $('netDot').classList.add('on');
   const word = info.clients===1?t('deviceOne'):t('deviceMany');
   $('netStatus').textContent=`${t('live')} · ${info.clients} ${word} ${t('connected')}`;
+  if(!addresses.length) $('netStatus').textContent=t('noNetwork');
+  updatePublicRemote();
 }
+$('networkSel').addEventListener('change',e=>{ selectedNetworkIp=e.target.value; localStorage.setItem('pt_network_ip',selectedNetworkIp); showNet(lastNetInfo); });
+$('btnCheckLocal').addEventListener('click',async()=>{
+  const ip=selectedNetworkIp; $('btnCheckLocal').disabled=true; $('localCheckStatus').textContent=t('checkingLocal');
+  try{ const result=await api.checkLocalNetwork(ip); if(ip===selectedNetworkIp) $('localCheckStatus').textContent=t(result?.ok?'localCheckOK':'localCheckFailed'); }
+  catch(_){ $('localCheckStatus').textContent=t('localCheckFailed'); }
+  finally{ $('btnCheckLocal').disabled=false; }
+});
 api.onNetworkInfo(showNet);
 api.getNetworkInfo().then(showNet).catch(()=>{});
 function copyBtn(btn, getUrl){ btn.addEventListener('click',()=>{ const u=getUrl(); if(u){ navigator.clipboard.writeText(u); const o=btn.textContent; btn.textContent='✓'; setTimeout(()=>btn.textContent=o,1200); } }); }
@@ -973,10 +1182,20 @@ $('btnHideOutputQr').addEventListener('click',()=>{ api.hideOutputQr(); applyOut
 
 // ---------- JAVNI LINK (tunel) ----------
 let publicUrl='', shareStarting=false, shareProvider=null;
+function updatePublicRemote(){
+  const url=publicUrl&&lastNetInfo?.token?`${publicUrl}/remote?t=${lastNetInfo.token}`:'';
+  $('publicRemoteSection').hidden=!url; $('netPublicRemote').textContent=url||'—';
+}
 function applyShare(info){
   publicUrl = (info&&info.url)||'';
   shareStarting = !!(info&&info.starting);
   shareProvider = (info&&info.provider)||null;
+  if(publicUrl||shareStarting) $('shareError').hidden=true;
+  updatePublicRemote();
+  if(!publicUrl){
+    $('publicLbl').style.display='none'; $('publicRow').style.display='none';
+    if(qrShownFor.startsWith('https:')){ $('qrBox').style.display='none'; qrShownFor=''; }
+  }
   $('publicProvider').textContent=shareProvider==='cloudflare'?' · CLOUDFLARE':(shareProvider==='localtunnel'?' · FALLBACK':'');
   if(publicUrl){
     $('publicLbl').style.display='block'; $('publicRow').style.display='flex';
@@ -998,9 +1217,10 @@ $('btnShare').addEventListener('click',async ()=>{
   // pushShare() vraća dugme čim start zaista krene; ostavi veoma kratak guard protiv double-clicka.
   setTimeout(()=>{ $('btnShare').disabled=false; },150);
   const r=await start; $('btnShare').disabled=false;
-  if(!r||(r.error&&r.error!=='cancelled')){ $('btnShare').textContent=t('shareFail'); setTimeout(()=>{ if(!publicUrl&&!shareStarting) $('btnShare').textContent=t('shareOnline'); },2500); }
+  if(!r||(r.error&&r.error!=='cancelled')){ $('shareError').hidden=false; $('btnShare').textContent=t('shareFail'); setTimeout(()=>{ if(!publicUrl&&!shareStarting) $('btnShare').textContent=t('shareOnline'); },2500); }
 });
 copyBtn($('btnCopyPublic'), ()=>publicUrl);
+copyBtn($('btnCopyPublicRemote'), ()=>publicUrl&&lastNetInfo?.token?`${publicUrl}/remote?t=${lastNetInfo.token}`:'');
 
 // ---------- DALJINSKI: primena komandi sa telefona ----------
 api.onRemoteCmd(c=>{
@@ -1008,6 +1228,12 @@ api.onRemoteCmd(c=>{
   switch(c.type){
     case 'start': startPause(); break;
     case 'reset': reset(); break;
+    case 'primaryRunning': primaryRunning(c.value===true); break;
+    case 'secondaryRunning': secondaryRunning(c.value===true); break;
+    case 'secondaryReset': TimerTools.reset(S.secondary); send(); break;
+    case 'secondaryDuration': secondaryDuration(Number(c.value)); break;
+    case 'bothRunning': bothRunning(c.value===true); break;
+    case 'bothReset': TimerTools.reset(S.secondary); reset(); break;
     case 'adjust': adjust(+c.value||0); break;
     case 'go': go(); break;
     case 'blackout': $('btnBlackout').click(); break;
@@ -1055,8 +1281,8 @@ function closeDurationPicker(returnFocus){
 function openDurationPicker(target,anchor){
   closeDurationPicker(false);
   durationPickerTarget=target; durationPickerAnchor=anchor;
-  $('durationPickerTitle').textContent=t(target==='cue'?'durationPickerCue':'durationPickerTimer');
-  writeDurationPicker(target==='cue'?cueDraftMs:S.durationMs);
+  $('durationPickerTitle').textContent=t(target==='cue'?'durationPickerCue':target==='secondary'?'timerTwo':'durationPickerTimer');
+  writeDurationPicker(target==='cue'?cueDraftMs:target==='secondary'?S.secondary.durationMs:S.durationMs);
   $('durationPopover').hidden=false; anchor.setAttribute('aria-expanded','true');
   requestAnimationFrame(()=>{ positionDurationPopover(); $('durationMinutes').focus(); $('durationMinutes').select(); });
 }
@@ -1065,12 +1291,14 @@ function applyDurationPicker(){
   const target=durationPickerTarget;
   if(target==='timer'){ currentCue=-1; renderCues(); setDuration(ms); }
   else if(target==='cue'){ cueDraftMs=ms; syncDurationDisplays(); }
+  else if(target==='secondary') secondaryDuration(ms);
   closeDurationPicker(true);
 }
 
 $('durTrigger').addEventListener('click',()=>openDurationPicker('timer',$('durTrigger')));
 $('btnSetDur').addEventListener('click',()=>openDurationPicker('timer',$('durTrigger')));
 $('cueDurationTrigger').addEventListener('click',()=>openDurationPicker('cue',$('cueDurationTrigger')));
+$('secondaryDurationTrigger').addEventListener('click',()=>openDurationPicker('secondary',$('secondaryDurationTrigger')));
 $('durationPickerClose').addEventListener('click',()=>closeDurationPicker(true));
 $('durationPickerConfirm').addEventListener('click',applyDurationPicker);
 document.querySelectorAll('[data-duration-step]').forEach(b=>b.addEventListener('click',()=>{
