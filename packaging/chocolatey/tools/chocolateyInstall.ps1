@@ -3,8 +3,8 @@ $ErrorActionPreference = 'Stop'
 $packageName = $env:ChocolateyPackageName
 $toolsDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
 $appPath = Join-Path $toolsDir 'ProTimer.exe'
-$url64bit = 'https://github.com/srdjankotarlic/protimer/releases/download/v2.1.0/ProTimer-2.1.0-portable.exe'
-$checksum64 = '424486fc05b50610af1fa747e9259386d7d3ba42eb1f0ef77f4998c7a694244a'
+$url64bit = 'https://github.com/srdjankotarlic/protimer/releases/download/v2.2.0/ProTimer-2.2.0-portable.exe'
+$checksum64 = '38ddfceb8546def91f14a444de5f92b70ee509a48aa85cff95a435aac70a9add'
 
 $downloadArgs = @{
   packageName    = $packageName
