@@ -32,6 +32,7 @@ Compact automatic window sizing is unavailable in dual mode. Blackout and audien
 
 1. Start ProTimer on the computer and keep it awake.
 2. Connect the phone and computer to the same private network. Select the appropriate computer address in **NETWORK → OBS · PHONE** if there are multiple adapters.
+   Use **Check local address** to confirm the server responds at that address on the computer. A successful check does not prove the phone can reach it: a firewall or Wi-Fi client isolation can still block another device.
 3. Scan the **Remote** QR — not the audience **Screen** QR. Open it in Safari/Chrome and wait for the green live indicator. Test Start and Pause before the show.
 4. Allow ProTimer in the computer’s local-network permissions/firewall. Avoid guest Wi-Fi with client isolation; check whether a VPN is routing local traffic elsewhere. Do not disable the firewall globally.
 5. If direct local access is unavailable, enable **Share online** and scan **Private online control**. Both devices need internet. Keep this token-bearing link private; anyone who has it can control the show. Only audience/view-only QR codes can be put on the output.
@@ -45,5 +46,5 @@ Scan a **new** control QR after restarting ProTimer. Online URLs are temporary a
 - **IZLAZNI PROZOR I CIFRE:** unesi širinu i visinu, pa Primeni veličinu. To su logički pikseli sadržaja; Retina/Windows skaliranje može razlikovati fizičku rezoluciju.
 - **Veličina cifara / Levo–desno / Gore–dole:** menjaju samo izlaz. Pregled u kontroli ostaje centriran.
 - **DVA TAJMERA:** uključi drugi tajmer, unesi mu trajanje i izaberi podelu. Svaki ima zasebne kontrole; postoje i komande za oba zajedno.
-- **Telefon:** izaberi ispravnu mrežu i skeniraj Daljinski QR. Ako venue Wi-Fi blokira lokalne uređaje, uključi Deli online i koristi **Privatnu online kontrolu** uz internet na oba uređaja. Taj link ne deli publici.
+- **Telefon:** izaberi ispravnu mrežu, klikni **Proveri lokalnu adresu** i skeniraj Daljinski QR. Provera potvrđuje odgovor na računaru, ne pristup sa telefona. Na Mac-u proveri System Settings → Privacy & Security → Local Network → ProTimer. Ako venue Wi-Fi blokira lokalne uređaje, uključi Deli online i koristi **Privatnu online kontrolu** uz internet na oba uređaja. Taj link ne deli publici.
 - Posle restarta aplikacije skeniraj novi QR. Pre nastupa obavezno probaj Start/Pauzu preko stvarne mreže na lokaciji.
