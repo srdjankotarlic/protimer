@@ -627,6 +627,7 @@ function startCloudflareTunnel(timeoutMs = 18000) {
     };
     const fail = () => {
       if (settled) return;
+      console.warn('[share] Cloudflare startup failed: ' + (!issuedUrl ? 'no URL issued' : !connectionRegistered ? 'edge connection not registered' : 'process stopped'));
       settled = true;
       clearTimeout(timer);
       if (pendingTunnelProcess === child) pendingTunnelProcess = null;
@@ -782,6 +783,7 @@ async function waitForTunnel(baseUrl, totalMs = 30000, generation = tunnelGenera
     let remaining = deadline - Date.now();
     if (remaining < 300) break;
     const dnsReady = await tunnelDnsReady(baseUrl, Math.min(2500, remaining));
+    if (!dnsReady && attempt === 0) console.warn('[share] Waiting for tunnel DNS readiness');
     remaining = deadline - Date.now();
     const timeOK = dnsReady && remaining >= 300 && await tunnelTimeOK(baseUrl, Math.min(4000, remaining));
     remaining = deadline - Date.now();

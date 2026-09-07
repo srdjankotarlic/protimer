@@ -500,6 +500,7 @@
       <button id="btnHideOutputQr" class="danger" style="display:none; width:100%; margin:0 0 8px" data-i18n="hideQrFromScreen">Skloni QR sa ekrana</button>
 
       <button id="btnShare" class="ghost" style="width:100%; margin-top:4px" data-i18n="shareOnline">🌐 Deli online (bilo koja mreža)</button>
+      <p id="shareError" class="panel-help" role="alert" hidden data-i18n="shareFailureHelp">Online servis nije dostupan. Proveri internet/VPN i pokušaj ponovo. Lokalna kontrola ostaje dostupna na istoj mreži.</p>
       <div class="lbl" id="publicLbl" style="display:none; margin:8px 0 5px"><span data-i18n="publicLabel">Javni link (bilo koja mreža)</span><span id="publicProvider"></span></div>
       <div class="net-url" id="publicRow" style="display:none">
         <span id="netPublic" style="color:#7ee0a0">—</span>
@@ -573,6 +574,7 @@ const api = window.pt || {
 // ---------- JEZIK / LANGUAGE ----------
 const I18N = {
   sr: {
+    shareFailureHelp:'Online servis nije dostupan. Proveri internet/VPN i pokušaj ponovo. Lokalna kontrola ostaje dostupna na istoj mreži.',
     outputLayoutTitle:'IZLAZNI PROZOR I CIFRE', widthPx:'Širina (px)', heightPx:'Visina (px)', applySize:'Primeni veličinu',
     sizeHelp:'Veličina sadržaja u logičkim pikselima (kao OBS Browser Source). Primena izlazi iz punog ekrana i isključuje Grid/Kompaktan. F uključuje pun ekran.',
     actualSize:'Trenutni izlaz', sizeFailed:'Veličina nije primenjena. Proveri dimenzije i pokušaj ponovo.', sizeInvalid:'Unesi cele brojeve: širina 80–7680 i visina 60–4320.',
@@ -623,6 +625,7 @@ const I18N = {
     shortcuts:'<kbd>Space</kbd> start/pauza · <kbd>R</kbd> reset · <kbd>N</kbd> sledeći · <kbd>↑↓</kbd> ±1m · <kbd>←→</kbd> ±10s · <kbd>B</kbd> blackout · <kbd>F</kbd> pun ekran · <kbd>M</kbd> poruka · <kbd>C</kbd> obriši poruku'
   },
   en: {
+    shareFailureHelp:'The online service is unavailable. Check internet/VPN and retry. Local control remains available on the same network.',
     outputLayoutTitle:'OUTPUT WINDOW & DIGITS', widthPx:'Width (px)', heightPx:'Height (px)', applySize:'Apply size',
     sizeHelp:'Content size in logical pixels (like an OBS Browser Source). Applying exits fullscreen and disables Grid/Compact. F toggles fullscreen.',
     actualSize:'Current output', sizeFailed:'Size was not applied. Check the dimensions and try again.', sizeInvalid:'Enter whole numbers: width 80–7680 and height 60–4320.',
@@ -1172,6 +1175,7 @@ function applyShare(info){
   publicUrl = (info&&info.url)||'';
   shareStarting = !!(info&&info.starting);
   shareProvider = (info&&info.provider)||null;
+  if(publicUrl||shareStarting) $('shareError').hidden=true;
   updatePublicRemote();
   if(!publicUrl){
     $('publicLbl').style.display='none'; $('publicRow').style.display='none';
@@ -1198,7 +1202,7 @@ $('btnShare').addEventListener('click',async ()=>{
   // pushShare() vraća dugme čim start zaista krene; ostavi veoma kratak guard protiv double-clicka.
   setTimeout(()=>{ $('btnShare').disabled=false; },150);
   const r=await start; $('btnShare').disabled=false;
-  if(!r||(r.error&&r.error!=='cancelled')){ $('btnShare').textContent=t('shareFail'); setTimeout(()=>{ if(!publicUrl&&!shareStarting) $('btnShare').textContent=t('shareOnline'); },2500); }
+  if(!r||(r.error&&r.error!=='cancelled')){ $('shareError').hidden=false; $('btnShare').textContent=t('shareFail'); setTimeout(()=>{ if(!publicUrl&&!shareStarting) $('btnShare').textContent=t('shareOnline'); },2500); }
 });
 copyBtn($('btnCopyPublic'), ()=>publicUrl);
 copyBtn($('btnCopyPublicRemote'), ()=>publicUrl&&lastNetInfo?.token?`${publicUrl}/remote?t=${lastNetInfo.token}`:'');

@@ -73,6 +73,9 @@
       "node_modules/**/*"
     ],
     "mac": {
+      "extendInfo": {
+        "NSLocalNetworkUsageDescription": "ProTimer uses your local network so phones, tablets, OBS and Companion can view or control your stage timer."
+      },
       "target": [
         {
           "target": "dmg",

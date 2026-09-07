@@ -11,6 +11,7 @@ test('all inline scripts parse, shared browser module is packaged', () => {
     for (const match of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)) new vm.Script(match[1], { filename: file });
   }
   assert.ok(require('../package.json').build.files.includes('timer-tools.js'));
+  assert.ok(require('../package.json').build.mac.extendInfo.NSLocalNetworkUsageDescription.includes('local network'));
 });
 test('exact output sizes reject invalid dimensions without truncation', () => {
   assert.deepEqual(tools.size({ width: 1920, height: 1080 }), { width: 1920, height: 1080 });
