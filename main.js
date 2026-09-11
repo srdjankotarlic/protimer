@@ -911,7 +911,8 @@ app.whenReady().then(() => {
   startOSC(7879);
   createControlWindow();
 
-  controlWin.webContents.once('did-finish-load', () => createOutputWindow(null));
+  // Live-safe startup: restored settings must never put a window on the audience
+  // display. Only an explicit output action from Control may create that window.
 
   screen.on('display-added', (e, newDisplay) => {
     pushDisplays();
@@ -947,6 +948,7 @@ app.whenReady().then(() => {
         const smokeFailures = [];
         const check = (name, ok) => { if (!ok) smokeFailures.push(name); return !!ok; };
         await waitLoad(controlWin);
+        await require('./scripts/smoke-startup')({ app, BrowserWindow, screen, controlWin, getOutput: () => outputWin, waitLoad });
         const ow = await waitOutput();
         await waitLoad(ow);
         // opcioni jezik + demo rundown za snimke: --ui-lang=en --demo

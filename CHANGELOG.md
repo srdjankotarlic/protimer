@@ -2,6 +2,14 @@
 
 Notable ProTimer changes are listed here. The complete notes and installers are available on the [Releases page](https://github.com/srdjankotarlic/protimer/releases).
 
+## 2.2.1 — 2026-09-11
+
+- Start with Control only: launching ProTimer no longer opens or sends an audience window to a monitor.
+- Saved output size, Grid, transparency and dual-timer preferences remain available without automatically opening the output.
+- Added packaged macOS/Windows regression checks for control-only startup and explicit output open, close and reopen.
+
+[Full 2.2.1 notes](docs/RELEASE-NOTES-2.2.1.md)
+
 ## 2.2.0 — 2026-09-07
 
 - Added exact output width/height, HD/Full HD presets and fullscreen-safe resizing.

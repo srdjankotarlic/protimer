@@ -10,7 +10,7 @@ test('all inline scripts parse, shared browser module is packaged', () => {
     const html = fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
     for (const match of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)) new vm.Script(match[1], { filename: file });
   }
-  for (const file of ['timer-tools.js', 'window-tools.js', 'tunnel-tools.js'])
+  for (const file of ['timer-tools.js', 'window-tools.js', 'tunnel-tools.js', 'scripts/smoke-layout.js', 'scripts/smoke-startup.js'])
     assert.ok(require('../package.json').build.files.includes(file));
   assert.ok(require('../package.json').build.mac.extendInfo.NSLocalNetworkUsageDescription.includes('local network'));
 });

@@ -2,6 +2,10 @@
 
 These controls are available in ProTimer 2.2.0 for macOS Apple Silicon and Windows x64.
 
+## Control-only startup (2.2.1)
+
+Opening ProTimer opens **Control only**, even with saved Grid, transparency, output-size or dual-timer preferences. Choose a monitor and click **Send to screen** when ready. Closing the output leaves it closed until an explicit output action. **Apply size** and **Show QR to audience** can also open it. Phone/OBS/browser viewing is independent of this desktop window and remains available.
+
 ## Exact output size
 
 In **OUTPUT WINDOW & DIGITS**, enter Width and Height, then **Apply size**. Full HD and HD presets fill and apply 1920 × 1080 and 1280 × 720. The current output size is reported below the inputs.
@@ -47,6 +51,7 @@ Online startup deliberately waits at least 15 seconds after a Quick Tunnel regis
 
 ## Kratko uputstvo (SR)
 
+- **Pokretanje od 2.2.1:** otvara se samo Kontrola. Izaberi monitor i klikni **Pošalji na ekran** kada si spreman. Primeni veličinu i Prikaži QR publici takođe mogu otvoriti izlaz; OBS/telefon rade nezavisno od desktop prozora.
 - **IZLAZNI PROZOR I CIFRE:** unesi širinu i visinu, pa Primeni veličinu. To su logički pikseli sadržaja; Retina/Windows skaliranje može razlikovati fizičku rezoluciju.
 - **Veličina cifara / Levo–desno / Gore–dole:** menjaju samo izlaz. Pregled u kontroli ostaje centriran.
 - **DVA TAJMERA:** uključi drugi tajmer, unesi mu trajanje i izaberi podelu. Svaki ima zasebne kontrole; postoje i komande za oba zajedno.

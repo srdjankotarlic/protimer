@@ -4,15 +4,15 @@ The portable executable is downloaded directly from the ProTimer GitHub release
 owned by the upstream developer. It is not embedded in this Chocolatey package.
 
 Portable executable:
-  https://github.com/srdjankotarlic/protimer/releases/download/v2.2.0/ProTimer-2.2.0-portable.exe
+  https://github.com/srdjankotarlic/protimer/releases/download/v2.2.1/ProTimer-2.2.1-portable.exe
 
 SHA-256:
-  38ddfceb8546def91f14a444de5f92b70ee509a48aa85cff95a435aac70a9add
+  a0c4882f6d900aff3a0d28d8bb89c233d88c44456809446e14a5ba1634ad26c5
 
 The checksum can be verified with either:
 
-  Get-FileHash .\ProTimer-2.2.0-portable.exe -Algorithm SHA256
+  Get-FileHash .\ProTimer-2.2.1-portable.exe -Algorithm SHA256
 
 or against the checksum file attached to the upstream release:
 
-  https://github.com/srdjankotarlic/protimer/releases/download/v2.2.0/ProTimer-2.2.0-SHA256SUMS.txt
+  https://github.com/srdjankotarlic/protimer/releases/download/v2.2.1/ProTimer-2.2.1-SHA256SUMS.txt

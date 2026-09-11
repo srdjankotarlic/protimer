@@ -9,7 +9,7 @@
   Send a clear timer to a projector, confidence monitor, browser source or phone from one local app.
 </p>
 
-<p align="center"><strong>Latest release: ProTimer 2.2.0 — free, open source, no account and no watermark.</strong></p>
+<p align="center"><strong>Latest release: ProTimer 2.2.1 — free, open source, no account and no watermark.</strong></p>
 
 <p align="center">
   <a href="https://github.com/srdjankotarlic/protimer/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/srdjankotarlic/protimer/actions/workflows/ci.yml/badge.svg"></a>
@@ -47,12 +47,12 @@
 
 | Your computer | Recommended download | Install |
 |---|---|---|
-| Apple Silicon Mac (M1 or newer) | **[Download the macOS DMG](https://github.com/srdjankotarlic/protimer/releases/download/v2.2.0/ProTimer-2.2.0-arm64.dmg)** | Open the DMG and drag **ProTimer** to Applications. |
-| Windows 10/11 x64 | **[Download the Windows installer](https://github.com/srdjankotarlic/protimer/releases/download/v2.2.0/ProTimer-Setup-2.2.0.exe)** | Run Setup and follow the installer. |
+| Apple Silicon Mac (M1 or newer) | **[Download the macOS DMG](https://github.com/srdjankotarlic/protimer/releases/download/v2.2.1/ProTimer-2.2.1-arm64.dmg)** | Open the DMG and drag **ProTimer** to Applications. |
+| Windows 10/11 x64 | **[Download the Windows installer](https://github.com/srdjankotarlic/protimer/releases/download/v2.2.1/ProTimer-Setup-2.2.1.exe)** | Run Setup and follow the installer. |
 
-Need a Windows build that does not install? Use the [portable EXE](https://github.com/srdjankotarlic/protimer/releases/download/v2.2.0/ProTimer-2.2.0-portable.exe). Most Windows users should choose Setup.
+Need a Windows build that does not install? Use the [portable EXE](https://github.com/srdjankotarlic/protimer/releases/download/v2.2.1/ProTimer-2.2.1-portable.exe). Most Windows users should choose Setup.
 
-Every installer is built by the public release workflow. You can verify a download with the [ProTimer 2.2.0 SHA-256 checksums](https://github.com/srdjankotarlic/protimer/releases/download/v2.2.0/ProTimer-2.2.0-SHA256SUMS.txt).
+Every installer is built by the public release workflow. You can verify a download with the [ProTimer 2.2.1 SHA-256 checksums](https://github.com/srdjankotarlic/protimer/releases/download/v2.2.1/ProTimer-2.2.1-SHA256SUMS.txt).
 
 <details>
 <summary><strong>First-launch security warning</strong></summary>
@@ -66,6 +66,7 @@ The current downloads are not Apple-notarized or Windows Authenticode-signed.
 
 ## New in ProTimer 2.2
 
+- **2.2.1 · Control-only startup:** launching ProTimer opens only Control. Choose a monitor and click **Send to screen** when you are ready; no audience window opens automatically.
 - **Exact output size:** type the window width and height, or choose HD / Full HD. The frameless screen still moves and resizes with the mouse.
 - **Precise digits:** scale and position the timer independently of its window, while the operator preview stays large and centred.
 - **Two timers on one screen:** independent durations and transport controls, split left/right or top/bottom, with separate digit layouts.
@@ -74,15 +75,15 @@ The current downloads are not Apple-notarized or Windows Authenticode-signed.
 
 The scrollable rundown, duration picker, Colors/Text, Grid, Thresholds, Message, audience QR and Backstage controls remain available.
 
-See the complete [2.2.0 release notes](docs/RELEASE-NOTES-2.2.0.md).
+See the complete [2.2.1 release notes](docs/RELEASE-NOTES-2.2.1.md).
 
 [How to size the output, position digits, use two timers and connect a phone →](docs/OUTPUT-AND-PHONE-CONTROL.md)
 
 ## Quick start (60 seconds)
 
-1. Install and open ProTimer — it creates **Control** for the operator and a clean **Screen** window for the audience.
+1. Install and open ProTimer — only **Control** opens, so you can prepare before showing anything on a desktop monitor.
 2. Open **Duration**, set hours/minutes/seconds (or choose a quick preset), then press **START** or `Space`.
-3. Drag and resize the frameless Screen window, or select a monitor and use **Send to screen** / fullscreen from Control.
+3. Select a monitor and click **Send to screen** when ready. Then drag/resize the frameless Screen window or use fullscreen from Control.
 4. To let people follow on phones, open the network panel, select the view-only Timer or Backstage **QR**, then choose **Show QR to audience**.
 
 ![ProTimer stage screen counting down with warning colors and NOW / NEXT](docs/demo.gif)
