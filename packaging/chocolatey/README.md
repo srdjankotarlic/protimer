@@ -20,10 +20,10 @@ Run these commands from an elevated PowerShell prompt in a clean Windows VM:
 
 ```powershell
 choco pack .\protimer.nuspec
-choco install protimer --source . --version 2.2.1 -y --debug --verbose
+choco install protimer --source . --version 2.3.0 -y --debug --verbose
 choco upgrade protimer --source . -y --debug --verbose
 choco uninstall protimer -y --debug --verbose
-choco install protimer --source . --version 2.2.1 -y --force
+choco install protimer --source . --version 2.3.0 -y --force
 ```
 
 After installation, launch ProTimer and verify the controller, audience output,
@@ -35,7 +35,7 @@ Publishing also requires a Chocolatey Community account and API key:
 
 ```powershell
 choco apikey --key <API_KEY> --source https://push.chocolatey.org/
-choco push .\protimer.2.2.1.nupkg --source https://push.chocolatey.org/
+choco push .\protimer.2.3.0.nupkg --source https://push.chocolatey.org/
 ```
 
 Do not publish until the clean-VM install, upgrade and uninstall checks pass.

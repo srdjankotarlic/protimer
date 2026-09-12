@@ -35,7 +35,7 @@ The whole app is small on purpose:
 
 `npm run smoke` uses an isolated temporary profile, never your saved rundown. It also tests exact output sizes, dual layouts and authenticated phone reconnection. With a prepared Cloudflare binary, set `PROTIMER_TEST_ONLINE=1` to additionally exercise real HTTPS phone commands through a temporary tunnel; the test closes that tunnel when finished.
 
-Rundown regression checks cover safe selection, editing a live item, delete/undo, order changes, transport, keyboard operation and scrolling. Network-panel checks use isolated service doubles for clipboard/QR failures, stale responses, changed addresses/keys and online cancellation; real LAN/OSC/phone checks remain separate. The optional HTTPS check operates the actual online-sharing buttons. See the [development operator-panel guide](docs/CONTROL-PANELS.md) for the new controls.
+Rundown regression checks cover safe selection, editing a live item, delete/undo, order changes, transport, keyboard operation and scrolling. Network-panel checks use isolated service doubles for clipboard/QR failures, stale responses, changed addresses/keys and online cancellation; real LAN/OSC/phone checks remain separate. The optional HTTPS check operates the actual online-sharing buttons. See the [operator-panel guide](docs/CONTROL-PANELS.md) for the controls.
 
 Release builds fetch the pinned official Cloudflare binary with `scripts/fetch-cloudflared.js`; `scripts/verify-packaged-tunnel.js` then verifies the packaged checksum, version and platform signature before an installer can be published.
 

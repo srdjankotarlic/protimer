@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
   <metadata>
     <id>protimer</id>
-    <version>2.2.1</version>
+    <version>2.3.0</version>
     <title>ProTimer</title>
     <authors>Srdjan Kotarlic</authors>
     <owners>Srdjan Kotarlic</owners>
@@ -33,7 +33,7 @@ This package uses the official Windows x64 portable build and creates Start Menu
     <docsUrl>https://srdjankotarlic.github.io/protimer/#start</docsUrl>
     <bugTrackerUrl>https://github.com/srdjankotarlic/protimer/issues</bugTrackerUrl>
     <licenseUrl>https://github.com/srdjankotarlic/protimer/blob/main/LICENSE</licenseUrl>
-    <releaseNotes>https://github.com/srdjankotarlic/protimer/releases/tag/v2.2.1</releaseNotes>
+    <releaseNotes>https://github.com/srdjankotarlic/protimer/releases/tag/v2.3.0</releaseNotes>
     <iconUrl>https://srdjankotarlic.github.io/protimer/favicon.png</iconUrl>
     <tags>protimer stage-timer countdown live-events obs broadcast presentation rundown companion portable foss</tags>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
