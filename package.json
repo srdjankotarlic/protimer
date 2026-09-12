@@ -68,6 +68,8 @@
       "tunnel-tools.js",
       "scripts/smoke-layout.js",
       "scripts/smoke-startup.js",
+      "scripts/smoke-rundown.js",
+      "scripts/smoke-network-ui.js",
       "controller.html",
       "output.html",
       "remote.html",

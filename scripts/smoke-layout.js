@@ -111,8 +111,15 @@ module.exports = async function smokeLayout({ controlWin, getOutput, serverPort,
   if (process.env.PROTIMER_TEST_ONLINE === '1') {
     const online = new BrowserWindow({width:390,height:844,useContentSize:true,show:false,webPreferences:{contextIsolation:true}});
     try {
-      const share = await ctl('api.shareStart()');
+      await ctl(`$('onlineSharing').open=true; $('btnShare').click();`);
+      for(let i=0;i<90;i++){
+        if(await ctl(`!!publicUrl||!$('shareError').hidden`))break;
+        await delay(1000);
+      }
+      const share = await ctl('api.shareInfo()');
       if (!share.url) throw new Error('Online transport unavailable: ' + (share.error || 'no URL'));
+      const onlineUI=await ctl(`!$('publicRow').hidden&&!$('publicRemoteSection').hidden&&$('btnShare').textContent===t('stopSharing')&&!$('btnCopyPublicRemote').disabled`);
+      report('ONLINE_SHARING_UI_OK',onlineUI,onlineUI);
       await online.loadURL(share.url + '/remote?t=' + token);
       const connected = await waitFor(online, `authorized&&connectionHealthy&&!!S`);
       const latencies = [];
@@ -124,6 +131,9 @@ module.exports = async function smokeLayout({ controlWin, getOutput, serverPort,
         latencies.push(Date.now() - started);
       }
       report('PHONE_REAL_HTTPS_OK', connected, {connected,provider:share.provider,commandRoundTripMs:latencies});
+      await ctl(`$('btnShare').click();`);
+      const stopped=await waitFor(controlWin,`!publicUrl&&!shareStarting&&$('publicRow').hidden&&$('publicRemoteSection').hidden`);
+      report('ONLINE_STOP_UI_OK',stopped,stopped);
     } finally { online.destroy(); await ctl('api.shareStop()'); }
   }
   // Preference round-trip: shape/size/duration survive, running state does not.

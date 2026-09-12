@@ -39,7 +39,8 @@ module.exports = async function smokeStartup({ app, BrowserWindow, screen, contr
   controlWin.reload();
   await waitLoad(controlWin);
   await assertClosed();
-  assert.equal(await js('S.gridOn && S.transparent && S.fitWindow && S.dualTimer && S.outputSize.width === 1920 && !S.running && !S.secondary.running'), true);
+  const restored=await js('({grid:S.gridOn,transparent:S.transparent,fit:S.fitWindow,dual:S.dualTimer,width:S.outputSize?.width,running:S.running,secondaryRunning:S.secondary.running})');
+  assert.deepEqual(restored,{grid:true,transparent:true,fit:true,dual:true,width:1920,running:false,secondaryRunning:false});
   // Re-activation and monitor changes also leave a closed output closed.
   app.emit('activate');
   screen.emit('display-added', {}, screen.getPrimaryDisplay());

@@ -210,18 +210,121 @@
   .cuecolors .cdot.none{background:var(--panel2); border:1px dashed var(--dim2); position:relative;}
   .empty{color:var(--dim2); font-size:12px; text-align:center; padding:14px 0;}
 
+  /* Rundown: transport stays separate from selection and editing. */
+  .cuewrap{flex:0 0 auto!important; gap:8px;}
+  .cuewrap button:focus-visible,.cuewrap summary:focus-visible{outline:2px solid var(--blue); outline-offset:2px;}
+  .cuehead{margin:0; justify-content:space-between;}
+  .cuehead h3{flex:1;}
+  .cuehead button{min-height:28px; padding:4px 9px; font-size:11px;}
+  .rundown-schedule{border-bottom:1px solid var(--border); padding-bottom:8px;}
+  .rundown-schedule summary{font-size:11px; cursor:pointer; color:var(--dim);}
+  .rundown-schedule[open] summary{margin-bottom:8px;}
+  .rundown-schedule .rundown-totals{margin-top:9px;}
+  .cue-count{color:var(--dim); font-size:11px;}
+  .cue-plan{display:flex; flex-wrap:wrap; align-items:center; gap:6px;}
+  .cue-plan label{width:100%; color:var(--dim); font-size:11px;}
+  .cue-plan input{flex:1; min-width:100px;}
+  .cue-plan button{font-size:12px; min-height:32px; padding:5px 9px;}
+  .rundown-totals{display:flex; justify-content:space-between; gap:12px; color:var(--dim); font-size:11px;}
+  .rundown-totals strong{display:block; color:var(--text); font:600 16px/1.5 "SF Mono",Menlo,monospace;}
+  .rundown-totals>div:last-child{text-align:right;}
+  .ou{align-self:flex-start; font-size:11px; white-space:normal;}
+  .rundown-now{border:1px solid var(--border); border-radius:9px; padding:6px 9px; background:rgba(255,255,255,.025);}
+  .rundown-now .lbl{font-size:9px; color:var(--accent);}
+  .rundown-now strong{display:block; font-size:14px; font-weight:600; overflow-wrap:anywhere; margin:3px 0;}
+  .rundown-now .next{color:var(--dim); font-size:11px; overflow-wrap:anywhere;}
+  .rundown-start{margin:0; min-height:42px; letter-spacing:.3px;}
+  .rundown-start.running{background:linear-gradient(180deg,#98631f,#79501d); box-shadow:none;}
+  .rundown-transport{display:grid; grid-template-columns:1fr 1fr 1.4fr; gap:6px;}
+  .rundown-transport button{font-size:11px; padding:8px 4px; min-height:34px;}
+  .cuelist{max-height:clamp(190px,28vh,320px); min-height:70px; gap:7px; margin:0;}
+  .cue{height:92px; min-height:92px; padding:6px; gap:5px; cursor:default;}
+  .cue.selected{box-shadow:inset 0 0 0 1px var(--blue); border-color:var(--blue);}
+  .cue .n{width:18px; text-align:center; color:var(--dim); font-size:12px;}
+  .cue-select{flex:1; min-width:0; align-self:stretch; padding:0 3px; border:0; background:transparent; text-align:left; white-space:normal; box-shadow:none;}
+  .cue-select:hover{background:transparent;}
+  .cue .nm{font-size:13px; font-weight:600; white-space:normal; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; line-height:1.25;}
+  .cue .times{display:flex; gap:6px; align-items:center; text-align:left; font-size:10px; margin-top:4px;}
+  .cue .times .du{color:var(--text); font-size:12px;}
+  .cue .note{font-size:10px; color:var(--dim); margin-top:3px;}
+  .cue-order{display:flex; flex-direction:column; gap:4px;}
+  .cue-order button{width:28px; height:28px; padding:3px; font-size:12px;}
+  .cue-state{font-size:8px; letter-spacing:.5px; color:var(--accent); margin-left:auto;}
+  .cue-selection{padding:9px; border:1px solid var(--border-strong); border-radius:9px; background:rgba(10,132,255,.035);}
+  .cue-selection[hidden],.cue-confirm[hidden],.cue-feedback[hidden]{display:none;}
+  #cueSelectedName{margin:0 0 8px; font-size:12px; overflow-wrap:anywhere;}
+  .cue-actions{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:5px;}
+  .cue-actions button{font-size:11px; min-height:32px; padding:6px 3px;}
+  .cue-confirm{border:1px solid var(--amber); border-radius:9px; padding:10px; font-size:12px;}
+  .cue-confirm p{margin:0 0 8px; overflow-wrap:anywhere;}
+  .cue-confirm div{display:flex; gap:6px;}
+  .cue-feedback{display:flex; flex-wrap:wrap; align-items:center; gap:6px; color:var(--dim); font-size:11px;}
+  .cue-feedback span{flex:1; min-width:100px;}
+  .cue-feedback button{font-size:11px; padding:5px 8px;}
+  .cue-editor{border-top:1px solid var(--border); padding-top:10px;}
+  .cue-editor summary{cursor:pointer; font-weight:600; font-size:12px; padding:3px 0;}
+  .cue-editor[open] summary{margin-bottom:9px;}
+  .cue-editor label{display:block; font-size:11px; color:var(--dim); margin:7px 0 4px;}
+  .cue-editor input[type=text]{width:100%;}
+  .cue-editor .cueadd{margin:6px 0; flex-wrap:wrap;}
+  .cue-editor .cue-duration{flex:1;}
+  .cue-editor .cuecolors{gap:5px; margin:9px 0; flex-wrap:wrap;}
+  .cue-editor .cdot{width:24px; height:24px; padding:0; min-width:24px;}
+  .cue-editor .panel-help{margin:6px 0; font-size:11px;}
+  .rundown-options{border-top:1px solid var(--border); padding-top:9px; display:grid; gap:8px;}
+  .rundown-options .chk{font-size:11.5px;}
+  .rundown-foot{display:flex; justify-content:space-between; align-items:center; gap:5px;}
+  .rundown-foot button{font-size:11px; padding:5px 7px;}
+
   /* mreža / OBS */
-  .net-url{display:flex; align-items:center; gap:7px; background:rgba(255,255,255,.045); border:1px solid var(--border);
-    border-radius:9px; padding:8px 10px; font-family:"SF Mono",ui-monospace,Menlo,monospace; font-size:12px; margin-bottom:8px;}
-  .net-url span{flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--accent);}
-  .net-url .mini{padding:3px 8px; font-size:11px; flex:0 0 auto;}
-  .qrbtn{padding:3px 7px; font-size:10px; flex:0 0 auto;}
-  .qrbox{display:none; background:#fff; border-radius:10px; padding:11px; margin:2px 0 9px; text-align:center;}
-  .qrbox svg{width:172px; height:172px; display:block; margin:0 auto;}
-  .qrbox .qrlbl{color:#0b0d11; font-size:10.5px; margin-top:7px; word-break:break-all; font-family:"SF Mono",Menlo,monospace; line-height:1.3;}
-  .qrbox .audience-qr-action{width:100%; margin-top:9px;}
+  .network-card{display:grid; gap:12px;}
+  .network-card h3,.network-card p{margin:0;}
+  .network-card h4{font-size:13px; margin:0;}
+  .network-card p,.network-help li{font-size:12px; color:var(--dim); line-height:1.5;}
+  .network-state{padding:10px; border:1px solid var(--border); border-radius:9px; font-size:12px; line-height:1.5;}
+  .network-state small{display:block; color:var(--dim); margin-top:3px; font-size:11px;}
+  .network-role{border:1px solid var(--border); border-radius:10px; padding:11px; display:grid; gap:8px; min-width:0;}
+  details.network-role{display:block;}
+  .network-role>summary{display:flex; align-items:center; justify-content:space-between; cursor:pointer; list-style:none; gap:8px;}
+  .network-role>summary::-webkit-details-marker{display:none;}
+  .network-role>summary::after{content:'›'; color:var(--dim); font-size:20px; flex-shrink:0;}
+  .network-role[open]>summary::after{transform:rotate(90deg);}
+  .network-role[open]>summary{margin-bottom:9px;}
+  .network-role>p,.network-role>.net-url,.network-role>.net-actions{margin-top:8px;}
+  .network-role>.net-url{display:block;}
+  .network-role.remote-role{border-left:3px solid var(--blue);}
+  .network-role.screen-role{border-left:3px solid var(--accent);}
+  .network-role.backstage-role{border-left:3px solid var(--amber);}
+  .network-role .role-heading{display:flex; gap:8px; align-items:center; flex-wrap:wrap;}
+  .access-tag{font-size:9px; letter-spacing:.5px; color:var(--dim); border:1px solid var(--border-strong); border-radius:4px; padding:2px 4px;}
+  .remote-role .access-tag{color:#9fcaff;}
+  .net-url{min-width:0; display:block; background:rgba(255,255,255,.045); border:1px solid var(--border);
+    border-radius:7px; padding:8px; font-family:"SF Mono",ui-monospace,Menlo,monospace; font-size:11px; line-height:1.5; overflow-wrap:anywhere; user-select:text; color:var(--accent);}
+  .net-url.private-url{color:#a7ceff;}
+  .net-actions{display:flex; gap:7px; flex-wrap:wrap;}
+  .net-actions button{flex:1; font-size:12px; min-height:32px; padding:5px 8px;}
+  .network-card>button,.network-local button{width:100%; min-height:32px; font-size:12px;}
+  .qrbox{display:none; background:#fff; color:#101318; border-radius:10px; padding:12px; text-align:center;}
+  .qrbox svg{width:100%; max-width:244px; height:auto; display:block; margin:8px auto;}
+  .qrbox .qr-heading{display:flex; justify-content:space-between; align-items:center; gap:8px; font-size:13px; text-align:left;}
+  .qrbox .qr-close{color:#101318; background:#eee; min-width:32px; min-height:32px; padding:5px;}
+  .qrbox .qrlbl{color:#30363d; font-size:10.5px; overflow-wrap:anywhere; font-family:"SF Mono",Menlo,monospace; line-height:1.5;}
+  .qrbox p{color:#30363d; margin:8px 0; font-size:12px;}
+  .qrbox .audience-qr-action{width:100%; margin-top:9px; font-size:12px;}
+  .network-online{border-top:1px solid var(--border); padding-top:6px;}
+  .network-online>summary{cursor:pointer; font-size:12px; font-weight:600; padding:6px 0;}
+  .network-online>p,.network-online>button,.network-online>.network-role{margin-top:10px;}
+  .network-online>button{min-height:36px; width:100%; font-size:12px;}
+  .network-api summary,.network-help summary{cursor:pointer; font-size:12px; font-weight:600; padding:6px 0;}
+  .network-api[open] summary{margin-bottom:8px;}
+  .network-api .network-role{margin-top:8px;}
+  .network-api code{overflow-wrap:anywhere; font-size:11px;}
+  .network-help{border-top:1px solid var(--border); padding-top:6px;}
+  .network-help ol{padding-left:20px; margin:8px 0;}
+  .network-help li+li{margin-top:9px;}
+  #networkFeedback:empty,#localCheckStatus:empty{display:none;}
+  #networkFeedback,#localCheckStatus{font-size:12px; line-height:1.5; margin-top:8px;}
   #btnShare.on{background:var(--accent-d); border-color:var(--accent-d); color:#fff; font-weight:600;}
-  .net-note{color:var(--dim2); font-size:11px; line-height:1.5;}
   .dot{width:7px; height:7px; border-radius:50%; background:var(--red); display:inline-block;}
   .dot.on{background:var(--accent);}
 
@@ -245,9 +348,7 @@
   .panel-help{font-size:11px; color:var(--dim); line-height:1.5; margin:8px 0 0;}
   #outputSizeStatus{color:var(--accent);}
   .secondary-readout{font:700 clamp(32px,5vw,64px)/1.2 "SF Mono",Menlo,monospace; text-align:center; padding:12px; background:#000; border-radius:8px;}
-  #networkSel{width:100%; margin:6px 0 12px; font-size:12px;}
-  .network-help summary{cursor:pointer; color:var(--blue); margin-top:10px;}
-  .network-help p{font-size:12px; color:var(--dim); line-height:1.5;}
+  #networkSel{width:100%; margin:6px 0 8px; font-size:12px;}
 
   @media (max-width:960px){
     .topbar{flex-wrap:wrap; padding-block:9px;}
@@ -442,85 +543,153 @@
   </div>
 
   <div class="right">
-    <div class="card cuewrap" style="flex:1" tabindex="0">
+    <section class="card cuewrap" aria-labelledby="rundownTitle" tabindex="0">
       <div class="cuehead">
-        <h3 data-i18n="rundown" style="margin:0">RUNDOWN</h3>
-        <div class="grow"></div>
-        <span class="lbl" data-i18n="showStart">Planirani početak</span>
+        <h3 id="rundownTitle" data-i18n="rundown" style="margin:0">RUNDOWN</h3>
+        <span id="cueCount" class="cue-count"></span>
+        <button id="btnCueNew" data-i18n="cueAdd">Dodaj</button>
+      </div>
+      <details class="rundown-schedule" id="rundownSchedule">
+      <summary id="cueScheduleSummary"></summary>
+      <div class="cue-plan">
+        <label for="showStartInput" data-i18n="showStart">Planirani početak</label>
         <input type="time" id="showStartInput" title="Planirani početak showa">
-        <span id="ouStatus" class="ou"></span>
+        <button id="btnPlanNow" data-i18n="planNow">Sada</button>
+        <button id="btnPlanClear" data-i18n="planClear">Ukloni</button>
       </div>
-      <button id="btnRundownStart" class="primary rundown-start" data-i18n="startRundown">▶ START RUNDOWN</button>
-      <div class="cuelist" id="cueList"></div>
-      <div class="cueadd">
-        <input type="text" id="cueName" placeholder="Naziv" data-i18n-ph="namePh" style="flex:1; min-width:40px">
-        <button id="cueDurationTrigger" class="duration-trigger cue-duration" type="button" aria-haspopup="dialog" aria-controls="durationPopover" aria-expanded="false" data-i18n-title="cueDurationTitle" title="Postavi trajanje stavke">
-          <span class="value" id="cueDurationValue">00:10:00</span>
-        </button>
-        <button id="btnCueAdd" title="Dodaj">+</button>
+      <div class="rundown-totals">
+        <div><span data-i18n="rundownTotal">Ukupno trajanje</span><strong id="cueTotal">00:00</strong></div>
+        <div><span data-i18n="plannedFinish">Planirani kraj</span><strong id="cuePlannedEnd">—</strong></div>
       </div>
-      <div class="cueadd">
-        <input type="text" id="cueNote" placeholder="Beleška (opciono)…" data-i18n-ph="notePh" style="flex:1; min-width:60px">
-        <span class="cuecolors" id="cueColors"></span>
+      </details>
+      <span id="ouStatus" class="ou"></span>
+      <div class="rundown-now">
+        <span class="lbl" id="cueLiveState"></span>
+        <strong id="cueLiveName"></strong>
+        <div class="next" id="cueNextName"></div>
       </div>
-      <label class="chk" style="margin-bottom:7px"><input type="checkbox" id="chkAuto"> <span data-i18n="autoNext">Auto-prelaz na sledeći</span></label>
-      <label class="chk" style="margin-bottom:9px"><input type="checkbox" id="chkNowNext"> <span data-i18n="nowNextOut">NOW/NEXT na ekranu</span></label>
-      <button id="btnGo" class="primary" style="font-weight:800; padding:11px" data-i18n-html="goNext">GO ▶ SLEDEĆI &nbsp;(N)</button>
-    </div>
+      <button id="btnRundownStart" class="primary rundown-start">▶ START RUNDOWN</button>
+      <div class="rundown-transport">
+        <button id="btnCuePrevious" data-i18n="cuePrevious">Prethodna</button>
+        <button id="btnCueReset" data-i18n="cueReset">Reset stavke</button>
+        <button id="btnGo" data-i18n="cueNext">Sledeća (N)</button>
+      </div>
+      <div class="cue-confirm" id="cueConfirm" hidden>
+        <p id="cueConfirmText"></p>
+        <div><button id="btnCueConfirm" class="danger" data-i18n="confirmDuration">Potvrdi</button><button id="btnCueCancelAction" data-i18n="cancel">Otkaži</button></div>
+      </div>
+      <div id="cueSelection" class="cue-selection" hidden>
+        <p id="cueSelectedName"></p>
+        <div class="cue-actions">
+          <button id="btnCueLoad" data-i18n="cueLoad">Pripremi</button>
+          <button id="btnCueRun" data-i18n="cueRun">Pokreni</button>
+          <button id="btnCueEdit" data-i18n="cueEdit">Uredi</button>
+          <button id="btnCueDuplicate" data-i18n="cueDuplicate">Dupliraj</button>
+          <button id="btnCueDelete" class="danger" data-i18n="cueDelete">Obriši</button>
+          <button id="btnCueDeselect" data-i18n="cueDeselect">Zatvori izbor</button>
+        </div>
+      </div>
+      <div class="cuelist" id="cueList" role="group" aria-label="Rundown"></div>
+      <div class="cue-feedback" id="cueFeedback" hidden>
+        <span id="cueFeedbackText" role="status"></span><button id="btnCueUndo" data-i18n="cueUndo" hidden>Vrati obrisano</button>
+      </div>
+      <details id="cueEditor" class="cue-editor">
+        <summary id="cueEditorTitle" data-i18n="cueNew">Dodaj stavku</summary>
+        <label for="cueName" data-i18n="namePh">Naziv</label>
+        <input type="text" id="cueName" maxlength="160" placeholder="Naziv" data-i18n-ph="namePh">
+        <label data-i18n="duration">Trajanje</label>
+        <div class="cueadd">
+          <button id="cueDurationTrigger" class="duration-trigger cue-duration" type="button" aria-haspopup="dialog" aria-controls="durationPopover" aria-expanded="false" data-i18n-title="cueDurationTitle" title="Postavi trajanje stavke">
+            <span class="value" id="cueDurationValue">00:10:00</span>
+          </button>
+          <button id="btnCueAdd" class="primary" data-i18n="cueAdd">Dodaj</button>
+          <button id="btnCueCancelEdit" data-i18n="cancel" hidden>Otkaži</button>
+        </div>
+        <label for="cueNote" data-i18n="notePh">Beleška</label>
+        <input type="text" id="cueNote" maxlength="240" placeholder="Beleška (opciono)…" data-i18n-ph="notePh">
+        <div class="cuecolors" id="cueColors" role="group" aria-label="Cue color"></div>
+        <p class="panel-help" id="cueEditHelp" data-i18n="cueSelectHelp">Klik na stavku samo je bira — ne menja tajmer.</p>
+      </details>
+      <div class="rundown-options">
+        <label class="chk"><input type="checkbox" id="chkAuto"> <span data-i18n="autoNext">Auto-prelaz na sledeći</span></label>
+        <label class="chk"><input type="checkbox" id="chkNowNext"> <span data-i18n="nowNextOut">NOW/NEXT na ekranu</span></label>
+      </div>
+      <div class="rundown-foot">
+        <button id="btnCueReveal" class="ghost" data-i18n="cueReveal">Prikaži aktivnu</button>
+        <button id="btnRundownRestart" class="ghost" data-i18n="rundownRestart">Od početka</button>
+      </div>
+    </section>
 
-    <div class="card">
-      <h3 data-i18n="netTitle">MREŽA → OBS · TELEFON</h3>
-      <label class="lbl" for="networkSel" data-i18n="networkAddress">Mreža računara (ista mreža kao telefon)</label>
-      <select id="networkSel"></select>
-      <button id="btnCheckLocal" class="ghost" style="width:100%; margin-bottom:8px" data-i18n="checkLocal">Proveri lokalnu adresu</button>
-      <p id="localCheckStatus" class="panel-help" role="status" style="margin:0 0 10px"></p>
-      <div class="lbl" style="margin-bottom:5px" data-i18n="screenOBS">Ekran (OBS / monitor)</div>
-      <div class="net-url">
-        <span id="netUrl">—</span>
-        <button class="mini ghost qrbtn" data-qr="netUrl" data-audience-qr="timer" title="QR kod">QR</button>
-        <button id="btnCopyUrl" class="mini ghost" data-i18n="copy">Kopiraj</button>
+    <section class="card network-card" id="networkPanel" aria-labelledby="networkTitle">
+      <h3 id="networkTitle" data-i18n="netTitle">POVEZIVANJE I DELJENJE</h3>
+      <div class="network-state"><span class="dot" id="netDot" aria-hidden="true"></span> <span id="netStatus">—</span><small id="netConnections"></small></div>
+      <div class="network-local">
+        <label class="lbl" for="networkSel" data-i18n="networkAddress">Lokalna mreža računara</label>
+        <select id="networkSel"></select>
+        <p data-i18n="localNetworkHelp">Telefon i računar moraju biti na istoj lokalnoj mreži. Internet nije potreban.</p>
+        <button id="btnCheckLocal" class="ghost" data-i18n="checkLocal" style="margin-top:8px">Proveri lokalni server</button>
+        <p id="localCheckStatus" role="status"></p>
       </div>
-      <div class="lbl" style="margin-bottom:5px" data-i18n="remoteLabel">Daljinski (telefon / tablet)</div>
-      <div class="net-url">
-        <span id="netRemote" style="color:var(--blue)">—</span>
-        <button class="mini ghost qrbtn" data-qr="netRemote" title="QR kod">QR</button>
-        <button id="btnCopyRemote" class="mini ghost" data-i18n="copy">Kopiraj</button>
-      </div>
-      <div class="lbl" style="margin-bottom:5px" data-i18n="backstageLabel">Backstage (raspored / crew)</div>
-      <div class="net-url">
-        <span id="netBackstage" style="color:var(--amber)">—</span>
-        <button class="mini ghost qrbtn" data-qr="netBackstage" data-audience-qr="backstage" title="QR kod">QR</button>
-        <button id="btnCopyBackstage" class="mini ghost" data-i18n="copy">Kopiraj</button>
-      </div>
-      <div class="lbl" style="margin-bottom:5px" data-i18n="apiLabel">API (Stream Deck / Companion)</div>
-      <div class="net-url">
-        <span id="netApi" style="color:#c9a0ff" data-i18n-title="apiTitle" title="GET komanda za Companion „Generic HTTP“ dugme. type: start · reset · go · blackout · adjust(&value=sek) · setDuration(&value=ms)">—</span>
-        <button id="btnCopyApi" class="mini ghost" data-i18n="copy">Kopiraj</button>
-      </div>
-
-      <div id="qrBox" class="qrbox"></div>
-      <button id="btnHideOutputQr" class="danger" style="display:none; width:100%; margin:0 0 8px" data-i18n="hideQrFromScreen">Skloni QR sa ekrana</button>
-
-      <button id="btnShare" class="ghost" style="width:100%; margin-top:4px" data-i18n="shareOnline">🌐 Deli online (bilo koja mreža)</button>
-      <p id="shareError" class="panel-help" role="alert" hidden data-i18n="shareFailureHelp">Online servis nije dostupan. Proveri internet/VPN i pokušaj ponovo. Lokalna kontrola ostaje dostupna na istoj mreži.</p>
-      <div class="lbl" id="publicLbl" style="display:none; margin:8px 0 5px"><span data-i18n="publicLabel">Javni link (bilo koja mreža)</span><span id="publicProvider"></span></div>
-      <div class="net-url" id="publicRow" style="display:none">
-        <span id="netPublic" style="color:#7ee0a0">—</span>
-        <button class="mini ghost qrbtn" data-qr="netPublic" data-audience-qr="timer" title="QR kod">QR</button>
-        <button id="btnCopyPublic" class="mini ghost" data-i18n="copy">Kopiraj</button>
-      </div>
-      <div id="publicRemoteSection" hidden>
-        <div class="lbl" style="margin:8px 0 5px" data-i18n="publicRemoteLabel">Privatna online kontrola · ne deli publici</div>
-        <div class="net-url"><span id="netPublicRemote" style="color:var(--blue)">—</span><button class="mini ghost qrbtn" data-qr="netPublicRemote">QR</button><button id="btnCopyPublicRemote" class="mini ghost" data-i18n="copy">Kopiraj</button></div>
-      </div>
-      <details class="network-help"><summary data-i18n="phoneHelpTitle">Telefon se ne povezuje?</summary><p data-i18n="phoneHelp">1. Računar i telefon poveži na istu privatnu Wi-Fi mrežu i izaberi tu adresu iznad. Ne koristi gostujuću mrežu sa izolacijom uređaja. 2. Dozvoli ProTimer-u pristup lokalnoj mreži/firewall-u; privremeno isključi VPN. 3. Ako ne može direktno, uključi Deli online i skeniraj PRIVATNU online kontrolu. Za nju oba uređaja moraju imati internet. Posle ponovnog pokretanja aplikacije skeniraj novi QR.</p></details>
-
-      <div class="net-note">
-        <span class="dot" id="netDot"></span> <span id="netStatus">pokrećem…</span><br>
-        <span data-i18n-html="netNote">OBS: <b>Browser Source</b> → Ekran URL („Providna pozadina" za overlay; NDI preko DistroAV). Telefon: otvori Daljinski URL u pretraživaču.</span>
-        <span data-i18n="shareNote" style="display:block; margin-top:5px; color:var(--dim2)">QR = skeniraj telefonom (ista Wi-Fi). „Deli online" = link koji radi sa bilo koje mreže.</span>
-      </div>
-    </div>
+      <details class="network-role remote-role" data-link-role="remoteLabel" open>
+        <summary><div class="role-heading"><h4 data-i18n="remoteLabel">Kontrola telefonom</h4><span class="access-tag" data-i18n="privateAccess">PRIVATNO</span></div></summary>
+        <p data-i18n="remoteHelp">Start, pauza i ostale komande. Ovaj QR je samo za operatera — ne deli ga publici.</p>
+        <span class="net-url private-url" id="netRemote">—</span>
+        <div class="net-actions"><button class="qrbtn" data-qr="netRemote" data-i18n="scanQr">Prikaži QR</button><button id="btnCopyRemote" data-i18n="copyLink">Kopiraj link</button></div>
+      </details>
+      <details class="network-role screen-role" data-link-role="screenOBS">
+        <summary><div class="role-heading"><h4 data-i18n="screenOBS">Tajmer · publika / OBS</h4><span class="access-tag" data-i18n="viewAccess">SAMO PRAĆENJE</span></div></summary>
+        <p data-i18n="screenHelp">Čist prikaz bez komandi. U OBS-u dodaj Browser Source i nalepi ovaj link.</p>
+        <span class="net-url" id="netUrl">—</span>
+        <div class="net-actions"><button class="qrbtn" data-qr="netUrl" data-audience-qr="timer" data-i18n="scanQr">Prikaži QR</button><button id="btnCopyUrl" data-i18n="copyLink">Kopiraj link</button></div>
+      </details>
+      <details class="network-role backstage-role" data-link-role="backstageLabel">
+        <summary><div class="role-heading"><h4 data-i18n="backstageLabel">Backstage · ekipa</h4><span class="access-tag" data-i18n="viewAccess">SAMO PRAĆENJE</span></div></summary>
+        <p data-i18n="backstageHelp">Aktivna i sledeća stavka, beleške i raspored. Nema komandi za tajmer.</p>
+        <span class="net-url" id="netBackstage">—</span>
+        <div class="net-actions"><button class="qrbtn" data-qr="netBackstage" data-audience-qr="backstage" data-i18n="scanQr">Prikaži QR</button><button id="btnCopyBackstage" data-i18n="copyLink">Kopiraj link</button></div>
+      </details>
+      <div id="qrBox" class="qrbox" role="region" aria-label="QR"></div>
+      <button id="btnHideOutputQr" class="danger" style="display:none" data-i18n="hideQrFromScreen">Skloni QR sa ekrana</button>
+      <p id="networkFeedback" role="status"></p>
+      <details class="network-online" id="onlineSharing">
+        <summary data-i18n="onlineTitle">Online · različite mreže</summary>
+        <p data-i18n="onlineHelp">Oba uređaja trebaju internet. Privremeni link radi dok su program i deljenje uključeni.</p>
+        <p data-i18n="onlinePrivacy">Eksperimentalna usluga treće strane. Javni link izlaže i rundown/beleške — ne unosi poverljive podatke.</p>
+        <button id="btnShare" class="ghost" data-i18n="shareOnline">Uključi online deljenje</button>
+        <p id="shareStatus" role="status"></p>
+        <p id="shareError" role="alert" hidden data-i18n="shareFailureHelp">Online servis nije dostupan. Proveri internet/VPN i pokušaj ponovo. Lokalna kontrola ostaje dostupna na istoj mreži.</p>
+        <div class="network-role screen-role" id="publicRow" hidden data-link-role="publicLabel">
+          <div class="role-heading"><h4 id="publicLbl" data-i18n="publicLabel">Online tajmer · publika</h4><span class="access-tag" data-i18n="viewAccess">SAMO PRAĆENJE</span></div>
+          <span class="net-url" id="netPublic">—</span>
+          <div class="net-actions"><button class="qrbtn" data-qr="netPublic" data-audience-qr="timer" data-i18n="scanQr">Prikaži QR</button><button id="btnCopyPublic" data-i18n="copyLink">Kopiraj link</button></div>
+        </div>
+        <div class="network-role remote-role" id="publicRemoteSection" hidden data-link-role="publicRemoteLabel">
+          <div class="role-heading"><h4 data-i18n="publicRemoteLabel">Online kontrola</h4><span class="access-tag" data-i18n="privateAccess">PRIVATNO</span></div>
+          <p data-i18n="remoteHelp">Start, pauza i ostale komande. Ovaj QR je samo za operatera — ne deli ga publici.</p>
+          <span class="net-url private-url" id="netPublicRemote">—</span>
+          <div class="net-actions"><button class="qrbtn" data-qr="netPublicRemote" data-i18n="scanQr">Prikaži QR</button><button id="btnCopyPublicRemote" data-i18n="copyLink">Kopiraj link</button></div>
+        </div>
+      </details>
+      <details class="network-api" id="networkApi">
+        <summary data-i18n="apiLabel">Companion / Stream Deck / OSC</summary>
+        <p data-i18n="apiHelp">Za ProTimer Companion modul koristi adresu računara i HTTP port. Za Generic HTTP kopiraj primer komande ispod.</p>
+        <div class="network-role" data-link-role="apiLabel">
+          <p><span data-i18n="hostAddress">Adresa</span>: <code id="apiHost">—</code><br>HTTP: <code id="apiPort">—</code> · OSC UDP: <code id="oscPortLabel">—</code></p>
+          <label class="lbl" data-i18n="apiExample">Privatna HTTP komanda · Start / pauza</label>
+          <span class="net-url private-url" id="netApi">—</span>
+          <div class="net-actions"><button id="btnCopyApi" data-i18n="copyCommand">Kopiraj komandu</button></div>
+          <p data-i18n="apiWarning">Sadrži ključ za kontrolu. Otvaranje ovog URL-a pokreće/pauzira tajmer. Kopiranje ga ne izvršava.</p>
+          <p data-i18n="oscHelp">OSC je bez ključa: koristi pouzdanu lokalnu mrežu. Adrese:</p>
+          <code>/protimer/start · /protimer/reset · /protimer/go · /protimer/blackout · /protimer/adjust · /protimer/setDuration</code>
+          <p data-i18n="oscValues">adjust: sekunde (npr. 10 ili −10). setDuration: milisekunde (60000 = 1 minut).</p>
+        </div>
+      </details>
+      <details class="network-help">
+        <summary data-i18n="phoneHelpTitle">Telefon se ne povezuje?</summary>
+        <ol><li data-i18n="phoneStepNetwork">Poveži uređaje na istu mrežu. Gostujući Wi-Fi često blokira komunikaciju između uređaja.</li><li data-i18n="phoneStepPermissions">Proveri dozvolu za ProTimer u lokalnoj mreži / firewall-u. Ne isključuj firewall; dozvoli samo aplikaciju na pouzdanoj mreži. Proveri da VPN ne blokira lokalni pristup.</li><li data-i18n="phoneStepQr">Skeniraj novi QR „Kontrola telefonom“ posle ponovnog pokretanja aplikacije ili promene mreže. QR za publiku ne sadrži komande.</li><li data-i18n="phoneStepOnline">Ako lokalna mreža blokira uređaje, probaj online kontrolu. Potreban je internet na oba uređaja.</li></ol>
+        <p data-i18n="obsHelp">OBS overlay: uključi „Providna pozadina (OBS)“ u kontroli. NDI zahteva DistroAV. ProTimer mora ostati uključen za sve linkove.</p>
+      </details>
+    </section>
   </div>
 </div>
 
@@ -577,9 +746,46 @@ const api = window.pt || {
 // ---------- JEZIK / LANGUAGE ----------
 const I18N = {
   sr: {
-    checkLocal:'Proveri lokalnu adresu', checkingLocal:'Proveravam lokalni server…',
-    localCheckOK:'Server odgovara na ovoj adresi. Skeniraj NOVI Daljinski QR. Ako telefon i dalje ne otvara stranicu, proveri izolaciju uređaja na Wi-Fi mreži i dozvole/firewall. Ova provera važi za računar, ne potvrđuje pristup sa telefona.',
-    localCheckFailed:'Lokalna adresa ne odgovara. Izaberi drugu mrežu iznad i proveri dozvolu za lokalnu mrežu/firewall. Na Macu: System Settings → Privacy & Security → Local Network → ProTimer.',
+    planNow:'Sada', planClear:'Ukloni', rundownTotal:'Ukupno trajanje', plannedFinish:'Planirani kraj', rundownSchedule:'Raspored',
+    cuePrevious:'Prethodna', cueNext:'Sledeća (N)', cueReset:'Reset stavke', cueLoad:'Pripremi', cueRun:'Pokreni',
+    cueEdit:'Uredi', cueDuplicate:'Dupliraj', cueDelete:'Obriši', cueDeselect:'Zatvori izbor', cueUndo:'Vrati obrisano',
+    cueNew:'Dodaj stavku', cueAdd:'Dodaj', cueSave:'Sačuvaj', cueReveal:'Prikaži aktivnu', rundownRestart:'Od početka',
+    cueSelectHelp:'Klik na stavku samo je bira — ne menja tajmer.', cueEditLiveHelp:'Izmene naziva i beleške važe odmah. Novo trajanje važi pri sledećem pokretanju; trenutni tajmer se ne menja.',
+    cueSelected:'Izabrano', cueItems:'stavki', cueReady:'SPREMNO', cuePaused:'PAUZIRANO', cuePlaying:'SADA · U TOKU',
+    cueFinished:'ZAVRŠENO', cueNotStarted:'Rundown nije pokrenut', cueNoNext:'Poslednja stavka', cueNoPlan:'Bez planiranog početka',
+    cueWaiting:'Čeka pokretanje', rundownResume:'Nastavi rundown', rundownPause:'Pauziraj rundown', rundownAgain:'Ponovi stavku',
+    cueReplaceConfirm:'Ovo će zameniti trenutni tajmer stavkom', cueResetConfirm:'Resetovati trenutnu stavku? Tajmer će biti pauziran i vraćen na početak.',
+    cueDeleted:'Stavka je obrisana.', cueRestored:'Obrisana stavka je vraćena.', cueSaved:'Izmene su sačuvane. Aktivni tajmer nije promenjen.',
+    cueAdded:'Stavka je dodata.', cueCopied:'Kopija je dodata.', cueCopySuffix:'kopija', cueUp:'Pomeri gore', cueDown:'Pomeri dole',
+    cueDeleteLive:'Pauziraj aktivnu stavku pre brisanja.', cueInvalid:'Unesi trajanje od 1 sekunde do 99:59:59.', cueMissing:'Stavka više ne postoji.',
+    cueColor:'Boja stavke', cueNoColor:'Bez boje', cuePrepared:'PRIPREMLJENO', cueActionChanged:'Aktivna stavka je u međuvremenu promenjena. Ponovi komandu ako je i dalje želiš.',
+    localNetworkHelp:'Telefon i računar moraju biti na istoj lokalnoj mreži. Internet nije potreban.',
+    privateAccess:'PRIVATNO', viewAccess:'SAMO PRAĆENJE', scanQr:'Prikaži QR', copyLink:'Kopiraj link', copyCommand:'Kopiraj komandu',
+    remoteHelp:'Start, pauza i ostale komande. Ovaj QR je samo za operatera — ne deli ga publici.',
+    screenHelp:'Čist prikaz bez komandi. U OBS-u dodaj Browser Source i nalepi ovaj link.',
+    backstageHelp:'Aktivna i sledeća stavka, beleške i raspored. Nema komandi za tajmer.',
+    onlineTitle:'Online · različite mreže', onlineHelp:'Oba uređaja trebaju internet. Privremeni link radi dok su program i deljenje uključeni.',
+    onlinePrivacy:'Eksperimentalna usluga treće strane. Javni link izlaže i rundown/beleške — ne unosi poverljive podatke.',
+    onlineOff:'Online deljenje je isključeno.', onlineReady:'Online deljenje je spremno.',
+    serverReady:'Lokalni server je spreman', connectionCount:'Aktivne veze', connectionHint:'Veze nisu broj telefona; uključuju OBS i otvorene prikaze.',
+    copySuccess:'Kopirano', copyFailed:'Kopiranje nije uspelo. Označi link i kopiraj ručno (Cmd/Ctrl+C).',
+    qrFailed:'QR nije napravljen. Pokušaj ponovo ili kopiraj link.', qrClose:'Zatvori QR',
+    qrLocalHint:'Skeniraj kamerom telefona na istoj lokalnoj mreži.', qrOnlineHint:'Skeniraj kamerom telefona. Potreban je internet.',
+    qrPrivateHint:'Privatni pristup komandama — ne prikazuj ovaj kod publici.',
+    qrOutputHint:'Dugme ispod otvara izlaz na monitoru izabranom u kontroli. Backstage može sadržati interne beleške.',
+    qrOutputFailed:'QR nije poslat na ekran. Proveri izabrani monitor i pokušaj ponovo.',
+    apiHelp:'Za ProTimer Companion modul koristi adresu računara i HTTP port. Za Generic HTTP kopiraj primer komande ispod.',
+    hostAddress:'Adresa', apiExample:'Privatna HTTP komanda · Start / pauza',
+    apiWarning:'Sadrži ključ za kontrolu. Otvaranje ovog URL-a pokreće/pauzira tajmer. Kopiranje ga ne izvršava.',
+    oscHelp:'OSC je bez ključa: koristi pouzdanu lokalnu mrežu. Adrese:', oscValues:'adjust: sekunde (npr. 10 ili −10). setDuration: milisekunde (60000 = 1 minut).',
+    phoneStepNetwork:'Poveži uređaje na istu mrežu. Gostujući Wi-Fi često blokira komunikaciju između uređaja.',
+    phoneStepPermissions:'Proveri dozvolu za ProTimer u lokalnoj mreži / firewall-u. Ne isključuj firewall; dozvoli samo aplikaciju na pouzdanoj mreži. Proveri da VPN ne blokira lokalni pristup.',
+    phoneStepQr:'Skeniraj novi QR „Kontrola telefonom“ posle ponovnog pokretanja aplikacije ili promene mreže. QR za publiku ne sadrži komande.',
+    phoneStepOnline:'Ako lokalna mreža blokira uređaje, probaj online kontrolu. Potreban je internet na oba uređaja.',
+    obsHelp:'OBS overlay: uključi „Providna pozadina (OBS)“ u kontroli. NDI zahteva DistroAV. ProTimer mora ostati uključen za sve linkove.',
+    checkLocal:'Proveri lokalni server', checkingLocal:'Proveravam lokalni server…',
+    localCheckOK:'Server odgovara. To ne potvrđuje pristup sa telefona — skeniraj QR „Kontrola telefonom“.',
+    localCheckFailed:'Server ne odgovara na ovoj adresi. Izaberi drugu mrežu i pogledaj „Telefon se ne povezuje?“ ispod.',
     shareFailureHelp:'Online servis nije dostupan. Proveri internet/VPN i pokušaj ponovo. Lokalna kontrola ostaje dostupna na istoj mreži.',
     outputLayoutTitle:'IZLAZNI PROZOR I CIFRE', widthPx:'Širina (px)', heightPx:'Visina (px)', applySize:'Primeni veličinu',
     sizeHelp:'Veličina sadržaja u logičkim pikselima (kao OBS Browser Source). Primena izlazi iz punog ekrana i isključuje Grid/Kompaktan. F uključuje pun ekran.',
@@ -590,9 +796,8 @@ const I18N = {
     dualTitle:'DVA TAJMERA', dualEnable:'Prikaži drugi tajmer', splitLabel:'Podela', splitColumns:'Levo / desno │', splitRows:'Gore / dole ─',
     startBoth:'▶ Pokreni oba', pauseBoth:'⏸ Pauziraj oba', resetBoth:'↺ Resetuj oba',
     dualHelp:'Glavni START i rundown upravljaju tajmerom 1. Tajmer 2 ima nezavisno trajanje i kontrole.',
-    networkAddress:'Mreža računara (ista mreža kao telefon)', noNetwork:'Nema lokalne mreže — poveži Wi-Fi/Ethernet',
-    publicRemoteLabel:'Privatna online kontrola · ne deli publici', phoneHelpTitle:'Telefon se ne povezuje?',
-    phoneHelp:'1. Računar i telefon poveži na istu privatnu Wi-Fi mrežu i izaberi tu adresu iznad. Ne koristi gostujuću mrežu sa izolacijom uređaja. 2. Dozvoli ProTimer-u pristup lokalnoj mreži/firewall-u; privremeno isključi VPN. 3. Ako ne može direktno, uključi Deli online i skeniraj PRIVATNU online kontrolu. Za nju oba uređaja moraju imati internet. Posle ponovnog pokretanja aplikacije skeniraj novi QR.',
+    networkAddress:'Lokalna mreža računara', noNetwork:'Nema lokalne mreže — poveži Wi-Fi/Ethernet',
+    publicRemoteLabel:'Online kontrola', phoneHelpTitle:'Telefon se ne povezuje?',
     outLabel:'Izlaz na', displayTitle:'Monitor za izlazni ekran', sendScreen:'Pošalji na ekran',
     fsTitle:'Pun ekran (F)', closeTitle:'Zatvori izlazni prozor', onTop:'Na vrhu',
     mode:'Režim', modeCountdown:'Odbrojavanje', modeCountup:'Štoperica', modeClock:'Sat',
@@ -613,27 +818,62 @@ const I18N = {
     autoNext:'Auto-prelaz na sledeći', startRundown:'▶ START RUNDOWN', goNext:'GO ▶ SLEDEĆI &nbsp;(N)', noName:'(bez naziva)',
     rundown:'RUNDOWN', showStart:'Planirani početak', notePh:'Beleška (opciono)…', nowNextOut:'NOW/NEXT na ekranu',
     cueImportNone:'Nijedan red nije prepoznat. Format: naziv, trajanje (10:00), beleška',
-    backstageLabel:'Backstage (raspored / crew)', onTime:'NA VREME', late:'kasni', early:'ispred',
-    apiLabel:'API (Stream Deck / Companion)', apiTitle:'GET komanda za Companion „Generic HTTP“ dugme. type: start · reset · go · blackout · adjust(&value=sek) · setDuration(&value=ms)',
+    backstageLabel:'Backstage · ekipa', onTime:'NA VREME', late:'kasni', early:'ispred',
+    apiLabel:'Companion / Stream Deck / OSC', apiTitle:'GET komanda za Companion „Generic HTTP“ dugme. type: start · reset · go · blackout · adjust(&value=sek) · setDuration(&value=ms)',
     nowLabel:'SADA', nextLabel:'SLEDI', endLabel:'Kraj', plannedLabel:'Planirano', projectedLabel:'Procena',
-    netTitle:'MREŽA → OBS · TELEFON', screenOBS:'Ekran (OBS / monitor)', copy:'Kopiraj',
+    netTitle:'POVEZIVANJE I DELJENJE', screenOBS:'Tajmer · publika / OBS', copy:'Kopiraj',
     showQrOnScreen:'Prikaži QR publici', hideQrFromScreen:'Skloni QR sa ekrana',
     audienceQrTitle:'Skenirajte za tajmer', audienceQrBackstage:'Skenirajte za backstage',
     audienceQrHint:'Otvorite kameru na telefonu i skenirajte kod',
-    remoteLabel:'Daljinski (telefon / tablet)',
-    shareOnline:'🌐 Deli online (bilo koja mreža)', publicLabel:'Javni link (bilo koja mreža)',
+    remoteLabel:'Kontrola telefonom',
+    shareOnline:'Uključi online deljenje', publicLabel:'Online tajmer · publika',
     connecting:'⏳ Povezivanje…', cancelSharing:'✕ Otkaži povezivanje', stopSharing:'✕ Prekini deljenje', shareFail:'⚠ Nije uspelo, pokušaj opet',
-    shareNote:'QR = skeniraj telefonom (ista Wi-Fi). „Deli online" = link sa bilo koje mreže.',
-    netNote:'⚠️ Svi uređaji moraju biti na <b>ISTOJ Wi-Fi</b> mreži. OBS: <b>Browser Source</b> → Ekran URL („Providna pozadina" za overlay; NDI preko DistroAV). Telefon: otvori Daljinski URL u pretraživaču. OSC: UDP port <b>7879</b>, adrese <b>/protimer/start</b> · reset · go · blackout · adjust · setDuration.',
     start:'▶ START', pause:'⏸ PAUZA', clockBtn:'— SAT —',
     outLive:'EKRAN ŽIV', outClosed:'EKRAN ZATVOREN', screenTag:'EKRAN', controlTag:'kontrola',
     netOff:'server nije pokrenut', netStarting:'pokrećem…', live:'uživo', deviceOne:'uređaj', deviceMany:'uređaja', connected:'povezano',
     shortcuts:'<kbd>Space</kbd> start/pauza · <kbd>R</kbd> reset · <kbd>N</kbd> sledeći · <kbd>↑↓</kbd> ±1m · <kbd>←→</kbd> ±10s · <kbd>B</kbd> blackout · <kbd>F</kbd> pun ekran · <kbd>M</kbd> poruka · <kbd>C</kbd> obriši poruku'
   },
   en: {
-    checkLocal:'Check local address', checkingLocal:'Checking local server…',
-    localCheckOK:'The server responds at this address. Scan a NEW Remote QR. If the phone still cannot open the page, check Wi-Fi device isolation and permissions/firewall. This checks the computer, not access from the phone.',
-    localCheckFailed:'The local address does not respond. Select another network above and check local-network/firewall permissions. On Mac: System Settings → Privacy & Security → Local Network → ProTimer.',
+    planNow:'Now', planClear:'Clear', rundownTotal:'Total duration', plannedFinish:'Planned finish', rundownSchedule:'Schedule',
+    cuePrevious:'Previous', cueNext:'Next (N)', cueReset:'Reset item', cueLoad:'Load', cueRun:'Run',
+    cueEdit:'Edit', cueDuplicate:'Duplicate', cueDelete:'Delete', cueDeselect:'Deselect', cueUndo:'Undo delete',
+    cueNew:'Add an item', cueAdd:'Add', cueSave:'Save', cueReveal:'Show current', rundownRestart:'From first',
+    cueSelectHelp:'Click an item to select it — the timer stays unchanged.', cueEditLiveHelp:'Name and note changes apply now. The new duration applies on the next load; the current timer stays unchanged.',
+    cueSelected:'Selected', cueItems:'items', cueReady:'READY', cuePaused:'PAUSED', cuePlaying:'NOW · RUNNING',
+    cueFinished:'FINISHED', cueNotStarted:'Rundown has not started', cueNoNext:'Last item', cueNoPlan:'No planned start',
+    cueWaiting:'Waiting to start', rundownResume:'Resume rundown', rundownPause:'Pause rundown', rundownAgain:'Repeat item',
+    cueReplaceConfirm:'This will replace the current timer with', cueResetConfirm:'Reset the current item? The timer will pause and return to its full duration.',
+    cueDeleted:'Item deleted.', cueRestored:'Deleted item restored.', cueSaved:'Changes saved. The active timer was not changed.',
+    cueAdded:'Item added.', cueCopied:'Copy added.', cueCopySuffix:'copy', cueUp:'Move up', cueDown:'Move down',
+    cueDeleteLive:'Pause the active item before deleting it.', cueInvalid:'Enter a duration from 1 second to 99:59:59.', cueMissing:'This item no longer exists.',
+    cueColor:'Item color', cueNoColor:'No color', cuePrepared:'LOADED', cueActionChanged:'The active item has changed. Repeat the command if you still want to apply it.',
+    localNetworkHelp:'The phone and computer must be on the same local network. No internet required.',
+    privateAccess:'PRIVATE', viewAccess:'VIEW ONLY', scanQr:'Show QR', copyLink:'Copy link', copyCommand:'Copy command',
+    remoteHelp:'Start, pause and other commands. This QR is for the operator only — do not share with the audience.',
+    screenHelp:'A clean view without controls. In OBS, add a Browser Source and paste this link.',
+    backstageHelp:'Current and next items, notes and schedule. No timer controls.',
+    onlineTitle:'Online · different networks', onlineHelp:'Both devices need internet. The temporary link works while the app and sharing remain on.',
+    onlinePrivacy:'Experimental third-party service. Public links also expose the rundown/notes — do not include confidential data.',
+    onlineOff:'Online sharing is off.', onlineReady:'Online sharing is ready.',
+    serverReady:'Local server is ready', connectionCount:'Active connections', connectionHint:'Connections are not a phone count; they include OBS and open views.',
+    copySuccess:'Copied', copyFailed:'Copy failed. Select the link and copy it manually (Cmd/Ctrl+C).',
+    qrFailed:'Could not create the QR. Retry or copy the link.', qrClose:'Close QR',
+    qrLocalHint:'Scan with your phone camera on the same local network.', qrOnlineHint:'Scan with your phone camera. Internet required.',
+    qrPrivateHint:'Private access to controls — do not show this code to the audience.',
+    qrOutputHint:'The button below opens the output on the monitor selected in Control. Backstage may contain internal notes.',
+    qrOutputFailed:'Could not send QR to the screen. Check the selected monitor and retry.',
+    apiHelp:'For the ProTimer Companion module, use the computer address and HTTP port. For Generic HTTP, copy the command example below.',
+    hostAddress:'Address', apiExample:'Private HTTP command · Start / pause',
+    apiWarning:'Contains a control key. Opening this URL starts/pauses the timer. Copying it does not execute it.',
+    oscHelp:'OSC has no key: use a trusted local network. Addresses:', oscValues:'adjust: seconds (e.g. 10 or −10). setDuration: milliseconds (60000 = 1 minute).',
+    phoneStepNetwork:'Connect both devices to the same network. Guest Wi-Fi often blocks communication between devices.',
+    phoneStepPermissions:'Check local-network / firewall permission for ProTimer. Do not disable the firewall; allow only the app on a trusted network. Check whether your VPN blocks local access.',
+    phoneStepQr:'Scan a new “Phone control” QR after restarting the app or changing networks. The audience QR has no controls.',
+    phoneStepOnline:'If the local network blocks devices, try online control. Both devices need internet.',
+    obsHelp:'OBS overlay: enable “Transparent background (OBS)” in Control. NDI requires DistroAV. Keep ProTimer running for all links.',
+    checkLocal:'Check local server', checkingLocal:'Checking local server…',
+    localCheckOK:'The server responds. This does not confirm phone access — scan the “Phone control” QR.',
+    localCheckFailed:'The server does not respond at this address. Select another network and see “Phone cannot connect?” below.',
     shareFailureHelp:'The online service is unavailable. Check internet/VPN and retry. Local control remains available on the same network.',
     outputLayoutTitle:'OUTPUT WINDOW & DIGITS', widthPx:'Width (px)', heightPx:'Height (px)', applySize:'Apply size',
     sizeHelp:'Content size in logical pixels (like an OBS Browser Source). Applying exits fullscreen and disables Grid/Compact. F toggles fullscreen.',
@@ -644,9 +884,8 @@ const I18N = {
     dualTitle:'TWO TIMERS', dualEnable:'Show second timer', splitLabel:'Split', splitColumns:'Left / right │', splitRows:'Top / bottom ─',
     startBoth:'▶ Start both', pauseBoth:'⏸ Pause both', resetBoth:'↺ Reset both',
     dualHelp:'The main START and rundown control timer 1. Timer 2 has its own duration and controls.',
-    networkAddress:'Computer network (same network as phone)', noNetwork:'No local network — connect Wi-Fi/Ethernet',
-    publicRemoteLabel:'Private online control · do not share with audience', phoneHelpTitle:'Phone cannot connect?',
-    phoneHelp:'1. Connect the computer and phone to the same private Wi-Fi and select its address above. Avoid guest networks with device isolation. 2. Allow ProTimer through local-network permissions/firewall; temporarily disconnect VPN. 3. If direct access fails, enable Share online and scan PRIVATE online control. Both devices need internet for this. Scan a new QR after restarting the app.',
+    networkAddress:'Computer local network', noNetwork:'No local network — connect Wi-Fi/Ethernet',
+    publicRemoteLabel:'Online control', phoneHelpTitle:'Phone cannot connect?',
     outLabel:'Output to', displayTitle:'Monitor for the output screen', sendScreen:'Send to screen',
     fsTitle:'Fullscreen (F)', closeTitle:'Close output window', onTop:'On top',
     mode:'Mode', modeCountdown:'Countdown', modeCountup:'Stopwatch', modeClock:'Clock',
@@ -667,18 +906,16 @@ const I18N = {
     autoNext:'Auto-advance to next', startRundown:'▶ START RUNDOWN', goNext:'GO ▶ NEXT &nbsp;(N)', noName:'(no name)',
     rundown:'RUNDOWN', showStart:'Planned start', notePh:'Note (optional)…', nowNextOut:'NOW/NEXT on screen',
     cueImportNone:'No rows recognized. Format: name, duration (10:00), note',
-    backstageLabel:'Backstage (schedule / crew)', onTime:'ON TIME', late:'behind', early:'ahead',
-    apiLabel:'API (Stream Deck / Companion)', apiTitle:'GET command for a Companion "Generic HTTP" button. type: start · reset · go · blackout · adjust(&value=sec) · setDuration(&value=ms)',
+    backstageLabel:'Backstage · crew', onTime:'ON TIME', late:'behind', early:'ahead',
+    apiLabel:'Companion / Stream Deck / OSC', apiTitle:'GET command for a Companion "Generic HTTP" button. type: start · reset · go · blackout · adjust(&value=sec) · setDuration(&value=ms)',
     nowLabel:'NOW', nextLabel:'NEXT', endLabel:'End', plannedLabel:'Planned', projectedLabel:'Projected',
-    netTitle:'NETWORK → OBS · PHONE', screenOBS:'Screen (OBS / monitor)', copy:'Copy',
+    netTitle:'CONNECT & SHARE', screenOBS:'Timer · audience / OBS', copy:'Copy',
     showQrOnScreen:'Show QR to audience', hideQrFromScreen:'Hide QR from screen',
     audienceQrTitle:'Scan to follow the timer', audienceQrBackstage:'Scan for backstage',
     audienceQrHint:'Open your phone camera and scan the code',
-    remoteLabel:'Remote (phone / tablet)',
-    shareOnline:'🌐 Share online (any network)', publicLabel:'Public link (any network)',
+    remoteLabel:'Phone control',
+    shareOnline:'Enable online sharing', publicLabel:'Online timer · audience',
     connecting:'⏳ Connecting…', cancelSharing:'✕ Cancel connection', stopSharing:'✕ Stop sharing', shareFail:'⚠ Failed, try again',
-    shareNote:'QR = scan with a phone (same Wi-Fi). “Share online” = a link that works from any network.',
-    netNote:'⚠️ All devices must be on the <b>SAME Wi-Fi</b> network. OBS: <b>Browser Source</b> → Screen URL (enable “Transparent background” for overlay; NDI via DistroAV). Phone: open the Remote URL in a browser. OSC: UDP port <b>7879</b>, addresses <b>/protimer/start</b> · reset · go · blackout · adjust · setDuration.',
     start:'▶ START', pause:'⏸ PAUSE', clockBtn:'— CLOCK —',
     outLive:'SCREEN LIVE', outClosed:'SCREEN CLOSED', screenTag:'SCREEN', controlTag:'control',
     netOff:'server not running', netStarting:'starting…', live:'live', deviceOne:'device', deviceMany:'devices', connected:'connected',
@@ -694,7 +931,7 @@ function applyLang(){
   document.querySelectorAll('[data-i18n-title]').forEach(el => el.title = t(el.dataset.i18nTitle));
   document.querySelectorAll('[data-i18n-html]').forEach(el => el.innerHTML = t(el.dataset.i18nHtml));
   document.querySelectorAll('.lang button').forEach(b => b.classList.toggle('active', b.dataset.lang===lang));
-  updateButtons(); renderCues(); showNet(lastNetInfo); fillDisplays(lastDisplays);
+  closeQr(); syncCueColors(); updateButtons(); renderCues(); showNet(lastNetInfo); fillDisplays(lastDisplays);
   if(typeof applyShare==='function') applyShare({ url: publicUrl, starting: shareStarting, provider: shareProvider });
 }
 
@@ -721,6 +958,8 @@ let S = {
 };
 let lastNetInfo = null, lastDisplays = [];
 let cues = [], currentCue = -1, autoNext = false, zeroFired = false, outputOpen = false;
+let selectedCue = null, editingCue = null, removedCue = null, pendingCueAction = null, rundownHasRun = false;
+let rundownRenderKey = '';
 let autoAdvanceTimer = null;
 let cueDraftMs = 600000, durationPickerTarget = null, durationPickerAnchor = null, targetArmed = false;
 
@@ -809,6 +1048,7 @@ function startPause(){
     if(S.mode==='countup') S.startAt=now;
     else { S.endAt=now+S.remMs; if(S.remMs>0) zeroFired=false; }
     S.running=true;
+    if(currentCue>=0 && cues[currentCue] && S.mode==='countdown') rundownHasRun=true;
   }
   send(); updateButtons();
 }
@@ -973,12 +1213,13 @@ function render(){
 
   // over / under raspored
   const sch=schedule(now); const ou=$('ouStatus');
-  if(sch.delta==null){ ou.textContent=''; ou.className='ou'; }
+  if(sch.delta==null||!rundownHasRun){ ou.textContent=t(S.showStart?'cueWaiting':'cueNoPlan'); ou.className='ou'; ou.title=''; }
   else { const sec=Math.round(sch.delta/1000);
     if(Math.abs(sec)<=5){ ou.textContent=t('onTime'); ou.className='ou ontime'; }
-    else if(sec>0){ ou.textContent='▲ '+fmtSecs(sec,false); ou.className='ou late'; ou.title=t('late'); }
-    else { ou.textContent='▼ '+fmtSecs(-sec,false); ou.className='ou early'; ou.title=t('early'); }
+    else if(sec>0){ ou.textContent=t('late')+' '+fmtSecs(sec,false); ou.className='ou late'; ou.title=t('late'); }
+    else { ou.textContent=t('early')+' '+fmtSecs(-sec,false); ou.className='ou early'; ou.title=t('early'); }
   }
+  updateRundownTransport();
 
   if(S.mode==='countdown'&&S.running&&r.rem!==null&&r.rem<=0&&!zeroFired){
     zeroFired=true;
@@ -991,6 +1232,7 @@ function render(){
   requestAnimationFrame(render);
 }
 function updateButtons(){
+  updateRundownTransport();
   const b=$('btnStart');
   if(S.mode==='clock'){ b.textContent=t('clockBtn'); b.classList.remove('running'); return; }
   if(S.running){ b.textContent=t('pause'); b.classList.add('running'); }
@@ -1000,42 +1242,148 @@ function updateButtons(){
 // ---------- RUNDOWN ----------
 function clock(ms){ const d=new Date(ms); return pad(d.getHours())+':'+pad(d.getMinutes()); }
 function renderCues(){
-  const el=$('cueList'); el.innerHTML='';
-  $('btnRundownStart').disabled=!cues.length;
-  $('btnGo').disabled=!cues.length||currentCue>=cues.length-1;
-  if(!cues.length){ const d=document.createElement('div'); d.className='empty'; d.textContent=t('cueEmpty'); el.appendChild(d); return; }
+  const el=$('cueList'), scroll=el.scrollTop;
+  const focused=document.activeElement?.closest('.cue');
+  const focusCue=focused?._cue;
+  const focusClass=document.activeElement?.classList.contains('up')?'up':document.activeElement?.classList.contains('dn')?'dn':'cue-select';
+  el.innerHTML='';
+  if(!cues.includes(selectedCue)) selectedCue=null;
+  if(currentCue<0 || !cues[currentCue]) rundownHasRun=false;
+  $('cueCount').textContent=cues.length+' '+t('cueItems');
+  $('cueTotal').textContent=fmtMs(cues.reduce((sum,c)=>sum+c.durationMs,0));
+  $('cueScheduleSummary').textContent=t('rundownSchedule')+' · '+$('cueTotal').textContent+(S.showStart?' · '+S.showStart:'');
   const sch=schedule(Date.now());
+  $('cuePlannedEnd').textContent=sch.plannedEnd==null?'—':clock(sch.plannedEnd);
+  if(!cues.length){ const d=document.createElement('div'); d.className='empty'; d.textContent=t('cueEmpty'); el.appendChild(d); }
   cues.forEach((c,i)=>{
     const pr=sch.rows[i];
     const row=document.createElement('div');
-    row.className='cue'+(i===currentCue?' current':'');
-    const times = pr.plannedStart!=null
-      ? `${clock(pr.plannedStart)}–${clock(pr.plannedEnd)}<div class="du">${fmtMs(c.durationMs)}</div>`
-      : `<div class="du">${fmtMs(c.durationMs)}</div>`;
-    row.innerHTML=`${c.color?`<span class="stripe" style="background:${c.color}"></span>`:''}<span class="n">${i+1}</span>`+
-      `<div class="body"><div class="nm"></div>${c.note?'<div class="note"></div>':''}</div>`+
-      `<span class="times">${times}</span>`+
-      `<button class="mini up">▲</button><button class="mini dn">▼</button><button class="mini del">✕</button>`;
+    row._cue=c;
+    row.dataset.index=i;
+    row.className='cue'+(i===currentCue?' current':'')+(c===selectedCue?' selected':'');
+    row.innerHTML='<span class="stripe"></span><span class="n"></span>'+
+      '<button class="cue-select"><span class="nm"></span><span class="times"><span class="du"></span><span class="planned"></span><span class="cue-state"></span></span><span class="note"></span></button>'+
+      '<div class="cue-order"><button class="up">↑</button><button class="dn">↓</button></div>';
+    row.querySelector('.stripe').style.background=/^#[0-9a-f]{6}$/i.test(c.color||'')?c.color:'transparent';
+    row.querySelector('.n').textContent=i+1;
     row.querySelector('.nm').textContent=c.name||t('noName');
-    if(c.note) row.querySelector('.note').textContent=c.note;
-    row.addEventListener('click',e=>{ if(e.target.tagName!=='BUTTON') loadCue(i,false); });
+    row.querySelector('.du').textContent=fmtMs(c.durationMs);
+    row.querySelector('.planned').textContent=pr.plannedStart==null?'':clock(pr.plannedStart)+'–'+clock(pr.plannedEnd);
+    row.querySelector('.cue-state').textContent=i===currentCue?t('nowLabel'):i===currentCue+1?t('nextLabel'):'';
+    row.querySelector('.note').textContent=c.note||'';
+    const pick=row.querySelector('.cue-select');
+    pick.title=(c.name||t('noName'))+(c.note?' — '+c.note:'');
+    pick.setAttribute('aria-pressed',String(c===selectedCue));
+    if(i===currentCue) pick.setAttribute('aria-current','step');
+    pick.addEventListener('click',()=>{ selectedCue=c; renderCues(); });
+    row.querySelector('.up').title=t('cueUp'); row.querySelector('.up').setAttribute('aria-label',t('cueUp')+' '+(i+1));
+    row.querySelector('.dn').title=t('cueDown'); row.querySelector('.dn').setAttribute('aria-label',t('cueDown')+' '+(i+1));
+    row.querySelector('.up').disabled=i===0; row.querySelector('.dn').disabled=i===cues.length-1;
     row.querySelector('.up').addEventListener('click',()=>moveCue(i,-1));
     row.querySelector('.dn').addEventListener('click',()=>moveCue(i,1));
-    row.querySelector('.del').addEventListener('click',()=>{
-      cancelAutoAdvance();
-      cues.splice(i,1);
-      if(i<currentCue) currentCue--;
-      else if(i===currentCue) currentCue=-1;
-      saveCues(); send(); renderCues();
-    });
     el.appendChild(row);
   });
+  el.scrollTop=scroll;
+  if(focusCue){ const i=cues.indexOf(focusCue); if(i>=0) el.querySelector(`[data-index="${i}"] .${focusClass}`)?.focus({preventScroll:true}); }
+  $('cueSelection').hidden=!selectedCue;
+  $('cueSelectedName').textContent=selectedCue?t('cueSelected')+': '+(cues.indexOf(selectedCue)+1)+'. '+selectedCue.name:'';
+  $('cueEditorTitle').textContent=t(editingCue?'cueEdit':'cueNew');
+  $('btnCueAdd').textContent=t(editingCue?'cueSave':'cueAdd');
+  $('btnCueCancelEdit').hidden=!editingCue;
+  $('cueEditHelp').textContent=t(editingCue&&editingCue===cues[currentCue]?'cueEditLiveHelp':'cueSelectHelp');
+  $('cueColors').setAttribute('aria-label',t('cueColor'));
+  rundownRenderKey=''; updateRundownTransport();
 }
-function loadCue(i,autostart){ if(i<0||i>=cues.length) return; cancelAutoAdvance(); currentCue=i; setDuration(cues[i].durationMs); if(autostart) startPause(); renderCues(); }
+function loadCue(i,autostart){ if(i<0||i>=cues.length) return; cancelAutoAdvance(); currentCue=i; setDuration(cues[i].durationMs); if(autostart) startPause(); renderCues(); revealCue(i); }
 function moveCue(i,dir){ const j=i+dir; if(j<0||j>=cues.length) return; [cues[i],cues[j]]=[cues[j],cues[i]];
-  if(currentCue===i) currentCue=j; else if(currentCue===j) currentCue=i; saveCues(); send(); renderCues(); }
-function startRundown(){ cancelAutoAdvance(); if(cues.length) loadCue(0,true); }
+  cancelAutoAdvance(); if(currentCue===i) currentCue=j; else if(currentCue===j) currentCue=i; saveCues(); send(); renderCues(); revealCue(j); }
+function startRundown(){ cancelAutoAdvance(); rundownHasRun=false; if(cues.length) loadCue(0,true); }
 function go(){ cancelAutoAdvance(); if(currentCue+1<cues.length) loadCue(currentCue+1,true); }
+
+function updateRundownTransport(){
+  const active=cues[currentCue], valid=!!active&&S.mode==='countdown';
+  const finished=valid&&!S.running&&S.remMs<=0;
+  const key=JSON.stringify([lang,currentCue,valid,S.running,finished,rundownHasRun,cues.length,active?.name,cues[currentCue+1]?.name,selectedCue===active]);
+  if(key===rundownRenderKey) return; rundownRenderKey=key;
+  $('btnRundownStart').disabled=!cues.length;
+  $('btnRundownStart').textContent=t(!valid?'startRundown':S.running?'rundownPause':finished?'rundownAgain':rundownHasRun?'rundownResume':'cueRun');
+  $('btnRundownStart').classList.toggle('running',valid&&S.running);
+  $('btnCuePrevious').disabled=!valid||currentCue===0;
+  $('btnCueReset').disabled=!valid;
+  $('btnGo').disabled=!cues.length||currentCue>=cues.length-1;
+  $('btnRundownRestart').disabled=!cues.length;
+  $('btnCueReveal').disabled=!active;
+  $('btnCueDelete').disabled=!!active&&selectedCue===active&&S.running;
+  $('btnCueDelete').title=$('btnCueDelete').disabled?t('cueDeleteLive'):t('cueDelete');
+  $('cueLiveState').textContent=t(!valid?'cueReady':S.running?'cuePlaying':finished?'cueFinished':rundownHasRun?'cuePaused':'cuePrepared');
+  $('cueLiveName').textContent=valid?(currentCue+1)+'. '+active.name:t('cueNotStarted');
+  const next=cues[valid?currentCue+1:0];
+  $('cueNextName').textContent=next?t('nextLabel')+': '+next.name+' · '+fmtMs(next.durationMs):t('cueNoNext');
+}
+function rundownPlay(){
+  if(currentCue>=0&&cues[currentCue]&&S.mode==='countdown'){
+    if(!S.running&&S.remMs<=0) setDuration(cues[currentCue].durationMs);
+    startPause();
+  } else requestCueLoad(cues[0],true);
+}
+function revealCue(i=currentCue){
+  const row=$('cueList').querySelector(`[data-index="${i}"]`); if(!row) return;
+  const list=$('cueList'),r=row.getBoundingClientRect(),b=list.getBoundingClientRect();
+  if(r.top<b.top) list.scrollTop-=b.top-r.top;
+  else if(r.bottom>b.bottom) list.scrollTop+=r.bottom-b.bottom;
+}
+function cueFeedback(key){ $('cueFeedback').hidden=false; $('cueFeedbackText').textContent=t(key); $('btnCueUndo').hidden=!removedCue; }
+function cancelCueAction(){ pendingCueAction=null; $('cueConfirm').hidden=true; }
+function requestCueAction(text,action){
+  cancelCueAction();
+  if(!S.running){ action(); return; }
+  const active=cues[currentCue];
+  pendingCueAction=()=>{ if(cues[currentCue]!==active){ cueFeedback('cueActionChanged'); return; } action(); };
+  $('cueConfirmText').textContent=text; $('cueConfirm').hidden=false; $('btnCueCancelAction').focus();
+}
+function requestCueLoad(cue,run){
+  if(!cue) return;
+  requestCueAction(t('cueReplaceConfirm')+' “'+cue.name+'”?',()=>{
+    const i=cues.indexOf(cue); if(i<0){ cueFeedback('cueMissing'); return; }
+    loadCue(i,run);
+  });
+}
+function deleteSelectedCue(){
+  const i=cues.indexOf(selectedCue); if(i<0) return;
+  if(i===currentCue&&S.running){ cueFeedback('cueDeleteLive'); return; }
+  cancelAutoAdvance();
+  removedCue={cue:selectedCue,index:i,before:cues[i+1]||null};
+  if(editingCue===selectedCue) cancelCueEdit();
+  cues.splice(i,1);
+  if(i<currentCue) currentCue--; else if(i===currentCue) currentCue=-1;
+  selectedCue=cues[Math.min(i,cues.length-1)]||null;
+  saveCues(); send(); renderCues(); cueFeedback('cueDeleted');
+}
+function undoCueDelete(){
+  if(!removedCue) return;
+  cancelAutoAdvance();
+  const active=cues[currentCue],entry=removedCue;
+  let i=cues.indexOf(entry.before); if(i<0) i=Math.min(entry.index,cues.length);
+  cues.splice(i,0,entry.cue); currentCue=active?cues.indexOf(active):-1;
+  selectedCue=entry.cue; removedCue=null;
+  saveCues(); send(); renderCues(); revealCue(i); cueFeedback('cueRestored');
+}
+function duplicateSelectedCue(){
+  const i=cues.indexOf(selectedCue); if(i<0) return;
+  const copy={...selectedCue,name:selectedCue.name+' ('+t('cueCopySuffix')+')'};
+  cues.splice(i+1,0,copy); if(currentCue>i) currentCue++;
+  cancelAutoAdvance(); selectedCue=copy;
+  saveCues(); send(); renderCues(); revealCue(i+1); cueFeedback('cueCopied');
+}
+function editSelectedCue(){
+  if(!cues.includes(selectedCue)) return;
+  editingCue=selectedCue; $('cueName').value=editingCue.name; $('cueNote').value=editingCue.note||'';
+  cueDraftMs=editingCue.durationMs; cueColorSel=editingCue.color||'';
+  syncCueColors(); syncDurationDisplays(); $('cueEditor').open=true; renderCues(); $('cueName').focus();
+}
+function cancelCueEdit(){
+  editingCue=null; $('cueName').value=''; $('cueNote').value=''; cueColorSel=''; syncCueColors(); renderCues();
+}
 
 // ---------- ČUVANJE ----------
 function saveCues(){ localStorage.setItem('pt_cues',JSON.stringify(cues)); }
@@ -1107,11 +1455,31 @@ api.onDisplays(fillDisplays);
 // ---------- MREŽA ----------
 let netUrl='', remoteUrl='', backstageUrl='', apiUrl='';
 let selectedNetworkIp=localStorage.getItem('pt_network_ip')||'', lastAddressKey='';
+let lastNetworkKey='', localCheckGeneration=0, localCheckPending=false;
+const copyLinkIds={btnCopyUrl:'netUrl',btnCopyRemote:'netRemote',btnCopyBackstage:'netBackstage',btnCopyApi:'netApi',btnCopyPublic:'netPublic',btnCopyPublicRemote:'netPublicRemote'};
+function networkLink(id){
+  const online=lastNetInfo?.running?publicUrl:'';
+  return {netUrl,netRemote:remoteUrl,netBackstage:backstageUrl,netApi:apiUrl,
+    netPublic:online,netPublicRemote:online&&lastNetInfo?.token?`${online}/remote?t=${lastNetInfo.token}`:''}[id]||'';
+}
+function syncNetworkLinks(){
+  for(const [id,linkId] of Object.entries(copyLinkIds)){
+    const url=networkLink(linkId),btn=$(id),role=t(btn.closest('[data-link-role]').dataset.linkRole);
+    $(linkId).textContent=url||'—';
+    btn.disabled=!url||btn.getAttribute('aria-busy')==='true';
+    btn.setAttribute('aria-label',`${t(linkId==='netApi'?'copyCommand':'copyLink')} · ${role}`);
+  }
+  document.querySelectorAll('.qrbtn').forEach(btn=>{
+    btn.disabled=!networkLink(btn.dataset.qr);
+    btn.setAttribute('aria-label',`${t('scanQr')} · ${t(btn.closest('[data-link-role]').dataset.linkRole)}`);
+    btn.setAttribute('aria-controls','qrBox');
+    btn.setAttribute('aria-expanded',String(!!qrShownFor&&qrShownFor===networkLink(btn.dataset.qr)));
+  });
+}
 function showNet(info){
   lastNetInfo = info;
-  if(!info||!info.running){ $('netUrl').textContent='—'; $('netRemote').textContent='—'; $('netBackstage').textContent='—'; $('netApi').textContent='—'; $('netStatus').textContent=t('netOff'); $('netDot').classList.remove('on'); return; }
-  const addresses=info.addresses||[{ip:info.ip,name:''}];
-  if(!addresses.some(a=>a.ip===selectedNetworkIp)) selectedNetworkIp=info.ip;
+  const addresses=info?.addresses||(info?.ip?[{ip:info.ip,name:''}]:[]);
+  if(!addresses.some(a=>a.ip===selectedNetworkIp)) selectedNetworkIp=addresses.find(a=>a.ip===info?.ip)?.ip||addresses[0]?.ip||'';
   const addressKey=JSON.stringify(addresses)+'|'+selectedNetworkIp+'|'+lang;
   if(addressKey!==lastAddressKey){
     lastAddressKey=addressKey; $('networkSel').replaceChildren();
@@ -1119,108 +1487,143 @@ function showNet(info){
     if(!addresses.length){ const option=document.createElement('option'); option.textContent=t('noNetwork'); $('networkSel').appendChild(option); }
     $('networkSel').value=selectedNetworkIp;
   }
-  const previousUrl=netUrl;
-  netUrl=`http://${selectedNetworkIp}:${info.port}`;
-  if(previousUrl&&previousUrl!==netUrl){ $('qrBox').style.display='none'; qrShownFor=''; $('localCheckStatus').textContent=''; }
-  remoteUrl=`${netUrl}/remote${info.token?`?t=${info.token}`:''}`;
-  backstageUrl=`${netUrl}/backstage`;
-  apiUrl=`${netUrl}/cmd?type=start${info.token?`&t=${info.token}`:''}`;
-  $('netUrl').textContent=netUrl;
-  $('netRemote').textContent=remoteUrl;
-  $('netBackstage').textContent=backstageUrl;
-  $('netApi').textContent=apiUrl;
-  $('netDot').classList.add('on');
-  const word = info.clients===1?t('deviceOne'):t('deviceMany');
-  $('netStatus').textContent=`${t('live')} · ${info.clients} ${word} ${t('connected')}`;
-  if(!addresses.length) $('netStatus').textContent=t('noNetwork');
+  const ready=!!(info?.running&&info.port&&selectedNetworkIp);
+  const key=JSON.stringify([ready,selectedNetworkIp,info?.port,info?.token]);
+  if(key!==lastNetworkKey){
+    lastNetworkKey=key; localCheckGeneration++; localCheckPending=false;
+    closeQr(); $('localCheckStatus').textContent=''; $('networkFeedback').textContent='';
+  }
+  const nextUrl=ready?`http://${selectedNetworkIp}:${info.port}`:'';
+  if(netUrl!==nextUrl) hideAudienceQrFor(netUrl);
+  netUrl=nextUrl;
+  remoteUrl=netUrl&&info.token?`${netUrl}/remote?t=${info.token}`:'';
+  backstageUrl=netUrl?`${netUrl}/backstage`:'';
+  apiUrl=netUrl&&info.token?`${netUrl}/cmd?type=start&t=${info.token}`:'';
+  $('networkSel').disabled=!addresses.length;
+  $('btnCheckLocal').disabled=!ready||localCheckPending;
+  $('netDot').classList.toggle('on',ready);
+  $('netStatus').textContent=t(!info?.running?'netOff':!addresses.length?'noNetwork':'serverReady');
+  $('netConnections').textContent=info?.running?`${t('connectionCount')}: ${Math.max(0,Number(info.clients)||0)}. ${t('connectionHint')}`:'';
+  $('apiHost').textContent=ready?selectedNetworkIp:'—'; $('apiPort').textContent=ready?info.port:'—'; $('oscPortLabel').textContent=ready&&info.oscPort?info.oscPort:'—';
+  $('btnShare').disabled=!info?.running&&!publicUrl&&!shareStarting;
   updatePublicRemote();
 }
 $('networkSel').addEventListener('change',e=>{ selectedNetworkIp=e.target.value; localStorage.setItem('pt_network_ip',selectedNetworkIp); showNet(lastNetInfo); });
 $('btnCheckLocal').addEventListener('click',async()=>{
-  const ip=selectedNetworkIp; $('btnCheckLocal').disabled=true; $('localCheckStatus').textContent=t('checkingLocal');
-  try{ const result=await api.checkLocalNetwork(ip); if(ip===selectedNetworkIp) $('localCheckStatus').textContent=t(result?.ok?'localCheckOK':'localCheckFailed'); }
-  catch(_){ $('localCheckStatus').textContent=t('localCheckFailed'); }
-  finally{ $('btnCheckLocal').disabled=false; }
+  const ip=selectedNetworkIp,generation=++localCheckGeneration; localCheckPending=true; $('btnCheckLocal').disabled=true; $('localCheckStatus').textContent=t('checkingLocal');
+  try{ const result=await api.checkLocalNetwork(ip); if(generation===localCheckGeneration) $('localCheckStatus').textContent=t(result?.ok?'localCheckOK':'localCheckFailed'); }
+  catch(_){ if(generation===localCheckGeneration) $('localCheckStatus').textContent=t('localCheckFailed'); }
+  finally{ if(generation===localCheckGeneration){ localCheckPending=false; $('btnCheckLocal').disabled=!netUrl; } }
 });
 api.onNetworkInfo(showNet);
 api.getNetworkInfo().then(showNet).catch(()=>{});
-function copyBtn(btn, getUrl){ btn.addEventListener('click',()=>{ const u=getUrl(); if(u){ navigator.clipboard.writeText(u); const o=btn.textContent; btn.textContent='✓'; setTimeout(()=>btn.textContent=o,1200); } }); }
-copyBtn($('btnCopyUrl'), ()=>netUrl);
-copyBtn($('btnCopyRemote'), ()=>remoteUrl);
-copyBtn($('btnCopyBackstage'), ()=>backstageUrl);
-copyBtn($('btnCopyApi'), ()=>apiUrl);
+function copyBtn(btn, getUrl){ btn.addEventListener('click',async()=>{
+  const url=getUrl(); if(!url) return;
+  btn.disabled=true; btn.setAttribute('aria-busy','true');
+  try{
+    await navigator.clipboard.writeText(url);
+    $('networkFeedback').textContent=`${t('copySuccess')} · ${t(btn.closest('[data-link-role]').dataset.linkRole)}`;
+  } catch(_){ $('networkFeedback').textContent=t('copyFailed'); }
+  finally{ btn.removeAttribute('aria-busy'); syncNetworkLinks(); }
+}); }
+for(const [id,linkId] of Object.entries(copyLinkIds)) copyBtn($(id),()=>networkLink(linkId));
 
 // ---------- QR KOD ----------
-let qrShownFor='', audienceQrShownFor='';
+let qrShownFor='', audienceQrShownFor='', qrGeneration=0, qrTrigger=null;
+function closeQr(returnFocus=false){
+  qrGeneration++; $('qrBox').style.display='none'; $('qrBox').replaceChildren(); qrShownFor='';
+  document.querySelectorAll('.qrbtn').forEach(b=>b.setAttribute('aria-expanded','false'));
+  if(returnFocus&&qrTrigger?.isConnected) qrTrigger.focus(); qrTrigger=null;
+}
 function applyOutputQrState(info){
   audienceQrShownFor=(info&&info.url)||'';
   $('btnHideOutputQr').style.display=audienceQrShownFor?'block':'none';
 }
+function hideAudienceQrFor(base){
+  if(base&&(audienceQrShownFor===base||audienceQrShownFor.startsWith(base+'/'))){ api.hideOutputQr(); applyOutputQrState(null); }
+}
 api.onOutputQr(applyOutputQrState);
+document.querySelectorAll('details.network-role').forEach(detail=>detail.addEventListener('toggle',()=>{
+  if(!detail.open&&qrTrigger?.closest('.network-role')===detail) closeQr();
+}));
+$('onlineSharing').addEventListener('toggle',()=>{ if(!$('onlineSharing').open&&qrTrigger?.dataset.qr.startsWith('netPublic')) closeQr(); });
 document.querySelectorAll('.qrbtn').forEach(b=>b.addEventListener('click',async ()=>{
-  const url=$(b.dataset.qr).textContent.trim();
+  const url=networkLink(b.dataset.qr);
   const box=$('qrBox');
-  if(!url||url==='—') return;
-  if(qrShownFor===url && box.style.display==='block'){ box.style.display='none'; qrShownFor=''; return; }
-  const svg=await api.qr(url);
-  if(svg){
+  if(!url) return;
+  if(qrShownFor===url){ closeQr(true); return; }
+  closeQr(); const generation=qrGeneration; qrTrigger=b;
+  try{
+    const svg=await api.qr(url);
+    if(generation!==qrGeneration||url!==networkLink(b.dataset.qr)) return;
+    if(!svg) throw new Error('QR unavailable');
     box.innerHTML=svg;
+    const heading=document.createElement('div'); heading.className='qr-heading';
+    const title=document.createElement('strong'); title.textContent=t(b.closest('[data-link-role]').dataset.linkRole); heading.appendChild(title);
+    const close=document.createElement('button'); close.type='button'; close.className='qr-close'; close.textContent='×'; close.setAttribute('aria-label',t('qrClose')); close.addEventListener('click',()=>closeQr(true)); heading.appendChild(close); box.prepend(heading);
+    const help=document.createElement('p'); help.textContent=t(url.startsWith('https:')?'qrOnlineHint':'qrLocalHint'); box.appendChild(help);
     const lbl=document.createElement('div'); lbl.className='qrlbl'; lbl.textContent=url; box.appendChild(lbl);
+    const privacy=document.createElement('p'); privacy.textContent=t(b.dataset.audienceQr?'qrOutputHint':'qrPrivateHint'); box.appendChild(privacy);
     if(b.dataset.audienceQr){
       const action=document.createElement('button'); action.type='button'; action.className='primary audience-qr-action'; action.textContent=t('showQrOnScreen');
       action.addEventListener('click',async ()=>{
+        if(generation!==qrGeneration||url!==networkLink(b.dataset.qr)) return;
         const backstage=b.dataset.audienceQr==='backstage';
-        const ok=await api.showOutputQr({url,label:t(backstage?'audienceQrBackstage':'audienceQrTitle'),hint:t('audienceQrHint'),displayId:+$('displaySel').value||null});
-        if(ok!==false) applyOutputQrState({url});
+        action.disabled=true;
+        try{
+          const ok=await api.showOutputQr({url,label:t(backstage?'audienceQrBackstage':'audienceQrTitle'),hint:t('audienceQrHint'),displayId:+$('displaySel').value||null});
+          if(ok===false) throw new Error('Output rejected');
+          applyOutputQrState({url});
+        } catch(_){ privacy.textContent=t('qrOutputFailed'); }
+        finally{ action.disabled=false; }
       });
       box.appendChild(action);
     }
-    box.style.display='block'; qrShownFor=url; box.scrollIntoView({block:'nearest'});
-  }
+    b.closest('.network-role').after(box); box.style.display='block'; qrShownFor=url; syncNetworkLinks(); box.scrollIntoView({block:'nearest'}); close.focus({preventScroll:true});
+  } catch(_){ if(generation===qrGeneration) $('networkFeedback').textContent=t('qrFailed'); }
 }));
+$('qrBox').addEventListener('keydown',e=>{ if(e.key==='Escape'){ e.stopPropagation(); closeQr(true); } });
 $('btnHideOutputQr').addEventListener('click',()=>{ api.hideOutputQr(); applyOutputQrState(null); });
 
 // ---------- JAVNI LINK (tunel) ----------
-let publicUrl='', shareStarting=false, shareProvider=null;
+let publicUrl='', shareStarting=false, shareProvider=null, shareRequest=0;
 function updatePublicRemote(){
-  const url=publicUrl&&lastNetInfo?.token?`${publicUrl}/remote?t=${lastNetInfo.token}`:'';
-  $('publicRemoteSection').hidden=!url; $('netPublicRemote').textContent=url||'—';
+  $('publicRow').hidden=!networkLink('netPublic');
+  $('publicRemoteSection').hidden=!networkLink('netPublicRemote');
+  syncNetworkLinks();
 }
 function applyShare(info){
+  const previous=publicUrl;
   publicUrl = (info&&info.url)||'';
   shareStarting = !!(info&&info.starting);
   shareProvider = (info&&info.provider)||null;
+  if(previous!==publicUrl) hideAudienceQrFor(previous);
   if(publicUrl||shareStarting) $('shareError').hidden=true;
+  if(previous!==publicUrl&&qrTrigger?.dataset.qr.startsWith('netPublic')) closeQr();
   updatePublicRemote();
-  if(!publicUrl){
-    $('publicLbl').style.display='none'; $('publicRow').style.display='none';
-    if(qrShownFor.startsWith('https:')){ $('qrBox').style.display='none'; qrShownFor=''; }
-  }
-  $('publicProvider').textContent=shareProvider==='cloudflare'?' · CLOUDFLARE':(shareProvider==='localtunnel'?' · FALLBACK':'');
-  if(publicUrl){
-    $('publicLbl').style.display='block'; $('publicRow').style.display='flex';
-    $('netPublic').textContent=publicUrl; $('btnShare').textContent=t('stopSharing'); $('btnShare').classList.add('on');
-  } else if(shareStarting){
-    $('btnShare').textContent=t('cancelSharing'); $('btnShare').classList.remove('on');
-  } else {
-    $('publicLbl').style.display='none'; $('publicRow').style.display='none';
-    $('btnShare').textContent=t('shareOnline'); $('btnShare').classList.remove('on');
-    if(qrShownFor && qrShownFor===$('netPublic').textContent){ $('qrBox').style.display='none'; }
-  }
+  $('shareStatus').textContent=t(publicUrl?'onlineReady':shareStarting?'connecting':'onlineOff')+(publicUrl&&shareProvider?` · ${shareProvider==='cloudflare'?'Cloudflare':'Localtunnel'}`:'');
+  $('btnShare').textContent=t(publicUrl?'stopSharing':shareStarting?'cancelSharing':'shareOnline');
+  $('btnShare').classList.toggle('on',!!publicUrl);
+  $('btnShare').disabled=!lastNetInfo?.running&&!publicUrl&&!shareStarting;
 }
 api.onShareInfo(applyShare);
 api.shareInfo().then(applyShare).catch(()=>{});
 $('btnShare').addEventListener('click',async ()=>{
-  if(publicUrl||shareStarting){ await api.shareStop(); return; }
-  $('btnShare').textContent=t('connecting'); $('btnShare').disabled=true;
-  const start=api.shareStart();
-  // pushShare() vraća dugme čim start zaista krene; ostavi veoma kratak guard protiv double-clicka.
-  setTimeout(()=>{ $('btnShare').disabled=false; },150);
-  const r=await start; $('btnShare').disabled=false;
-  if(!r||(r.error&&r.error!=='cancelled')){ $('shareError').hidden=false; $('btnShare').textContent=t('shareFail'); setTimeout(()=>{ if(!publicUrl&&!shareStarting) $('btnShare').textContent=t('shareOnline'); },2500); }
+  const request=++shareRequest;
+  try{
+    if(publicUrl||shareStarting){ await api.shareStop(); if(request===shareRequest) applyShare(await api.shareInfo()); return; }
+    $('shareError').hidden=true; applyShare({starting:true});
+    const result=await api.shareStart();
+    if(request!==shareRequest) return;
+    applyShare(await api.shareInfo());
+    if(!result||(result.error&&result.error!=='cancelled')) $('shareError').hidden=false;
+  } catch(_){
+    if(request!==shareRequest) return;
+    // Re-read instead of assuming a failed IPC call stopped an existing tunnel.
+    try{ applyShare(await api.shareInfo()); } catch(_){ applyShare({url:publicUrl,starting:false,provider:shareProvider}); }
+    $('shareError').hidden=false;
+  }
 });
-copyBtn($('btnCopyPublic'), ()=>publicUrl);
-copyBtn($('btnCopyPublicRemote'), ()=>publicUrl&&lastNetInfo?.token?`${publicUrl}/remote?t=${lastNetInfo.token}`:'');
 
 // ---------- DALJINSKI: primena komandi sa telefona ----------
 api.onRemoteCmd(c=>{
@@ -1404,21 +1807,32 @@ $('btnMsgClear').addEventListener('click',()=>{ S.message={text:'',flash:false};
 let cueColorSel='';
 const CUE_COLORS=['','#f0564d','#d9a441','#3fb950','#4493f8','#a371f7','#ec6cb9','#e6edf3'];
 CUE_COLORS.forEach(col=>{
-  const d=document.createElement('span');
+  const d=document.createElement('button'); d.type='button';
+  d.dataset.color=col;
   d.className='cdot'+(col===''?' none':'')+(col===cueColorSel?' sel':'');
   if(col) d.style.background=col;
-  d.title=col?col:'bez boje';
-  d.addEventListener('click',()=>{ cueColorSel=col; document.querySelectorAll('#cueColors .cdot').forEach(x=>x.classList.remove('sel')); d.classList.add('sel'); });
+  d.title=col||t('cueNoColor'); d.setAttribute('aria-label',t('cueColor')+': '+(col||t('cueNoColor')));
+  d.setAttribute('aria-pressed',String(col===cueColorSel));
+  d.addEventListener('click',()=>{ cueColorSel=col; syncCueColors(); });
   $('cueColors').appendChild(d);
 });
+function syncCueColors(){ document.querySelectorAll('#cueColors .cdot').forEach(d=>{
+  const on=d.dataset.color===cueColorSel; d.classList.toggle('sel',on); d.setAttribute('aria-pressed',String(on));
+  d.title=d.dataset.color||t('cueNoColor'); d.setAttribute('aria-label',t('cueColor')+': '+(d.dataset.color||t('cueNoColor')));
+}); }
 
 function addCue(){
-  const ms=cueDraftMs>0?cueDraftMs:S.durationMs;
-  cues.push({name:$('cueName').value.trim()||`Cue ${cues.length+1}`, durationMs:ms,
-    note:$('cueNote').value.trim(), color:cueColorSel});
+  const ms=cueDraftMs;
+  if(!Number.isFinite(ms)||ms<1000||ms>TimerTools.MAX_DURATION){ cueFeedback('cueInvalid'); return; }
+  if(editingCue&&!cues.includes(editingCue)){ cancelCueEdit(); cueFeedback('cueMissing'); return; }
+  const entry={name:$('cueName').value.trim()||`Cue ${cues.length+1}`, durationMs:ms,
+    note:$('cueNote').value.trim(), color:cueColorSel};
+  const editing=!!editingCue;
+  if(editing){ Object.assign(editingCue,entry); selectedCue=editingCue; editingCue=null; }
+  else { cues.push(entry); selectedCue=entry; }
   $('cueName').value=''; $('cueNote').value='';
-  saveCues(); send(); renderCues();
-  requestAnimationFrame(()=>{ const list=$('cueList'); list.scrollTop=list.scrollHeight; });
+  saveCues(); send(); renderCues(); revealCue(cues.indexOf(selectedCue)); cueFeedback(editing?'cueSaved':'cueAdded');
+  $('cueEditor').open=!editing; if(!editing) $('cueName').focus();
 }
 $('btnCueAdd').addEventListener('click',addCue);
 
@@ -1470,8 +1884,26 @@ document.querySelector('.cuewrap').addEventListener('paste',e=>{
 
 $('cueName').addEventListener('keydown',e=>{ if(e.key==='Enter') addCue(); });
 $('cueNote').addEventListener('keydown',e=>{ if(e.key==='Enter') addCue(); });
-$('btnRundownStart').addEventListener('click',startRundown);
+$('btnRundownStart').addEventListener('click',rundownPlay);
 $('btnGo').addEventListener('click',go);
+$('btnCuePrevious').addEventListener('click',()=>requestCueLoad(cues[currentCue-1],true));
+$('btnCueReset').addEventListener('click',()=>requestCueAction(t('cueResetConfirm'),()=>{ if(cues[currentCue]) setDuration(cues[currentCue].durationMs); }));
+$('btnRundownRestart').addEventListener('click',()=>requestCueLoad(cues[0],true));
+$('btnCueLoad').addEventListener('click',()=>requestCueLoad(selectedCue,false));
+$('btnCueRun').addEventListener('click',()=>requestCueLoad(selectedCue,true));
+$('btnCueEdit').addEventListener('click',editSelectedCue);
+$('btnCueDuplicate').addEventListener('click',duplicateSelectedCue);
+$('btnCueDelete').addEventListener('click',deleteSelectedCue);
+$('btnCueDeselect').addEventListener('click',()=>{ selectedCue=null; renderCues(); });
+$('btnCueUndo').addEventListener('click',undoCueDelete);
+$('btnCueCancelEdit').addEventListener('click',cancelCueEdit);
+$('btnCueNew').addEventListener('click',()=>{ cancelCueEdit(); $('cueEditor').open=true; $('cueName').focus(); });
+$('btnCueReveal').addEventListener('click',()=>revealCue());
+$('btnCueConfirm').addEventListener('click',()=>{ const action=pendingCueAction; cancelCueAction(); if(action) action(); });
+$('btnCueCancelAction').addEventListener('click',cancelCueAction);
+$('btnPlanNow').addEventListener('click',()=>{ S.showStart=clock(Date.now()); $('showStartInput').value=S.showStart; send(); renderCues(); });
+$('btnPlanClear').addEventListener('click',()=>{ S.showStart=''; $('showStartInput').value=''; send(); renderCues(); });
+$('cueConfirm').addEventListener('keydown',e=>{ if(e.key==='Escape'){ cancelCueAction(); $('btnRundownStart').focus(); } e.stopPropagation(); });
 $('showStartInput').addEventListener('change',e=>{ S.showStart=e.target.value; send(); renderCues(); });
 $('chkNowNext').addEventListener('change',e=>{ S.showNowNext=e.target.checked; send(); });
 
@@ -1485,8 +1917,9 @@ api.isOutputOpen().then(open=>{ outputOpen=open; }).catch(()=>{});
 
 // Prečice
 document.addEventListener('keydown',e=>{
+  if(e.defaultPrevented||e.isComposing||e.ctrlKey||e.metaKey||e.altKey) return;
   const tag=e.target.tagName;
-  if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT'||tag==='BUTTON'||e.target.isContentEditable){ if(e.key==='Escape') e.target.blur(); return; }
+  if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT'||tag==='BUTTON'||tag==='SUMMARY'||e.target.isContentEditable){ if(e.key==='Escape') e.target.blur(); return; }
   switch(e.key){
     case ' ': e.preventDefault(); startPause(); break;
     case 'r': case 'R': reset(); break;
@@ -1509,7 +1942,7 @@ document.querySelectorAll('.lang button').forEach(b=>b.addEventListener('click',
 }));
 
 // ---------- START ----------
-load(); refreshDisplays(); send(); updateButtons(); applyLang(); requestAnimationFrame(render);
+load(); $('cueEditor').open=!cues.length; refreshDisplays(); send(); updateButtons(); applyLang(); syncCueColors(); requestAnimationFrame(render);
 </script>
 </body>
 </html>
