@@ -1,6 +1,6 @@
 # Rundown and connection panels
 
-Development-branch guide. These changes are not yet included in the published 2.2.1 installers.
+Included in ProTimer 2.3.0. The familiar two-column Control layout and all previous timer/output settings remain available, with clearer labels and a calmer dark finish.
 
 ## Rundown
 
