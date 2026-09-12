@@ -1343,13 +1343,13 @@ app.whenReady().then(() => {
         console.log('DURATION_PICKER_OK='+durationPickerOK+' '+durationPickerStr);
         check('DURATION_PICKER_OK',durationPickerOK);
 
-        // Veliki START RUNDOWN uvek pokreće prvu stavku, čak i ako je druga trenutno aktivna.
+        // Start from idle begins with the first item; pause/resume is covered below.
         let rundownStartOK=false,rundownStartStr='?';
         try{
           rundownStartStr=await controlWin.webContents.executeJavaScript(`(function(){
             cancelAutoAdvance(); autoNext=false;
             cues=[{name:'Prva',durationMs:90000,note:'',color:''},{name:'Druga',durationMs:120000,note:'',color:''}];
-            currentCue=1; setDuration(120000); startPause(); renderCues(); document.getElementById('btnRundownStart').click();
+            currentCue=-1; setDuration(120000); renderCues(); document.getElementById('btnRundownStart').click();
             var rem=S.endAt-Date.now();
             return JSON.stringify({currentCue:currentCue,name:cues[currentCue]&&cues[currentCue].name,running:S.running,duration:S.durationMs,rem:rem,disabled:document.getElementById('btnRundownStart').disabled});
           })()`);
@@ -1403,7 +1403,7 @@ app.whenReady().then(() => {
             cancelAutoAdvance(); autoNext=false;
             cues=[{name:'A',durationMs:60000,note:'',color:''},{name:'B',durationMs:120000,note:'',color:''},{name:'C',durationMs:180000,note:'',color:''}];
             currentCue=1; S.running=false; S.remMs=120000; renderCues();
-            document.querySelectorAll('.cue .del')[0].click();
+            selectedCue=cues[0]; renderCues(); document.getElementById('btnCueDelete').click();
             var before=S.remMs,sel=document.getElementById('displaySel');
             sel.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowDown',bubbles:true}));
             return JSON.stringify({currentCue:currentCue,name:cues[currentCue]&&cues[currentCue].name,before:before,after:S.remMs});
@@ -1504,6 +1504,8 @@ app.whenReady().then(() => {
         console.log('CSV_OK=' + csvOK + (csvOK ? '' : ' ' + csvStr));
         check('CSV_OK',csvOK);
         await require('./scripts/smoke-layout')({ controlWin, getOutput:()=>outputWin, serverPort, token:CMD_TOKEN, check, tunnelTimeOK, tunnelTransportOK });
+        await require('./scripts/smoke-rundown')({ controlWin });
+        await require('./scripts/smoke-network-ui')();
         if(smokeFailures.length) throw new Error('Failed checks: '+smokeFailures.join(', '));
         console.log('SMOKE_OK');
         app.exit(0);

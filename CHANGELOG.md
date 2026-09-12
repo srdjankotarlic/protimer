@@ -2,6 +2,17 @@
 
 Notable ProTimer changes are listed here. The complete notes and installers are available on the [Releases page](https://github.com/srdjankotarlic/protimer/releases).
 
+## 2.3.0 — 2026-09-12
+
+- Refined the existing Control appearance without moving its sections: clearer text, consistent native-font controls, higher-contrast action colors and visible keyboard focus.
+- Added safer rundown selection, explicit load/run, live-safe editing, duplication, reordering and delete/undo, with Start/Pause/Resume and schedule controls.
+- Kept rundown rows fixed-height and scrollable, with separate selected and currently running states.
+- Organized connection links by role, with private control distinguished from audience/OBS and crew views.
+- Added labeled closeable QR panels, reliable copy feedback and protection against obsolete network/QR responses.
+- Preserved control-only startup, exact output sizing, digit placement, dual timers and existing settings.
+
+[Full 2.3.0 notes](docs/RELEASE-NOTES-2.3.0.md)
+
 ## 2.2.1 — 2026-09-11
 
 - Start with Control only: launching ProTimer no longer opens or sends an audience window to a monitor.

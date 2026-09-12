@@ -5,7 +5,7 @@
 - [Download the latest version](https://srdjankotarlic.github.io/protimer/#download)
 - [Start in 60 seconds](README.md#quick-start-60-seconds)
 - [Open the full operator guide](README.md#how-to-use)
-- [Read the latest release notes](docs/RELEASE-NOTES-2.2.1.md)
+- [Read the latest release notes](docs/RELEASE-NOTES-2.3.0.md)
 
 ProTimer is free and maintained as an open-source project, so support is community-based rather than guaranteed or time-critical.
 

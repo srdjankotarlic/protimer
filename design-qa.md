@@ -1,40 +1,54 @@
-# ProTimer 2.1 verification
+# ProTimer 2.3.0 — restrained Control polish
 
-This document records the reproducible checks used for the ProTimer 2.1 release. It intentionally contains no machine-specific paths, private event data or access tokens.
+## Scope and visual truth
 
-## Automated verification
+Preserve the existing application, two-column layout, panel order, controls and workflow. Improve finish and legibility only; the user explicitly rejected a new navigation/layout concept.
 
-From a clean checkout with a current Node.js LTS release:
+- Source visual truth: [before Control](docs/qa/2.3.0/control-before.png), captured from the app before the CSS polish.
+- Rendered implementation: [after Control](docs/qa/2.3.0/control-after.png).
+- Compact implementation: [820px English Control](docs/qa/2.3.0/control-compact.png).
+- Main comparison: both 1120 × 968 pixels, 1120 × 968 CSS viewport, 1× density; no scaling or normalization.
+- State: Serbian, idle 10-minute countdown, output closed, same five sample cues, schedule/editor collapsed. Before and after were opened together in the same comparison input.
+- Additional coverage: 820 × 968 and 1120 × 968 in Serbian and English; network/settings scrolled view; duration picker and running rundown inspected in native Electron.
+- The original-size 1120px captures were readable, including the narrow rundown, so no separate enlarged region was needed. QR/token screenshots are not published.
 
-```bash
-npm ci
-npm run smoke
-```
+## Findings and comparison history
 
-The smoke suite covers timer state, countdown and stopwatch modes, rundown transitions, long cue lists, HTTP control, local SSE, public long-poll delivery, phone-clock skew correction, output controls and audience-safe QR handling.
+No actionable P0/P1/P2 visual differences remain. Intentional changes: graphite surfaces, quieter green actions, stronger small-label contrast, native dark inputs/checkboxes, matching button fonts and keyboard focus.
 
-## Operator experience
+The main grid remains 767px + 300px at 1120px and 467px + 300px at 820px. Cue rows remain 92px high and scroll independently. Text metrics shift some boundaries by 1–3px, acceptable for this polish. Section order, preview size, controls and content are unchanged.
 
-- The Control preview remains large and centred while grid placement affects only the audience output.
-- Main and cue durations use the same `HH:MM:SS` picker with keyboard confirmation, step controls and minute presets.
-- `START RUNDOWN` launches cue one and `GO` advances through the list.
-- Long rundowns keep every cue at a readable fixed height inside a scrolling list.
-- Existing Colors/Text, Grid, Thresholds, Message, Compact, network, remote and Backstage controls remain available.
-- The declared `820 × 480` minimum Control window keeps its primary controls visible without horizontal overflow.
+Initial and final comparisons retained the original composition. Hover specificity was tightened during implementation so selected tabs remain blue, pause remains amber and cue selection does not acquire a second button fill. Native running/hover and duration-focus states were then inspected again.
 
-## Audience output
+## Required surfaces
 
-- The output is frameless and stays movable and resizable directly with the mouse.
-- Fullscreen is entered and exited from Control, so the audience output has no visible window controls.
-- View-only Timer and Backstage QR codes can be placed on the audience output.
-- URLs containing a control token are rejected before a QR code is shown.
+- **Typography:** existing system text and SF Mono/Menlo timer families preserved. Buttons now inherit the system family. Labels have less tracking and improved contrast; cue titles still wrap to two lines.
+- **Spacing/layout:** original grid, padding, preview height, panel order and breakpoints retained. No new sidebar. Horizontal overflow was zero at both widths and languages.
+- **Colors/tokens:** neutral graphite and no neon glow. Tests verify at least 4.5:1 for normal text/action labels and 3:1 for focus rings on their surfaces.
+- **Assets:** no images, logos or icons replaced or approximated. Native controls now use dark color-scheme styling.
+- **Copy/content:** the CSS pass changes no application labels or DOM. An existing output-status label that stayed Serbian after switching to English was also fixed, with a language-switch regression check. Separate rundown/network improvements are documented in the operator guide.
+- **States/accessibility:** keyboard focus across buttons, fields and disclosures; reduced decorative transitions for reduced-motion preference. Deliberately enabled timer/message warning flashes remain available. Disabled controls stay disabled without hover fill.
 
-## Platform packaging
+## Verification
 
-- The Apple Silicon DMG and Windows x64 Setup packages are checked with the packaged smoke flow before release.
-- A portable Windows x64 build and a SHA-256 checksum list are published with the release.
-- Public download instructions identify installers clearly and explain that GitHub source archives are not applications.
+- `npm test`: 14 passed, including palette/focus regression checks.
+- `npm run check:public-docs`: passed for 2.3.0.
+- `npm run check:packaging`: passed against previously published binaries during preparation; manifests update only after new assets exist.
+- `npm run smoke -- --disable-gpu`: passed, including startup, output, rundown, network, keyboard and responsive checks.
+- `PROTIMER_TEST_ONLINE=1 npm run smoke -- --disable-gpu`: passed with actual Cloudflare HTTPS commands and tunnel shutdown. This is not proof of connectivity on every physical phone/venue network.
+- Native interaction: entered 12 minutes with keyboard confirmation; Start rundown switched to the first cue and Pause state without opening the audience window.
+- No renderer errors reported in the isolated preview. Development-only capture entry point removed.
 
-## Release result
+## Release verification and limitations
 
-ProTimer 2.1.0 passed the automated smoke suite and the operator, output, responsive-layout and packaging acceptance checks above. See the [2.1.0 release notes](docs/RELEASE-NOTES-2.1.0.md) and [latest release](https://github.com/srdjankotarlic/protimer/releases/latest) for user-facing details.
+Packaged Mac/Windows builds and installation checks are recorded by the public Release workflow. No native Windows manual visual QA is claimed here. Physical-phone and venue-firewall checks remain an operator responsibility.
+
+## Implementation checklist
+
+- [x] Preserve layout and controls.
+- [x] Compare real before/after captures at matching size and state.
+- [x] Verify native interaction, narrow layouts and SR/EN.
+- [x] Run local behavior, palette and sharing regressions.
+- [x] Document platform/network limitations.
+
+final result: passed
