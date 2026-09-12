@@ -945,6 +945,7 @@ function applyLang(){
   document.querySelectorAll('[data-i18n-html]').forEach(el => el.innerHTML = t(el.dataset.i18nHtml));
   document.querySelectorAll('.lang button').forEach(b => b.classList.toggle('active', b.dataset.lang===lang));
   closeQr(); syncCueColors(); updateButtons(); renderCues(); showNet(lastNetInfo); fillDisplays(lastDisplays);
+  showOutputGeometry(lastOutputGeometry);
   if(typeof applyShare==='function') applyShare({ url: publicUrl, starting: shareStarting, provider: shareProvider });
 }
 

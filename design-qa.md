@@ -26,7 +26,7 @@ Initial and final comparisons retained the original composition. Hover specifici
 - **Spacing/layout:** original grid, padding, preview height, panel order and breakpoints retained. No new sidebar. Horizontal overflow was zero at both widths and languages.
 - **Colors/tokens:** neutral graphite and no neon glow. Tests verify at least 4.5:1 for normal text/action labels and 3:1 for focus rings on their surfaces.
 - **Assets:** no images, logos or icons replaced or approximated. Native controls now use dark color-scheme styling.
-- **Copy/content:** the CSS pass changes no application labels, DOM or scripts. Separate rundown/network improvements are documented in the operator guide.
+- **Copy/content:** the CSS pass changes no application labels or DOM. An existing output-status label that stayed Serbian after switching to English was also fixed, with a language-switch regression check. Separate rundown/network improvements are documented in the operator guide.
 - **States/accessibility:** keyboard focus across buttons, fields and disclosures; reduced decorative transitions for reduced-motion preference. Deliberately enabled timer/message warning flashes remain available. Disabled controls stay disabled without hover fill.
 
 ## Verification

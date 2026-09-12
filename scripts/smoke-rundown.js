@@ -118,6 +118,9 @@ module.exports = async function smokeRundown({ controlWin }) {
     controlWin.setSize(width,900);
     for(const language of ['sr','en']){
       await js(`lang='${language}'; applyLang(); $('cueEditor').open=true;`);
+      await check('OUTPUT_STATUS_LANGUAGE_'+language.toUpperCase()+'_OK', `
+        const expected=lastOutputGeometry?t('actualSize'):t('outClosed');
+        return $('outputSizeStatus').textContent.startsWith(expected);`);
       await new Promise(resolve=>setTimeout(resolve,250));
       await check('RUNDOWN_REFLOW_'+width+'_'+language.toUpperCase()+'_OK', `
         const card=document.querySelector('.cuewrap'),b=card.getBoundingClientRect();
