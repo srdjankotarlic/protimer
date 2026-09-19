@@ -34,6 +34,13 @@ module.exports = async function ({ controlWin, getOutput, getSecondary, screen }
   const targetInfo = await ctl(`api.getSecondaryOutputGeometry()`);
   assert.equal(targetInfo.displayId, hostDisplay);
   const primaryBounds = getOutput().getBounds();
+  const primaryWindow = getOutput(), geometryCalls = [];
+  for (const method of ['setBounds', 'setContentSize']) {
+    const original = primaryWindow[method].bind(primaryWindow);
+    primaryWindow[method] = (...args) => { geometryCalls.push({method,args,stack:new Error().stack}); return original(...args); };
+  }
+  const unchangedPrimary = step => assert.deepEqual(getOutput().getBounds(), primaryBounds,
+    `${step}: ${JSON.stringify(geometryCalls)}`);
   await ctl(`(async()=>{ $('outputWindowTarget').value='secondary'; $('outputWindowTarget').dispatchEvent(new Event('change')); $('outputWidth').value=800; $('outputHeight').value=450; await applyOutputSize(); })()`);
   assert.deepEqual(getSecondary().getContentSize(), [800, 450]);
   assert.deepEqual(getOutput().getBounds(), primaryBounds, 'Sizing Timer 2 moved Timer 1');
@@ -45,12 +52,14 @@ module.exports = async function ({ controlWin, getOutput, getSecondary, screen }
   const deadlines = await ctl(`({first:S.endAt,second:S.secondary.endAt})`);
   await ctl(`$('btnCloseSecondaryOut').click();`);
   await waitFor(() => !getSecondary(), 'Second output did not close');
+  unchangedPrimary('Closing second output');
   assert.equal(getOutput().isDestroyed(), false);
   assert.deepEqual(await ctl(`({first:S.endAt,second:S.secondary.endAt})`), deadlines);
   assert.equal(await ctl('S.running&&S.secondary.running'), true);
   await ctl(`$('btnOpenSecondaryOut').click();`);
   await waitFor(() => !!getSecondary(), 'Second output did not reopen');
   await waitFor(() => second(`!!S&&S.endAt===${deadlines.second}&&S.running`), 'Reopening reset the second timer');
+  unchangedPrimary('Reopening second output');
   await ctl(`$('btnSecondaryStart').click();`);
   await waitFor(() => second('!S.running'), 'Second timer did not pause');
   assert.equal(await ctl('S.running'), true);
@@ -58,11 +67,12 @@ module.exports = async function ({ controlWin, getOutput, getSecondary, screen }
   await waitFor(() => second(`$('blackout').style.display==='block'`), 'Second output blackout failed');
   await waitFor(() => first(`$('blackout').style.display==='block'`), 'First output blackout failed');
   await ctl(`$('btnBlackout').click(); $('btnBothPause').click();`);
+  unchangedPrimary('Before second fullscreen');
   await ctl(`$('btnSecondaryFs').click();`);
   await waitFor(() => second('isFS'), 'Second output did not enter fullscreen');
   await ctl(`$('btnSecondaryFs').click();`);
   await waitFor(() => second('!isFS'), 'Control failed to exit second output fullscreen');
-  assert.deepEqual(getOutput().getBounds(), primaryBounds);
+  unchangedPrimary('After second fullscreen');
   const otherDisplay = screen.getAllDisplays().find(d => d.id !== hostDisplay);
   if (otherDisplay) {
     const clocks = await ctl(`({first:S.remMs,second:S.secondary.remMs})`);
