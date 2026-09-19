@@ -6,7 +6,7 @@ const os = require('os');
 const crypto = require('crypto');
 const { spawn } = require('child_process');
 const TimerTools = require('./timer-tools');
-const { leaveFullscreen: leaveOutputFullscreen } = require('./window-tools');
+const { leaveFullscreen, preserveSiblingBounds } = require('./window-tools');
 const { waitForTunnelReady } = require('./tunnel-tools');
 
 const SMOKE = process.argv.includes('--smoke');
@@ -27,6 +27,7 @@ let outputTargetId = null;       // na kom monitoru je Ekran
 let outputPlacementVersion = 0;
 const secondaryOutput = require('./secondary-output')({
   BrowserWindow, screen, getState: () => lastState, controlDisplayId,
+  getSibling: () => TimerTools.separateOutputs(lastState) ? {window:outputWin,revision:outputPlacementVersion} : null,
   changed: () => {
     if (controlWin && !controlWin.isDestroyed())
       controlWin.webContents.send('secondary-output-geometry', secondaryOutput.geometry());
@@ -342,6 +343,18 @@ function pushNetworkInfo() {
 setInterval(pushNetworkInfo, 3000);
 
 // ---------------- PROZORI ----------------
+function protectSecondaryBounds(win, entering) {
+  preserveSiblingBounds(win, entering, {screen, getSibling:()=>TimerTools.separateOutputs(lastState)
+    ? {window:secondaryOutput.getWindow(),revision:secondaryOutput.getRevision()} : null});
+}
+function setOutputFullscreen(win, entering) {
+  protectSecondaryBounds(win, entering);
+  win.setFullScreen(entering);
+}
+function leaveOutputFullscreen(win) {
+  protectSecondaryBounds(win, false);
+  return leaveFullscreen(win);
+}
 function controlDisplayId() {
   if (!controlWin || controlWin.isDestroyed()) return screen.getPrimaryDisplay().id;
   return screen.getDisplayMatching(controlWin.getBounds()).id;
@@ -413,7 +426,7 @@ async function positionOutput(target) {
     outputWin.setBounds({ x: target.workArea.x, y: target.workArea.y, ...g.outputSize });
   } else if (target.id !== ctlId) {
     outputWin.setBounds(target.bounds);
-    outputWin.setFullScreen(true);
+    setOutputFullscreen(outputWin, true);
   } else {
     const b = target.workArea;
     const w = Math.min(900, Math.floor(b.width * 0.45));
@@ -516,8 +529,8 @@ ipcMain.on('send-to-display', (e, displayId) => {
   if (d) positionOutput(d);
 });
 ipcMain.on('close-output', () => { if (outputWin && !outputWin.isDestroyed()) outputWin.close(); });
-ipcMain.on('toggle-fullscreen', () => { if (outputWin && !outputWin.isDestroyed()) outputWin.setFullScreen(!outputWin.isFullScreen()); });
-ipcMain.on('exit-fullscreen', () => { if (outputWin && !outputWin.isDestroyed()) outputWin.setFullScreen(false); });
+ipcMain.on('toggle-fullscreen', () => { if (outputWin && !outputWin.isDestroyed()) setOutputFullscreen(outputWin, !outputWin.isFullScreen()); });
+ipcMain.on('exit-fullscreen', () => { if (outputWin && !outputWin.isDestroyed()) setOutputFullscreen(outputWin, false); });
 ipcMain.handle('output-geometry', () => outputGeometry());
 ipcMain.handle('resize-output', async (e, requested) => {
   if (!controlWin || e.sender !== controlWin.webContents) return { ok: false };

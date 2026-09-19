@@ -1,14 +1,15 @@
 const path = require('path');
 const TimerTools = require('./timer-tools');
-const { leaveFullscreen } = require('./window-tools');
+const { leaveFullscreen, preserveSiblingBounds } = require('./window-tools');
 
 // A second desktop output only. The existing output, LAN/OBS streams and timer
 // transport remain owned by their original paths.
-module.exports = function secondaryOutput({ BrowserWindow, screen, getState, controlDisplayId, changed }) {
+module.exports = function secondaryOutput({ BrowserWindow, screen, getState, controlDisplayId, changed, getSibling }) {
   let win = null, targetId = null, revision = 0, transparent = false, placed = false, placing = null, ready = false;
   const state = () => TimerTools.outputState(getState(), 'secondary');
   const enabled = () => TimerTools.separateOutputs(getState());
   const notify = () => { changed(); };
+  const protectSibling = (current, entering) => preserveSiblingBounds(current, entering, {getSibling,screen});
   function geometry() {
     if (!win || win.isDestroyed()) return null;
     const [width, height] = win.getContentSize();
@@ -23,6 +24,7 @@ module.exports = function secondaryOutput({ BrowserWindow, screen, getState, con
     const current = win, version = ++revision;
     placing = version;
     targetId = target.id;
+    if (current && !current.isDestroyed()) protectSibling(current, false);
     if (!current || current.isDestroyed() || !await leaveFullscreen(current) ||
         win !== current || version !== revision) { if (placing === version) placing = null; return; }
     const s = state();
@@ -35,6 +37,7 @@ module.exports = function secondaryOutput({ BrowserWindow, screen, getState, con
       current.setBounds({ x: target.workArea.x, y: target.workArea.y, ...s.outputSize });
     } else if (target.id !== controlDisplayId()) {
       current.setBounds(target.bounds);
+      protectSibling(current, true);
       current.setFullScreen(true);
     } else {
       const b = target.workArea, width = Math.min(900, Math.floor(b.width * .45));
@@ -119,6 +122,7 @@ module.exports = function secondaryOutput({ BrowserWindow, screen, getState, con
       await new Promise(resolve => { current.once('ready-to-show', resolve); current.once('closed', resolve); });
     }
     const current = win, version = ++revision;
+    if (current && !current.isDestroyed()) protectSibling(current, false);
     if (!current || !await leaveFullscreen(current) || win !== current ||
         version !== revision || !enabled() || state().gridOn) return { ok: false };
     current.setContentSize(size.width, size.height);
@@ -129,6 +133,8 @@ module.exports = function secondaryOutput({ BrowserWindow, screen, getState, con
   function displaysChanged() {
     if (win && !screen.getAllDisplays().some(d => d.id === targetId)) close();
   }
-  return { open, close, update, resize, geometry, displaysChanged, getWindow: () => win,
-    toggleFullscreen() { if (win && !win.isDestroyed()) win.setFullScreen(!win.isFullScreen()); } };
+  return { open, close, update, resize, geometry, displaysChanged, getWindow: () => win, getRevision: () => revision,
+    toggleFullscreen() {
+      if (win && !win.isDestroyed()) { const entering=!win.isFullScreen(); protectSibling(win, entering); win.setFullScreen(entering); }
+    } };
 };
