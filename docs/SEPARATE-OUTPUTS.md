@@ -1,8 +1,8 @@
 # Two timers on two displays
 
-Development feature: not included in the published ProTimer 2.3.0 download yet.
+Available in ProTimer 2.4.0. All previous controls and the shared two-timer view remain available.
 
-Validation on September 19, 2026: all 21 Node tests, public-documentation checks, packaging-manifest checks and the complete native macOS smoke suite passed. The additional smoke checks exercise two actual Electron output windows, independent opening/closing/fullscreen/sizing, clock preservation, shared blackout, persisted settings, combined-layout restoration and Serbian/English layouts at 820/1120 pixels. Display routing and unplug/retarget races are also covered with a simulated three-display setup. This does not replace a pre-show check with the user's two physical televisions, and this change has not yet been run on native Windows CI or published.
+The regression suite exercises two actual Electron output windows, independent opening/closing/fullscreen/sizing, clock preservation, shared blackout, persisted settings, combined-layout restoration and Serbian/English layouts at 820/1120 pixels. Display routing and unplug/retarget races are also covered with a simulated three-display setup. Always test your actual televisions and connections before a live show.
 
 Both televisions must be connected to the same computer and configured as **extended displays**, not mirrored displays. ProTimer lists the displays reported by the operating system; a mirrored HDMI splitter cannot provide two independent pictures.
 
