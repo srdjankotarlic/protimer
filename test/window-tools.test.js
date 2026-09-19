@@ -66,3 +66,12 @@ test('sibling geometry protection does not run on Windows/Linux or change fullsc
   const f=guardFixture();f.sibling.full=true;preserveSiblingBounds(f.source,false,f.options);await f.finish();
   assert.notDeepEqual(f.sibling.bounds,f.original);
 });
+test('a newer fullscreen transition cancels an already queued geometry restoration',async()=>{
+  const f=guardFixture();preserveSiblingBounds(f.source,false,f.options);
+  f.source.emit('leave-full-screen');
+  f.sibling.bounds={x:50,y:60,width:700,height:400};
+  const updated={...f.sibling.bounds};
+  preserveSiblingBounds(f.source,false,f.options);
+  await f.finish();
+  assert.deepEqual(f.sibling.bounds,updated);
+});

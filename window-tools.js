@@ -7,6 +7,8 @@ function preserveSiblingBounds(source, entering, { getSibling, screen, platform 
   const sibling = getSibling?.(), win = sibling?.window;
   if (!win || win.isDestroyed() || win.isFullScreen()) return;
   const bounds = win.getBounds(), displayId = screen.getDisplayMatching(bounds).id;
+  const trace = (phase, detail) => { if(process.argv.includes('--smoke')) console.log('SIBLING_FULLSCREEN', phase, JSON.stringify(detail)); };
+  trace('begin',{entering,bounds,revision:sibling.revision});
   const event = entering ? 'enter-full-screen' : 'leave-full-screen';
   // AppKit can restore an old frame on another window when changing Spaces.
   // Preserve only this transition, never a later operator move/resize or reroute.
@@ -15,26 +17,28 @@ function preserveSiblingBounds(source, entering, { getSibling, screen, platform 
   const cleanup = () => {
     clearTimeout(timer);
     source.removeListener(event, finish);
-    source.removeListener('closed', cleanup);
+    source.removeListener('closed', stop);
     win.removeListener('will-move', cancel);
     win.removeListener('will-resize', cancel);
-    if (siblingGuards.get(source) === cleanup) siblingGuards.delete(source);
+    if (siblingGuards.get(source) === stop) siblingGuards.delete(source);
   };
+  const stop = () => { cancel(); cleanup(); };
   const finish = () => setImmediate(() => {
     cleanup();
     const current = getSibling?.();
+    trace('finish',{entering,cancelled,closed:win.isDestroyed(),fullscreen:!win.isDestroyed()&&win.isFullScreen(),bounds:!win.isDestroyed()&&win.getBounds(),revision:current?.revision});
     if (cancelled || source.isDestroyed() || win.isDestroyed() || win.isFullScreen() ||
         current?.window !== win || current.revision !== sibling.revision ||
         !screen.getAllDisplays().some(d => d.id === displayId)) return;
     const actual = win.getBounds();
     if (['x','y','width','height'].some(key => actual[key] !== bounds[key])) win.setBounds(bounds);
   });
-  const timer = setTimeout(cleanup, 5000);
+  const timer = setTimeout(stop, 5000);
   source.once(event, finish);
-  source.once('closed', cleanup);
+  source.once('closed', stop);
   win.on('will-move', cancel);
   win.on('will-resize', cancel);
-  siblingGuards.set(source, cleanup);
+  siblingGuards.set(source, stop);
 }
 
 function leaveFullscreen(win, timeoutMs = 4000) {

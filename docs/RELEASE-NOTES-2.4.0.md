@@ -28,6 +28,8 @@ Both displays must be connected to the same computer and configured as **extende
 
 Rundown auto-advance now runs independently of screen repainting, so it continues when Control is covered or hidden. Pausing still cancels a pending automatic transition.
 
+Changing fullscreen on one output also preserves the other output's chosen position and size during macOS Spaces transitions.
+
 ## Everything you already use stays
 
 - Combined left/right or top/bottom two-timer view.

@@ -34,13 +34,7 @@ module.exports = async function ({ controlWin, getOutput, getSecondary, screen }
   const targetInfo = await ctl(`api.getSecondaryOutputGeometry()`);
   assert.equal(targetInfo.displayId, hostDisplay);
   const primaryBounds = getOutput().getBounds();
-  const primaryWindow = getOutput(), geometryCalls = [];
-  for (const method of ['setBounds', 'setContentSize']) {
-    const original = primaryWindow[method].bind(primaryWindow);
-    primaryWindow[method] = (...args) => { geometryCalls.push({method,args,stack:new Error().stack}); return original(...args); };
-  }
-  const unchangedPrimary = step => assert.deepEqual(getOutput().getBounds(), primaryBounds,
-    `${step}: ${JSON.stringify(geometryCalls)}`);
+  const unchangedPrimary = step => assert.deepEqual(getOutput().getBounds(), primaryBounds, step);
   await ctl(`(async()=>{ $('outputWindowTarget').value='secondary'; $('outputWindowTarget').dispatchEvent(new Event('change')); $('outputWidth').value=800; $('outputHeight').value=450; await applyOutputSize(); })()`);
   assert.deepEqual(getSecondary().getContentSize(), [800, 450]);
   assert.deepEqual(getOutput().getBounds(), primaryBounds, 'Sizing Timer 2 moved Timer 1');
@@ -73,8 +67,15 @@ module.exports = async function ({ controlWin, getOutput, getSecondary, screen }
   await ctl(`$('btnSecondaryFs').click();`);
   await waitFor(() => second('!isFS'), 'Control failed to exit second output fullscreen');
   await waitFor(() => JSON.stringify(getOutput().getBounds())===JSON.stringify(primaryBounds),
-    `Native fullscreen did not restore the other output: ${JSON.stringify(geometryCalls)}`);
+    'Native fullscreen did not restore the first output');
   unchangedPrimary('After second fullscreen');
+  const secondaryBounds = getSecondary().getBounds();
+  await ctl(`$('btnFs').click();`);
+  await waitFor(() => first('isFS'), 'First output did not enter fullscreen');
+  await ctl(`$('btnFs').click();`);
+  await waitFor(() => first('!isFS'), 'Control failed to exit first output fullscreen');
+  await waitFor(() => JSON.stringify(getSecondary().getBounds())===JSON.stringify(secondaryBounds),
+    'Native fullscreen did not restore the second output');
   const otherDisplay = screen.getAllDisplays().find(d => d.id !== hostDisplay);
   if (otherDisplay) {
     const clocks = await ctl(`({first:S.remMs,second:S.secondary.remMs})`);
