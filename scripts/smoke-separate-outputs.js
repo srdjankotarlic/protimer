@@ -72,6 +72,8 @@ module.exports = async function ({ controlWin, getOutput, getSecondary, screen }
   await waitFor(() => second('isFS'), 'Second output did not enter fullscreen');
   await ctl(`$('btnSecondaryFs').click();`);
   await waitFor(() => second('!isFS'), 'Control failed to exit second output fullscreen');
+  await waitFor(() => JSON.stringify(getOutput().getBounds())===JSON.stringify(primaryBounds),
+    `Native fullscreen did not restore the other output: ${JSON.stringify(geometryCalls)}`);
   unchangedPrimary('After second fullscreen');
   const otherDisplay = screen.getAllDisplays().find(d => d.id !== hostDisplay);
   if (otherDisplay) {
