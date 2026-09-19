@@ -79,6 +79,22 @@ module.exports = async function smokeRundown({ controlWin }) {
     await new Promise(r=>setTimeout(r,1100));
     const advanced=currentCue===1&&S.running&&S.durationMs===60000;
     autoNext=false;cancelAutoAdvance();reset();return advanced;`);
+  controlWin.hide();
+  try {
+    await check('RUNDOWN_BACKGROUND_AUTO_ADVANCE_OK', `
+      cancelAutoAdvance();cues=[{name:'First',durationMs:1000},{name:'Second',durationMs:60000}];
+      currentCue=-1;selectedCue=null;autoNext=true;loadCue(0,true);S.endAt=Date.now()-10;send();
+      await new Promise(r=>setTimeout(r,1100));
+      const advanced=currentCue===1&&S.running&&S.durationMs===60000;
+      autoNext=false;cancelAutoAdvance();reset();return advanced;`);
+    await check('RUNDOWN_BACKGROUND_PAUSE_CANCELS_ADVANCE_OK', `
+      currentCue=-1;autoNext=true;loadCue(0,true);S.endAt=Date.now()-10;send();
+      await new Promise(r=>setTimeout(r,150));
+      const scheduled=autoAdvanceTimer!==null;startPause();
+      await new Promise(r=>setTimeout(r,1000));
+      const safe=scheduled&&currentCue===0&&!S.running&&autoAdvanceTimer===null;
+      autoNext=false;cancelAutoAdvance();reset();return safe;`);
+  } finally { controlWin.show(); }
   await check('RUNDOWN_EMPTY_INVALID_DURATION_OK', `
     cues=[];currentCue=-1;selectedCue=null;renderCues();
     if(!$('btnRundownStart').disabled||!$('btnGo').disabled||!$('btnRundownRestart').disabled)return false;

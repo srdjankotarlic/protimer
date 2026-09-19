@@ -1082,6 +1082,17 @@ function schedule(now){
 function cancelAutoAdvance(){
   if(autoAdvanceTimer!==null){ clearTimeout(autoAdvanceTimer); autoAdvanceTimer=null; }
 }
+function tickCountdown(){
+  // Transport must not depend on an animation frame: a minimized/covered
+  // Control may stop painting while both audience outputs remain live.
+  if(S.mode!=='countdown'||!S.running||S.endAt>Date.now()||zeroFired) return;
+  zeroFired=true;
+  if(S.soundZero) beep();
+  if(autoNext&&currentCue>=0&&currentCue+1<cues.length){
+    const nextCue=currentCue+1;
+    autoAdvanceTimer=setTimeout(()=>{ autoAdvanceTimer=null; loadCue(nextCue,true); },800);
+  }
+}
 function startPause(){
   cancelAutoAdvance();
   if(!S.running&&targetArmed){
@@ -1308,14 +1319,6 @@ function render(){
   }
   updateRundownTransport();
 
-  if(S.mode==='countdown'&&S.running&&r.rem!==null&&r.rem<=0&&!zeroFired){
-    zeroFired=true;
-    if(S.soundZero) beep();
-    if(autoNext&&currentCue>=0&&currentCue+1<cues.length){
-      const nextCue=currentCue+1;
-      autoAdvanceTimer=setTimeout(()=>{ autoAdvanceTimer=null; loadCue(nextCue,true); },800);
-    }
-  }
   requestAnimationFrame(render);
 }
 function updateButtons(){
@@ -2049,7 +2052,7 @@ document.querySelectorAll('.lang button').forEach(b=>b.addEventListener('click',
 }));
 
 // ---------- START ----------
-load(); $('cueEditor').open=!cues.length; refreshDisplays(); send(); updateButtons(); applyLang(); syncCueColors(); requestAnimationFrame(render);
+load(); $('cueEditor').open=!cues.length; refreshDisplays(); send(); updateButtons(); applyLang(); syncCueColors(); setInterval(tickCountdown,50); requestAnimationFrame(render);
 </script>
 </body>
 </html>

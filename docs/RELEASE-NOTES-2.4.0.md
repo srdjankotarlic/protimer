@@ -24,6 +24,10 @@ Each output has its own fullscreen and close controls. Under **Output window and
 
 Both displays must be connected to the same computer and configured as **extended displays**, not mirrored screens. Test the actual TVs/adapters before the show.
 
+## Reliability fix
+
+Rundown auto-advance now runs independently of screen repainting, so it continues when Control is covered or hidden. Pausing still cancels a pending automatic transition.
+
 ## Everything you already use stays
 
 - Combined left/right or top/bottom two-timer view.

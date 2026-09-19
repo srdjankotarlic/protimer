@@ -383,7 +383,8 @@ function createControlWindow() {
   controlWin = new BrowserWindow({
     width: 1120, height: 740, minWidth: 820, minHeight: 480,
     title: 'ProTimer — Kontrola', backgroundColor: '#0b0d11',
-    webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false }
+    // Control owns the live rundown, including while another app covers it.
+    webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, backgroundThrottling: false }
   });
   controlWin.loadFile('controller.html');
   controlWin.on('closed', () => {

@@ -15,10 +15,17 @@ module.exports = async function ({ controlWin, getOutput, getSecondary, screen }
   };
   const first = code => getOutput().webContents.executeJavaScript(code);
   const second = code => getSecondary().webContents.executeJavaScript(code);
-  const hostDisplay = screen.getDisplayMatching(controlWin.getBounds()).id;
+  const host = screen.getDisplayMatching(controlWin.getBounds());
+  const hostDisplay = host.id;
   await ctl(`$('chkDual').checked=true; $('chkDual').dispatchEvent(new Event('change')); S.transparent=false; S.gridOn=false; S.fitWindow=false; S.blackout=false; S.text=''; S.textOnly=false; S.message={text:'',flash:false}; S.outputLayout=TimerTools.layout(); S.secondary.layout=TimerTools.layout(); setDuration(600000); secondaryDuration(330000); $('outputRouting').value='separate'; $('outputRouting').dispatchEvent(new Event('change'));`);
   assert.equal(getSecondary(), null, 'Changing mode must not open a second screen');
   await waitFor(() => first(`!!S&&!S.dualTimer&&S.durationMs===600000`), 'Timer 1 did not become standalone');
+  // The previous exact-resolution test deliberately exceeds small CI screens.
+  // Establish an on-screen window before checking independent native fullscreen;
+  // macOS may otherwise restore an older frame when changing Spaces.
+  await ctl(`(async()=>{ $('outputWindowTarget').value='primary'; $('outputWidth').value=640; $('outputHeight').value=360; await applyOutputSize(); })()`);
+  getOutput().setBounds({x:host.workArea.x+20,y:host.workArea.y+40,width:640,height:360});
+  await waitFor(() => first('innerWidth===640&&innerHeight===360&&!isFS'), 'Primary test window was not ready');
   const rejected = await ctl(`api.openSecondaryOutput(999999999)`);
   assert.equal(rejected.ok, false); assert.equal(getSecondary(), null);
   await ctl(`$('secondaryDisplaySel').value=${JSON.stringify(String(hostDisplay))}; $('btnOpenSecondaryOut').click();`);
@@ -49,13 +56,26 @@ module.exports = async function ({ controlWin, getOutput, getSecondary, screen }
   assert.equal(await ctl('S.running'), true);
   await ctl(`$('btnBlackout').click();`);
   await waitFor(() => second(`$('blackout').style.display==='block'`), 'Second output blackout failed');
-  assert.equal(await first(`$('blackout').style.display`), 'block');
+  await waitFor(() => first(`$('blackout').style.display==='block'`), 'First output blackout failed');
   await ctl(`$('btnBlackout').click(); $('btnBothPause').click();`);
   await ctl(`$('btnSecondaryFs').click();`);
   await waitFor(() => second('isFS'), 'Second output did not enter fullscreen');
   await ctl(`$('btnSecondaryFs').click();`);
   await waitFor(() => second('!isFS'), 'Control failed to exit second output fullscreen');
   assert.deepEqual(getOutput().getBounds(), primaryBounds);
+  const otherDisplay = screen.getAllDisplays().find(d => d.id !== hostDisplay);
+  if (otherDisplay) {
+    const clocks = await ctl(`({first:S.remMs,second:S.secondary.remMs})`);
+    await ctl(`$('secondaryDisplaySel').value=${JSON.stringify(String(otherDisplay.id))}; $('btnOpenSecondaryOut').click();`);
+    await waitFor(() => screen.getDisplayMatching(getSecondary().getBounds()).id === otherDisplay.id,
+      'Timer 2 did not reach the other connected display');
+    assert.equal(screen.getDisplayMatching(getOutput().getBounds()).id, hostDisplay);
+    assert.deepEqual(getOutput().getBounds(), primaryBounds, 'Sending Timer 2 to another display moved Timer 1');
+    assert.deepEqual(await ctl(`({first:S.remMs,second:S.secondary.remMs})`), clocks);
+    assert.equal(await second('S.durationMs'), 330000);
+    assert.equal(await first('S.durationMs'), 600000);
+    console.log('CONNECTED_DISPLAYS_ROUTING_OK=' + JSON.stringify({first:host.label||hostDisplay,second:otherDisplay.label||otherDisplay.id}));
+  }
   // Explicit output closing must not close the other window, reset either clock
   // or silently recreate the closed output on the next state update.
   await ctl(`$('btnCloseOut').click();`);
