@@ -349,6 +349,10 @@
   .layout-head h3{margin:0; font-size:12px; letter-spacing:.8px; color:var(--dim);}
   .layout-row{display:flex; align-items:center; flex-wrap:wrap; gap:10px; margin:10px 0;}
   .layout-row label{display:flex; align-items:center; gap:8px; color:var(--dim); font-size:12px;}
+  .secondary-output-controls{margin-top:14px; padding-top:12px; border-top:1px solid var(--border);}
+  .secondary-output-controls select{max-width:100%; min-width:0;}
+  .secondary-output-controls .layout-row label{flex:1 1 240px; min-width:0;}
+  .secondary-output-controls .layout-row label select{flex:1;}
   .layout-row input[type=number]{width:84px; min-width:0; font:14px "SF Mono",Menlo,monospace;}
   .layout-slider{display:grid; grid-template-columns:120px minmax(60px,1fr) 78px; gap:12px; align-items:center; margin:12px 0;}
   .layout-slider label{color:var(--dim); font-size:12px;}
@@ -384,7 +388,7 @@
     <button data-lang="en">EN</button>
   </div>
   <div class="grow"></div>
-  <span class="lbl" data-i18n="outLabel">Izlaz na</span>
+  <span class="lbl" id="outputTargetLabel" data-i18n="outLabel">Izlaz na</span>
   <select id="displaySel" data-i18n-title="displayTitle" title="Monitor za izlazni ekran" style="max-width:280px"></select>
   <button id="btnOpenOut" class="primary" data-i18n="sendScreen">Pošalji na ekran</button>
   <button id="btnFs" data-i18n-title="fsTitle" title="Pun ekran (F)">⛶</button>
@@ -459,6 +463,9 @@
       </div>
       <div id="dualOptions" hidden>
         <div class="layout-row">
+          <label><span data-i18n="outputRouting">Prikaz</span><select id="outputRouting"><option value="together" data-i18n="outputsTogether">Zajedno na jednom ekranu</option><option value="separate" data-i18n="outputsSeparate">Na dva odvojena ekrana</option></select></label>
+        </div>
+        <div class="layout-row">
           <label><span data-i18n="splitLabel">Podela</span><select id="dualSplit"><option value="columns" data-i18n="splitColumns">Levo / desno │</option><option value="rows" data-i18n="splitRows">Gore / dole ─</option></select></label>
           <button id="secondaryDurationTrigger" class="duration-trigger" type="button" aria-haspopup="dialog" aria-controls="durationPopover" aria-expanded="false">
             <span class="caption" data-i18n="timerTwo">Tajmer 2</span><span class="value" id="secondaryDurationValue">00:10:00</span>
@@ -470,12 +477,26 @@
           <button id="btnBothStart" data-i18n="startBoth">▶ Pokreni oba</button><button id="btnBothPause" data-i18n="pauseBoth">⏸ Pauziraj oba</button><button id="btnBothReset" data-i18n="resetBoth">↺ Resetuj oba</button>
         </div>
         <p class="panel-help" data-i18n="dualHelp">Glavni START i rundown upravljaju tajmerom 1. Tajmer 2 ima nezavisno trajanje i kontrole.</p>
+        <div id="secondaryOutputControls" class="secondary-output-controls" hidden>
+          <p class="panel-help" data-i18n="separateHelp">Tajmer 1 šalješ gornjim komandama. Ovde biraš ekran za Tajmer 2. Svaki prozor otvaraš i zatvaraš zasebno; odbrojavanja se ne prekidaju.</p>
+          <div class="layout-row">
+            <label><span data-i18n="timerTwo">Tajmer 2</span><select id="secondaryDisplaySel" data-i18n-title="secondaryDisplayTitle" title="Ekran za Tajmer 2"></select></label>
+          </div>
+          <div class="layout-row">
+            <button id="btnOpenSecondaryOut" class="primary" data-i18n="sendTimerTwo">Pošalji Tajmer 2</button>
+            <button id="btnSecondaryFs" data-i18n-title="secondaryFsTitle" title="Pun ekran — Tajmer 2" disabled>⛶</button>
+            <button id="btnCloseSecondaryOut" class="ghost" data-i18n-title="secondaryCloseTitle" title="Zatvori ekran Tajmera 2" disabled>✕</button>
+          </div>
+          <div id="secondaryOutputStatus" class="panel-help" role="status"></div>
+          <p class="panel-help" data-i18n="separateSharedHelp">Boje, upozorenja, poruka i BLACKOUT važe za oba ekrana. Tekst, NOW/NEXT i QR ostaju na ekranu Tajmera 1. OBS i linkovi zadržavaju zajednički prikaz. Televizore podesi kao proširene ekrane, ne preslikane.</p>
+        </div>
       </div>
     </div>
 
     <div class="panel" id="outputLayoutPanel">
       <div class="layout-head"><h3 data-i18n="outputLayoutTitle">IZLAZNI PROZOR I CIFRE</h3></div>
       <div class="layout-row">
+        <label id="outputWindowTargetLabel" hidden><span data-i18n="resizeWindow">Prozor</span><select id="outputWindowTarget"><option value="primary" data-i18n="timerOne">Tajmer 1</option><option value="secondary" data-i18n="timerTwo">Tajmer 2</option></select></label>
         <label><span data-i18n="widthPx">Širina (px)</span><input id="outputWidth" type="number" min="80" max="7680" step="1" value="1920"></label>
         <span>×</span>
         <label><span data-i18n="heightPx">Visina (px)</span><input id="outputHeight" type="number" min="60" max="4320" step="1" value="1080"></label>
@@ -749,6 +770,8 @@ const api = window.pt || {
   sendState(){}, onState(){}, openOutput(){}, closeOutput(){}, toggleFullscreen(){},
   exitFullscreen(){}, setOnTop(){}, getDisplays:async()=>[], isOutputOpen:async()=>false,
   resizeOutput:async()=>({ok:false}), getOutputGeometry:async()=>null, onOutputGeometry(){},
+  openSecondaryOutput:async()=>({ok:false}), closeSecondaryOutput(){}, toggleSecondaryFullscreen(){},
+  getSecondaryOutputGeometry:async()=>null, onSecondaryOutputGeometry(){},
   getNetworkInfo:async()=>({}), onDisplays(){}, onOutputState(){}, onNetworkInfo(){},
   checkLocalNetwork:async()=>({ok:false}),
   onRemoteCmd(){}, sendToDisplay(){},
@@ -759,6 +782,12 @@ const api = window.pt || {
 // ---------- JEZIK / LANGUAGE ----------
 const I18N = {
   sr: {
+    outputRouting:'Prikaz', outputsTogether:'Zajedno na jednom ekranu', outputsSeparate:'Na dva odvojena ekrana',
+    primaryOutputLabel:'Tajmer 1 na', sendTimerTwo:'Pošalji Tajmer 2', resizeWindow:'Prozor',
+    secondaryDisplayTitle:'Ekran za Tajmer 2', secondaryFsTitle:'Pun ekran — Tajmer 2', secondaryCloseTitle:'Zatvori ekran Tajmera 2',
+    secondaryOutputClosed:'Tajmer 2 · ekran nije otvoren', secondaryOutputLive:'Tajmer 2 · ekran je otvoren', secondaryOutputFailed:'Ekran nije otvoren. Proveri da li je televizor povezan i izaberi ekran ponovo.',
+    separateHelp:'Tajmer 1 šalješ gornjim komandama. Ovde biraš ekran za Tajmer 2. Svaki prozor otvaraš i zatvaraš zasebno; odbrojavanja se ne prekidaju.',
+    separateSharedHelp:'Boje, upozorenja, poruka i BLACKOUT važe za oba ekrana. Tekst, NOW/NEXT i QR ostaju na ekranu Tajmera 1. OBS i linkovi zadržavaju zajednički prikaz. Televizore podesi kao proširene ekrane, ne preslikane.',
     planNow:'Sada', planClear:'Ukloni', rundownTotal:'Ukupno trajanje', plannedFinish:'Planirani kraj', rundownSchedule:'Raspored',
     cuePrevious:'Prethodna', cueNext:'Sledeća (N)', cueReset:'Reset stavke', cueLoad:'Pripremi', cueRun:'Pokreni',
     cueEdit:'Uredi', cueDuplicate:'Dupliraj', cueDelete:'Obriši', cueDeselect:'Zatvori izbor', cueUndo:'Vrati obrisano',
@@ -847,6 +876,12 @@ const I18N = {
     shortcuts:'<kbd>Space</kbd> start/pauza · <kbd>R</kbd> reset · <kbd>N</kbd> sledeći · <kbd>↑↓</kbd> ±1m · <kbd>←→</kbd> ±10s · <kbd>B</kbd> blackout · <kbd>F</kbd> pun ekran · <kbd>M</kbd> poruka · <kbd>C</kbd> obriši poruku'
   },
   en: {
+    outputRouting:'Display', outputsTogether:'Together on one screen', outputsSeparate:'On two separate screens',
+    primaryOutputLabel:'Timer 1 to', sendTimerTwo:'Send Timer 2', resizeWindow:'Window',
+    secondaryDisplayTitle:'Screen for Timer 2', secondaryFsTitle:'Fullscreen — Timer 2', secondaryCloseTitle:'Close Timer 2 screen',
+    secondaryOutputClosed:'Timer 2 · screen closed', secondaryOutputLive:'Timer 2 · screen open', secondaryOutputFailed:'Screen not opened. Check that the display is connected and select it again.',
+    separateHelp:'Send Timer 1 using the top controls. Choose the screen for Timer 2 here. Open and close each window independently; countdowns keep their state.',
+    separateSharedHelp:'Colors, warnings, message and BLACKOUT apply to both screens. Text, NOW/NEXT and QR stay on Timer 1. OBS and shared links keep the combined view. Set your displays to extended, not mirrored.',
     planNow:'Now', planClear:'Clear', rundownTotal:'Total duration', plannedFinish:'Planned finish', rundownSchedule:'Schedule',
     cuePrevious:'Previous', cueNext:'Next (N)', cueReset:'Reset item', cueLoad:'Load', cueRun:'Run',
     cueEdit:'Edit', cueDuplicate:'Duplicate', cueDelete:'Delete', cueDeselect:'Deselect', cueUndo:'Undo delete',
@@ -946,6 +981,7 @@ function applyLang(){
   document.querySelectorAll('.lang button').forEach(b => b.classList.toggle('active', b.dataset.lang===lang));
   closeQr(); syncCueColors(); updateButtons(); renderCues(); showNet(lastNetInfo); fillDisplays(lastDisplays);
   showOutputGeometry(lastOutputGeometry);
+  syncRoutingUI();
   if(typeof applyShare==='function') applyShare({ url: publicUrl, starting: shareStarting, provider: shareProvider });
 }
 
@@ -965,7 +1001,7 @@ let S = {
   // kompaktan prozor (prozor prati veličinu tajmera kad nije fullscreen)
   fitWindow:false,
   outputSize:null, outputLayout:TimerTools.layout(),
-  dualTimer:false, dualSplit:'columns', secondary:TimerTools.secondary(),
+  dualTimer:false, dualSplit:'columns', separateOutputs:false, secondary:TimerTools.secondary(),
   // rundown / raspored
   cues:[], currentCue:-1, showStart:'', showNowNext:false,
   lang:lang
@@ -1096,8 +1132,24 @@ function syncDualUI(){
   $('dualSplit').value=S.dualSplit;
   $('layoutTarget').querySelector('[value=secondary]').disabled=!S.dualTimer;
   if(!S.dualTimer) $('layoutTarget').value='primary';
+  syncRoutingUI();
+  syncOutputSizeFields();
   syncLayoutUI();
 }
+function syncRoutingUI(){
+  const separate=TimerTools.separateOutputs(S);
+  $('outputRouting').value=S.separateOutputs?'separate':'together';
+  $('secondaryOutputControls').hidden=!separate;
+  $('dualSplit').disabled=separate;
+  $('outputTargetLabel').textContent=t(separate?'primaryOutputLabel':'outLabel');
+  $('outputWindowTargetLabel').hidden=!separate;
+  if(!separate) $('outputWindowTarget').value='primary';
+  showSecondaryOutputGeometry(lastSecondaryGeometry);
+}
+$('outputRouting').addEventListener('change',e=>{
+  S.separateOutputs=e.target.value==='separate';
+  syncRoutingUI(); syncOutputSizeFields(); send();
+});
 function selectedLayout(){ return $('layoutTarget').value==='secondary'?S.secondary.layout:S.outputLayout; }
 function syncLayoutUI(){
   const layout=selectedLayout();
@@ -1126,21 +1178,42 @@ $('btnSecondaryReset').addEventListener('click',()=>{ TimerTools.reset(S.seconda
 $('btnBothStart').addEventListener('click',()=>bothRunning(true));
 $('btnBothPause').addEventListener('click',()=>bothRunning(false));
 $('btnBothReset').addEventListener('click',()=>{ TimerTools.reset(S.secondary); reset(); });
-let lastOutputGeometry=null;
-function showOutputGeometry(info){
-  lastOutputGeometry=info;
+let lastOutputGeometry=null, lastSecondaryGeometry=null;
+function selectedWindow(){ return TimerTools.separateOutputs(S)&&$('outputWindowTarget').value==='secondary'?'secondary':'primary'; }
+function renderOutputSizeStatus(){
+  const info=selectedWindow()==='secondary'?lastSecondaryGeometry:lastOutputGeometry;
   $('outputSizeStatus').textContent=info?`${t('actualSize')}: ${info.width} × ${info.height} px${info.fullscreen?' · '+t('fsTitle'):''}`:t('outClosed');
 }
+function showOutputGeometry(info){
+  lastOutputGeometry=info;
+  renderOutputSizeStatus();
+}
+function showSecondaryOutputGeometry(info){
+  lastSecondaryGeometry=info;
+  $('btnSecondaryFs').disabled=!info; $('btnCloseSecondaryOut').disabled=!info;
+  $('secondaryOutputStatus').textContent=info?`${t('secondaryOutputLive')} · ${info.width} × ${info.height} px`:t('secondaryOutputClosed');
+  renderOutputSizeStatus();
+}
+function syncOutputSizeFields(){
+  const size=(selectedWindow()==='secondary'?S.secondary.outputSize:S.outputSize)||{width:1920,height:1080};
+  $('outputWidth').value=size.width; $('outputHeight').value=size.height; renderOutputSizeStatus();
+}
+$('outputWindowTarget').addEventListener('change',syncOutputSizeFields);
+api.onSecondaryOutputGeometry(showSecondaryOutputGeometry);
+api.getSecondaryOutputGeometry().then(showSecondaryOutputGeometry).catch(()=>{});
 api.onOutputGeometry(showOutputGeometry);
 api.getOutputGeometry().then(showOutputGeometry).catch(()=>{});
 async function applyOutputSize(){
   const size=TimerTools.size({width:Number($('outputWidth').value),height:Number($('outputHeight').value)});
   if(!size){ $('outputSizeStatus').textContent=t('sizeInvalid'); return; }
   $('btnOutputSize').disabled=true;
-  S.outputSize=size; S.gridOn=false; S.fitWindow=false; $('chkFit').checked=false; buildGrid(); send();
+  const role=selectedWindow();
+  if(role==='secondary') S.secondary.outputSize=size; else S.outputSize=size;
+  S.gridOn=false; S.fitWindow=false; $('chkFit').checked=false; buildGrid(); send();
   try{
-    const result=await api.resizeOutput({...size,displayId:+$('displaySel').value||null});
-    if(result?.ok) showOutputGeometry(result); else $('outputSizeStatus').textContent=t('sizeFailed');
+    const result=await api.resizeOutput({...size,role,displayId:+$(role==='secondary'?'secondaryDisplaySel':'displaySel').value||null});
+    if(result?.ok){ if(role==='secondary') showSecondaryOutputGeometry(result); else showOutputGeometry(result); }
+    else $('outputSizeStatus').textContent=t('sizeFailed');
   }catch(_){ $('outputSizeStatus').textContent=t('sizeFailed'); }
   finally{ $('btnOutputSize').disabled=false; }
 }
@@ -1410,7 +1483,8 @@ function saveSettings(){
     showStart:S.showStart,showNowNext:S.showNowNext,
     gridOn:S.gridOn,gridSize:S.gridSize,gridCell:S.gridCell,fitWindow:S.fitWindow,
     outputSize:S.outputSize,outputLayout:S.outputLayout,dualTimer:S.dualTimer,dualSplit:S.dualSplit,
-    secondary:{durationMs:S.secondary.durationMs,layout:S.secondary.layout}
+    separateOutputs:S.separateOutputs,
+    secondary:{durationMs:S.secondary.durationMs,layout:S.secondary.layout,outputSize:S.secondary.outputSize}
   }));
 }
 function load(){
@@ -1429,7 +1503,7 @@ function load(){
       gridOn:st.gridOn??S.gridOn, gridSize:st.gridSize??S.gridSize, gridCell:st.gridCell??S.gridCell,
       fitWindow:st.fitWindow??S.fitWindow,
       outputSize:TimerTools.size(st.outputSize),outputLayout:TimerTools.layout(st.outputLayout),
-      dualTimer:!!st.dualTimer,dualSplit:st.dualSplit==='rows'?'rows':'columns',secondary:TimerTools.secondary(st.secondary)
+      dualTimer:!!st.dualTimer,dualSplit:st.dualSplit==='rows'?'rows':'columns',separateOutputs:!!st.separateOutputs,secondary:TimerTools.secondary(st.secondary)
     });
     S.remMs=S.durationMs; autoNext=!!st.autoNext;
     cues=JSON.parse(localStorage.getItem('pt_cues')||'[]');
@@ -1454,14 +1528,23 @@ function load(){
 // ---------- MONITORI ----------
 function fillDisplays(list){
   lastDisplays = list || [];
-  const sel=$('displaySel'); sel.innerHTML='';
-  lastDisplays.forEach(d=>{
-    const o=document.createElement('option'); o.value=d.id;
-    const tag=d.hasOutput?` — ${t('screenTag')}`:(d.hasControl?` — ${t('controlTag')}`:'');
-    o.textContent=`${d.label} (${d.width}×${d.height})${tag}`;
-    if(d.hasOutput||(!d.hasControl&&lastDisplays.length>1)) o.selected=true;
-    sel.appendChild(o);
-  });
+  for(const id of ['displaySel','secondaryDisplaySel']){
+    const sel=$(id),previous=sel.value,secondary=id==='secondaryDisplaySel';
+    const active=lastDisplays.find(d=>secondary?d.hasSecondaryOutput:d.hasOutput);
+    const fallback=lastDisplays.find(d=>!d.hasControl&&(!secondary||String(d.id)!==$('displaySel').value))||lastDisplays.find(d=>!secondary||String(d.id)!==$('displaySel').value)||lastDisplays[0];
+    sel.replaceChildren();
+    for(const d of lastDisplays){
+      const o=document.createElement('option'); o.value=d.id;
+      const roles=[];
+      if(d.hasOutput) roles.push(t(TimerTools.separateOutputs(S)?'timerOne':'screenTag'));
+      if(d.hasSecondaryOutput) roles.push(t('timerTwo'));
+      if(d.hasControl) roles.push(t('controlTag'));
+      o.textContent=`${d.label} (${d.width}×${d.height})${roles.length?' — '+roles.join(' · '):''}`;
+      sel.appendChild(o);
+    }
+    sel.value=lastDisplays.some(d=>String(d.id)===previous)?previous:String((active||fallback)?.id??'');
+  }
+  $('btnOpenSecondaryOut').disabled=!lastDisplays.length;
 }
 async function refreshDisplays(){ fillDisplays(await api.getDisplays()); }
 api.onDisplays(fillDisplays);
@@ -1924,6 +2007,16 @@ $('chkNowNext').addEventListener('change',e=>{ S.showNowNext=e.target.checked; s
 $('btnOpenOut').addEventListener('click',()=>api.sendToDisplay(+$('displaySel').value||null));
 $('btnCloseOut').addEventListener('click',()=>api.closeOutput());
 $('btnFs').addEventListener('click',()=>api.toggleFullscreen());
+$('btnOpenSecondaryOut').addEventListener('click',async()=>{
+  $('btnOpenSecondaryOut').disabled=true;
+  try {
+    const result=await api.openSecondaryOutput(Number($('secondaryDisplaySel').value));
+    if(!result?.ok) $('secondaryOutputStatus').textContent=t('secondaryOutputFailed');
+  } catch(_){ $('secondaryOutputStatus').textContent=t('secondaryOutputFailed'); }
+  finally { $('btnOpenSecondaryOut').disabled=!lastDisplays.length; }
+});
+$('btnCloseSecondaryOut').addEventListener('click',()=>api.closeSecondaryOutput());
+$('btnSecondaryFs').addEventListener('click',()=>api.toggleSecondaryFullscreen());
 $('chkOnTop').addEventListener('change',e=>api.setOnTop(e.target.checked));
 $('chkFit').addEventListener('change',e=>{ S.fitWindow=e.target.checked; lastKey=''; send(); });
 api.onOutputState(open=>{ outputOpen=open; if(!open) applyOutputQrState(null); });

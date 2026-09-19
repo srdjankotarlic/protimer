@@ -22,7 +22,7 @@
     const v = value || {};
     const durationMs = clamp(v.durationMs ?? 600000, 1000, MAX_DURATION, 600000);
     // Saved settings intentionally never resume a running timer after relaunch.
-    return { durationMs, remMs: durationMs, endAt: 0, running: false, layout: layout(v.layout) };
+    return { durationMs, remMs: durationMs, endAt: 0, running: false, layout: layout(v.layout), outputSize: size(v.outputSize) };
   }
   function remaining(timer, now) { return timer.running ? timer.endAt - now : timer.remMs; }
   function setRunning(timer, running, now) {
@@ -32,5 +32,20 @@
     timer.running = running;
   }
   function reset(timer) { timer.running = false; timer.remMs = timer.durationMs; timer.endAt = 0; }
-  return { MAX_DURATION, clamp, layout, size, secondary, remaining, setRunning, reset };
+  function separateOutputs(state) { return !!(state && state.dualTimer && state.separateOutputs); }
+  // Project the existing clocks into desktop outputs; never start, pause or copy
+  // a clock deadline. Network viewers keep the original combined state.
+  function outputState(state, role = 'primary') {
+    if (!state || !separateOutputs(state)) return state;
+    if (role !== 'secondary') return { ...state, dualTimer: false, fitWindow: false };
+    const timer = state.secondary;
+    return {
+      ...state, dualTimer: false, fitWindow: false, mode: 'countdown',
+      durationMs: timer.durationMs, remMs: timer.remMs, endAt: timer.endAt,
+      running: timer.running, elapsedMs: 0, startAt: 0,
+      outputLayout: timer.layout, outputSize: size(timer.outputSize),
+      text: '', textOnly: false, showNowNext: false
+    };
+  }
+  return { MAX_DURATION, clamp, layout, size, secondary, remaining, setRunning, reset, separateOutputs, outputState };
 });

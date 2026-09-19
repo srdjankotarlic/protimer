@@ -25,6 +25,14 @@ let outputTransparent = false;   // da li je trenutni Ekran prozor providan
 let outputFrameless = false;     // da li je bez okvira (providan ili grid)
 let outputTargetId = null;       // na kom monitoru je Ekran
 let outputPlacementVersion = 0;
+const secondaryOutput = require('./secondary-output')({
+  BrowserWindow, screen, getState: () => lastState, controlDisplayId,
+  changed: () => {
+    if (controlWin && !controlWin.isDestroyed())
+      controlWin.webContents.send('secondary-output-geometry', secondaryOutput.geometry());
+    pushDisplays();
+  }
+});
 
 // ---------------- MREŽNI IZLAZ (OBS Browser Source / NDI most / confidence monitor) ----------------
 let server = null;
@@ -349,7 +357,8 @@ function displayList() {
   return screen.getAllDisplays().map((d, i) => ({
     id: d.id, label: d.label || `Monitor ${i + 1}`,
     width: d.bounds.width, height: d.bounds.height,
-    primary: d.id === primaryId, hasControl: d.id === ctlId, hasOutput: d.id === outId
+    primary: d.id === primaryId, hasControl: d.id === ctlId, hasOutput: d.id === outId,
+    hasSecondaryOutput: d.id === secondaryOutput.geometry()?.displayId
   }));
 }
 function broadcast(channel, payload) {
@@ -380,6 +389,7 @@ function createControlWindow() {
   controlWin.on('closed', () => {
     controlWin = null;
     if (outputWin && !outputWin.isDestroyed()) outputWin.destroy();
+    secondaryOutput.close();
     app.quit();
   });
 }
@@ -445,7 +455,7 @@ function createOutputWindow(displayId) {
   outputWin.loadFile('output.html');
   if (SMOKE) outputWin.webContents.on('console-message', (e, l, m, ln) => console.log(`OUT_CONSOLE [${l}] ${m} (line ${ln})`));
   outputWin.webContents.on('did-finish-load', () => {
-    if (lastState) outputWin.webContents.send('state', lastState);
+    if (lastState) outputWin.webContents.send('state', TimerTools.outputState(lastState));
     if (outputQrState) outputWin.webContents.send('audience-qr', outputQrState);
     pushDisplays(); pushOutMode();
   });
@@ -486,19 +496,21 @@ ipcMain.on('state', (e, s) => {
       recreateOutputForTransparency();   // Electron transparent svojstvo zahteva novi prozor
     } else {
       outputWin.setAlwaysOnTop(!!s.transparent || !!s.gridOn, 'floating');
-      outputWin.webContents.send('state', s);
+      outputWin.webContents.send('state', TimerTools.outputState(s));
       if (gridModeChanged || (gridPosChanged && s.gridOn)) {   // uklj/isklj ili druga kockica → presloži prozor
         const d = screen.getAllDisplays().find(x => x.id === outputTargetId) || screen.getPrimaryDisplay();
         positionOutput(d);
       }
     }
   }
+  secondaryOutput.update(prev);
   pushSSE(s);
   pushPoll(s);
 });
 ipcMain.on('open-output', (e, displayId) => createOutputWindow(displayId || null));
 ipcMain.on('send-to-display', (e, displayId) => {
   const d = screen.getAllDisplays().find(x => x.id === displayId);
+  if (TimerTools.separateOutputs(lastState) && !d) return;
   if (!outputWin || outputWin.isDestroyed()) { createOutputWindow(d ? d.id : null); return; }
   if (d) positionOutput(d);
 });
@@ -508,6 +520,7 @@ ipcMain.on('exit-fullscreen', () => { if (outputWin && !outputWin.isDestroyed())
 ipcMain.handle('output-geometry', () => outputGeometry());
 ipcMain.handle('resize-output', async (e, requested) => {
   if (!controlWin || e.sender !== controlWin.webContents) return { ok: false };
+  if (requested?.role === 'secondary') return secondaryOutput.resize(requested);
   const size = TimerTools.size(requested);
   if (!size) return { ok: false, error: 'invalid size' };
   if (!outputWin || outputWin.isDestroyed()) {
@@ -527,6 +540,7 @@ ipcMain.handle('resize-output', async (e, requested) => {
 // kompaktan prozor: izlaz traži da visina prozora prati visinu tajmera (samo kad NIJE fullscreen)
 ipcMain.on('fit-window', (e, h) => {
   if (!outputWin || outputWin.isDestroyed() || outputWin.isFullScreen()) return;
+  if (e.sender !== outputWin.webContents) return;
   const want = Math.max(80, Math.min(Math.round(h) || 0, 2200));
   const [w, cur] = outputWin.getContentSize();
   if (Math.abs(cur - want) > 4) outputWin.setContentSize(w, want);
@@ -534,6 +548,17 @@ ipcMain.on('fit-window', (e, h) => {
 ipcMain.on('ctl-on-top', (e, flag) => { if (controlWin && !controlWin.isDestroyed()) controlWin.setAlwaysOnTop(!!flag, 'floating'); });
 ipcMain.handle('displays', () => displayList());
 ipcMain.handle('output-open', () => !!outputWin);
+ipcMain.handle('secondary-output-open', (e, displayId) => {
+  if (!controlWin || e.sender !== controlWin.webContents) return { ok: false };
+  return secondaryOutput.open(displayId);
+});
+ipcMain.handle('secondary-output-geometry', () => secondaryOutput.geometry());
+ipcMain.on('secondary-output-close', e => {
+  if (controlWin && e.sender === controlWin.webContents) secondaryOutput.close();
+});
+ipcMain.on('secondary-output-fullscreen', e => {
+  if (controlWin && e.sender === controlWin.webContents) secondaryOutput.toggleFullscreen();
+});
 ipcMain.handle('network-info', () => networkInfo());
 ipcMain.handle('check-local-network', (e, ip) => {
   if (!controlWin || e.sender !== controlWin.webContents || !lanAddresses().some(a => a.ip === ip))
@@ -916,9 +941,15 @@ app.whenReady().then(() => {
 
   screen.on('display-added', (e, newDisplay) => {
     pushDisplays();
-    if (outputWin && !outputWin.isDestroyed()) positionOutput(newDisplay);
+    if (!TimerTools.separateOutputs(lastState) && outputWin && !outputWin.isDestroyed()) positionOutput(newDisplay);
   });
-  screen.on('display-removed', () => {
+  screen.on('display-removed', (e, removedDisplay) => {
+    secondaryOutput.displaysChanged();
+    if (TimerTools.separateOutputs(lastState)) {
+      if (outputWin && outputTargetId === removedDisplay.id) outputWin.close();
+      pushDisplays();
+      return;
+    }
     pushDisplays();
     if (outputWin && !outputWin.isDestroyed() && screen.getAllDisplays().length === 1)
       positionOutput(screen.getAllDisplays()[0]);
@@ -1504,6 +1535,7 @@ app.whenReady().then(() => {
         console.log('CSV_OK=' + csvOK + (csvOK ? '' : ' ' + csvStr));
         check('CSV_OK',csvOK);
         await require('./scripts/smoke-layout')({ controlWin, getOutput:()=>outputWin, serverPort, token:CMD_TOKEN, check, tunnelTimeOK, tunnelTransportOK });
+        await require('./scripts/smoke-separate-outputs')({ controlWin, getOutput:()=>outputWin, getSecondary:secondaryOutput.getWindow, screen });
         await require('./scripts/smoke-rundown')({ controlWin });
         await require('./scripts/smoke-network-ui')();
         if(smokeFailures.length) throw new Error('Failed checks: '+smokeFailures.join(', '));
