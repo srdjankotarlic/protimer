@@ -38,6 +38,7 @@ test('closed windows and failed transitions do not allow sizing', async () => {
 
 function guardFixture(){
   const source=new FakeWindow(), sibling=new FakeWindow(); sibling.full=false;
+  sibling.isFocused=()=>true;
   const original={x:10,y:40,width:640,height:360};
   sibling.bounds={...original}; sibling.getBounds=()=>({...sibling.bounds});
   sibling.setBounds=b=>{sibling.bounds={...b};};
@@ -74,4 +75,10 @@ test('a newer fullscreen transition cancels an already queued geometry restorati
   preserveSiblingBounds(f.source,false,f.options);
   await f.finish();
   assert.deepEqual(f.sibling.bounds,updated);
+});
+test('macOS background Spaces move notifications do not count as operator drags',async()=>{
+  const f=guardFixture();f.sibling.isFocused=()=>false;
+  preserveSiblingBounds(f.source,false,f.options);
+  f.sibling.emit('will-move');f.sibling.emit('will-resize');await f.finish();
+  assert.deepEqual(f.sibling.bounds,f.original);
 });

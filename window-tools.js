@@ -14,12 +14,15 @@ function preserveSiblingBounds(source, entering, { getSibling, screen, platform 
   // Preserve only this transition, never a later operator move/resize or reroute.
   let cancelled = false;
   const cancel = () => { cancelled = true; };
+  // AppKit also emits will-move/will-resize for a background window while
+  // switching Spaces. A real mouse adjustment activates that sibling first.
+  const operatorChange = () => { if (win.isFocused()) cancel(); };
   const cleanup = () => {
     clearTimeout(timer);
     source.removeListener(event, finish);
     source.removeListener('closed', stop);
-    win.removeListener('will-move', cancel);
-    win.removeListener('will-resize', cancel);
+    win.removeListener('will-move', operatorChange);
+    win.removeListener('will-resize', operatorChange);
     if (siblingGuards.get(source) === stop) siblingGuards.delete(source);
   };
   const stop = () => { cancel(); cleanup(); };
@@ -36,8 +39,8 @@ function preserveSiblingBounds(source, entering, { getSibling, screen, platform 
   const timer = setTimeout(stop, 5000);
   source.once(event, finish);
   source.once('closed', stop);
-  win.on('will-move', cancel);
-  win.on('will-resize', cancel);
+  win.on('will-move', operatorChange);
+  win.on('will-resize', operatorChange);
   siblingGuards.set(source, stop);
 }
 
