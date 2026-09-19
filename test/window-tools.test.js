@@ -1,7 +1,7 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { EventEmitter } = require('node:events');
-const { leaveFullscreen } = require('../window-tools');
+const { leaveFullscreen, preserveSiblingBounds } = require('../window-tools');
 
 class FakeWindow extends EventEmitter {
   full = true;
@@ -34,4 +34,51 @@ test('closed windows and failed transitions do not allow sizing', async () => {
   assert.equal(await leaveFullscreen(win, 10), false);
   win.destroyed = true;
   assert.equal(await leaveFullscreen(win), false);
+});
+
+function guardFixture(){
+  const source=new FakeWindow(), sibling=new FakeWindow(); sibling.full=false;
+  sibling.isFocused=()=>true;
+  const original={x:10,y:40,width:640,height:360};
+  sibling.bounds={...original}; sibling.getBounds=()=>({...sibling.bounds});
+  sibling.setBounds=b=>{sibling.bounds={...b};};
+  let revision=0, displays=[{id:1}];
+  const options={platform:'darwin',getSibling:()=>({window:sibling,revision}),screen:{getDisplayMatching:()=>({id:1}),getAllDisplays:()=>displays}};
+  const finish=async()=>{sibling.bounds={x:0,y:0,width:460,height:258};source.emit('leave-full-screen');await new Promise(r=>setImmediate(r));};
+  return {source,sibling,original,options,finish,reroute:()=>revision++,disconnect:()=>displays=[]};
+}
+test('native macOS fullscreen restores the other output without changing its chosen size',async()=>{
+  const f=guardFixture();preserveSiblingBounds(f.source,false,f.options);await f.finish();
+  assert.deepEqual(f.sibling.bounds,f.original);
+  assert.equal(f.sibling.listenerCount('will-move'),0);
+  assert.equal(f.source.listenerCount('closed'),0);
+});
+test('fullscreen preservation never overrides a new operator action, disconnected display or closed window',async()=>{
+  for(const change of [f=>f.sibling.emit('will-move'),f=>f.sibling.emit('will-resize'),f=>f.reroute(),f=>f.disconnect(),f=>{f.sibling.destroyed=true;}]){
+    const f=guardFixture();preserveSiblingBounds(f.source,false,f.options);change(f);await f.finish();
+    assert.notDeepEqual(f.sibling.bounds,f.original);
+  }
+});
+test('sibling geometry protection does not run on Windows/Linux or change fullscreen siblings',async()=>{
+  for(const platform of ['win32','linux']){
+    const f=guardFixture();preserveSiblingBounds(f.source,false,{...f.options,platform});await f.finish();
+    assert.notDeepEqual(f.sibling.bounds,f.original);
+  }
+  const f=guardFixture();f.sibling.full=true;preserveSiblingBounds(f.source,false,f.options);await f.finish();
+  assert.notDeepEqual(f.sibling.bounds,f.original);
+});
+test('a newer fullscreen transition cancels an already queued geometry restoration',async()=>{
+  const f=guardFixture();preserveSiblingBounds(f.source,false,f.options);
+  f.source.emit('leave-full-screen');
+  f.sibling.bounds={x:50,y:60,width:700,height:400};
+  const updated={...f.sibling.bounds};
+  preserveSiblingBounds(f.source,false,f.options);
+  await f.finish();
+  assert.deepEqual(f.sibling.bounds,updated);
+});
+test('macOS background Spaces move notifications do not count as operator drags',async()=>{
+  const f=guardFixture();f.sibling.isFocused=()=>false;
+  preserveSiblingBounds(f.source,false,f.options);
+  f.sibling.emit('will-move');f.sibling.emit('will-resize');await f.finish();
+  assert.deepEqual(f.sibling.bounds,f.original);
 });

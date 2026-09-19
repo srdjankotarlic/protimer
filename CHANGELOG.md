@@ -2,6 +2,18 @@
 
 Notable ProTimer changes are listed here. The complete notes and installers are available on the [Releases page](https://github.com/srdjankotarlic/protimer/releases).
 
+## 2.4.0 — 2026-09-19
+
+- Added optional separate desktop outputs: Timer 1 and Timer 2 can target different displays connected to the same computer.
+- Added independent Timer 2 send, fullscreen and close controls, plus per-output exact window sizing. Closing or reopening an output preserves the countdown.
+- Preserved the combined horizontal/vertical layout, digit scale/position, control-only startup, rundown, phone control, OBS/browser viewing and audience QR.
+- Kept separate outputs in place when another display connects; a disconnected target requires an explicit resend.
+- Fixed rundown auto-advance when Control is covered or hidden: countdown transport no longer depends on screen repainting.
+- Preserved the other output's window position through macOS fullscreen/Spaces transitions without overriding new operator adjustments.
+- Added regression coverage for routing, independent windows, display removal, live clock preservation and settings restoration.
+
+[Full 2.4.0 notes](docs/RELEASE-NOTES-2.4.0.md)
+
 ## 2.3.0 — 2026-09-12
 
 - Refined the existing Control appearance without moving its sections: clearer text, consistent native-font controls, higher-contrast action colors and visible keyboard focus.

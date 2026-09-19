@@ -33,7 +33,7 @@ module.exports = async function smokeStartup({ app, BrowserWindow, screen, contr
   const original = await js("localStorage.getItem('pt_settings')");
   await js(`localStorage.setItem('pt_settings', JSON.stringify({
     gridOn:true, gridSize:5, gridCell:24, transparent:true, fitWindow:true,
-    outputSize:{width:1920,height:1080}, dualTimer:true, dualSplit:'rows',
+    outputSize:{width:1920,height:1080}, dualTimer:true, dualSplit:'rows', separateOutputs:true,
     outputLayout:{scale:80,x:10,y:-10}, secondary:{durationMs:900000}, durationMs:600000
   }))`);
   controlWin.reload();

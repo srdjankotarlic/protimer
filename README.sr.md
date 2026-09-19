@@ -23,16 +23,24 @@ Izaberi samo jedan instalacioni fajl. GitHubovi automatski **Source code** ZIP i
 
 | Računar | Preporučeni fajl |
 |---|---|
-| Apple Silicon Mac (M1 ili noviji) | **[Preuzmi macOS DMG](https://github.com/srdjankotarlic/protimer/releases/download/v2.3.0/ProTimer-2.3.0-arm64.dmg)** |
-| Windows 10/11 x64 | **[Preuzmi Windows Setup](https://github.com/srdjankotarlic/protimer/releases/download/v2.3.0/ProTimer-Setup-2.3.0.exe)** |
+| Apple Silicon Mac (M1 ili noviji) | **[Preuzmi macOS DMG](https://github.com/srdjankotarlic/protimer/releases/download/v2.4.0/ProTimer-2.4.0-arm64.dmg)** |
+| Windows 10/11 x64 | **[Preuzmi Windows Setup](https://github.com/srdjankotarlic/protimer/releases/download/v2.4.0/ProTimer-Setup-2.4.0.exe)** |
 
-Za Windows bez instalacije postoji i [portable EXE](https://github.com/srdjankotarlic/protimer/releases/download/v2.3.0/ProTimer-2.3.0-portable.exe). Za većinu korisnika je bolji Setup.
+Za Windows bez instalacije postoji i [portable EXE](https://github.com/srdjankotarlic/protimer/releases/download/v2.4.0/ProTimer-2.4.0-portable.exe). Za većinu korisnika je bolji Setup.
 
-Svaki instalacioni fajl možeš da proveriš pomoću [ProTimer 2.3.0 SHA-256 checksum liste](https://github.com/srdjankotarlic/protimer/releases/download/v2.3.0/ProTimer-2.3.0-SHA256SUMS.txt).
+Svaki instalacioni fajl možeš da proveriš pomoću [ProTimer 2.4.0 SHA-256 checksum liste](https://github.com/srdjankotarlic/protimer/releases/download/v2.4.0/ProTimer-2.4.0-SHA256SUMS.txt).
 
 > Aplikacija još nije digitalno potpisana. Na Windowsu izaberi **More info → Run anyway** samo za fajl preuzet sa ovog repozitorijuma. Na macOS-u, ako je blokirana, otvori **System Settings → Privacy & Security → Open Anyway**.
 
-## Novo u verziji 2.3
+## Novo u verziji 2.4
+
+- **Dva tajmera na dva ekrana:** Tajmer 1 pošalji na jedan televizor, Tajmer 2 na drugi, iz iste kontrole.
+- **Zasebne komande za prozore:** slanje, zatvaranje, veličina i pun ekran ne resetuju odbrojavanja.
+- **Sve postojeće ostaje:** zajednički prikaz levo/desno ili gore/dole, rundown, OBS, QR i kontrola telefonom. Pri pokretanju se i dalje otvara samo Kontrola.
+
+[Uputstvo za dva odvojena ekrana →](docs/SEPARATE-OUTPUTS.md#kratko-uputstvo-sr)
+
+### Iz verzije 2.3
 
 - **Doterana kontrola:** čitljivije oznake, ujednačena dugmad i mirniji izgled. Isti raspored i sve dosadašnje funkcije ostaju.
 - **Pregledniji rundown:** izbor stavke ne prekida tajmer. Pripremi, pokreni, uredi, dupliraj, pomeri ili vrati obrisanu stavku; Start/Pauza/Nastavi, Prethodna/Sledeća i raspored su na jednom mestu.
@@ -51,7 +59,7 @@ Svaki instalacioni fajl možeš da proveriš pomoću [ProTimer 2.3.0 SHA-256 che
 
 Postojeći rundown, boje, tekst, Grid, pragovi, poruke i Backstage ostaju dostupni. **Online deljenje je i dalje eksperimentalna usluga treće strane** — za nastup obezbedi lokalnu kontrolu i probaj telefon na stvarnoj mreži.
 
-[Uputstvo za nove kontrole i povezivanje telefona](docs/OUTPUT-AND-PHONE-CONTROL.md#kratko-uputstvo-sr) · [Sve izmene u 2.3.0](docs/RELEASE-NOTES-2.3.0.md)
+[Uputstvo za nove kontrole i povezivanje telefona](docs/OUTPUT-AND-PHONE-CONTROL.md#kratko-uputstvo-sr) · [Sve izmene u 2.4.0](docs/RELEASE-NOTES-2.4.0.md)
 
 ## Pokretanje za 60 sekundi
 
