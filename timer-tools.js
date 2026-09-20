@@ -18,11 +18,19 @@
         value.width < 80 || value.height < 60 || value.width > 7680 || value.height > 4320) return null;
     return { width: value.width, height: value.height };
   }
-  function secondary(value) {
+  function grid(value) {
+    const v = value || {}, gridSize = [3, 5, 7, 9].includes(v.gridSize) ? v.gridSize : 3;
+    const gridCell = Number.isInteger(v.gridCell) ? clamp(v.gridCell, 0, gridSize * gridSize - 1, 0) : Math.floor(gridSize * gridSize / 2);
+    return { gridOn: !!v.gridOn, gridSize, gridCell };
+  }
+  function secondary(value, legacyGrid) {
     const v = value || {};
     const durationMs = clamp(v.durationMs ?? 600000, 1000, MAX_DURATION, 600000);
     // Saved settings intentionally never resume a running timer after relaunch.
-    return { durationMs, remMs: durationMs, endAt: 0, running: false, layout: layout(v.layout), outputSize: size(v.outputSize) };
+    // Before independent placement, both outputs used the primary grid. Import
+    // that grid once for old settings; later edits belong to this timer only.
+    return { durationMs, remMs: durationMs, endAt: 0, running: false, layout: layout(v.layout), outputSize: size(v.outputSize),
+      ...grid(Object.hasOwn(v, 'gridOn') ? v : legacyGrid) };
   }
   function remaining(timer, now) { return timer.running ? timer.endAt - now : timer.remMs; }
   function setRunning(timer, running, now) {
@@ -44,8 +52,9 @@
       durationMs: timer.durationMs, remMs: timer.remMs, endAt: timer.endAt,
       running: timer.running, elapsedMs: 0, startAt: 0,
       outputLayout: timer.layout, outputSize: size(timer.outputSize),
+      ...grid(timer),
       text: '', textOnly: false, showNowNext: false
     };
   }
-  return { MAX_DURATION, clamp, layout, size, secondary, remaining, setRunning, reset, separateOutputs, outputState };
+  return { MAX_DURATION, clamp, layout, size, grid, secondary, remaining, setRunning, reset, separateOutputs, outputState };
 });

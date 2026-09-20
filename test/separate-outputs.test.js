@@ -115,3 +115,53 @@ test('secondary resolution and transparency are independent and invalid sizes ar
   assert.equal(f.output.geometry().displayId, 3); assert.equal(f.output.getWindow().options.transparent, true);
   f.output.close();
 });
+test('each desktop projection keeps its own grid, combined/network state remains untouched', () => {
+  const state = { dualTimer: true, separateOutputs: true, gridOn: true, gridSize: 3, gridCell: 8,
+    secondary: TimerTools.secondary({ gridOn: true, gridSize: 5, gridCell: 0 }) };
+  const before = structuredClone(state);
+  assert.deepEqual(TimerTools.grid(TimerTools.outputState(state)), { gridOn: true, gridSize: 3, gridCell: 8 });
+  assert.deepEqual(TimerTools.grid(TimerTools.outputState(state, 'secondary')), { gridOn: true, gridSize: 5, gridCell: 0 });
+  assert.deepEqual(state, before);
+  state.separateOutputs = false;
+  assert.equal(TimerTools.outputState(state), state);
+  assert.deepEqual(TimerTools.grid(state.secondary), { gridOn: true, gridSize: 5, gridCell: 0 });
+});
+test('secondary grid uses its own display and ignores every primary grid change', async () => {
+  const f = fixture();
+  f.setState({ ...f.getState(), gridOn: true, gridSize: 3, gridCell: 8,
+    secondary: TimerTools.secondary({ gridOn: true, gridSize: 5, gridCell: 6 }) });
+  f.output.open(3); await tick(); await tick();
+  const win = f.output.getWindow();
+  assert.deepEqual(win.bounds, { x: -1536, y: 216, width: 384, height: 216 });
+  const before = win.bounds, revision = f.output.getRevision();
+  const previous = f.getState();
+  f.setState({ ...previous, gridOn: false, gridSize: 9, gridCell: 80 });
+  f.output.update(previous); await tick(); await tick();
+  assert.deepEqual(win.bounds, before);
+  assert.equal(f.output.getRevision(), revision, 'Primary grid edit must not even schedule a secondary placement');
+  const prev2 = f.getState();
+  f.setState({ ...prev2, secondary: { ...prev2.secondary, gridSize: 3, gridCell: 8 } });
+  f.output.update(prev2); await tick(); await tick();
+  assert.deepEqual(win.bounds, { x: -640, y: 720, width: 640, height: 360 });
+  assert.equal(f.getState().gridOn, false);
+  f.output.close();
+});
+test('secondary free sizing and manual placement work while the primary grid is on', async () => {
+  const f = fixture();
+  f.setState({ ...f.getState(), gridOn: true, gridSize: 9, gridCell: 80 });
+  f.output.open(1); await tick(); await tick();
+  assert.equal((await f.output.resize({ width: 800, height: 450 })).ok, true);
+  const win = f.output.getWindow();
+  const dragged = { x: 1700, y: 100, width: 800, height: 450 };
+  win.setBounds(dragged);
+  assert.equal(f.output.geometry().displayId, 2);
+  const previous = f.getState();
+  f.setState({ ...previous, gridCell: 0 }); f.output.update(previous); await tick();
+  assert.deepEqual(win.bounds, dragged);
+  const prev2 = f.getState();
+  f.setState({ ...prev2, secondary: { ...prev2.secondary, gridOn: true, gridSize: 3, gridCell: 0 } });
+  f.output.update(prev2); await tick(); await tick();
+  assert.deepEqual(win.bounds, { x: 1600, y: 0, width: 640, height: 360 });
+  assert.equal((await f.output.resize({ width: 800, height: 450 })).ok, false, 'Own grid must still guard automatic sizing');
+  f.output.close();
+});

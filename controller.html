@@ -95,7 +95,7 @@
   .pv-stage{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; overflow:hidden;}
   .gridsel{width:248px; max-width:100%; aspect-ratio:16/9; background:#000; border:1px solid var(--border);
     border-radius:7px; display:grid; gap:1px; overflow:hidden;}
-  .gridsel .gc{background:var(--panel2); cursor:pointer; transition:background .08s;}
+  .gridsel .gc{background:var(--panel2); cursor:pointer; transition:background .08s; border:0; border-radius:0; padding:0; min-width:0; min-height:0;}
   .gridsel .gc:hover{background:var(--control-hover);}
   .gridsel .gc.sel{background:var(--accent);}
   .gridsel.off{opacity:.35; pointer-events:none;}
@@ -349,6 +349,9 @@
   .layout-head h3{margin:0; font-size:12px; letter-spacing:.8px; color:var(--dim);}
   .layout-row{display:flex; align-items:center; flex-wrap:wrap; gap:10px; margin:10px 0;}
   .layout-row label{display:flex; align-items:center; gap:8px; color:var(--dim); font-size:12px;}
+  .placement-target{display:flex; align-items:center; flex-wrap:wrap; gap:8px; color:var(--dim); font-size:12px;}
+  .placement-target select{border-color:var(--accent); font-weight:600;}
+  .placement-context{color:var(--text); overflow-wrap:anywhere;}
   .secondary-output-controls{margin-top:14px; padding-top:12px; border-top:1px solid var(--border);}
   .secondary-output-controls select{max-width:100%; min-width:0;}
   .secondary-output-controls .layout-row label{flex:1 1 240px; min-width:0;}
@@ -466,7 +469,7 @@
           <label><span data-i18n="outputRouting">Prikaz</span><select id="outputRouting"><option value="together" data-i18n="outputsTogether">Zajedno na jednom ekranu</option><option value="separate" data-i18n="outputsSeparate">Na dva odvojena ekrana</option></select></label>
         </div>
         <div class="layout-row">
-          <label><span data-i18n="splitLabel">Podela</span><select id="dualSplit"><option value="columns" data-i18n="splitColumns">Levo / desno │</option><option value="rows" data-i18n="splitRows">Gore / dole ─</option></select></label>
+          <label id="dualSplitLabel"><span data-i18n="splitLabel">Podela</span><select id="dualSplit"><option value="columns" data-i18n="splitColumns">Levo / desno │</option><option value="rows" data-i18n="splitRows">Gore / dole ─</option></select></label>
           <button id="secondaryDurationTrigger" class="duration-trigger" type="button" aria-haspopup="dialog" aria-controls="durationPopover" aria-expanded="false">
             <span class="caption" data-i18n="timerTwo">Tajmer 2</span><span class="value" id="secondaryDurationValue">00:10:00</span>
           </button>
@@ -494,9 +497,12 @@
     </div>
 
     <div class="panel" id="outputLayoutPanel">
-      <div class="layout-head"><h3 data-i18n="outputLayoutTitle">IZLAZNI PROZOR I CIFRE</h3></div>
+      <div class="layout-head">
+        <h3 data-i18n="outputLayoutTitle">IZLAZNI PROZOR I CIFRE</h3>
+        <label id="outputWindowTargetLabel" class="placement-target" hidden><span data-i18n="adjustOutput">Podesi ekran</span><select id="outputWindowTarget"><option value="primary" data-i18n="timerOne">Tajmer 1</option><option value="secondary" data-i18n="timerTwo">Tajmer 2</option></select></label>
+      </div>
+      <p id="placementContext" class="panel-help placement-context" hidden></p>
       <div class="layout-row">
-        <label id="outputWindowTargetLabel" hidden><span data-i18n="resizeWindow">Prozor</span><select id="outputWindowTarget"><option value="primary" data-i18n="timerOne">Tajmer 1</option><option value="secondary" data-i18n="timerTwo">Tajmer 2</option></select></label>
         <label><span data-i18n="widthPx">Širina (px)</span><input id="outputWidth" type="number" min="80" max="7680" step="1" value="1920"></label>
         <span>×</span>
         <label><span data-i18n="heightPx">Visina (px)</span><input id="outputHeight" type="number" min="60" max="4320" step="1" value="1080"></label>
@@ -504,9 +510,9 @@
         <button data-output-size="1920,1080">Full HD</button><button data-output-size="1280,720">HD</button>
       </div>
       <div id="outputSizeStatus" class="panel-help" role="status"></div>
-      <p class="panel-help" data-i18n="sizeHelp">Veličina sadržaja u logičkim pikselima (kao OBS Browser Source). Primena izlazi iz punog ekrana i isključuje Grid/Kompaktan. F uključuje pun ekran.</p>
+      <p class="panel-help" data-i18n="sizeHelp">Logički pikseli (kao OBS Browser Source). Primena izlazi iz punog ekrana i isključuje Grid/Kompaktan samo za izabrani prozor. Pun ekran uključi njegovim dugmetom ⛶.</p>
       <div class="layout-row">
-        <label><span data-i18n="adjustDigits">Podesi cifre</span><select id="layoutTarget"><option value="primary" data-i18n="timerOne">Tajmer 1</option><option value="secondary" data-i18n="timerTwo" disabled>Tajmer 2</option></select></label>
+        <label id="layoutTargetLabel" hidden><span data-i18n="adjustDigits">Podesi cifre</span><select id="layoutTarget"><option value="primary" data-i18n="timerOne">Tajmer 1</option><option value="secondary" data-i18n="timerTwo" disabled>Tajmer 2</option></select></label>
         <button id="btnLayoutReset" data-i18n="centerReset">Centriraj · 100%</button>
       </div>
       <div class="layout-slider"><label for="timerScale" data-i18n="digitScale">Veličina cifara (%)</label><input id="timerScale" type="range" min="10" max="200" step="1" value="100" aria-label="Scale"><input id="timerScaleValue" type="number" min="10" max="200" step="1" value="100" aria-label="Scale percent"></div>
@@ -535,10 +541,14 @@
       </div>
     </div>
 
-    <div class="panel">
+    <div class="panel" id="gridPanel">
       <div class="field" style="align-items:flex-start">
         <span class="glabel" data-i18n="grid">Grid</span>
         <div style="flex:1; min-width:0;">
+          <div id="gridTargetRow" class="layout-row" hidden>
+            <label class="placement-target"><span data-i18n="adjustOutput">Podesi ekran</span><select id="gridTarget"><option value="primary" data-i18n="timerOne">Tajmer 1</option><option value="secondary" data-i18n="timerTwo">Tajmer 2</option></select></label>
+          </div>
+          <p id="gridContext" class="panel-help placement-context" hidden></p>
           <div class="row" style="margin-bottom:9px">
             <label class="chk"><input type="checkbox" id="chkGrid"> <span data-i18n="gridOn">Pozicija na ekranu</span></label>
             <div class="sep"></div>
@@ -548,6 +558,7 @@
             <span class="lbl" id="gridHint" data-i18n="gridHint">izaberi kockicu →</span>
           </div>
           <div class="gridsel" id="gridSel"></div>
+          <p class="panel-help" data-i18n="gridHelp">Grid postavlja prozor u izabrani deo displeja. Isključi ga za slobodno pomeranje mišem i tačnu veličinu prozora.</p>
         </div>
       </div>
     </div>
@@ -784,9 +795,12 @@ const I18N = {
   sr: {
     outputRouting:'Prikaz', outputsTogether:'Zajedno na jednom ekranu', outputsSeparate:'Na dva odvojena ekrana',
     primaryOutputLabel:'Tajmer 1 na', sendTimerTwo:'Pošalji Tajmer 2', resizeWindow:'Prozor',
+    adjustOutput:'Podesi ekran', placementOnly:'Veličina, cifre i Grid menjaju samo', gridOnly:'Grid pomera samo',
+    gridHelp:'Grid postavlja prozor u izabrani deo displeja. Isključi ga za slobodno pomeranje mišem i tačnu veličinu prozora.',
+    gridCellLabel:'Red {row}, kolona {col}',
     secondaryDisplayTitle:'Ekran za Tajmer 2', secondaryFsTitle:'Pun ekran — Tajmer 2', secondaryCloseTitle:'Zatvori ekran Tajmera 2',
     secondaryOutputClosed:'Tajmer 2 · ekran nije otvoren', secondaryOutputLive:'Tajmer 2 · ekran je otvoren', secondaryOutputFailed:'Ekran nije otvoren. Proveri da li je televizor povezan i izaberi ekran ponovo.',
-    separateHelp:'Tajmer 1 šalješ gornjim komandama. Ovde biraš ekran za Tajmer 2. Svaki prozor otvaraš i zatvaraš zasebno; odbrojavanja se ne prekidaju.',
+    separateHelp:'Tajmer 1 šalješ gornjim komandama, a Tajmer 2 odavde. Ispod, u „Podesi ekran“, biraš čiju veličinu, cifre i Grid menjaš. Svaki ekran ima nezavisna podešavanja; odbrojavanja se ne prekidaju.',
     separateSharedHelp:'Boje, upozorenja, poruka i BLACKOUT važe za oba ekrana. Tekst, NOW/NEXT i QR ostaju na ekranu Tajmera 1. OBS i linkovi zadržavaju zajednički prikaz. Televizore podesi kao proširene ekrane, ne preslikane.',
     planNow:'Sada', planClear:'Ukloni', rundownTotal:'Ukupno trajanje', plannedFinish:'Planirani kraj', rundownSchedule:'Raspored',
     cuePrevious:'Prethodna', cueNext:'Sledeća (N)', cueReset:'Reset stavke', cueLoad:'Pripremi', cueRun:'Pokreni',
@@ -830,7 +844,7 @@ const I18N = {
     localCheckFailed:'Server ne odgovara na ovoj adresi. Izaberi drugu mrežu i pogledaj „Telefon se ne povezuje?“ ispod.',
     shareFailureHelp:'Online servis nije dostupan. Proveri internet/VPN i pokušaj ponovo. Lokalna kontrola ostaje dostupna na istoj mreži.',
     outputLayoutTitle:'IZLAZNI PROZOR I CIFRE', widthPx:'Širina (px)', heightPx:'Visina (px)', applySize:'Primeni veličinu',
-    sizeHelp:'Veličina sadržaja u logičkim pikselima (kao OBS Browser Source). Primena izlazi iz punog ekrana i isključuje Grid/Kompaktan. F uključuje pun ekran.',
+    sizeHelp:'Logički pikseli (kao OBS Browser Source). Primena izlazi iz punog ekrana i isključuje Grid/Kompaktan samo za izabrani prozor. Pun ekran uključi njegovim dugmetom ⛶.',
     actualSize:'Trenutni izlaz', sizeFailed:'Veličina nije primenjena. Proveri dimenzije i pokušaj ponovo.', sizeInvalid:'Unesi cele brojeve: širina 80–7680 i visina 60–4320.',
     adjustDigits:'Podesi cifre', timerOne:'Tajmer 1', timerTwo:'Tajmer 2', centerReset:'Centriraj · 100%',
     digitScale:'Veličina cifara (%)', digitX:'Levo / desno (%)', digitY:'Gore / dole (%)',
@@ -878,9 +892,12 @@ const I18N = {
   en: {
     outputRouting:'Display', outputsTogether:'Together on one screen', outputsSeparate:'On two separate screens',
     primaryOutputLabel:'Timer 1 to', sendTimerTwo:'Send Timer 2', resizeWindow:'Window',
+    adjustOutput:'Adjust screen', placementOnly:'Size, digits and Grid affect only', gridOnly:'Grid positions only',
+    gridHelp:'Grid places the window in a cell of its display. Turn it off to move the window freely with the mouse and apply an exact size.',
+    gridCellLabel:'Row {row}, column {col}',
     secondaryDisplayTitle:'Screen for Timer 2', secondaryFsTitle:'Fullscreen — Timer 2', secondaryCloseTitle:'Close Timer 2 screen',
     secondaryOutputClosed:'Timer 2 · screen closed', secondaryOutputLive:'Timer 2 · screen open', secondaryOutputFailed:'Screen not opened. Check that the display is connected and select it again.',
-    separateHelp:'Send Timer 1 using the top controls. Choose the screen for Timer 2 here. Open and close each window independently; countdowns keep their state.',
+    separateHelp:'Send Timer 1 using the top controls and Timer 2 from here. Below, use “Adjust screen” to choose whose size, digits and Grid to change. Each screen has independent placement; countdowns keep their state.',
     separateSharedHelp:'Colors, warnings, message and BLACKOUT apply to both screens. Text, NOW/NEXT and QR stay on Timer 1. OBS and shared links keep the combined view. Set your displays to extended, not mirrored.',
     planNow:'Now', planClear:'Clear', rundownTotal:'Total duration', plannedFinish:'Planned finish', rundownSchedule:'Schedule',
     cuePrevious:'Previous', cueNext:'Next (N)', cueReset:'Reset item', cueLoad:'Load', cueRun:'Run',
@@ -924,7 +941,7 @@ const I18N = {
     localCheckFailed:'The server does not respond at this address. Select another network and see “Phone cannot connect?” below.',
     shareFailureHelp:'The online service is unavailable. Check internet/VPN and retry. Local control remains available on the same network.',
     outputLayoutTitle:'OUTPUT WINDOW & DIGITS', widthPx:'Width (px)', heightPx:'Height (px)', applySize:'Apply size',
-    sizeHelp:'Content size in logical pixels (like an OBS Browser Source). Applying exits fullscreen and disables Grid/Compact. F toggles fullscreen.',
+    sizeHelp:'Logical pixels (like an OBS Browser Source). Applying exits fullscreen and disables Grid/Compact only for the selected window. Use its ⛶ button for fullscreen.',
     actualSize:'Current output', sizeFailed:'Size was not applied. Check the dimensions and try again.', sizeInvalid:'Enter whole numbers: width 80–7680 and height 60–4320.',
     adjustDigits:'Adjust digits', timerOne:'Timer 1', timerTwo:'Timer 2', centerReset:'Center · 100%',
     digitScale:'Digit size (%)', digitX:'Left / right (%)', digitY:'Up / down (%)',
@@ -1152,16 +1169,28 @@ function syncRoutingUI(){
   $('outputRouting').value=S.separateOutputs?'separate':'together';
   $('secondaryOutputControls').hidden=!separate;
   $('dualSplit').disabled=separate;
+  $('dualSplitLabel').hidden=separate;
   $('outputTargetLabel').textContent=t(separate?'primaryOutputLabel':'outLabel');
   $('outputWindowTargetLabel').hidden=!separate;
+  $('layoutTargetLabel').hidden=!S.dualTimer||separate;
+  $('gridTargetRow').hidden=!separate;
+  $('placementContext').hidden=!separate;
+  $('gridContext').hidden=!separate;
   if(!separate) $('outputWindowTarget').value='primary';
+  $('gridTarget').value=$('outputWindowTarget').value;
+  if(separate) $('layoutTarget').value=$('outputWindowTarget').value;
+  if(!S.dualTimer) $('layoutTarget').value='primary';
   showSecondaryOutputGeometry(lastSecondaryGeometry);
+  syncLayoutUI(); buildGrid();
 }
 $('outputRouting').addEventListener('change',e=>{
   S.separateOutputs=e.target.value==='separate';
   syncRoutingUI(); syncOutputSizeFields(); send();
 });
-function selectedLayout(){ return $('layoutTarget').value==='secondary'?S.secondary.layout:S.outputLayout; }
+function selectedLayout(){
+  const role=TimerTools.separateOutputs(S)?selectedWindow():S.dualTimer?$('layoutTarget').value:'primary';
+  return role==='secondary'?S.secondary.layout:S.outputLayout;
+}
 function syncLayoutUI(){
   const layout=selectedLayout();
   for(const [id,key] of [['timerScale','scale'],['timerX','x'],['timerY','y']]){
@@ -1175,7 +1204,10 @@ for(const [id,key] of [['timerScale','scale'],['timerX','x'],['timerY','y']]){
     $(id+(suffix?'':'Value')).value=selectedLayout()[key]; send();
   });
 }
-$('layoutTarget').addEventListener('change',syncLayoutUI);
+$('layoutTarget').addEventListener('change',()=>{
+  if(TimerTools.separateOutputs(S)) selectPlacement($('layoutTarget').value);
+  else syncLayoutUI();
+});
 $('btnLayoutReset').addEventListener('click',()=>{ Object.assign(selectedLayout(),TimerTools.layout()); syncLayoutUI(); send(); });
 $('chkDual').addEventListener('change',e=>{
   S.dualTimer=e.target.checked;
@@ -1191,9 +1223,25 @@ $('btnBothPause').addEventListener('click',()=>bothRunning(false));
 $('btnBothReset').addEventListener('click',()=>{ TimerTools.reset(S.secondary); reset(); });
 let lastOutputGeometry=null, lastSecondaryGeometry=null;
 function selectedWindow(){ return TimerTools.separateOutputs(S)&&$('outputWindowTarget').value==='secondary'?'secondary':'primary'; }
+function selectedGrid(){ return selectedWindow()==='secondary'?S.secondary:S; }
+function selectPlacement(role){
+  $('outputWindowTarget').value=TimerTools.separateOutputs(S)&&role==='secondary'?'secondary':'primary';
+  $('gridTarget').value=$('outputWindowTarget').value;
+  if(TimerTools.separateOutputs(S)) $('layoutTarget').value=$('outputWindowTarget').value;
+  syncOutputSizeFields(); syncLayoutUI(); buildGrid();
+}
+function renderPlacementContext(){
+  const second=selectedWindow()==='secondary', name=t(second?'timerTwo':'timerOne');
+  const info=second?lastSecondaryGeometry:lastOutputGeometry;
+  const display=lastDisplays.find(d=>d.id===info?.displayId);
+  const target=name+(display?' · '+display.label:'');
+  $('placementContext').textContent=t('placementOnly')+': '+target;
+  $('gridContext').textContent=t('gridOnly')+': '+target;
+}
 function renderOutputSizeStatus(){
   const info=selectedWindow()==='secondary'?lastSecondaryGeometry:lastOutputGeometry;
   $('outputSizeStatus').textContent=info?`${t('actualSize')}: ${info.width} × ${info.height} px${info.fullscreen?' · '+t('fsTitle'):''}`:t('outClosed');
+  renderPlacementContext();
 }
 function showOutputGeometry(info){
   lastOutputGeometry=info;
@@ -1209,7 +1257,8 @@ function syncOutputSizeFields(){
   const size=(selectedWindow()==='secondary'?S.secondary.outputSize:S.outputSize)||{width:1920,height:1080};
   $('outputWidth').value=size.width; $('outputHeight').value=size.height; renderOutputSizeStatus();
 }
-$('outputWindowTarget').addEventListener('change',syncOutputSizeFields);
+$('outputWindowTarget').addEventListener('change',()=>selectPlacement($('outputWindowTarget').value));
+$('gridTarget').addEventListener('change',()=>selectPlacement($('gridTarget').value));
 api.onSecondaryOutputGeometry(showSecondaryOutputGeometry);
 api.getSecondaryOutputGeometry().then(showSecondaryOutputGeometry).catch(()=>{});
 api.onOutputGeometry(showOutputGeometry);
@@ -1220,7 +1269,9 @@ async function applyOutputSize(){
   $('btnOutputSize').disabled=true;
   const role=selectedWindow();
   if(role==='secondary') S.secondary.outputSize=size; else S.outputSize=size;
-  S.gridOn=false; S.fitWindow=false; $('chkFit').checked=false; buildGrid(); send();
+  selectedGrid().gridOn=false;
+  if(role==='primary'){ S.fitWindow=false; $('chkFit').checked=false; }
+  buildGrid(); send();
   try{
     const result=await api.resizeOutput({...size,role,displayId:+$(role==='secondary'?'secondaryDisplaySel':'displaySel').value||null});
     if(result?.ok){ if(role==='secondary') showSecondaryOutputGeometry(result); else showOutputGeometry(result); }
@@ -1487,7 +1538,7 @@ function saveSettings(){
     gridOn:S.gridOn,gridSize:S.gridSize,gridCell:S.gridCell,fitWindow:S.fitWindow,
     outputSize:S.outputSize,outputLayout:S.outputLayout,dualTimer:S.dualTimer,dualSplit:S.dualSplit,
     separateOutputs:S.separateOutputs,
-    secondary:{durationMs:S.secondary.durationMs,layout:S.secondary.layout,outputSize:S.secondary.outputSize}
+    secondary:{durationMs:S.secondary.durationMs,layout:S.secondary.layout,outputSize:S.secondary.outputSize,...TimerTools.grid(S.secondary)}
   }));
 }
 function load(){
@@ -1503,10 +1554,10 @@ function load(){
       warnYellow:st.warnYellow??S.warnYellow, warnRed:st.warnRed??S.warnRed,
       textOnly:st.textOnly??S.textOnly, transparent:st.transparent??S.transparent,
       showStart:st.showStart??S.showStart, showNowNext:st.showNowNext??S.showNowNext,
-      gridOn:st.gridOn??S.gridOn, gridSize:st.gridSize??S.gridSize, gridCell:st.gridCell??S.gridCell,
+      ...TimerTools.grid(st),
       fitWindow:st.fitWindow??S.fitWindow,
       outputSize:TimerTools.size(st.outputSize),outputLayout:TimerTools.layout(st.outputLayout),
-      dualTimer:!!st.dualTimer,dualSplit:st.dualSplit==='rows'?'rows':'columns',separateOutputs:!!st.separateOutputs,secondary:TimerTools.secondary(st.secondary)
+      dualTimer:!!st.dualTimer,dualSplit:st.dualSplit==='rows'?'rows':'columns',separateOutputs:!!st.separateOutputs,secondary:TimerTools.secondary(st.secondary,st)
     });
     S.remMs=S.durationMs; autoNext=!!st.autoNext;
     cues=JSON.parse(localStorage.getItem('pt_cues')||'[]');
@@ -1548,6 +1599,7 @@ function fillDisplays(list){
     sel.value=lastDisplays.some(d=>String(d.id)===previous)?previous:String((active||fallback)?.id??'');
   }
   $('btnOpenSecondaryOut').disabled=!lastDisplays.length;
+  renderPlacementContext();
 }
 async function refreshDisplays(){ fillDisplays(await api.getDisplays()); }
 api.onDisplays(fillDisplays);
@@ -1873,27 +1925,39 @@ $('btnTextClear').addEventListener('click',()=>{ S.text=''; $('textInput').value
 
 // ---------- GRID (pozicija tajmera na izlaznom ekranu) ----------
 function buildGrid(){
-  const n=S.gridSize, sel=$('gridSel');
+  const grid=selectedGrid(), n=grid.gridSize, sel=$('gridSel');
   sel.style.gridTemplateColumns='repeat('+n+',1fr)';
   sel.style.gridTemplateRows='repeat('+n+',1fr)';
-  sel.classList.toggle('off', !S.gridOn);
+  sel.classList.toggle('off', !grid.gridOn);
   sel.innerHTML='';
   for(let i=0;i<n*n;i++){
-    const d=document.createElement('div'); d.className='gc'+(i===S.gridCell?' sel':'');
-    d.addEventListener('click',()=>{ S.gridCell=i; lastKey=''; buildGrid(); send(); });
+    const d=document.createElement('button'); d.type='button'; d.className='gc'+(i===grid.gridCell?' sel':'');
+    d.disabled=!grid.gridOn;
+    d.tabIndex=i===grid.gridCell?0:-1;
+    d.setAttribute('aria-label',t('gridCellLabel').replace('{row}',Math.floor(i/n)+1).replace('{col}',i%n+1));
+    d.setAttribute('aria-pressed',String(i===grid.gridCell));
+    d.addEventListener('keydown',e=>{
+      if(e.ctrlKey||e.metaKey||e.altKey) return;
+      const delta={ArrowLeft:[0,-1],ArrowRight:[0,1],ArrowUp:[-1,0],ArrowDown:[1,0]}[e.key];
+      if(!delta) return;
+      e.preventDefault();
+      const row=Math.max(0,Math.min(n-1,Math.floor(i/n)+delta[0])), col=Math.max(0,Math.min(n-1,i%n+delta[1]));
+      const next=sel.children[row*n+col]; d.tabIndex=-1; next.tabIndex=0; next.focus({preventScroll:true});
+    });
+    d.addEventListener('click',()=>{ grid.gridCell=i; lastKey=''; buildGrid(); send(); $('gridSel').children[i].focus({preventScroll:true}); });
     sel.appendChild(d);
   }
-  document.querySelectorAll('#gridSizes button').forEach(b=>b.classList.toggle('active', +b.dataset.gs===S.gridSize));
-  $('chkGrid').checked=S.gridOn;
+  document.querySelectorAll('#gridSizes button').forEach(b=>b.classList.toggle('active', +b.dataset.gs===grid.gridSize));
+  $('chkGrid').checked=grid.gridOn;
 }
-$('chkGrid').addEventListener('change',e=>{ S.gridOn=e.target.checked; lastKey=''; buildGrid(); send(); });
+$('chkGrid').addEventListener('change',e=>{ selectedGrid().gridOn=e.target.checked; lastKey=''; buildGrid(); send(); });
 document.querySelectorAll('#gridSizes button').forEach(b=>b.addEventListener('click',()=>{
-  const oN=S.gridSize, nN=+b.dataset.gs;
-  const oR=Math.floor(S.gridCell/oN), oC=S.gridCell%oN;
+  const grid=selectedGrid(), oN=grid.gridSize, nN=+b.dataset.gs;
+  const oR=Math.floor(grid.gridCell/oN), oC=grid.gridCell%oN;
   const nR=Math.min(nN-1, Math.round(oR*(nN-1)/(oN-1||1)));
   const nC=Math.min(nN-1, Math.round(oC*(nN-1)/(oN-1||1)));
-  S.gridSize=nN; S.gridCell=nR*nN+nC;
-  if(!S.gridOn){ S.gridOn=true; }   // izbor veličine podrazumeva da hoćeš grid
+  grid.gridSize=nN; grid.gridCell=nR*nN+nC;
+  if(!grid.gridOn){ grid.gridOn=true; }   // izbor veličine podrazumeva da hoćeš grid
   lastKey=''; buildGrid(); send();
 }));
 

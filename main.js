@@ -386,7 +386,7 @@ function pushOutputState() {
 function outputGeometry() {
   if (!outputWin || outputWin.isDestroyed()) return null;
   const [width, height] = outputWin.getContentSize();
-  return { width, height, fullscreen: outputWin.isFullScreen(), scaleFactor: screen.getDisplayMatching(outputWin.getBounds()).scaleFactor };
+  return { width, height, fullscreen: outputWin.isFullScreen(), displayId: outputDisplayId(), scaleFactor: screen.getDisplayMatching(outputWin.getBounds()).scaleFactor };
 }
 function pushOutputGeometry() {
   if (controlWin && !controlWin.isDestroyed()) controlWin.webContents.send('output-geometry', outputGeometry());
