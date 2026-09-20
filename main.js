@@ -386,7 +386,7 @@ function pushOutputState() {
 function outputGeometry() {
   if (!outputWin || outputWin.isDestroyed()) return null;
   const [width, height] = outputWin.getContentSize();
-  return { width, height, fullscreen: outputWin.isFullScreen(), scaleFactor: screen.getDisplayMatching(outputWin.getBounds()).scaleFactor };
+  return { width, height, fullscreen: outputWin.isFullScreen(), displayId: outputDisplayId(), scaleFactor: screen.getDisplayMatching(outputWin.getBounds()).scaleFactor };
 }
 function pushOutputGeometry() {
   if (controlWin && !controlWin.isDestroyed()) controlWin.webContents.send('output-geometry', outputGeometry());
@@ -978,15 +978,28 @@ app.whenReady().then(() => {
       const t = setInterval(() => { if (outputWin) { clearInterval(t); res(outputWin); } }, 50);
     });
     const waitWindowEvent = (win, event, timeout = 6000) => new Promise(res => {
-      let timer = null;
+      let timer = null, poll = null, seenEvent = false;
       const done = ok => {
         if (timer) clearTimeout(timer);
+        if (poll) clearInterval(poll);
         win.removeListener(event, onEvent);
         res(ok);
       };
-      const onEvent = () => done(true);
+      // Native events can precede the BrowserWindow flag/resizability update.
+      // Assert the completed transition, not the state inside the event turn.
+      const probe = () => {
+        if (win.isDestroyed()) { done(false); return; }
+        const entering = event === 'enter-full-screen';
+        if (seenEvent && win.isFullScreen() === entering && (entering || win.isResizable())) done(true);
+      };
+      const onEvent = () => { seenEvent = true; setImmediate(probe); };
       win.once(event, onEvent);
-      timer = setTimeout(() => done(false), timeout);
+      poll = setInterval(probe, 25);
+      timer = setTimeout(() => {
+        console.log('SMOKE_FULLSCREEN_TIMEOUT', { event, seenEvent, destroyed:win.isDestroyed(),
+          fullscreen:!win.isDestroyed()&&win.isFullScreen(),resizable:!win.isDestroyed()&&win.isResizable() });
+        done(false);
+      }, timeout);
     });
     (async () => {
       try {

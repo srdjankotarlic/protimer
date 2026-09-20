@@ -40,10 +40,12 @@ module.exports = async function smokeLayout({ controlWin, getOutput, serverPort,
   const before = await out(rect);
   const previewBefore = await ctl(`$('pvTime').getBoundingClientRect().width`);
   await ctl(`$('timerScaleValue').value=50; $('timerScaleValue').dispatchEvent(new Event('input')); $('timerXValue').value=12.5; $('timerXValue').dispatchEvent(new Event('input')); $('timerYValue').value=-10; $('timerYValue').dispatchEvent(new Event('input'));`);
-  await delay(150);
+  // Like the dual-layout checks below, wait for the rendered state rather than
+  // assuming an occluded macOS window will paint within a fixed 150 ms delay.
+  const digitLayoutReady = await waitFor(getOutput(), `$('primaryContent').style.transform==='translate(12.5%, -10%) scale(0.5)'`);
   const after = await out(rect);
   const previewAfter = await ctl(`$('pvTime').getBoundingClientRect().width`);
-  report('DIGIT_SCALE_POSITION_OK', Math.abs(after.width / before.width - .5) < .01 && Math.abs(after.x - before.x - before.pw * .125) < 2 && Math.abs(after.y - before.y + before.ph * .1) < 2 && Math.abs(previewBefore - previewAfter) < 1, { before, after, previewBefore, previewAfter });
+  report('DIGIT_SCALE_POSITION_OK', digitLayoutReady && Math.abs(after.width / before.width - .5) < .01 && Math.abs(after.x - before.x - before.pw * .125) < 2 && Math.abs(after.y - before.y + before.ph * .1) < 2 && Math.abs(previewBefore - previewAfter) < 1, { digitLayoutReady, before, after, previewBefore, previewAfter });
   await image(getOutput(), 'protimer-layout-position.png');
   await ctl(`$('btnLayoutReset').click(); $('chkDual').checked=true; $('chkDual').dispatchEvent(new Event('change')); $('secondaryDurationTrigger').click(); $('durationHours').value=0; $('durationMinutes').value=5; $('durationSeconds').value=30; $('durationPickerConfirm').click();`);
   // Occluded macOS CI windows may defer a paint. Wait for the actual rendered

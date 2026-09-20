@@ -24,6 +24,19 @@ test('layout defaults and bounds are predictable', () => {
   assert.deepEqual(tools.layout({ scale: 50, x: -12.5, y: 25 }), { scale: 50, x: -12.5, y: 25 });
   assert.deepEqual(tools.layout({ scale: 999, x: -200, y: NaN }), { scale: 200, x: -100, y: 0 });
 });
+test('grid normalization and migration preserve old placement without linking timers', () => {
+  assert.deepEqual(tools.grid(), { gridOn: false, gridSize: 3, gridCell: 4 });
+  assert.deepEqual(tools.grid({ gridOn: true, gridSize: 5, gridCell: 999 }), { gridOn: true, gridSize: 5, gridCell: 24 });
+  assert.deepEqual(tools.grid({ gridSize: -1, gridCell: NaN }), tools.grid());
+  const legacy = { gridOn: true, gridSize: 7, gridCell: 42 };
+  const restored = tools.secondary({ durationMs: 90000 }, legacy);
+  assert.deepEqual(tools.grid(restored), legacy);
+  restored.gridCell = 8;
+  assert.equal(legacy.gridCell, 42);
+  const independent = tools.secondary({ ...restored, gridOn: false }, legacy);
+  assert.deepEqual(tools.grid(independent), { gridOn: false, gridSize: 7, gridCell: 8 });
+  assert.equal(independent.running, false);
+});
 test('two timers run independently, pause precisely and resume idempotently', () => {
   const a = tools.secondary({ durationMs: 60000 });
   const b = tools.secondary({ durationMs: 90000 });

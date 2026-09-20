@@ -12,7 +12,7 @@ In **OUTPUT WINDOW & DIGITS**, enter Width and Height, then **Apply size**. Full
 
 Dimensions are **logical content pixels**, the same coordinate space used by web/OBS layouts. A Retina or Windows-scaled display may render several physical pixels per logical pixel. Fullscreen follows the selected monitor’s native desktop size instead of the window-size fields.
 
-Applying a size leaves fullscreen and turns off Grid and Compact sizing. You can still drag and resize the frameless window with the mouse. Fullscreen is controlled with **F** or the fullscreen button in Control.
+Applying a size leaves fullscreen and turns off Grid and Compact sizing. You can still drag and resize the frameless window with the mouse. Fullscreen is controlled with **F** or the fullscreen button in Control. For two separate displays and the independent-placement controls in 2.4.1, see [Two timers on two displays](SEPARATE-OUTPUTS.md); resizing one output does not change the other output's Grid.
 
 ## Digit scale and position
 

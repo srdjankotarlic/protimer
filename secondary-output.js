@@ -101,14 +101,15 @@ module.exports = function secondaryOutput({ BrowserWindow, screen, getState, con
     if (!enabled()) { close(); return; }
     if (!win || win.isDestroyed()) return; // Enabling/restoring a mode never opens a TV.
     const s = state();
+    const prev = TimerTools.outputState(previous, 'secondary') || {};
     if (!!s.transparent !== transparent) {
       const id = targetId;
       close(); open(id); return;
     }
     win.setAlwaysOnTop(!!s.transparent || !!s.gridOn, 'floating');
     win.webContents.send('state', s);
-    if (!!previous.gridOn !== !!s.gridOn || (s.gridOn &&
-        (previous.gridSize !== s.gridSize || previous.gridCell !== s.gridCell))) {
+    if (!!prev.gridOn !== !!s.gridOn || (s.gridOn &&
+        (prev.gridSize !== s.gridSize || prev.gridCell !== s.gridCell))) {
       const target = screen.getAllDisplays().find(d => d.id === targetId);
       if (target) position(target);
     }

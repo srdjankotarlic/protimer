@@ -9,7 +9,7 @@
   Send a clear timer to a projector, confidence monitor, browser source or phone from one local app.
 </p>
 
-<p align="center"><strong>Latest release: ProTimer 2.4.0 — free, open source, no account and no watermark.</strong></p>
+<p align="center"><strong>Latest release: ProTimer 2.4.1 — free, open source, no account and no watermark.</strong></p>
 
 <p align="center">
   <a href="https://github.com/srdjankotarlic/protimer/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/srdjankotarlic/protimer/actions/workflows/ci.yml/badge.svg"></a>
@@ -47,12 +47,12 @@
 
 | Your computer | Recommended download | Install |
 |---|---|---|
-| Apple Silicon Mac (M1 or newer) | **[Download the macOS DMG](https://github.com/srdjankotarlic/protimer/releases/download/v2.4.0/ProTimer-2.4.0-arm64.dmg)** | Open the DMG and drag **ProTimer** to Applications. |
-| Windows 10/11 x64 | **[Download the Windows installer](https://github.com/srdjankotarlic/protimer/releases/download/v2.4.0/ProTimer-Setup-2.4.0.exe)** | Run Setup and follow the installer. |
+| Apple Silicon Mac (M1 or newer) | **[Download the macOS DMG](https://github.com/srdjankotarlic/protimer/releases/download/v2.4.1/ProTimer-2.4.1-arm64.dmg)** | Open the DMG and drag **ProTimer** to Applications. |
+| Windows 10/11 x64 | **[Download the Windows installer](https://github.com/srdjankotarlic/protimer/releases/download/v2.4.1/ProTimer-Setup-2.4.1.exe)** | Run Setup and follow the installer. |
 
-Need a Windows build that does not install? Use the [portable EXE](https://github.com/srdjankotarlic/protimer/releases/download/v2.4.0/ProTimer-2.4.0-portable.exe). Most Windows users should choose Setup.
+Need a Windows build that does not install? Use the [portable EXE](https://github.com/srdjankotarlic/protimer/releases/download/v2.4.1/ProTimer-2.4.1-portable.exe). Most Windows users should choose Setup.
 
-Every installer is built by the public release workflow. You can verify a download with the [ProTimer 2.4.0 SHA-256 checksums](https://github.com/srdjankotarlic/protimer/releases/download/v2.4.0/ProTimer-2.4.0-SHA256SUMS.txt).
+Every installer is built by the public release workflow. You can verify a download with the [ProTimer 2.4.1 SHA-256 checksums](https://github.com/srdjankotarlic/protimer/releases/download/v2.4.1/ProTimer-2.4.1-SHA256SUMS.txt).
 
 <details>
 <summary><strong>First-launch security warning</strong></summary>
@@ -64,7 +64,13 @@ The current downloads are not Apple-notarized or Windows Authenticode-signed.
 
 </details>
 
-## New in ProTimer 2.4
+## New in ProTimer 2.4.1
+
+- **A Grid for each timer:** choose different grid sizes and cells on the two displays. Resizing one window no longer switches off the other timer's Grid.
+- **One clear editing target:** **Adjust screen → Timer 1 / Timer 2** selects whose window size, digits and Grid you are editing. Extra selectors appear only when needed.
+- **Your placement stays:** independent settings survive mode changes and relaunch. Existing 2.4.0 settings migrate without resetting the rundown.
+
+### From ProTimer 2.4
 
 - **Two timers, two screens:** send Timer 1 to one connected display and Timer 2 to another, from the same Control window.
 - **Independent outputs:** open, close, resize and fullscreen each window separately without restarting either countdown.
@@ -91,7 +97,7 @@ The current downloads are not Apple-notarized or Windows Authenticode-signed.
 
 The scrollable rundown, duration picker, Colors/Text, Grid, Thresholds, Message, audience QR and Backstage controls remain available.
 
-See the complete [2.4.0 release notes](docs/RELEASE-NOTES-2.4.0.md).
+See the complete [2.4.1 release notes](docs/RELEASE-NOTES-2.4.1.md).
 
 [How to size the output, position digits, use two timers and connect a phone →](docs/OUTPUT-AND-PHONE-CONTROL.md)
 
