@@ -2,7 +2,7 @@
 
 Available in ProTimer 2.4.0. All previous controls and the shared two-timer view remain available.
 
-**Unreleased improvement:** the instructions below include independent Grid placement and a linked **Adjust screen** selector. In the published 2.4.0 build, Grid is still shared by both outputs.
+**New in 2.4.1:** independent Grid placement and a linked **Adjust screen** selector. Each timer can use a different grid, cell, resolution and digit layout on its own display.
 
 The regression suite exercises two actual Electron output windows, independent opening/closing/fullscreen/sizing, clock preservation, shared blackout, persisted settings, combined-layout restoration and Serbian/English layouts at 820/1120 pixels. Display routing and unplug/retarget races are also covered with a simulated three-display setup. Always test your actual televisions and connections before a live show.
 
