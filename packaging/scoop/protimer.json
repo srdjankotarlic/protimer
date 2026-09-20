@@ -1,12 +1,12 @@
 {
-  "version": "2.4.0",
+  "version": "2.4.1",
   "description": "Free stage timer for live events, presentations, OBS and production crews",
   "homepage": "https://srdjankotarlic.github.io/protimer/",
   "license": "MIT",
   "architecture": {
     "64bit": {
-      "url": "https://github.com/srdjankotarlic/protimer/releases/download/v2.4.0/ProTimer-2.4.0-portable.exe#/ProTimer.exe",
-      "hash": "e4b5659f68c3c650a34b8f25faa48cfbb77c9dd1287f5634ed54ace5dea4b647"
+      "url": "https://github.com/srdjankotarlic/protimer/releases/download/v2.4.1/ProTimer-2.4.1-portable.exe#/ProTimer.exe",
+      "hash": "0cdd356fec28f5248c961964976e60b56d1e6342848455201a7fd008752ec8a0"
     }
   },
   "shortcuts": [
