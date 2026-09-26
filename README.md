@@ -11,6 +11,8 @@
 
 <p align="center"><strong>Latest release: ProTimer 2.4.1 — free, open source, no account and no watermark.</strong></p>
 
+**Testing preview:** [ProTimer 2.5.0-streamdeck.3 prerelease](https://github.com/srdjankotarlic/protimer/releases/tag/v2.5.0-streamdeck.3) adds independent zero alerts, a more natural synthesized bell and optional native Stream Deck controls. Native actions require manual placement; starter profiles and physical XL acceptance are still pending. **2.4.1 remains the latest stable release.** [Preview notes](docs/RELEASE-NOTES-2.5.0-streamdeck.3.md).
+
 <p align="center">
   <a href="https://github.com/srdjankotarlic/protimer/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/srdjankotarlic/protimer/actions/workflows/ci.yml/badge.svg"></a>
   <a href="https://github.com/srdjankotarlic/protimer/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/srdjankotarlic/protimer?label=stable"></a>
@@ -253,6 +255,24 @@ npm run dist:win     # build the Windows installer + portable
 ```
 
 Clean stack, almost no dependencies: **Electron** + plain HTML/CSS/JS + a Node `http` server. LAN viewers use SSE; public HTTPS viewers use reliable versioned long-polling because Cloudflare Quick Tunnels do not support SSE. Browser clocks synchronise to the ProTimer host, preventing phone-clock drift. `qrcode`, a bundled and verified official `cloudflared` binary and a `localtunnel` fallback provide the share features. All the logic lives in `controller.html` (control), `output.html` (screen/OBS), `backstage.html` (crew schedule), `remote.html` (phone), and `main.js` (windows + server).
+
+### Native Stream Deck integration — prerelease
+
+The [2.5.0-streamdeck.3 prerelease](https://github.com/srdjankotarlic/protimer/releases/tag/v2.5.0-streamdeck.3) includes an optional native Elgato SDK plugin, separate ACTIVE/SET preparations for both timers, and an 8×4 editor inside Control. This is **not included in stable 2.4.1**. The timer remains independent of Stream Deck and Companion.
+
+The plugin builds and packages with Elgato's official CLI. **Verified native starter-profile exports and physical XL/Windows acceptance testing are still required**; this preview supports user-placed ProTimer Key actions and does not claim finished one-click profile installation. Automatic profile switching is never enabled.
+
+Guides: [English](docs/STREAM-DECK.md) · [Srpski](docs/STREAM-DECK.sr.md) · [SDK constraints](docs/STREAM-DECK-SDK.md) · [Verification results and editor screenshot](docs/STREAM-DECK-VERIFICATION.md).
+
+```sh
+npm run deck:build
+npm run deck:test
+npm run deck:package
+npm run deck:validate
+npm run smoke:deck
+```
+
+Use `--publish never` for local Electron builds. The desktop packaging includes the resulting `.streamDeckPlugin`; end users do not install Node or launch a server.
 
 ---
 

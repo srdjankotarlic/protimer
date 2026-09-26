@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.test-build/
+com.srdjankotarlic.protimer.sdPlugin/bin/
+com.srdjankotarlic.protimer.sdPlugin/logs/
+com.srdjankotarlic.protimer.sdPlugin/ui/layout.js
+com.srdjankotarlic.protimer.sdPlugin/LICENSE
+com.srdjankotarlic.protimer.sdPlugin/licenses/

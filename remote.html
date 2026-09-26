@@ -31,7 +31,7 @@
   .disp .t{font-family:"SF Mono",ui-monospace,Menlo,monospace; font-weight:700;
     font-variant-numeric:tabular-nums; font-size:21vw; line-height:1; color:#fff;}
   @media(min-width:560px){ .disp .t{font-size:118px;} }
-  .disp .t.neg{animation:pulse 1s steps(2,start) infinite;}
+  .disp .t.blink,#secondaryTime.blink{animation:pulse 1s steps(2,start) infinite;}
   @keyframes pulse{50%{opacity:.3;}}
   .disp .msg{font-size:15px; color:var(--amber); font-weight:600; min-height:18px; margin-top:6px;}
 
@@ -283,24 +283,28 @@ function render(){
   $('quickTarget').hidden=!S.dualTimer;
   if(!S.dualTimer) $('quickTarget').value='primary';
   if(S.dualTimer&&S.secondary){
-    let rem=TimerTools.remaining(S.secondary,hostNow()); if(!S.overtime) rem=Math.max(0,rem);
-    $('secondaryTime').textContent=fmtMs(rem);
-    $('secondaryTime').style.fontSize=Math.min(58,($('secondaryRemote').clientWidth-16)/(fmtMs(rem).length*.62))+'px';
-    $('secondaryTime').style.color=S.useWarnColors?(rem<=S.redSec*1000?S.warnRed:rem<=S.yellowSec*1000?S.warnYellow:S.fgColor):S.fgColor;
-    $('btnSecondaryStart').textContent=(S.secondary.running?tr('pause'):tr('start'))+' 2';
+    let rem=TimerTools.remaining(S.secondary,hostNow()); if(!(S.secondary.overtime??S.overtime)) rem=Math.max(0,rem);
+    const mode=S.secondary.mode||'countdown',text=mode==='clock'?new Date(hostNow()).toLocaleTimeString('en-GB',{hour12:false}):mode==='countup'?fmtSecs(Math.floor(TimerTools.elapsed(S.secondary,hostNow())/1000),false):fmtMs(rem);
+    $('secondaryTime').textContent=text;
+    $('secondaryTime').style.fontSize=Math.min(58,($('secondaryRemote').clientWidth-16)/(text.length*.62))+'px';
+    $('secondaryTime').style.color=mode!=='countdown'?S.fgColor:rem<=0?(S.warnRed||'#ff4540'):S.useWarnColors?(rem<=S.redSec*1000?S.warnRed:rem<=S.yellowSec*1000?S.warnYellow:S.fgColor):S.fgColor;
+    const neg=mode==='countdown'&&rem<0, blink=mode==='countdown'&&rem<=0&&(S.secondary.flashZero??S.flashZero??true);
+    $('secondaryTime').className=[neg?'neg':'',blink?'blink':''].filter(Boolean).join(' ');
+    $('btnSecondaryStart').textContent=(mode==='clock'?'CLOCK':S.secondary.running?tr('pause'):tr('start'))+' 2';
+    $('btnSecondaryStart').disabled=mode==='clock';
   }
-  const now=hostNow(); let text, neg=false, col='#fff';
+  const now=hostNow(); let text, neg=false, blink=false, col='#fff';
   if(S.mode==='clock'){ const d=new Date(now); text=`${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`; }
   else if(S.mode==='countup'){ const el=S.running?S.elapsedMs+(now-S.startAt):S.elapsedMs; text=fmtSecs(Math.floor(el/1000),false); }
   else {
     let rem=S.running?S.endAt-now:S.remMs; if(!S.overtime&&rem<0) rem=0;
     if(S.useWarnColors){ if(rem<=S.redSec*1000) col=S.warnRed||'#ff4540'; else if(rem<=S.yellowSec*1000) col=S.warnYellow||'#ffc23a'; }
-    if(rem<0){ col=S.warnRed||'#ff4540'; neg=true; }
+    if(rem<=0){ col=S.warnRed||'#ff4540'; neg=rem<0; blink=S.flashZero!==false; }
     text=fmtMs(rem);
   }
   const t=$('time'); if(t.textContent!==text)t.textContent=text; if(t.style.color!==col)t.style.color=col;
   t.style.fontSize=Math.min(118,innerWidth*.21,(t.clientWidth-8)/(text.length*.62))+'px';
-  const tClass='t'+(neg?' neg':''); if(t.className!==tClass)t.className=tClass;
+  const tClass='t'+(neg?' neg':'')+(blink?' blink':''); if(t.className!==tClass)t.className=tClass;
   const label=S.text||'', message=S.message?S.message.text:'';
   if($('lbl').textContent!==label)$('lbl').textContent=label;
   if($('msg').textContent!==message)$('msg').textContent=message;

@@ -5,7 +5,17 @@ const path = require('path');
 
 const root = path.resolve(__dirname, '..');
 const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
-const version = pkg.version;
+// A development/prerelease checkout must not redirect normal downloads to an
+// unverified preview. Stable landing pages continue to name the last stable app.
+const prerelease = pkg.version.includes('-');
+const version = prerelease ? pkg.config?.stableVersion : pkg.version;
+if (!/^\d+\.\d+\.\d+$/.test(version || '')) throw new Error('Public docs require an explicit stable version');
+if (prerelease) {
+  const previewNotes = path.join(root, 'docs', `RELEASE-NOTES-${pkg.version}.md`);
+  if (!fs.existsSync(previewNotes) || !fs.readFileSync(previewNotes, 'utf8').startsWith(`# ProTimer v${pkg.version}\n`)) {
+    throw new Error('Prerelease notes must name the exact app version');
+  }
+}
 const releaseNotes = `docs/RELEASE-NOTES-${version}.md`;
 const guideDir = path.join(root, 'docs', 'guides');
 const guideFiles = fs.existsSync(guideDir)
@@ -71,7 +81,7 @@ const publicText = publicFiles
 const proTimerReleaseDownloads =
   /github\.com\/srdjankotarlic\/protimer\/releases\/download\/v([^/]+)/g;
 for (const match of publicText.matchAll(proTimerReleaseDownloads)) {
-  if (match[1] !== version) fail(`found v${match[1]} download in current public docs; package version is ${version}`);
+  if (match[1] !== version) fail(`found v${match[1]} download in current public docs; stable version is ${version}`);
 }
 
 const expectedAssets = [

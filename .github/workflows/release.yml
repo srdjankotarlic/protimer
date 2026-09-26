@@ -38,6 +38,13 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      - name: Verify tag matches packaged version
+        if: github.event_name == 'push'
+        run: node -e "if(process.env.GITHUB_REF_NAME !== 'v'+require('./package.json').version)throw new Error('Release tag and package version differ')"
+      - run: npm run deck:build
+      - run: npm run deck:test
+      - run: npm run deck:package
+      - run: npm run deck:validate
       - run: npm test
       - name: Prepare cloudflared (macOS arm64)
         if: runner.os == 'macOS'
@@ -132,4 +139,8 @@ jobs:
             gh release create "$tag" "$mac" "$setup" "$portable" "$checksums" --draft --verify-tag \
               --title "ProTimer $tag" --notes-file "docs/RELEASE-NOTES-${version}.md" --repo "$GITHUB_REPOSITORY"
           fi
-          gh release edit "$tag" --draft=false --latest --repo "$GITHUB_REPOSITORY"
+          if [[ "$version" == *-* ]]; then
+            gh release edit "$tag" --draft=false --prerelease --latest=false --repo "$GITHUB_REPOSITORY"
+          else
+            gh release edit "$tag" --draft=false --prerelease=false --latest --repo "$GITHUB_REPOSITORY"
+          fi

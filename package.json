@@ -1,7 +1,10 @@
 {
   "name": "pro-timer",
   "productName": "ProTimer",
-  "version": "2.4.1",
+  "version": "2.5.0-streamdeck.3",
+  "config": {
+    "stableVersion": "2.4.1"
+  },
   "description": "Free stage timer and speaker countdown for live events, conferences and OBS",
   "main": "main.js",
   "author": "Srdjan Kotarlic",
@@ -30,14 +33,20 @@
     "start": "electron .",
     "smoke": "electron . --smoke",
     "test": "node --test test/*.test.js",
+    "deck:build": "npm --prefix streamdeck-plugin ci && npm --prefix streamdeck-plugin run build",
+    "deck:test": "npm --prefix streamdeck-plugin run typecheck && npm --prefix streamdeck-plugin test",
+    "deck:package": "npm --prefix streamdeck-plugin run package",
+    "deck:validate": "npm --prefix streamdeck-plugin run validate",
+    "smoke:deck": "electron . --smoke --deck-only",
+    "smoke:alerts": "electron . --smoke --alerts-only",
     "check:public-docs": "node scripts/check-public-docs.js",
     "check:indexnow": "node scripts/submit-indexnow.js --dry-run",
     "check:packaging": "node scripts/check-packaging.js",
-    "predist:mac": "node scripts/fetch-cloudflared.js mac",
+    "predist:mac": "npm run deck:build && npm run deck:package && node scripts/fetch-cloudflared.js mac",
     "dist:mac": "electron-builder --mac --arm64",
-    "predist:win": "node scripts/fetch-cloudflared.js win",
+    "predist:win": "npm run deck:build && npm run deck:package && node scripts/fetch-cloudflared.js win",
     "dist:win": "electron-builder --win --x64",
-    "predist:all": "node scripts/fetch-cloudflared.js mac && node scripts/fetch-cloudflared.js win",
+    "predist:all": "npm run deck:build && npm run deck:package && node scripts/fetch-cloudflared.js mac && node scripts/fetch-cloudflared.js win",
     "dist:all": "electron-builder --mac --arm64 --win --x64"
   },
   "devDependencies": {
@@ -64,6 +73,10 @@
       "main.js",
       "preload.js",
       "timer-tools.js",
+      "timer-alerts.js",
+      "engine-clock.js",
+      "deck-*.js",
+      "deck-ui.css",
       "window-tools.js",
       "secondary-output.js",
       "tunnel-tools.js",
@@ -72,6 +85,9 @@
       "scripts/smoke-startup.js",
       "scripts/smoke-rundown.js",
       "scripts/smoke-network-ui.js",
+      "scripts/smoke-deck.js",
+      "scripts/smoke-deck-ui.js",
+      "scripts/smoke-alerts.js",
       "controller.html",
       "output.html",
       "remote.html",
@@ -92,6 +108,7 @@
       "icon": "build/icon.png",
       "identity": null,
       "extraResources": [
+        { "from": "streamdeck-plugin/dist/com.srdjankotarlic.protimer.streamDeckPlugin", "to": "streamdeck/com.srdjankotarlic.protimer.streamDeckPlugin" },
         { "from": "vendor/cloudflared-darwin-arm64", "to": "cloudflared" },
         { "from": "licenses/cloudflared-LICENSE.txt", "to": "licenses/cloudflared-LICENSE.txt" },
         { "from": "licenses/THIRD_PARTY_NOTICES.md", "to": "licenses/THIRD_PARTY_NOTICES.md" }
@@ -113,6 +130,7 @@
       ],
       "icon": "build/icon.png",
       "extraResources": [
+        { "from": "streamdeck-plugin/dist/com.srdjankotarlic.protimer.streamDeckPlugin", "to": "streamdeck/com.srdjankotarlic.protimer.streamDeckPlugin" },
         { "from": "vendor/cloudflared-windows-amd64.exe", "to": "cloudflared.exe" },
         { "from": "licenses/cloudflared-LICENSE.txt", "to": "licenses/cloudflared-LICENSE.txt" },
         { "from": "licenses/THIRD_PARTY_NOTICES.md", "to": "licenses/THIRD_PARTY_NOTICES.md" }

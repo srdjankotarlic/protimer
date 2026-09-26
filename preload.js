@@ -1,6 +1,13 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('pt', {
+  deckInvoke: (action, payload) => ipcRenderer.invoke('deck-invoke', action, payload),
+  deckFrame: (value) => ipcRenderer.send('deck-frame', value),
+  deckDrafts: (value) => ipcRenderer.send('deck-drafts', value),
+  deckReply: (value) => ipcRenderer.send('deck-reply', value),
+  onDeckRequest: (cb) => ipcRenderer.on('deck-request', (_e, value) => cb(value)),
+  onDeckStatus: (cb) => ipcRenderer.on('deck-status', (_e, value) => cb(value)),
+  onClockPower: (cb) => ipcRenderer.on('clock-power', (_e, value) => cb(value)),
   sendState: (s) => ipcRenderer.send('state', s),
   onState: (cb) => ipcRenderer.on('state', (e, s) => cb(s)),
   openOutput: (displayId) => ipcRenderer.send('open-output', displayId),

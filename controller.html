@@ -2,8 +2,9 @@
 <html lang="sr">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'unsafe-inline'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'">
 <title>ProTimer — Kontrola</title>
+<link rel="stylesheet" href="deck-ui.css">
 <style>
   :root{
     color-scheme:dark;
@@ -103,7 +104,12 @@
     white-space:pre-wrap; max-width:100%; overflow:hidden;}
   .pv-time{position:relative; font-family:"SF Mono",ui-monospace,Menlo,monospace; font-weight:700;
     font-variant-numeric:tabular-nums; line-height:.95; white-space:nowrap;}
-  .pv-time.neg{animation:pulse 1s steps(2,start) infinite;}
+  .pv-time.blink,.secondary-readout.blink{animation:pulse 1s steps(2,start) infinite;}
+  .zero-alert-row{display:flex;align-items:center;gap:12px 18px;flex-wrap:wrap;}
+  .zero-alert-row + .zero-alert-row{margin-top:12px;}
+  .zero-alert-row strong{font-size:12px;min-width:70px;}
+  .zero-alert-row[hidden]{display:none;}
+  #zeroSoundStatus{color:var(--warn-yellow,#ffc23a);}
   @keyframes pulse{50%{opacity:.25;}}
   .pv-msg{position:absolute; bottom:14px; left:0; right:0; text-align:center; font-size:17px; font-weight:700;
     padding:0 16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:none;}
@@ -563,16 +569,33 @@
       </div>
     </div>
 
-    <div class="panel">
+    <div class="panel" id="zeroAlertsPanel">
       <div class="field">
         <span class="glabel" data-i18n="thresholds">Pragovi</span>
         <label class="swatch"><span data-i18n="yellowAt">Žuto na</span> <input type="text" id="yellowInput" class="short" value="2:00"></label>
         <label class="swatch"><span data-i18n="redAt">Crveno na</span> <input type="text" id="redInput" class="short" value="1:00"></label>
         <div class="sep"></div>
-        <label class="chk"><input type="checkbox" id="chkFlash" checked> <span data-i18n="flashZero">Blic na nuli</span></label>
-        <label class="chk"><input type="checkbox" id="chkSound"> <span data-i18n="sound">Zvuk</span></label>
-        <label class="chk"><input type="checkbox" id="chkOver" checked> <span data-i18n="overtime">Minus posle nule</span></label>
         <label class="chk"><input type="checkbox" id="chkProg"> <span data-i18n="progress">Traka napretka</span></label>
+      </div>
+      <div class="field" style="align-items:flex-start">
+        <span class="glabel" data-i18n="zeroAlerts">Na nuli</span>
+        <div style="flex:1;min-width:0">
+          <div class="zero-alert-row" role="group" aria-labelledby="zeroTimerOne">
+            <strong id="zeroTimerOne" data-i18n="timerOne">Tajmer 1</strong>
+            <label class="chk"><input type="checkbox" id="chkOver" checked> <span data-i18n="overtime">Minus posle nule</span></label>
+            <label class="chk"><input type="checkbox" id="chkFlash" checked> <span data-i18n="flashZero">Treptanje na / posle nule</span></label>
+            <label class="chk"><input type="checkbox" id="chkSound"> <span data-i18n="sound">Zvonce na nuli</span></label>
+          </div>
+          <div class="zero-alert-row" id="secondaryZeroAlerts" role="group" aria-labelledby="zeroTimerTwo" hidden>
+            <strong id="zeroTimerTwo" data-i18n="timerTwo">Tajmer 2</strong>
+            <label class="chk"><input type="checkbox" id="chkOver2" checked> <span data-i18n="overtime">Minus posle nule</span></label>
+            <label class="chk"><input type="checkbox" id="chkFlash2" checked> <span data-i18n="flashZero">Treptanje na / posle nule</span></label>
+            <label class="chk"><input type="checkbox" id="chkSound2"> <span data-i18n="sound">Zvonce na nuli</span></label>
+          </div>
+          <p class="panel-help" data-i18n="zeroAlertsHelp">Minus uključen: vreme nastavlja crveno u minus. Isključen: prikaz ostaje na 0:00. Treptanje i zvonce biraš zasebno za svaki tajmer; zvonce svira jednom, samo ako je uključeno pre isteka.</p>
+          <button id="btnTestZeroBell" class="ghost" data-i18n="testZeroBell">Probaj zvonce</button>
+          <p id="zeroSoundStatus" class="panel-help" role="status" hidden></p>
+        </div>
       </div>
     </div>
 
@@ -735,6 +758,7 @@
         <p data-i18n="obsHelp">OBS overlay: uključi „Providna pozadina (OBS)“ u kontroli. NDI zahteva DistroAV. ProTimer mora ostati uključen za sve linkove.</p>
       </details>
     </section>
+    <section id="streamDeckHost" class="card"></section>
   </div>
 </div>
 
@@ -776,6 +800,13 @@
 </div>
 
 <script src="timer-tools.js"></script>
+<script src="timer-alerts.js"></script>
+<script src="engine-clock.js"></script>
+<script src="deck-layout.js"></script>
+<script src="deck-model.js"></script>
+<script src="deck-audio.js"></script>
+<script src="deck-ui.js"></script>
+<script src="deck-controller.js"></script>
 <script>
 const api = window.pt || {
   sendState(){}, onState(){}, openOutput(){}, closeOutput(){}, toggleFullscreen(){},
@@ -867,8 +898,10 @@ const I18N = {
     grid:'Grid', gridOn:'Pozicija na ekranu', gridHint:'klikni kockicu →',
     fitWindow:'Kompaktan', fitTitle:'Prozor (kad nije pun ekran) prati veličinu tajmera',
     text:'Tekst', textPh:'Tekst na ekranu (npr. PAUZA, DOBRO DOŠLI)…', textOnly:'Samo tekst', clear:'Obriši',
-    thresholds:'Pragovi', yellowAt:'Žuto na', redAt:'Crveno na', flashZero:'Blic na nuli',
-    sound:'Zvuk', overtime:'Minus posle nule', progress:'Traka napretka',
+    thresholds:'Pragovi', yellowAt:'Žuto na', redAt:'Crveno na', flashZero:'Treptanje na / posle nule',
+    sound:'Zvonce na nuli', overtime:'Minus posle nule', progress:'Traka napretka',
+    zeroAlerts:'Na nuli', zeroAlertsHelp:'Minus uključen: vreme nastavlja crveno u minus. Isključen: prikaz ostaje na 0:00. Treptanje i zvonce biraš zasebno za svaki tajmer; zvonce svira jednom, samo ako je uključeno pre isteka.',
+    testZeroBell:'Probaj zvonce', zeroSoundError:'Zvonce nije dostupno. Proveri audio izlaz u Stream Deck → Zvuk i prečice (uređaj nije potreban).',
     message:'Poruka', messagePh:'Poruka govorniku… (M za fokus, Enter šalje)', flash:'Treperi', send:'Pošalji',
     cueList:'CUE LISTA', cueEmpty:'Nema tačaka. Dodaj naziv + trajanje ↓', namePh:'Naziv',
     autoNext:'Auto-prelaz na sledeći', startRundown:'▶ START RUNDOWN', goNext:'GO ▶ SLEDEĆI &nbsp;(N)', noName:'(bez naziva)',
@@ -964,8 +997,10 @@ const I18N = {
     grid:'Grid', gridOn:'Position on screen', gridHint:'click a cell →',
     fitWindow:'Compact', fitTitle:'When not fullscreen, the window follows the timer size',
     text:'Text', textPh:'On-screen text (e.g. BREAK, WELCOME)…', textOnly:'Text only', clear:'Clear',
-    thresholds:'Warnings', yellowAt:'Yellow at', redAt:'Red at', flashZero:'Flash at zero',
-    sound:'Sound', overtime:'Count past zero', progress:'Progress bar',
+    thresholds:'Warnings', yellowAt:'Yellow at', redAt:'Red at', flashZero:'Blink at / after zero',
+    sound:'Bell at zero', overtime:'Count past zero', progress:'Progress bar',
+    zeroAlerts:'At zero', zeroAlertsHelp:'Count past zero on: time continues in red overtime. Off: the display stays at 0:00. Blink and bell are separate for each timer; the bell plays once, only if enabled before expiry.',
+    testZeroBell:'Test bell', zeroSoundError:'Bell unavailable. Check the audio output in Stream Deck → Audio and shortcuts (no device required).',
     message:'Message', messagePh:'Message to speaker… (M to focus, Enter sends)', flash:'Flash', send:'Send',
     cueList:'CUE LIST', cueEmpty:'No items. Add name + duration ↓', namePh:'Name',
     autoNext:'Auto-advance to next', startRundown:'▶ START RUNDOWN', goNext:'GO ▶ NEXT &nbsp;(N)', noName:'(no name)',
@@ -1068,7 +1103,18 @@ function durationUntilTarget(value,now){
   const d=new Date(now); d.setHours(parts[0],parts[1],0,0); if(d.getTime()<=now) d.setDate(d.getDate()+1);
   return d.getTime()-now;
 }
-function send(){ S.cues=cues; S.currentCue=currentCue; syncDurationDisplays(); api.sendState(S); saveSettings(); }
+let deckControl=null;
+const zeroAlerts=TimerAlerts.createZeroTracker();
+const bellAudio=ProTimerDeckAudio(api,()=>showZeroAudioError());
+function processZeroAlerts(now){
+  const expired=zeroAlerts.sample(S,now);
+  // Consume every crossing, even with sound off. Enabling it in overtime must
+  // never ring retroactively. Simultaneous expiries share one non-overlapping bell.
+  if(expired.some(id=>(id==='t1'?S:S.secondary).soundZero===true)) void beep();
+}
+const engineClock=EngineClock.create({onJump:delta=>{EngineClock.shiftRunning(S,delta);api.sendState({...S,cues,currentCue});deckControl?.observe();}});
+api.onClockPower?.(state=>{if(state==='suspend')engineClock.suspend();else engineClock.resume();});
+function send(){ S.cues=cues; S.currentCue=currentCue; processZeroAlerts(engineClock.sample()); syncDurationDisplays(); api.sendState(S); saveSettings(); deckControl?.observe(); }
 
 // ---------- RASPORED / OVER-UNDER ----------
 function todayAt(hhmm, now){
@@ -1100,17 +1146,19 @@ function cancelAutoAdvance(){
   if(autoAdvanceTimer!==null){ clearTimeout(autoAdvanceTimer); autoAdvanceTimer=null; }
 }
 function tickCountdown(){
+  engineClock.sample();
+  processZeroAlerts(Date.now());
   // Transport must not depend on an animation frame: a minimized/covered
   // Control may stop painting while both audience outputs remain live.
   if(S.mode!=='countdown'||!S.running||S.endAt>Date.now()||zeroFired) return;
   zeroFired=true;
-  if(S.soundZero) beep();
   if(autoNext&&currentCue>=0&&currentCue+1<cues.length){
     const nextCue=currentCue+1;
     autoAdvanceTimer=setTimeout(()=>{ autoAdvanceTimer=null; loadCue(nextCue,true); },800);
   }
 }
 function startPause(){
+  engineClock.sample();
   cancelAutoAdvance();
   if(!S.running&&targetArmed){
     const targetMs=durationUntilTarget($('targetInput').value,Date.now());
@@ -1131,8 +1179,9 @@ function startPause(){
   send(); updateButtons();
 }
 function reset(){ cancelAutoAdvance(); clearTargetArm(true); S.running=false; S.remMs=S.durationMs; S.elapsedMs=0; zeroFired=false; send(); updateButtons(); }
-function setDuration(ms,keepTarget=false){ cancelAutoAdvance(); if(!keepTarget) clearTargetArm(true); S.mode='countdown'; S.durationMs=ms; S.remMs=ms; S.running=false; zeroFired=false; setModeTabs(); send(); updateButtons(); }
+function setDuration(ms,keepTarget=false){ cancelAutoAdvance(); if(!keepTarget) clearTargetArm(true); S.mode='countdown'; S.durationMs=ms; S.remMs=ms; S.running=false; zeroFired=false; setModeTabs(); send();deckControl?.prepared('t1'); updateButtons(); }
 function adjust(sec){
+  engineClock.sample();
   if(S.mode!=='countdown') return;
   cancelAutoAdvance(); clearTargetArm(true);
   const d=sec*1000;
@@ -1141,22 +1190,34 @@ function adjust(sec){
   if((S.running?S.endAt-Date.now():S.remMs)>0) zeroFired=false;
   send();
 }
-function setMode(m){ if(!['countdown','countup','clock'].includes(m)) return; cancelAutoAdvance(); clearTargetArm(true); S.mode=m; S.running=false; S.remMs=S.durationMs; S.elapsedMs=0; zeroFired=false; setModeTabs(); send(); updateButtons(); }
+function setMode(m){ if(!['countdown','countup','clock'].includes(m)) return; cancelAutoAdvance(); clearTargetArm(true); S.mode=m; S.running=false; S.remMs=S.durationMs; S.elapsedMs=0; zeroFired=false; setModeTabs(); send();deckControl?.prepared('t1'); updateButtons(); }
 function setModeTabs(){ document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('active',b.dataset.mode===S.mode)); }
 
 function secondaryRunning(running){
+  engineClock.sample();
   if(!S.dualTimer) return;
   TimerTools.setRunning(S.secondary,!!running,Date.now()); send();
 }
 function secondaryDuration(ms){
   if(!Number.isFinite(ms)||ms<1000||ms>TimerTools.MAX_DURATION) return;
-  S.secondary.durationMs=ms; TimerTools.reset(S.secondary); send();
+  S.secondary.mode='countdown';S.secondary.durationMs=ms; TimerTools.reset(S.secondary); send();deckControl?.prepared('t2');
 }
 function primaryRunning(running){ if(S.mode!=='clock'&&S.running!==!!running) startPause(); }
-function bothRunning(running){ primaryRunning(running); if(S.dualTimer) secondaryRunning(running); }
+function bothRunning(running){
+  if(!running){
+    const now=engineClock.sample();cancelAutoAdvance();
+    // Publish only after both clocks are paused. An intermediate state must
+    // not ring Timer 2 while the operator is deliberately pausing both.
+    TimerTools.setRunning(S,false,now);
+    if(S.dualTimer) TimerTools.setRunning(S.secondary,false,now);
+    send();updateButtons();return;
+  }
+  primaryRunning(true);if(S.dualTimer) secondaryRunning(true);
+}
 function syncDualUI(){
   $('chkFit').disabled=S.dualTimer;
   $('chkDual').checked=S.dualTimer; $('dualOptions').hidden=!S.dualTimer;
+  $('secondaryZeroAlerts').hidden=!S.dualTimer;
   $('dualSplit').value=S.dualSplit;
   $('layoutTarget').querySelector('[value=secondary]').disabled=!S.dualTimer;
   if(!S.dualTimer) $('layoutTarget').value='primary';
@@ -1286,16 +1347,20 @@ document.querySelectorAll('[data-output-size]').forEach(b=>b.addEventListener('c
 }));
 
 // ---------- ZVUK ----------
-function beep(){
-  try{
-    const ctx=new AudioContext(), t=ctx.currentTime;
-    [0,.25,.5].forEach((off,i)=>{ const o=ctx.createOscillator(),g=ctx.createGain();
-      o.frequency.value=i===2?1318:880; o.connect(g); g.connect(ctx.destination);
-      g.gain.setValueAtTime(.0001,t+off); g.gain.exponentialRampToValueAtTime(.5,t+off+.02);
-      g.gain.exponentialRampToValueAtTime(.0001,t+off+.22); o.start(t+off); o.stop(t+off+.25); });
-    setTimeout(()=>ctx.close(),1200);
-  }catch(e){}
+function showZeroAudioError(){
+  $('zeroSoundStatus').textContent=t('zeroSoundError');$('zeroSoundStatus').hidden=false;
 }
+async function beep(){
+  try{
+    // Reuse the manual bell and its configured route; Stream Deck hardware and
+    // connection are not required. Never silently substitute an unavailable sink.
+    const result=deckControl?await deckControl.playBell():await bellAudio.play((await api.deckInvoke('status')).audio);
+    if(result.ok) $('zeroSoundStatus').hidden=true;
+    else if(result.code!=='BELL_BUSY') showZeroAudioError();
+    return result;
+  }catch(_){showZeroAudioError();return {ok:false,code:'AUDIO_UNAVAILABLE'};}
+}
+$('btnTestZeroBell').addEventListener('click',()=>{void beep();});
 
 // ---------- RENDER (ogledalo izlaza) ----------
 function calc(now){
@@ -1305,18 +1370,22 @@ function calc(now){
   if(!S.overtime&&rem<0) rem=0;
   let fg=S.fgColor, neg=false;
   if(S.useWarnColors){ if(rem<=S.redSec*1000) fg=S.warnRed; else if(rem<=S.yellowSec*1000) fg=S.warnYellow; }
-  if(rem<0){ fg=S.warnRed; neg=true; }
+  if(rem<=0) fg=S.warnRed;
+  if(rem<0) neg=true;
   const prog=S.durationMs>0?Math.max(0,Math.min(1,rem/S.durationMs)):0;
   return {text:fmtMs(rem),fg,neg,prog,rem};
 }
 let lastKey='';
 function render(){
-  const now=Date.now(), r=calc(now);
+  const now=engineClock.sample(), r=calc(now);
   if(S.dualTimer){
-    let rem=TimerTools.remaining(S.secondary,now); if(!S.overtime) rem=Math.max(0,rem);
-    $('secondaryReadout').textContent=fmtMs(rem);
-    $('secondaryReadout').style.color=S.useWarnColors?(rem<=S.redSec*1000?S.warnRed:rem<=S.yellowSec*1000?S.warnYellow:S.fgColor):S.fgColor;
-    $('btnSecondaryStart').textContent=(S.secondary.running?t('pause'):t('start'))+' 2';
+    let rem=TimerTools.remaining(S.secondary,now); if(!(S.secondary.overtime??S.overtime)) rem=Math.max(0,rem);
+    const mode=S.secondary.mode||'countdown';
+    $('secondaryReadout').textContent=mode==='clock'?new Date(now).toLocaleTimeString('en-GB',{hour12:false}):mode==='countup'?fmtSecs(Math.floor(TimerTools.elapsed(S.secondary,now)/1000),false):fmtMs(rem);
+    $('secondaryReadout').style.color=mode==='countdown'&&rem<=0?S.warnRed:mode==='countdown'&&S.useWarnColors?(rem<=S.redSec*1000?S.warnRed:rem<=S.yellowSec*1000?S.warnYellow:S.fgColor):S.fgColor;
+    $('secondaryReadout').classList.toggle('blink',mode==='countdown'&&rem<=0&&S.secondary.flashZero!==false);
+    $('btnSecondaryStart').textContent=(mode==='clock'?t('clockBtn'):S.secondary.running?t('pause'):t('start'))+' 2';
+    $('btnSecondaryStart').disabled=mode==='clock';
   }
   const pv=$('preview');
 
@@ -1341,7 +1410,7 @@ function render(){
   if(textOnly){ tEl.style.display='none'; }
   else {
     tEl.style.display='block'; tEl.textContent=r.text; tEl.style.color=r.fg;
-    tEl.className='pv-time'+(r.neg?' neg':'');
+    tEl.className='pv-time'+(r.neg?' neg':'')+(r.rem!==null&&r.rem<=0&&S.flashZero!==false?' blink':'');
     const key=r.text.length+'|'+Math.round(sw)+'x'+Math.round(sh)+'|'+(S.text?1:0);
     if(key!==lastKey){ lastKey=key;
       const avail=S.text?sh*0.42:sh*0.55;
@@ -1538,7 +1607,7 @@ function saveSettings(){
     gridOn:S.gridOn,gridSize:S.gridSize,gridCell:S.gridCell,fitWindow:S.fitWindow,
     outputSize:S.outputSize,outputLayout:S.outputLayout,dualTimer:S.dualTimer,dualSplit:S.dualSplit,
     separateOutputs:S.separateOutputs,
-    secondary:{durationMs:S.secondary.durationMs,layout:S.secondary.layout,outputSize:S.secondary.outputSize,...TimerTools.grid(S.secondary)}
+    secondary:{mode:S.secondary.mode,durationMs:S.secondary.durationMs,overtime:S.secondary.overtime,flashZero:S.secondary.flashZero,soundZero:S.secondary.soundZero,layout:S.secondary.layout,outputSize:S.secondary.outputSize,...TimerTools.grid(S.secondary)}
   }));
 }
 function load(){
@@ -1566,7 +1635,8 @@ function load(){
   $('yellowInput').value=fmtSecs(S.yellowSec,false);
   $('redInput').value=fmtSecs(S.redSec,false);
   $('chkFlash').checked=S.flashZero; $('chkSound').checked=S.soundZero;
-  $('chkOver').checked=S.overtime; $('chkProg').checked=S.showProgress;
+  $('chkFlash2').checked=S.secondary.flashZero; $('chkSound2').checked=S.secondary.soundZero;
+  $('chkOver').checked=S.overtime; $('chkOver2').checked=S.secondary.overtime; $('chkProg').checked=S.showProgress;
   $('chkAuto').checked=autoNext; cueDraftMs=S.durationMs;
   $('bgColor').value=S.bgColor; $('fgColor').value=S.fgColor;
   $('chkWarn').checked=S.useWarnColors; $('warnYellow').value=S.warnYellow; $('warnRed').value=S.warnRed;
@@ -1907,8 +1977,18 @@ $('targetInput').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventD
 $('yellowInput').addEventListener('change',()=>{ const ms=parseTime($('yellowInput').value); if(ms!==null){ S.yellowSec=ms/1000; send(); } });
 $('redInput').addEventListener('change',()=>{ const ms=parseTime($('redInput').value); if(ms!==null){ S.redSec=ms/1000; send(); } });
 $('chkFlash').addEventListener('change',e=>{ S.flashZero=e.target.checked; send(); });
-$('chkSound').addEventListener('change',e=>{ S.soundZero=e.target.checked; send(); });
+function setZeroSound(timerId,enabled){
+  const timer=timerId==='t2'?S.secondary:S;
+  // Consume an already expired countdown under its old opt-in value before
+  // enabling sound, even if the normal 50 ms tick has not observed zero yet.
+  if(enabled&&!timer.soundZero) processZeroAlerts(engineClock.sample());
+  timer.soundZero=!!enabled;send();
+}
+$('chkSound').addEventListener('change',e=>setZeroSound('t1',e.target.checked));
+$('chkFlash2').addEventListener('change',e=>{ S.secondary.flashZero=e.target.checked; send(); });
+$('chkSound2').addEventListener('change',e=>setZeroSound('t2',e.target.checked));
 $('chkOver').addEventListener('change',e=>{ S.overtime=e.target.checked; send(); });
+$('chkOver2').addEventListener('change',e=>{ S.secondary.overtime=e.target.checked; send(); });
 $('chkProg').addEventListener('change',e=>{ S.showProgress=e.target.checked; send(); });
 $('chkAuto').addEventListener('change',e=>{ autoNext=e.target.checked; if(!autoNext) cancelAutoAdvance(); saveSettings(); });
 
@@ -2091,6 +2171,7 @@ api.isOutputOpen().then(open=>{ outputOpen=open; }).catch(()=>{});
 
 // Prečice
 document.addEventListener('keydown',e=>{
+  if(document.querySelector('.pt-deck-dialog[open]'))return;
   if(e.defaultPrevented||e.isComposing||e.ctrlKey||e.metaKey||e.altKey) return;
   const tag=e.target.tagName;
   if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT'||tag==='BUTTON'||tag==='SUMMARY'||e.target.isContentEditable){ if(e.key==='Escape') e.target.blur(); return; }
@@ -2117,6 +2198,49 @@ document.querySelectorAll('.lang button').forEach(b=>b.addEventListener('click',
 
 // ---------- START ----------
 load(); $('cueEditor').open=!cues.length; refreshDisplays(); send(); updateButtons(); applyLang(); syncCueColors(); setInterval(tickCountdown,50); requestAnimationFrame(render);
+// New explicit commands share the existing authoritative timer objects. In
+// particular START SET is one synchronous mutation followed by one state send.
+async function applyDeckOperation(op){
+  const now=engineClock.sample(),primary=op.timerId==='t1', timer=primary?S:S.secondary;
+  if(['startSet','start','pause','resume','reset','adjust'].includes(op.type)){
+    if(!primary&&!S.dualTimer) return {ok:false,code:'TIMER_DISABLED',message:'Enable Timer 2 in Control first.'};
+    if(primary){cancelAutoAdvance();clearTargetArm(true);}
+    if(op.type==='startSet'){
+      Object.assign(timer,{mode:op.mode,durationMs:op.durationMs,remMs:op.durationMs,elapsedMs:0,startAt:now,endAt:now+op.durationMs,running:op.mode!=='clock'});
+      if(primary){currentCue=-1;zeroFired=false;setModeTabs();renderCues();}
+    }else if(op.type==='reset'){
+      timer.durationMs=op.durationMs;TimerTools.reset(timer);if(primary)zeroFired=false;
+    }else if(op.type==='adjust'){
+      if(timer.running)timer.endAt+=op.deltaMs;
+      else timer.remMs=(timer.overtime??S.overtime)?timer.remMs+op.deltaMs:Math.max(0,timer.remMs+op.deltaMs);
+      timer.durationMs=Math.max(1000,Math.min(TimerTools.MAX_DURATION,timer.durationMs+op.deltaMs));
+      if(primary&&(timer.running?timer.endAt-now:timer.remMs)>0)zeroFired=false;
+    }else TimerTools.setRunning(timer,op.type!=='pause',now);
+    send();updateButtons();return {ok:true};
+  }
+  if(op.type==='blackout'){S.blackout=!S.blackout;$('btnBlackout').classList.toggle('on',S.blackout);send();return {ok:true};}
+  if(op.type==='prev'||op.type==='next'){
+    if(!cues.length)return {ok:false,code:'NO_CUE',message:'The rundown is empty.'};
+    const i=cues.indexOf(selectedCue);selectedCue=cues[Math.max(0,Math.min(cues.length-1,i<0?0:i+(op.type==='next'?1:-1)))];renderCues();revealCue(cues.indexOf(selectedCue));return {ok:true};
+  }
+  if(op.type==='loadSelected')return selectedCue?{ok:true,cue:{durationMs:selectedCue.durationMs}}:{ok:false,code:'NO_CUE',message:'Select a rundown item first.'};
+  if(op.type==='message'){
+    if(op.text===undefined){$('msgInput').scrollIntoView({block:'center'});$('msgInput').focus();return {ok:true};}
+    S.message={text:op.text,flash:!!op.flash};$('msgInput').value=op.text;send();return {ok:true};
+  }
+  if(['outputA','outputB','fullscreen'].includes(op.type)){
+    const role=(op.type==='outputB'||op.type==='fullscreen'&&op.output==='b')?'secondary':'primary';
+    return api.deckInvoke('output',{role,action:op.type==='fullscreen'?'fullscreen':op.action,displayId:+$(role==='secondary'?'secondaryDisplaySel':'displaySel').value});
+  }
+  return {ok:false,code:'UNSUPPORTED_OPERATION'};
+}
+if(window.ProTimerDeckController&&api.deckInvoke)ProTimerDeckController({
+  element:$('streamDeckHost'),language:()=>lang,blackout:()=>S.blackout,audio:bellAudio,
+  readActive:id=>{engineClock.sample();const timer=id==='t1'?S:S.secondary;return {...timer,enabled:id==='t1'||S.dualTimer,overtime:timer.overtime??S.overtime};},
+  readRundown:()=>({selected:selectedCue}),applyOperation:applyDeckOperation,
+  color:id=>id==='t1'?calc(Date.now()).fg:(S.secondary.mode&&S.secondary.mode!=='countdown')?S.fgColor:(TimerTools.remaining(S.secondary,Date.now())<=0?S.warnRed:S.fgColor),
+  notice:message=>{const el=document.getElementById('deckCommandNotice')||document.createElement('p');el.id='deckCommandNotice';el.setAttribute('role','status');el.textContent=message;$('streamDeckHost').appendChild(el);}
+},api).then(value=>{deckControl=value;}).catch(()=>{$('streamDeckHost').textContent=lang==='sr'?'Stream Deck nije dostupan. Tajmer radi normalno.':'Stream Deck is unavailable. The timer is unaffected.';});
 </script>
 </body>
 </html>
