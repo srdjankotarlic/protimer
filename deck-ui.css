@@ -1,0 +1,84 @@
+/* Optional Stream Deck tools. Scoped so the existing Control layout is unchanged. */
+.pt-deck{display:grid;gap:10px;min-width:0;}
+.pt-deck h3,.pt-deck p{margin:0;}
+.pt-deck summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.pt-deck summary::-webkit-details-marker{display:none;}
+.pt-deck summary::after{content:'＋';color:var(--dim);}
+.pt-deck details[open]>summary::after{content:'−';}
+.pt-deck .pt-deck-body{display:grid;gap:12px;padding-top:12px;}
+.pt-deck .pt-deck-status{display:flex;align-items:center;gap:7px;font-size:12px;line-height:1.4;color:var(--dim);}
+.pt-deck-status::before{content:'';width:7px;height:7px;border-radius:50%;background:#92929c;flex:0 0 auto;}
+.pt-deck-status[data-state=connected]::before{background:#32d562;}
+.pt-deck-status[data-state=pairing]::before{background:#d9a441;}
+.pt-deck .pt-deck-help,.pt-deck-dialog .pt-deck-help{font-size:11.5px;line-height:1.5;color:var(--dim);margin:0;}
+.pt-deck label,.pt-deck-dialog label{display:grid;gap:5px;min-width:0;font-size:11.5px;color:var(--dim);}
+.pt-deck select,.pt-deck-dialog select,.pt-deck-dialog input[type=text],.pt-deck-dialog input[type=number]{width:100%;min-width:0;}
+.pt-deck button{white-space:normal;}
+.pt-deck-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+.pt-deck-row>*{min-width:0;}
+.pt-deck-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.pt-deck-wide{grid-column:1/-1;}
+.pt-deck .pt-deck-check,.pt-deck-dialog .pt-deck-check{display:flex;align-items:center;gap:7px;}
+.pt-deck-check input{accent-color:var(--accent);}
+.pt-deck-live{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.pt-deck-readout{background:var(--input);border:1px solid var(--border);border-radius:9px;min-width:0;padding:10px 8px;}
+.pt-deck-readout span,.pt-deck-readout small{display:block;font-size:10px;line-height:1.5;letter-spacing:.5px;color:var(--dim);}
+.pt-deck-readout strong{display:block;font:600 24px/1.4 "SF Mono",ui-monospace,Menlo,monospace;font-variant-numeric:tabular-nums;letter-spacing:-.7px;}
+.pt-deck-readout[data-status=RUNNING] strong{color:#54df82;}
+.pt-deck-readout[data-status=PAUSED] strong{color:#edbf66;}
+.pt-deck-readout[data-status=OVERTIME] strong{color:#ff8078;}
+.pt-deck-readout[data-kind=set] strong{color:#7fbdff;}
+.pt-deck-readout[data-status=OFFLINE] strong,.pt-deck-readout[data-status=STALE] strong{color:var(--dim);}
+.pt-deck-feedback{font-size:12px;line-height:1.5;min-height:18px;overflow-wrap:anywhere;color:var(--dim);}
+.pt-deck-feedback[data-error=true]{color:#ffaaa2;}
+.pt-deck-dialog{color:var(--text);background:var(--panel);border:1px solid var(--border-strong);border-radius:16px;padding:0;width:min(1180px,calc(100vw - 32px));max-width:none;max-height:calc(100vh - 32px);box-shadow:0 24px 90px rgba(0,0,0,.65);}
+.pt-deck-dialog::backdrop{background:rgba(0,0,0,.68);}
+.pt-deck-dialog[open]{display:flex;flex-direction:column;}
+.pt-deck-dialog header,.pt-deck-dialog footer{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 20px;flex:0 0 auto;}
+.pt-deck-dialog header{border-bottom:1px solid var(--border);}
+.pt-deck-dialog footer{border-top:1px solid var(--border);background:var(--panel);}
+.pt-deck-dialog h2{font-size:17px;font-weight:600;letter-spacing:-.2px;margin:0;}
+.pt-deck-dialog h3{font-size:12px;margin:0 0 8px;}
+.pt-deck-dialog-body{overflow:auto;padding:18px 20px;min-height:0;display:grid;gap:14px;}
+.pt-deck-editor-columns{display:grid;grid-template-columns:minmax(0,1fr) 240px;gap:18px;align-items:start;}
+.pt-deck-board-wrap{min-width:0;display:grid;gap:10px;}
+.pt-deck-board{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));grid-template-rows:repeat(4,1fr);gap:7px;background:#0a0b0d;padding:13px;border:1px solid #393b40;border-radius:15px;}
+.pt-deck-key{--key-accent:#4775aa;position:relative;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;white-space:normal!important;overflow:hidden;min-width:0;padding:7px 3px!important;background:#191d23!important;border:1px solid #454b55!important;border-top:3px solid var(--key-accent)!important;border-radius:9px!important;box-shadow:0 2px 0 #000;}
+.pt-deck-key[aria-selected=true]{outline:2px solid var(--focus-ring);outline-offset:2px;}
+.pt-deck-key.pt-deck-free{background:#0a0b0d!important;border:1px dashed #505057!important;box-shadow:none;color:#aaaab2;}
+.pt-deck-key.pt-deck-drop{outline:3px solid var(--accent);outline-offset:1px;}
+.pt-deck-key .pt-deck-key-icon{font-size:19px;line-height:1;color:#c8d4e3;}
+.pt-deck-key .pt-deck-key-name{font-size:10px;font-weight:700;line-height:1.15;text-align:center;max-width:100%;overflow-wrap:anywhere;}
+.pt-deck-key .pt-deck-key-time{font:600 clamp(12px,1.6vw,21px)/1.15 "SF Mono",ui-monospace,Menlo,monospace;max-width:100%;letter-spacing:-.5px;}
+.pt-deck-key .pt-deck-key-meta{font-size:8px;line-height:1.15;color:#c2c9d3;text-align:center;}
+.pt-deck-key .pt-deck-key-position{position:absolute;left:4px;top:3px;font-size:7px;color:#7f8a97;}
+.pt-deck-inspector{display:grid;gap:11px;padding:13px;background:var(--input);border:1px solid var(--border);border-radius:11px;max-height:calc(100vh - 270px);overflow-y:auto;scrollbar-gutter:stable;}
+.pt-deck-fields{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.pt-deck-inspector input[type=color]{width:100%;height:32px;}
+.pt-deck-inspector textarea{resize:vertical;min-height:65px;max-height:160px;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:8px;width:100%;}
+.pt-deck-toolbar{display:flex;align-items:end;gap:8px;flex-wrap:wrap;}
+.pt-deck-toolbar>label{flex:1;min-width:140px;}
+.pt-deck-toolbar button{padding:7px 10px;}
+.pt-deck-management{border:1px solid var(--border);border-radius:9px;padding:9px 11px;}
+.pt-deck-management>summary{font-size:12px;color:var(--dim);cursor:pointer;}
+.pt-deck-management[open]>.pt-deck-toolbar{margin-top:11px;}
+.pt-deck-note{padding:10px 12px;border-left:3px solid #569fe8;background:rgba(57,118,174,.1);border-radius:6px;font-size:11.5px;line-height:1.5;color:var(--dim);}
+.pt-deck-warning{border-left-color:#d9a441;background:rgba(217,164,65,.08);}
+.pt-deck-simulation{padding:11px 12px;background:rgba(57,118,174,.07);border:1px dashed #4277a9;border-radius:9px;display:grid;gap:7px;}
+.pt-deck-simulation strong{font-size:10px;letter-spacing:.8px;color:#8abef2;}
+.pt-deck-previewresult{font:12px/1.5 "SF Mono",ui-monospace,Menlo,monospace;color:var(--dim);min-height:18px;}
+.pt-deck-dialog.pt-deck-small{width:min(480px,calc(100vw - 32px));}
+.pt-deck-keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.pt-deck-keypad button{min-height:46px;font-size:20px;}
+.pt-deck-number-fields{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;}
+.pt-deck-number-fields button{font:600 28px/1.3 "SF Mono",ui-monospace,Menlo,monospace;padding:8px 4px;}
+.pt-deck-number-fields button[aria-pressed=true]{border-color:var(--blue);background:rgba(10,132,255,.15);}
+.pt-deck-number-fields small{display:block;font:10px/1.5 -apple-system,system-ui,sans-serif;color:var(--dim);}
+.pt-deck-divider{padding-top:11px;border-top:1px solid var(--border);}
+.pt-deck-dialog [hidden],.pt-deck [hidden]{display:none!important;}
+/* Keep the four key rows clear of the fixed footer on shorter laptop/VM
+   desktops. Reduce surrounding spacing, not the readable LCD key content. */
+@media(max-height:680px){.pt-deck-dialog-body{padding-top:12px;padding-bottom:12px;gap:10px;}}
+@media(max-width:900px){.pt-deck-editor-columns{grid-template-columns:minmax(0,1fr);}.pt-deck-inspector{grid-template-columns:repeat(3,minmax(0,1fr));max-height:none;overflow:visible;}.pt-deck-inspector>h3,.pt-deck-inspector>.pt-deck-note,.pt-deck-inspector>.pt-deck-row{grid-column:1/-1;}.pt-deck-key{aspect-ratio:1.05;}.pt-deck-key .pt-deck-key-time{font-size:19px;}}
+@media(max-width:620px){.pt-deck-dialog header,.pt-deck-dialog footer,.pt-deck-dialog-body{padding:12px;}.pt-deck-board{gap:4px;padding:7px;}.pt-deck-key{aspect-ratio:.85;}.pt-deck-key .pt-deck-key-icon{font-size:14px;}.pt-deck-key .pt-deck-key-name{font-size:8px;}.pt-deck-key .pt-deck-key-meta{font-size:6px;}.pt-deck-key .pt-deck-key-time{font-size:11px;}.pt-deck-inspector{grid-template-columns:1fr 1fr;}.pt-deck-dialog footer{align-items:start;flex-wrap:wrap;}}
+@media(prefers-reduced-motion:reduce){.pt-deck *,.pt-deck-dialog *{transition:none!important;}}

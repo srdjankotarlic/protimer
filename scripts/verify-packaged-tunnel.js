@@ -24,6 +24,14 @@ module.exports = async function verifyPackagedTunnel(context) {
   if (!fs.existsSync(license)) throw new Error(`Missing packaged cloudflared license: ${license}`);
   const actual = crypto.createHash('sha256').update(fs.readFileSync(binary)).digest('hex');
   if (actual !== SHA[platform]) throw new Error(`Packaged cloudflared checksum mismatch: ${actual}`);
+  const resources = path.dirname(binary);
+  const pluginName = 'com.srdjankotarlic.protimer.streamDeckPlugin';
+  const plugin = path.join(resources, 'streamdeck', pluginName);
+  const sourcePlugin = path.join(__dirname, '..', 'streamdeck-plugin', 'dist', pluginName);
+  if (!fs.existsSync(plugin) || !fs.existsSync(sourcePlugin)) throw new Error('Missing official-CLI packaged Stream Deck plugin');
+  const digest = file => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+  if (digest(plugin) !== digest(sourcePlugin)) throw new Error('Packaged Stream Deck plugin checksum mismatch');
+  console.log('Verified bundled native Stream Deck plugin (starter profiles still require hardware validation)');
 
   if ((platform === 'darwin' && process.platform === 'darwin') || (platform === 'win32' && process.platform === 'win32')) {
     const version = spawnSync(binary, ['--version'], { encoding: 'utf8', windowsHide: true });

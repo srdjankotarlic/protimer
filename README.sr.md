@@ -6,6 +6,8 @@
 
 <p align="center"><strong>Besplatan stage timer za događaje uživo, konferencije, prezentacije i OBS.</strong><br>Nema naloga, pretplate, vodenog žiga ni vremenskog ograničenja.</p>
 
+**Probna verzija:** [ProTimer 2.5.0-streamdeck.3 prerelease](https://github.com/srdjankotarlic/protimer/releases/tag/v2.5.0-streamdeck.3) donosi zasebna upozorenja na nuli, prirodnije sintetizovano zvonce i opcionu nativnu Stream Deck kontrolu. Akcije se za sada postavljaju ručno; početni profili i fizička XL provera još nisu završeni. **2.4.1 ostaje najnovija stabilna verzija.** [Detalji probne verzije](docs/RELEASE-NOTES-2.5.0-streamdeck.3.md#srpski).
+
 <p align="center">
   <a href="README.md"><strong>English</strong></a> ·
   <a href="https://srdjankotarlic.github.io/protimer/"><strong>Stranica proizvoda</strong></a> ·

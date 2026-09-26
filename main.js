@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, screen, net } = require('electron');
+const { app, BrowserWindow, ipcMain, screen, net, powerMonitor } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const http = require('http');
@@ -21,6 +21,7 @@ const CMD_TYPES = ['start', 'reset', 'adjust', 'go', 'blackout', 'setDuration', 
 let controlWin = null;
 let outputWin = null;
 let lastState = null;
+let deckHost = null;
 let outputTransparent = false;   // da li je trenutni Ekran prozor providan
 let outputFrameless = false;     // da li je bez okvira (providan ili grid)
 let outputTargetId = null;       // na kom monitoru je Ekran
@@ -889,6 +890,7 @@ ipcMain.handle('share-stop', () => {
 });
 ipcMain.handle('share-info', () => ({ url: tunnelUrl, starting: tunnelStarting, provider: tunnelProvider }));
 app.on('before-quit', () => {
+  deckHost?.close();
   tunnelGeneration++;
   if (pendingTunnelProcess) { closeTunnel(pendingTunnelProcess); pendingTunnelProcess = null; }
   closeTunnel(tunnel);
@@ -949,6 +951,33 @@ app.whenReady().then(() => {
   startServer(7878);
   startOSC(7879);
   createControlWindow();
+  powerMonitor.on('suspend', () => { if (controlWin && !controlWin.isDestroyed()) controlWin.webContents.send('clock-power', 'suspend'); });
+  powerMonitor.on('resume', () => { if (controlWin && !controlWin.isDestroyed()) controlWin.webContents.send('clock-power', 'resume'); });
+  deckHost = require('./deck-host')({ getControl: () => controlWin, smoke: SMOKE, outputCommand: async payload => {
+    const role = payload.role === 'secondary' ? 'secondary' : 'primary';
+    if (!['open', 'close', 'toggle', 'fullscreen'].includes(payload.action)) return { ok: false, code: 'INVALID_OUTPUT_ACTION' };
+    if (role === 'secondary' && !TimerTools.separateOutputs(lastState)) return { ok: false, code: 'SEPARATE_OUTPUT_REQUIRED', message: 'Enable two timers and separate outputs in Control first.' };
+    const current = () => role === 'secondary' ? secondaryOutput.getWindow() : outputWin;
+    const win = current(), exists = win && !win.isDestroyed();
+    if (payload.action === 'close' || (payload.action === 'toggle' && exists)) {
+      if (exists) { win.close(); const until=Date.now()+2500; while(!win.isDestroyed()&&Date.now()<until)await new Promise(r=>setTimeout(r,25)); }
+      return { ok: !current() || current().isDestroyed() };
+    }
+    if (payload.action === 'fullscreen') {
+      if (!exists) return { ok: false, code: 'OUTPUT_CLOSED', message: 'Open the output first.' };
+      const wanted = !win.isFullScreen();
+      if (role === 'secondary') secondaryOutput.toggleFullscreen(); else setOutputFullscreen(win, wanted);
+      const until = Date.now() + 2500;
+      while (!win.isDestroyed() && win.isFullScreen() !== wanted && Date.now() < until) await new Promise(r => setTimeout(r, 40));
+      return { ok: !win.isDestroyed() && win.isFullScreen() === wanted };
+    }
+    const display = screen.getAllDisplays().find(d => d.id === payload.displayId);
+    if (!display) return { ok: false, code: 'DISPLAY_NOT_CONNECTED', message: 'Select a connected display in Control.' };
+    if (role === 'secondary') secondaryOutput.open(display.id); else createOutputWindow(display.id);
+    const until = Date.now() + 2500;
+    while (current() && !current().isDestroyed() && !current().isVisible() && Date.now() < until) await new Promise(r => setTimeout(r, 40));
+    const opened = current(); return { ok: !!opened && !opened.isDestroyed() && opened.isVisible() };
+  } });
 
   // Live-safe startup: restored settings must never put a window on the audience
   // display. Only an explicit output action from Control may create that window.
@@ -1006,6 +1035,14 @@ app.whenReady().then(() => {
         const smokeFailures = [];
         const check = (name, ok) => { if (!ok) smokeFailures.push(name); return !!ok; };
         await waitLoad(controlWin);
+        if(process.argv.includes('--alerts-only')){
+          await require('./scripts/smoke-alerts')({controlWin,getOutput:()=>outputWin,getSecondary:secondaryOutput.getWindow,displayId:screen.getPrimaryDisplay().id});
+          app.exit(0);return;
+        }
+        if(process.argv.includes('--deck-only')){
+          await require('./scripts/smoke-deck')({controlWin,deckHost,getOutput:()=>outputWin,getSecondary:secondaryOutput.getWindow});
+          app.exit(0);return;
+        }
         await require('./scripts/smoke-startup')({ app, BrowserWindow, screen, controlWin, getOutput: () => outputWin, waitLoad });
         const ow = await waitOutput();
         await waitLoad(ow);
@@ -1280,7 +1317,13 @@ app.whenReady().then(() => {
         await new Promise(r => setTimeout(r, 150));
         try { fitH0 = outputWin.getContentSize()[1]; } catch (e) {}
         await controlWin.webContents.executeJavaScript("document.getElementById('chkFit').checked=true; document.getElementById('chkFit').dispatchEvent(new Event('change'));");
-        await new Promise(r => setTimeout(r, 900));
+        // macOS can throttle the interval in an occluded output. Paint the real
+        // received state explicitly and wait for its asynchronous fit-window IPC.
+        for(let i=0;i<40;i++){
+          await outputWin.webContents.executeJavaScript('if(S&&S.fitWindow)render();');
+          await new Promise(r=>setTimeout(r,50));
+          if(outputWin.getContentSize()[1]<fitH0-20)break;
+        }
         try { fitH1 = outputWin.getContentSize()[1]; } catch (e) {}
         const fitOK=fitH1<fitH0-20&&fitH1>60;
         console.log('FIT_OK=' + fitOK + ' FIT_H=' + fitH0 + '→' + fitH1);
@@ -1565,6 +1608,8 @@ app.whenReady().then(() => {
         await require('./scripts/smoke-separate-outputs')({ controlWin, getOutput:()=>outputWin, getSecondary:secondaryOutput.getWindow, screen });
         await require('./scripts/smoke-rundown')({ controlWin });
         await require('./scripts/smoke-network-ui')();
+        await require('./scripts/smoke-deck')({controlWin,deckHost,getOutput:()=>outputWin,getSecondary:secondaryOutput.getWindow});
+        await require('./scripts/smoke-alerts')({controlWin,getOutput:()=>outputWin,getSecondary:secondaryOutput.getWindow,displayId:screen.getPrimaryDisplay().id});
         if(smokeFailures.length) throw new Error('Failed checks: '+smokeFailures.join(', '));
         console.log('SMOKE_OK');
         app.exit(0);

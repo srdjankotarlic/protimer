@@ -42,5 +42,6 @@ test('Polish preserves native controls, explicit focus and motion preferences', 
   assert.match(css, /@media \(prefers-reduced-motion:reduce\)/);
   assert.doesNotMatch(css, /button:active\s*\{\s*transform:scale/);
   // Warning flashing is a user-selected live-show signal, not a decorative transition.
-  assert.match(css, /\.pv-time\.neg\{animation:pulse/);
+  assert.match(css, /\.pv-time\.blink,\.secondary-readout\.blink\{animation:pulse/);
+  assert.doesNotMatch(css, /\.pv-time\.neg\{animation:pulse/);
 });

@@ -55,3 +55,35 @@ test('relaunch restores durations and layout but never stale running state', () 
   assert.equal(restored.running, false); assert.equal(restored.remMs, 90000);
   assert.deepEqual(restored.layout, { scale: 65, x: 3, y: -2 });
 });
+
+test('secondary countup uses the existing host timestamps and pauses independently', () => {
+  const timer = tools.secondary({ mode: 'countup', durationMs: 0 });
+  assert.equal(timer.mode, 'countup'); assert.equal(timer.durationMs, 0);
+  tools.setRunning(timer, true, 1000); tools.setRunning(timer, true, 5000);
+  assert.equal(timer.startAt, 1000); assert.equal(tools.elapsed(timer, 7000), 6000);
+  tools.setRunning(timer, false, 7000); assert.equal(tools.elapsed(timer, 15000), 6000);
+  tools.setRunning(timer, true, 15000); assert.equal(tools.elapsed(timer, 17000), 8000);
+  tools.reset(timer); assert.equal(timer.running, false); assert.equal(tools.elapsed(timer, 50000), 0);
+});
+
+test('secondary clock cannot accidentally start a countdown; output projects its real mode', () => {
+  const timer = tools.secondary({ mode: 'clock', running: true, startAt: 10, elapsedMs: 9000 });
+  assert.equal(timer.running, false); assert.equal(timer.elapsedMs, 0);
+  tools.setRunning(timer, true, 1000); assert.equal(timer.running, false); assert.equal(timer.endAt, 0);
+  const state = { mode: 'countdown', dualTimer: true, separateOutputs: true, secondary: timer, elapsedMs: 123, startAt: 45 };
+  assert.equal(tools.outputState(state, 'secondary').mode, 'clock');
+  timer.mode = 'countup'; timer.elapsedMs = 6000; timer.startAt = 1000; timer.running = true;
+  const projected = tools.outputState(state, 'secondary');
+  assert.equal(projected.mode, 'countup'); assert.equal(projected.elapsedMs, 6000); assert.equal(projected.startAt, 1000);
+  assert.equal(tools.outputState(state, 'primary').mode, 'countdown');
+});
+
+test('secondary mode migration defaults old settings to countdown and never auto-resumes', () => {
+  assert.equal(tools.secondary({ durationMs: 300000 }).mode, 'countdown');
+  assert.equal(tools.secondary({ mode: 'invalid' }).mode, 'countdown');
+  for (const mode of ['countdown', 'countup', 'clock']) {
+    const timer = tools.secondary({ mode, running: true, remMs: -2000, elapsedMs: 30000, endAt: 500, startAt: 200 });
+    assert.equal(timer.mode, mode); assert.equal(timer.running, false); assert.equal(timer.endAt, 0);
+    assert.equal(timer.startAt, 0); assert.equal(timer.elapsedMs, 0); assert.equal(timer.remMs, timer.durationMs);
+  }
+});

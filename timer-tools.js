@@ -25,21 +25,30 @@
   }
   function secondary(value, legacyGrid) {
     const v = value || {};
-    const durationMs = clamp(v.durationMs ?? 600000, 1000, MAX_DURATION, 600000);
+    const mode = ['countdown', 'countup', 'clock'].includes(v.mode) ? v.mode : 'countdown';
+    const durationMs = clamp(v.durationMs ?? 600000, mode === 'countdown' ? 1000 : 0, MAX_DURATION, 600000);
     // Saved settings intentionally never resume a running timer after relaunch.
     // Before independent placement, both outputs used the primary grid. Import
     // that grid once for old settings; later edits belong to this timer only.
-    return { durationMs, remMs: durationMs, endAt: 0, running: false, layout: layout(v.layout), outputSize: size(v.outputSize),
+    // Migrate overtime and the visual alert once too; secondary audio remains opt-in.
+    return { mode, durationMs, remMs: durationMs, endAt: 0, elapsedMs: 0, startAt: 0, running: false, layout: layout(v.layout), outputSize: size(v.outputSize),
+      overtime: !!(v.overtime ?? legacyGrid?.overtime ?? true),
+      flashZero: !!(v.flashZero ?? legacyGrid?.flashZero ?? true), soundZero: !!(v.soundZero ?? false),
       ...grid(Object.hasOwn(v, 'gridOn') ? v : legacyGrid) };
   }
   function remaining(timer, now) { return timer.running ? timer.endAt - now : timer.remMs; }
+  function elapsed(timer, now) { return (timer.elapsedMs || 0) + (timer.running ? now - timer.startAt : 0); }
   function setRunning(timer, running, now) {
+    if (timer.mode === 'clock') return; // A clock display has no transport/deadline.
     if (timer.running === running) return;
-    if (running) timer.endAt = now + timer.remMs;
+    if (timer.mode === 'countup') {
+      if (running) timer.startAt = now;
+      else timer.elapsedMs = elapsed(timer, now);
+    } else if (running) timer.endAt = now + timer.remMs;
     else timer.remMs = remaining(timer, now);
     timer.running = running;
   }
-  function reset(timer) { timer.running = false; timer.remMs = timer.durationMs; timer.endAt = 0; }
+  function reset(timer) { timer.running = false; timer.remMs = timer.durationMs; timer.endAt = 0; timer.elapsedMs = 0; timer.startAt = 0; }
   function separateOutputs(state) { return !!(state && state.dualTimer && state.separateOutputs); }
   // Project the existing clocks into desktop outputs; never start, pause or copy
   // a clock deadline. Network viewers keep the original combined state.
@@ -48,13 +57,15 @@
     if (role !== 'secondary') return { ...state, dualTimer: false, fitWindow: false };
     const timer = state.secondary;
     return {
-      ...state, dualTimer: false, fitWindow: false, mode: 'countdown',
+      ...state, dualTimer: false, fitWindow: false, mode: timer.mode || 'countdown',
       durationMs: timer.durationMs, remMs: timer.remMs, endAt: timer.endAt,
-      running: timer.running, elapsedMs: 0, startAt: 0,
+      running: timer.running, elapsedMs: timer.elapsedMs || 0, startAt: timer.startAt || 0,
+      overtime: timer.overtime ?? state.overtime,
+      flashZero: timer.flashZero ?? state.flashZero ?? true, soundZero: !!timer.soundZero,
       outputLayout: timer.layout, outputSize: size(timer.outputSize),
       ...grid(timer),
       text: '', textOnly: false, showNowNext: false
     };
   }
-  return { MAX_DURATION, clamp, layout, size, grid, secondary, remaining, setRunning, reset, separateOutputs, outputState };
+  return { MAX_DURATION, clamp, layout, size, grid, secondary, remaining, elapsed, setRunning, reset, separateOutputs, outputState };
 });

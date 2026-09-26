@@ -33,6 +33,10 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
+      - run: npm run deck:build
+      - run: npm run deck:test
+      - run: npm run deck:package
+      - run: npm run deck:validate
       - name: Check public docs and release links
         if: runner.os == 'Linux'
         run: npm run check:public-docs

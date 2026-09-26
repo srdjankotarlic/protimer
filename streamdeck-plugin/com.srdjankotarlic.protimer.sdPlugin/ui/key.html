@@ -1,0 +1,18 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src ws://127.0.0.1:*; img-src 'self' data:"><title>ProTimer Key</title><link rel="stylesheet" href="key.css">
+<body><h1>ProTimer Key</h1><p>Pair in <strong>ProTimer Control → Stream Deck</strong>. No IP or token is needed here.</p>
+<form id="form">
+<label>Command<select id="command"></select></label>
+<label>Timer<select id="timerId"><option value="selected">Selected timer</option><option value="t1">Timer 1</option><option value="t2">Timer 2</option></select></label>
+<label>Adjustment target<select id="target"><option value="selected">EDIT SET/LIVE selection</option><option value="set">SET only</option><option value="live">LIVE — caution</option></select></label>
+<label>Name<input id="name" maxlength="24" placeholder="Automatic label"></label>
+<div class="row"><label>Signed step<input id="step" type="number" value="1" min="-360000" max="360000" step="1"></label><label>Unit<select id="unit"><option value="s">Seconds</option><option value="m">Minutes</option><option value="h">Hours</option></select></label></div>
+<label>Preset HH:MM:SS<input id="duration" value="00:05:00" pattern="[0-9]{1,2}:[0-5][0-9]:[0-5][0-9]"></label>
+<div class="row"><label>Color<input id="color" type="color" value="#61adff"></label><label>Text size<input id="textSize" type="number" min="12" max="28" value="23"></label></div>
+<label>Press policy<select id="pressPolicy"><option value="short">Short press (unprotected commands only)</option><option value="hold">Hold 1.5 seconds</option></select></label>
+<p class="notice">RESET, BLACK, LIVE editing and replacement of an active timer always require the host's safety guard. Short press cannot bypass them.</p>
+<label><input id="linked" type="checkbox"> Link to a Control layout slot</label>
+<label>Layout ID<input id="layoutId" maxlength="80"></label><label>Slot ID<input id="slotId" maxlength="80"></label>
+<p>For a linked slot, copy its layout and slot IDs from the Control editor. Adding a key here does not take ownership of any other key. To add ProTimer to a truly free position, drag <strong>ProTimer Key</strong> there in Elgato.</p>
+<button type="submit">Save key</button><output id="status" role="status"></output>
+</form><details><summary>Restore live display / Vrati prikaz uživo</summary><p>Elgato's custom title and icon overrides take priority over plugin graphics. Clear the custom title and choose Reset to Default on the icon in Elgato. The plugin cannot overwrite those choices.</p><p>Srpski: povezivanje se podešava u ProTimer kontroli. SET priprema sledeće vreme; ACTIVE je trenutno vreme. Preseti menjaju samo SET. BACK vraća prethodni profil i bez veze sa ProTimerom.</p></details>
+<script src="layout.js"></script><script src="key.js"></script></body></html>

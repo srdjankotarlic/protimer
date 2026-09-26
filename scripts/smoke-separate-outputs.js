@@ -120,6 +120,9 @@ module.exports = async function ({ controlWin, getOutput, getSecondary, screen }
   assert.ok(boundsEqual(getOutput(),gridBounds(host,3,0)), 'Timer 2 grid changed Timer 1');
   await ctl(`$('timerYValue').value=-12; $('timerYValue').dispatchEvent(new Event('input'));`);
   await waitFor(()=>second(`$('primaryContent').style.transform==='translate(9%, -12%) scale(0.65)'`),'Selected timer digit position was not applied');
+  // The reopened primary can be fully occluded by Control on single-display
+  // machines. Paint its received state once before checking the DOM transform.
+  await first('render()');
   assert.equal(await first(`$('primaryContent').style.transform`),'translate(0%, 0%) scale(1)');
   // Sizing Timer 2 must not disable/reposition Timer 1's grid.
   await ctl(`(async()=>{ $('outputWidth').value=800; $('outputHeight').value=450; await applyOutputSize(); })()`);
