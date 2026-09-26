@@ -25,6 +25,23 @@ module.exports = async function smokeDeckUI({ controlWin }) {
     assert.equal(setup.applied, true, 'Prepare an isolated standard logical layout');
     await delay(50);
     controlWin.setSize(1120, 740);
+    // Native resize and Chromium's viewport update can arrive separately. A
+    // small CI display may also clamp the requested outer window dimensions.
+    // Wait for the renderer to match the actual native content size; never
+    // report that a clamped window tested the requested 1120 × 740 frame.
+    let geometry, previousGeometry = '', settledFrames = 0;
+    for (let attempt = 0; attempt < 80; attempt++) {
+      await delay(25);
+      const viewport = await js('({width:innerWidth,height:innerHeight})');
+      const [width, height] = controlWin.getContentSize();
+      geometry = { requestedFrame: { width: 1120, height: 740 }, frame: controlWin.getBounds(), content: { width, height }, viewport };
+      const signature = JSON.stringify(geometry);
+      settledFrames = viewport.width === width && viewport.height === height && signature === previousGeometry ? settledFrames + 1 : 0;
+      previousGeometry = signature;
+      if (settledFrames >= 2) break;
+    }
+    console.log('DECK_EDITOR_GEOMETRY=' + JSON.stringify(geometry));
+    assert.ok(settledFrames >= 2, 'Editor resize did not settle: ' + JSON.stringify(geometry));
     const result = await js(`(${editorChecks.toString()})()`);
     assert.equal(result.ok, true);
     assert.equal(result.commands, 0, 'Editor and simulation must never dispatch a timer command');
@@ -102,7 +119,13 @@ async function editorChecks() {
 
     const lastBounds = keys()[31].getBoundingClientRect();
     const footerBounds = dialog().querySelector('footer').getBoundingClientRect();
-    assert(lastBounds.bottom <= footerBounds.top, 'All 32 keys visible above the footer at 1120 × 740');
+    const body = dialog().querySelector('.pt-deck-dialog-body');
+    assert(lastBounds.bottom <= footerBounds.top, 'All 32 keys visible above the footer; requested frame 1120 × 740; observed ' + JSON.stringify({
+      viewport: { width: innerWidth, height: innerHeight },
+      lastKey: { top: lastBounds.top, bottom: lastBounds.bottom, left: lastBounds.left, right: lastBounds.right },
+      footer: { top: footerBounds.top, bottom: footerBounds.bottom },
+      body: { scrollTop: body.scrollTop, clientHeight: body.clientHeight, scrollHeight: body.scrollHeight }
+    }));
 
     keys()[6].click();
     click('Preview selected key');
