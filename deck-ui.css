@@ -76,6 +76,9 @@
 .pt-deck-number-fields small{display:block;font:10px/1.5 -apple-system,system-ui,sans-serif;color:var(--dim);}
 .pt-deck-divider{padding-top:11px;border-top:1px solid var(--border);}
 .pt-deck-dialog [hidden],.pt-deck [hidden]{display:none!important;}
+/* Keep the four key rows clear of the fixed footer on shorter laptop/VM
+   desktops. Reduce surrounding spacing, not the readable LCD key content. */
+@media(max-height:680px){.pt-deck-dialog-body{padding-top:12px;padding-bottom:12px;gap:10px;}}
 @media(max-width:900px){.pt-deck-editor-columns{grid-template-columns:minmax(0,1fr);}.pt-deck-inspector{grid-template-columns:repeat(3,minmax(0,1fr));max-height:none;overflow:visible;}.pt-deck-inspector>h3,.pt-deck-inspector>.pt-deck-note,.pt-deck-inspector>.pt-deck-row{grid-column:1/-1;}.pt-deck-key{aspect-ratio:1.05;}.pt-deck-key .pt-deck-key-time{font-size:19px;}}
 @media(max-width:620px){.pt-deck-dialog header,.pt-deck-dialog footer,.pt-deck-dialog-body{padding:12px;}.pt-deck-board{gap:4px;padding:7px;}.pt-deck-key{aspect-ratio:.85;}.pt-deck-key .pt-deck-key-icon{font-size:14px;}.pt-deck-key .pt-deck-key-name{font-size:8px;}.pt-deck-key .pt-deck-key-meta{font-size:6px;}.pt-deck-key .pt-deck-key-time{font-size:11px;}.pt-deck-inspector{grid-template-columns:1fr 1fr;}.pt-deck-dialog footer{align-items:start;flex-wrap:wrap;}}
 @media(prefers-reduced-motion:reduce){.pt-deck *,.pt-deck-dialog *{transition:none!important;}}

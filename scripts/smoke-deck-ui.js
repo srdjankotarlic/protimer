@@ -29,20 +29,8 @@ module.exports = async function smokeDeckUI({ controlWin }) {
     // small CI display may also clamp the requested outer window dimensions.
     // Wait for the renderer to match the actual native content size; never
     // report that a clamped window tested the requested 1120 × 740 frame.
-    let geometry, previousGeometry = '', settledFrames = 0;
-    for (let attempt = 0; attempt < 80; attempt++) {
-      await delay(25);
-      const viewport = await js('({width:innerWidth,height:innerHeight})');
-      const [width, height] = controlWin.getContentSize();
-      geometry = { requestedFrame: { width: 1120, height: 740 }, frame: controlWin.getBounds(), content: { width, height }, viewport };
-      const signature = JSON.stringify(geometry);
-      settledFrames = viewport.width === width && viewport.height === height && signature === previousGeometry ? settledFrames + 1 : 0;
-      previousGeometry = signature;
-      if (settledFrames >= 2) break;
-    }
-    console.log('DECK_EDITOR_GEOMETRY=' + JSON.stringify(geometry));
-    assert.ok(settledFrames >= 2, 'Editor resize did not settle: ' + JSON.stringify(geometry));
-    const result = await js(`(${editorChecks.toString()})()`);
+    await settleGeometry(controlWin, js, { requestedFrame: { width: 1120, height: 740 } }, 'DECK_EDITOR_GEOMETRY');
+    const result = await js(`(${editorChecks.toString()})(${editorGeometry.toString()})`);
     assert.equal(result.ok, true);
     assert.equal(result.commands, 0, 'Editor and simulation must never dispatch a timer command');
     assert.equal(result.audioStarts, 0, 'Editor and simulation must never play a bell');
@@ -51,6 +39,22 @@ module.exports = async function smokeDeckUI({ controlWin }) {
     console.log('DECK_EDITOR_APPLY_CANCEL_UNDO_DRAG_HOTKEY_OK=true');
     console.log('DECK_EDITOR_NO_LIVE_COMMANDS_OK=true');
     console.log('DECK_EDITOR_32_KEYS_VISIBLE_OK=true');
+    // Hosted macOS can clamp the outer frame to 677px, leaving 645px of
+    // content. Exercise that real shorter viewport on larger local screens too.
+    const fullBounds = controlWin.getBounds();
+    try {
+      controlWin.setContentSize(1120, 645);
+      const shortWindow = await settleGeometry(controlWin, js, { requestedContent: { width: 1120, height: 645 } }, 'DECK_EDITOR_SHORT_GEOMETRY');
+      assert.deepEqual(shortWindow.viewport, { width: 1120, height: 645 }, 'Short editor fixture must reach its actual 1120 × 645 viewport');
+      const shortEditor = await js(`(() => {deckControl.ui.setLanguage('en');deckControl.ui.openEditor();return (${editorGeometry.toString()})();})()`);
+      console.log('DECK_EDITOR_SHORT_LAYOUT=' + JSON.stringify(shortEditor));
+      assert.equal(shortEditor.keyCount, 32);
+      assert.ok(shortEditor.lastKey.bottom <= shortEditor.footer.top, 'All 32 keys visible above the footer at the short viewport; observed ' + JSON.stringify(shortEditor));
+      console.log('DECK_EDITOR_32_KEYS_SHORT_VIEWPORT_OK=true');
+    } finally {
+      await js("document.querySelector('.pt-deck-dialog')?.dispatchEvent(new Event('cancel', { cancelable: true }))");
+      controlWin.setBounds(fullBounds);
+    }
   } finally {
     // Restore even if a UI assertion fails. No user layouts are deleted and the
     // original active clocks were never replaced, paused, reset or adjusted.
@@ -68,7 +72,38 @@ module.exports = async function smokeDeckUI({ controlWin }) {
   }
 };
 
-async function editorChecks() {
+async function settleGeometry(controlWin, js, requested, label) {
+  let geometry, previousGeometry = '', settledFrames = 0;
+  for (let attempt = 0; attempt < 80; attempt++) {
+    await delay(25);
+    const viewport = await js('({width:innerWidth,height:innerHeight})');
+    const [width, height] = controlWin.getContentSize();
+    geometry = { ...requested, frame: controlWin.getBounds(), content: { width, height }, viewport };
+    const signature = JSON.stringify(geometry);
+    settledFrames = viewport.width === width && viewport.height === height && signature === previousGeometry ? settledFrames + 1 : 0;
+    previousGeometry = signature;
+    if (settledFrames >= 2) break;
+  }
+  console.log(label + '=' + JSON.stringify(geometry));
+  assert.ok(settledFrames >= 2, 'Editor resize did not settle: ' + JSON.stringify(geometry));
+  return geometry;
+}
+
+function editorGeometry() {
+  const dialog = document.querySelector('.pt-deck-dialog[open]');
+  const keys = [...dialog.querySelectorAll('.pt-deck-key')];
+  const lastBounds = keys.at(-1).getBoundingClientRect();
+  const footerBounds = dialog.querySelector('footer').getBoundingClientRect();
+  const body = dialog.querySelector('.pt-deck-dialog-body');
+  return {
+    viewport: { width: innerWidth, height: innerHeight }, keyCount: keys.length,
+    lastKey: { top: lastBounds.top, bottom: lastBounds.bottom, left: lastBounds.left, right: lastBounds.right },
+    footer: { top: footerBounds.top, bottom: footerBounds.bottom },
+    body: { scrollTop: body.scrollTop, clientHeight: body.clientHeight, scrollHeight: body.scrollHeight }
+  };
+}
+
+async function editorChecks(measureGeometry) {
   const checks = [];
   const assert = (condition, message) => {
     if (!condition) throw new Error(message);
@@ -117,15 +152,8 @@ async function editorChecks() {
     const initialStatus = await api.deckInvoke('status');
     assert(initialStatus.profilesVerified === true || activate?.disabled, 'Unverified profiles cannot be activated');
 
-    const lastBounds = keys()[31].getBoundingClientRect();
-    const footerBounds = dialog().querySelector('footer').getBoundingClientRect();
-    const body = dialog().querySelector('.pt-deck-dialog-body');
-    assert(lastBounds.bottom <= footerBounds.top, 'All 32 keys visible above the footer; requested frame 1120 × 740; observed ' + JSON.stringify({
-      viewport: { width: innerWidth, height: innerHeight },
-      lastKey: { top: lastBounds.top, bottom: lastBounds.bottom, left: lastBounds.left, right: lastBounds.right },
-      footer: { top: footerBounds.top, bottom: footerBounds.bottom },
-      body: { scrollTop: body.scrollTop, clientHeight: body.clientHeight, scrollHeight: body.scrollHeight }
-    }));
+    const geometry = measureGeometry();
+    assert(geometry.lastKey.bottom <= geometry.footer.top, 'All 32 keys visible above the footer; requested frame 1120 × 740; observed ' + JSON.stringify(geometry));
 
     keys()[6].click();
     click('Preview selected key');
