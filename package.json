@@ -50,7 +50,7 @@
     "dist:all": "electron-builder --mac --arm64 --win --x64"
   },
   "devDependencies": {
-    "electron": "^44.0.0",
+    "electron": "^44.4.5",
     "electron-builder": "^26.15.3"
   },
   "allowScripts": {
