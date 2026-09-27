@@ -2,6 +2,16 @@
 
 Notable ProTimer changes are listed here. The complete notes and installers are available on the [Releases page](https://github.com/srdjankotarlic/protimer/releases).
 
+## 2.5.0-streamdeck.4 — prerelease
+
+- Added **Check output** for either timer: distinguish logical window dimensions, estimated physical pixels and measured capture dimensions, with warnings for clipped digits or text. The check does not open a closed output or alter the running timer.
+- Refresh display information after resolution/scaling changes and reflow only the affected windowed Grid, preserving manual placement, fullscreen and the other output.
+- Prevent macOS fullscreen/Spaces movements from changing the selected routing target, and safely cancel resizing when an output closes or is replaced.
+- Retain independent zero alerts, optional overtime flashing/negative time, the natural synthesized bell and native Stream Deck controls from earlier previews.
+- Keep stable downloads on **2.4.1**. Native starter profiles and physical Stream Deck XL acceptance remain pending; an app capture does not certify the final HDMI/switcher/TV picture.
+
+[Full preview notes](docs/RELEASE-NOTES-2.5.0-streamdeck.4.md) · [Output quality guide](docs/OUTPUT-QUALITY.md)
+
 ## 2.4.0 — 2026-09-19
 
 - Added optional separate desktop outputs: Timer 1 and Timer 2 can target different displays connected to the same computer.

@@ -17,6 +17,7 @@ contextBridge.exposeInMainWorld('pt', {
   exitFullscreen: () => ipcRenderer.send('exit-fullscreen'),
   resizeOutput: (size) => ipcRenderer.invoke('resize-output', size),
   getOutputGeometry: () => ipcRenderer.invoke('output-geometry'),
+  getOutputQuality: (role = 'primary') => ipcRenderer.invoke('output-quality', role),
   onOutputGeometry: (cb) => ipcRenderer.on('output-geometry', (e, info) => cb(info)),
   openSecondaryOutput: (displayId) => ipcRenderer.invoke('secondary-output-open', displayId),
   closeSecondaryOutput: () => ipcRenderer.send('secondary-output-close'),

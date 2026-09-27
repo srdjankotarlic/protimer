@@ -4,7 +4,7 @@ const { EventEmitter } = require('node:events');
 const TimerTools = require('../timer-tools');
 const createOutput = require('../secondary-output');
 
-function fixture() {
+function fixture({ manualReady = false, platform = 'darwin' } = {}) {
   const primary = { id: 1, bounds: { x: 0, y: 0, width: 1600, height: 900 }, workArea: { x: 0, y: 0, width: 1600, height: 900 }, scaleFactor: 1 };
   const tv1 = { ...primary, id: 2, bounds: { x: 1600, y: 0, width: 1920, height: 1080 }, workArea: { x: 1600, y: 0, width: 1920, height: 1080 } };
   const tv2 = { ...primary, id: 3, bounds: { x: -1920, y: 0, width: 1920, height: 1080 }, workArea: { x: -1920, y: 0, width: 1920, height: 1080 } };
@@ -19,6 +19,7 @@ function fixture() {
       windows.push(this);
     }
     isDestroyed() { return !!this.dead; }
+    isFocused() { return !!this.focused; }
     destroy() { this.dead = true; this.emit('closed'); }
     isFullScreen() { return !!this.fullscreen; }
     setFullScreen(v) { this.fullscreen = v; this.emit(v ? 'enter-full-screen' : 'leave-full-screen'); }
@@ -28,13 +29,13 @@ function fixture() {
     getContentSize() { return [this.bounds.width, this.bounds.height]; }
     setAlwaysOnTop() {}
     show() { this.shown = true; }
-    loadFile() { setImmediate(() => { this.webContents.emit('did-finish-load'); this.emit('ready-to-show'); }); }
+    loadFile() { if (!manualReady) setImmediate(() => { this.webContents.emit('did-finish-load'); this.emit('ready-to-show'); }); }
   }
   const screen = {
     getAllDisplays: () => displays,
     getDisplayMatching: bounds => displays.find(d => bounds.x >= d.bounds.x && bounds.x < d.bounds.x + d.bounds.width) || primary
   };
-  const output = createOutput({ BrowserWindow: Window, screen, getState: () => state, controlDisplayId: () => 1, changed() {} });
+  const output = createOutput({ BrowserWindow: Window, screen, getState: () => state, controlDisplayId: () => 1, changed() {}, platform });
   return { output, windows, getState: () => state, setState: s => { state = s; }, setDisplays: d => { displays = d; }, primary, tv1, tv2 };
 }
 const tick = () => new Promise(resolve => setImmediate(resolve));
@@ -153,6 +154,8 @@ test('secondary free sizing and manual placement work while the primary grid is 
   assert.equal((await f.output.resize({ width: 800, height: 450 })).ok, true);
   const win = f.output.getWindow();
   const dragged = { x: 1700, y: 100, width: 800, height: 450 };
+  win.focused = true;
+  win.emit('will-move', {}, dragged);
   win.setBounds(dragged);
   assert.equal(f.output.geometry().displayId, 2);
   const previous = f.getState();
@@ -163,5 +166,98 @@ test('secondary free sizing and manual placement work while the primary grid is 
   f.output.update(prev2); await tick(); await tick();
   assert.deepEqual(win.bounds, { x: 1600, y: 0, width: 640, height: 360 });
   assert.equal((await f.output.resize({ width: 800, height: 450 })).ok, false, 'Own grid must still guard automatic sizing');
+  f.output.close();
+});
+test('secondary display metrics refresh the actual density and reflow only its own windowed grid', async () => {
+  const f = fixture();
+  f.setState({ ...f.getState(), secondary: TimerTools.secondary({gridOn:true,gridSize:3,gridCell:8}) });
+  f.output.open(3); await tick(); await tick();
+  const win = f.output.getWindow(), before = {...win.bounds}, state = structuredClone(f.getState());
+  const tv1 = {...f.tv1,bounds:{...f.tv1.bounds,width:2560,height:1440}};
+  f.output.displayMetricsChanged(tv1,['bounds']);
+  assert.deepEqual(win.bounds,before);
+  const tv2 = {...f.tv2,scaleFactor:1.25,bounds:{...f.tv2.bounds,width:2560,height:1440}};
+  f.setDisplays([f.primary,tv1,tv2]);
+  f.output.displayMetricsChanged(tv2,['bounds','scaleFactor']);
+  assert.deepEqual(win.bounds,{x:-214,y:960,width:853,height:480});
+  assert.equal(f.output.geometry().scaleFactor,1.25);
+  assert.equal(f.output.geometry().pixelWidth,1066);
+  assert.deepEqual(f.getState(),state);
+  const gridBounds = {...win.bounds};
+  win.setFullScreen(true);
+  f.output.displayMetricsChanged({...tv2,bounds:{...tv2.bounds,width:1920}},['workArea','bounds']);
+  assert.equal(win.isFullScreen(),true);
+  assert.deepEqual(win.bounds,gridBounds);
+  f.output.close();
+});
+test('secondary metrics preserve custom geometry and never create a closed output', async () => {
+  const f = fixture();
+  f.output.displayMetricsChanged(f.tv2,['bounds','scaleFactor']);
+  assert.equal(f.windows.length,0);
+  f.setState({...f.getState(),secondary:TimerTools.secondary({outputSize:{width:800,height:600}})});
+  f.output.open(3); await tick(); await tick();
+  const win = f.output.getWindow(), before = {...win.bounds};
+  const changed = {...f.tv2,scaleFactor:2};
+  f.setDisplays([f.primary,f.tv1,changed]);
+  f.output.displayMetricsChanged(changed,['bounds','scaleFactor']);
+  assert.deepEqual(win.bounds,before);
+  assert.equal(f.output.geometry().pixelWidth,1600);
+  f.output.close();
+});
+test('background Spaces moves cannot reroute a secondary grid when another display changes metrics', async () => {
+  const f = fixture();
+  f.setState({...f.getState(),secondary:TimerTools.secondary({gridOn:true,gridSize:3,gridCell:8})});
+  f.output.open(3); await tick(); await tick();
+  const win = f.output.getWindow(), revision = f.output.getRevision();
+  const relocated = {x:0,y:0,width:460,height:258};
+  win.emit('will-move', {}, relocated); // unfocused native Spaces notification
+  win.setBounds(relocated);
+  assert.equal(f.output.geometry().displayId,1,'Readout still describes the actual current monitor');
+  f.output.displayMetricsChanged(f.primary,['workArea']);
+  assert.deepEqual(win.bounds,relocated);
+  assert.equal(f.output.getRevision(),revision,'Background relocation must not cancel sibling restoration');
+  const previous=f.getState();
+  f.setState({...previous,secondary:{...previous.secondary,gridCell:0}});
+  f.output.update(previous); await tick();
+  assert.deepEqual(win.bounds,{x:-1920,y:0,width:640,height:360},'Routing intent still targets the selected TV');
+  f.output.close();
+});
+for (const platform of ['darwin','win32','linux']) test(`secondary operator drag adopts destination monitor on ${platform}`, async () => {
+  const f=fixture({platform}); f.output.open(1); await tick(); await tick();
+  const win=f.output.getWindow(), revision=f.output.getRevision();
+  const dragged={x:1700,y:100,width:800,height:450};
+  win.focused=true;
+  if(platform!=='linux') win.emit('will-move',{},dragged);
+  win.setBounds(dragged);
+  assert.ok(f.output.getRevision()>revision);
+  const previous=f.getState();
+  f.setState({...previous,secondary:{...previous.secondary,gridOn:true,gridSize:3,gridCell:0}});
+  f.output.update(previous); await tick();
+  assert.deepEqual(win.bounds,{x:1600,y:0,width:640,height:360});
+  f.output.close();
+});
+test('secondary size request before first paint settles on close and never sizes a replacement', async () => {
+  for(const existing of [false,true]) {
+    const f=fixture({manualReady:true});
+    if(existing) f.output.open(1);
+    const pending=f.output.resize({displayId:1,width:800,height:600});
+    const old=f.output.getWindow();
+    f.output.close(); f.output.open(2);
+    const replacement=f.output.getWindow();
+    replacement.emit('ready-to-show'); await tick();
+    assert.equal((await pending).ok,false);
+    assert.deepEqual(replacement.bounds,f.tv1.bounds);
+    assert.equal(old.listenerCount('closed'),1,'Only its original lifecycle listener remains');
+    f.output.close();
+  }
+});
+test('Apply on a closed secondary output shows its requested size on the requested monitor', async () => {
+  const f=fixture({manualReady:true});
+  f.setState({...f.getState(),secondary:{...f.getState().secondary,outputSize:{width:800,height:600}}});
+  const pending=f.output.resize({displayId:3,width:800,height:600}),win=f.output.getWindow();
+  win.emit('ready-to-show');const result=await pending;
+  assert.equal(result.ok,true);assert.equal(win.shown,true);
+  assert.deepEqual(win.bounds,{x:-1920,y:0,width:800,height:600});
+  assert.equal(f.output.geometry().displayId,3);
   f.output.close();
 });

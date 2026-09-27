@@ -1,20 +1,18 @@
 const path = require('path');
 const TimerTools = require('./timer-tools');
 const { leaveFullscreen, preserveSiblingBounds } = require('./window-tools');
+const OutputQuality = require('./output-quality');
 
 // A second desktop output only. The existing output, LAN/OBS streams and timer
 // transport remain owned by their original paths.
-module.exports = function secondaryOutput({ BrowserWindow, screen, getState, controlDisplayId, changed, getSibling }) {
+module.exports = function secondaryOutput({ BrowserWindow, screen, getState, controlDisplayId, changed, getSibling, platform = process.platform }) {
   let win = null, targetId = null, revision = 0, transparent = false, placed = false, placing = null, ready = false;
   const state = () => TimerTools.outputState(getState(), 'secondary');
   const enabled = () => TimerTools.separateOutputs(getState());
   const notify = () => { changed(); };
   const protectSibling = (current, entering) => preserveSiblingBounds(current, entering, {getSibling,screen});
   function geometry() {
-    if (!win || win.isDestroyed()) return null;
-    const [width, height] = win.getContentSize();
-    return { width, height, fullscreen: win.isFullScreen(), displayId: targetId,
-      scaleFactor: screen.getDisplayMatching(win.getBounds()).scaleFactor };
+    return OutputQuality.outputGeometry(win, screen);
   }
   function mode() {
     if (win && !win.isDestroyed()) win.webContents.send('win-fs', win.isFullScreen());
@@ -27,12 +25,12 @@ module.exports = function secondaryOutput({ BrowserWindow, screen, getState, con
     if (current && !current.isDestroyed()) protectSibling(current, false);
     if (!current || current.isDestroyed() || !await leaveFullscreen(current) ||
         win !== current || version !== revision) { if (placing === version) placing = null; return; }
+    target = screen.getAllDisplays().find(display => display.id === target.id);
+    if (!target) { if (placing === version) placing = null; return; }
     const s = state();
     if (!enabled()) { if (placing === version) placing = null; return; }
     if (s.gridOn && s.gridSize) {
-      const n = s.gridSize, cell = Math.max(0, Math.min(n * n - 1, s.gridCell || 0));
-      const b = target.bounds, width = Math.floor(b.width / n), height = Math.floor(b.height / n);
-      current.setBounds({ x: b.x + (cell % n) * width, y: b.y + Math.floor(cell / n) * height, width, height });
+      current.setBounds(OutputQuality.gridBounds(target, s));
     } else if (TimerTools.size(s.outputSize)) {
       current.setBounds({ x: target.workArea.x, y: target.workArea.y, ...s.outputSize });
     } else if (target.id !== controlDisplayId()) {
@@ -79,11 +77,18 @@ module.exports = function secondaryOutput({ BrowserWindow, screen, getState, con
     current.on('enter-full-screen', () => setImmediate(mode));
     current.on('leave-full-screen', () => setImmediate(mode));
     current.on('resize', notify);
+    const operatorMove = (_event, bounds) => {
+      if (win === current && placed && placing === null && current.isFocused() &&
+          screen.getAllDisplays().some(d => d.id === targetId)) {
+        targetId = screen.getDisplayMatching(bounds).id;
+        ++revision;
+      }
+    };
+    current.on('will-move', operatorMove);
     current.on('move', () => {
-      // Ignore initial/native placement and OS relocation after unplugging a
-      // display. Only an operator drag may change a still-connected target.
-      if (win === current && placed && placing === null && screen.getAllDisplays().some(d => d.id === targetId))
-        targetId = screen.getDisplayMatching(current.getBounds()).id;
+      // On macOS/Windows only focused will-move changes routing intent. Native
+      // background Spaces relocation must not reroute the next grid reflow.
+      if (platform === 'linux') operatorMove(null, current.getBounds());
       notify();
     });
     current.on('closed', () => {
@@ -119,10 +124,23 @@ module.exports = function secondaryOutput({ BrowserWindow, screen, getState, con
     if (!enabled() || !size) return { ok: false };
     if (!win || win.isDestroyed()) {
       if (!open(requested.displayId).ok) return { ok: false };
-      const current = win;
-      await new Promise(resolve => { current.once('ready-to-show', resolve); current.once('closed', resolve); });
     }
-    const current = win, version = ++revision;
+    const current = win;
+    if (!ready) {
+      const loaded = await new Promise(resolve => {
+        const finish = value => {
+          current.removeListener('ready-to-show', onReady);
+          current.removeListener('closed', onClosed);
+          resolve(value);
+        };
+        const onReady = () => finish(true), onClosed = () => finish(false);
+        current.once('ready-to-show', onReady);
+        current.once('closed', onClosed);
+      });
+      if (!loaded) return { ok: false };
+    }
+    if (win !== current || current.isDestroyed()) return { ok: false };
+    const version = ++revision;
     if (current && !current.isDestroyed()) protectSibling(current, false);
     if (!current || !await leaveFullscreen(current) || win !== current ||
         version !== revision || !enabled() || state().gridOn) return { ok: false };
@@ -134,7 +152,12 @@ module.exports = function secondaryOutput({ BrowserWindow, screen, getState, con
   function displaysChanged() {
     if (win && !screen.getAllDisplays().some(d => d.id === targetId)) close();
   }
-  return { open, close, update, resize, geometry, displaysChanged, getWindow: () => win, getRevision: () => revision,
+  function displayMetricsChanged(display, metrics) {
+    if (placed) OutputQuality.reflowGridForDisplay({ win, display, metrics, state: state(), targetId,
+      placing: placing !== null, beforeMove: () => { ++revision; } });
+    notify();
+  }
+  return { open, close, update, resize, geometry, displaysChanged, displayMetricsChanged, getWindow: () => win, getRevision: () => revision,
     toggleFullscreen() {
       if (win && !win.isDestroyed()) { const entering=!win.isFullScreen(); protectSibling(win, entering); win.setFullScreen(entering); }
     } };
