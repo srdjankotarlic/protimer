@@ -11,7 +11,7 @@
 
 <p align="center"><strong>Latest release: ProTimer 2.4.1 — free, open source, no account and no watermark.</strong></p>
 
-**Testing preview:** [ProTimer 2.5.0-streamdeck.3 prerelease](https://github.com/srdjankotarlic/protimer/releases/tag/v2.5.0-streamdeck.3) adds independent zero alerts, a more natural synthesized bell and optional native Stream Deck controls. Native actions require manual placement; starter profiles and physical XL acceptance are still pending. **2.4.1 remains the latest stable release.** [Preview notes](docs/RELEASE-NOTES-2.5.0-streamdeck.3.md).
+**Testing preview:** [ProTimer 2.5.0-streamdeck.4 prerelease](https://github.com/srdjankotarlic/protimer/releases/tag/v2.5.0-streamdeck.4) adds **Check output** for both timers, clearer resolution information and safer display-change/window handling. Independent zero alerts, the natural synthesized bell and optional native Stream Deck controls remain included. Native actions require manual placement; starter profiles and physical XL acceptance are still pending. **2.4.1 remains the latest stable release.** [Preview notes](docs/RELEASE-NOTES-2.5.0-streamdeck.4.md) · [Output quality guide](docs/OUTPUT-QUALITY.md).
 
 <p align="center">
   <a href="https://github.com/srdjankotarlic/protimer/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/srdjankotarlic/protimer/actions/workflows/ci.yml/badge.svg"></a>
@@ -258,7 +258,7 @@ Clean stack, almost no dependencies: **Electron** + plain HTML/CSS/JS + a Node `
 
 ### Native Stream Deck integration — prerelease
 
-The [2.5.0-streamdeck.3 prerelease](https://github.com/srdjankotarlic/protimer/releases/tag/v2.5.0-streamdeck.3) includes an optional native Elgato SDK plugin, separate ACTIVE/SET preparations for both timers, and an 8×4 editor inside Control. This is **not included in stable 2.4.1**. The timer remains independent of Stream Deck and Companion.
+The [2.5.0-streamdeck.4 prerelease](https://github.com/srdjankotarlic/protimer/releases/tag/v2.5.0-streamdeck.4) includes an optional native Elgato SDK plugin, separate ACTIVE/SET preparations for both timers, and an 8×4 editor inside Control. This is **not included in stable 2.4.1**. The timer remains independent of Stream Deck and Companion.
 
 The plugin builds and packages with Elgato's official CLI. **Verified native starter-profile exports and physical XL/Windows acceptance testing are still required**; this preview supports user-placed ProTimer Key actions and does not claim finished one-click profile installation. Automatic profile switching is never enabled.
 

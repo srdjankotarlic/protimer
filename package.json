@@ -1,7 +1,7 @@
 {
   "name": "pro-timer",
   "productName": "ProTimer",
-  "version": "2.5.0-streamdeck.3",
+  "version": "2.5.0-streamdeck.4",
   "config": {
     "stableVersion": "2.4.1"
   },
@@ -39,6 +39,7 @@
     "deck:validate": "npm --prefix streamdeck-plugin run validate",
     "smoke:deck": "electron . --smoke --deck-only",
     "smoke:alerts": "electron . --smoke --alerts-only",
+    "smoke:quality": "electron . --smoke --quality-only",
     "check:public-docs": "node scripts/check-public-docs.js",
     "check:indexnow": "node scripts/submit-indexnow.js --dry-run",
     "check:packaging": "node scripts/check-packaging.js",
@@ -78,6 +79,7 @@
       "deck-*.js",
       "deck-ui.css",
       "window-tools.js",
+      "output-quality.js",
       "secondary-output.js",
       "tunnel-tools.js",
       "scripts/smoke-layout.js",
@@ -88,6 +90,7 @@
       "scripts/smoke-deck.js",
       "scripts/smoke-deck-ui.js",
       "scripts/smoke-alerts.js",
+      "scripts/smoke-output-quality.js",
       "controller.html",
       "output.html",
       "remote.html",

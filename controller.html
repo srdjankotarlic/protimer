@@ -369,6 +369,16 @@
   .layout-slider input[type=range]{padding:0; accent-color:var(--blue);}
   .panel-help{font-size:11px; color:var(--dim); line-height:1.5; margin:8px 0 0;}
   #outputSizeStatus{color:var(--accent);}
+  .output-quality{margin-top:12px; padding-top:10px; border-top:1px solid var(--border);}
+  .output-quality-head{display:flex; align-items:center; flex-wrap:wrap; gap:8px 12px;}
+  .output-quality-head .panel-help{flex:1 1 200px; margin:0;}
+  .output-quality-head button{font-size:12px;}
+  #outputQualityReadout{white-space:pre-line; overflow-wrap:anywhere;}
+  #outputQualityClipping{color:var(--amber);}
+  .output-quality details{margin-top:8px; font-size:11px; color:var(--dim); line-height:1.5;}
+  .output-quality summary{cursor:pointer; font-weight:600;}
+  .output-quality details ol{margin:8px 0; padding-left:20px;}
+  .output-quality details li+li{margin-top:6px;}
   .secondary-readout{font:700 clamp(32px,5vw,64px)/1.2 "SF Mono",Menlo,monospace; text-align:center; padding:12px; background:#000; border-radius:8px;}
   #networkSel{width:100%; margin:6px 0 8px; font-size:12px;}
 
@@ -509,14 +519,23 @@
       </div>
       <p id="placementContext" class="panel-help placement-context" hidden></p>
       <div class="layout-row">
-        <label><span data-i18n="widthPx">Širina (px)</span><input id="outputWidth" type="number" min="80" max="7680" step="1" value="1920"></label>
+        <label><span data-i18n="widthPx">Širina (logička)</span><input id="outputWidth" type="number" min="80" max="7680" step="1" value="1920"></label>
         <span>×</span>
-        <label><span data-i18n="heightPx">Visina (px)</span><input id="outputHeight" type="number" min="60" max="4320" step="1" value="1080"></label>
+        <label><span data-i18n="heightPx">Visina (logička)</span><input id="outputHeight" type="number" min="60" max="4320" step="1" value="1080"></label>
         <button id="btnOutputSize" class="primary" data-i18n="applySize">Primeni veličinu</button>
-        <button data-output-size="1920,1080">Full HD</button><button data-output-size="1280,720">HD</button>
+        <button data-output-size="1920,1080" data-i18n-title="sizePresetTitle" title="Dimenzije prozora, ne podešavanje HDMI signala">Full HD</button><button data-output-size="1280,720" data-i18n-title="sizePresetTitle" title="Dimenzije prozora, ne podešavanje HDMI signala">HD</button>
       </div>
       <div id="outputSizeStatus" class="panel-help" role="status"></div>
-      <p class="panel-help" data-i18n="sizeHelp">Logički pikseli (kao OBS Browser Source). Primena izlazi iz punog ekrana i isključuje Grid/Kompaktan samo za izabrani prozor. Pun ekran uključi njegovim dugmetom ⛶.</p>
+      <p class="panel-help" data-i18n="sizeHelp">Dimenzije su u logičkim jedinicama ekrana. Full HD/HD bira veličinu prozora, ne kvalitet HDMI signala. Primena izlazi iz punog ekrana i isključuje Grid/Kompaktan samo za izabrani prozor. Pun ekran uključi njegovim dugmetom ⛶.</p>
+      <div id="outputQualityPanel" class="output-quality">
+        <div class="output-quality-head"><p id="outputQualityStatus" class="panel-help" role="status" aria-live="polite"></p><button id="btnCheckOutput" type="button" data-i18n="checkOutput">Proveri izlaz</button></div>
+        <p id="outputQualityReadout" class="panel-help"></p>
+        <p id="outputQualityClipping" class="panel-help" hidden data-i18n="outputClipped">Tajmer ili tekst izlazi van vidljivog prostora. Smanji „Veličina cifara“, vrati pomeranje ka centru ili skrati tekst, pa ponovi proveru.</p>
+        <details id="outputQualityHelp"><summary data-i18n="outputQualityHelpTitle">Oštrina na televizoru / HDMI / svičer</summary>
+          <ol><li data-i18n="outputQualityFullscreenHelp">Za izabrani ekran koristi postojeće dugme ⛶ za pun ekran. Za probu preko celog ekrana možeš isključiti Grid/Kompaktan. Proveru ponovi posle promene.</li><li data-i18n="outputQualityDisplayHelp">Na računaru izaberi izvornu rezoluciju ekrana. Skaliranje sistema menja odnos logičkih jedinica i piksela; veći prozor sam po sebi ne poboljšava HDMI signal.</li><li data-i18n="outputQualitySwitcherHelp">Na probi uskladi računar, HDMI svičer i televizor na isti podržani format, npr. 1920 × 1080 progresivno (1080p), i istu brzinu kadrova. Na televizoru proveri overscan i obradu slike.</li></ol>
+          <p class="panel-help" data-i18n="outputQualityLimit">Provera meri prikaz aplikacije u trenutku provere. Ne može da potvrdi rezoluciju HDMI signala, obradu u svičeru ili oštrinu panela televizora.</p>
+        </details>
+      </div>
       <div class="layout-row">
         <label id="layoutTargetLabel" hidden><span data-i18n="adjustDigits">Podesi cifre</span><select id="layoutTarget"><option value="primary" data-i18n="timerOne">Tajmer 1</option><option value="secondary" data-i18n="timerTwo" disabled>Tajmer 2</option></select></label>
         <button id="btnLayoutReset" data-i18n="centerReset">Centriraj · 100%</button>
@@ -812,6 +831,7 @@ const api = window.pt || {
   sendState(){}, onState(){}, openOutput(){}, closeOutput(){}, toggleFullscreen(){},
   exitFullscreen(){}, setOnTop(){}, getDisplays:async()=>[], isOutputOpen:async()=>false,
   resizeOutput:async()=>({ok:false}), getOutputGeometry:async()=>null, onOutputGeometry(){},
+  getOutputQuality:async()=>({ok:false,code:'OUTPUT_UNAVAILABLE'}),
   openSecondaryOutput:async()=>({ok:false}), closeSecondaryOutput(){}, toggleSecondaryFullscreen(){},
   getSecondaryOutputGeometry:async()=>null, onSecondaryOutputGeometry(){},
   getNetworkInfo:async()=>({}), onDisplays(){}, onOutputState(){}, onNetworkInfo(){},
@@ -874,8 +894,22 @@ const I18N = {
     localCheckOK:'Server odgovara. To ne potvrđuje pristup sa telefona — skeniraj QR „Kontrola telefonom“.',
     localCheckFailed:'Server ne odgovara na ovoj adresi. Izaberi drugu mrežu i pogledaj „Telefon se ne povezuje?“ ispod.',
     shareFailureHelp:'Online servis nije dostupan. Proveri internet/VPN i pokušaj ponovo. Lokalna kontrola ostaje dostupna na istoj mreži.',
-    outputLayoutTitle:'IZLAZNI PROZOR I CIFRE', widthPx:'Širina (px)', heightPx:'Visina (px)', applySize:'Primeni veličinu',
-    sizeHelp:'Logički pikseli (kao OBS Browser Source). Primena izlazi iz punog ekrana i isključuje Grid/Kompaktan samo za izabrani prozor. Pun ekran uključi njegovim dugmetom ⛶.',
+    outputLayoutTitle:'IZLAZNI PROZOR I CIFRE', widthPx:'Širina (logička)', heightPx:'Visina (logička)', applySize:'Primeni veličinu',
+    sizeHelp:'Dimenzije su u logičkim jedinicama ekrana. Full HD/HD bira veličinu prozora, ne kvalitet HDMI signala. Primena izlazi iz punog ekrana i isključuje Grid/Kompaktan samo za izabrani prozor. Pun ekran uključi njegovim dugmetom ⛶.',
+    sizePresetTitle:'Dimenzije prozora, ne podešavanje HDMI signala', logicalUnits:'logičkih jedinica',
+    checkOutput:'Proveri izlaz', outputChecking:'Proveravam prikaz aplikacije…', outputUnchecked:'Izlaz još nije proveren',
+    outputChecked:'Poslednja provera', outputQualityClosed:'Izlazni prozor je zatvoren', outputQualityChanged:'Izlaz se promenio. Ponovi proveru.',
+    outputQualityUnavailable:'Provera trenutno nije dostupna. Pokušaj ponovo.',
+    outputDisplay:'Ekran', outputDisplayScale:'skala ekrana', outputZoom:'zum', outputFullscreen:'pun ekran', outputWindowed:'u prozoru',
+    outputEstimatedRaster:'Procena rastera prozora', outputCapture:'Izmeren snimak aplikacije', outputRenderer:'Prikaz aplikacije',
+    outputCaptureTooLarge:'Snimak je preskočen zbog veličine; prikazana su merenja prikaza aplikacije.',
+    outputCaptureUnavailable:'Snimak nije dostupan; prikazana su merenja prikaza aplikacije.',
+    outputClipped:'Tajmer ili tekst izlazi van vidljivog prostora. Smanji „Veličina cifara“, vrati pomeranje ka centru ili skrati tekst, pa ponovi proveru.',
+    outputQualityHelpTitle:'Oštrina na televizoru / HDMI / svičer',
+    outputQualityFullscreenHelp:'Za izabrani ekran koristi postojeće dugme ⛶ za pun ekran. Za probu preko celog ekrana možeš isključiti Grid/Kompaktan. Proveru ponovi posle promene.',
+    outputQualityDisplayHelp:'Na računaru izaberi izvornu rezoluciju ekrana. Skaliranje sistema menja odnos logičkih jedinica i piksela; veći prozor sam po sebi ne poboljšava HDMI signal.',
+    outputQualitySwitcherHelp:'Na probi uskladi računar, HDMI svičer i televizor na isti podržani format, npr. 1920 × 1080 progresivno (1080p), i istu brzinu kadrova. Na televizoru proveri overscan i obradu slike.',
+    outputQualityLimit:'Provera meri prikaz aplikacije u trenutku provere. Ne može da potvrdi rezoluciju HDMI signala, obradu u svičeru ili oštrinu panela televizora.',
     actualSize:'Trenutni izlaz', sizeFailed:'Veličina nije primenjena. Proveri dimenzije i pokušaj ponovo.', sizeInvalid:'Unesi cele brojeve: širina 80–7680 i visina 60–4320.',
     adjustDigits:'Podesi cifre', timerOne:'Tajmer 1', timerTwo:'Tajmer 2', centerReset:'Centriraj · 100%',
     digitScale:'Veličina cifara (%)', digitX:'Levo / desno (%)', digitY:'Gore / dole (%)',
@@ -973,8 +1007,22 @@ const I18N = {
     localCheckOK:'The server responds. This does not confirm phone access — scan the “Phone control” QR.',
     localCheckFailed:'The server does not respond at this address. Select another network and see “Phone cannot connect?” below.',
     shareFailureHelp:'The online service is unavailable. Check internet/VPN and retry. Local control remains available on the same network.',
-    outputLayoutTitle:'OUTPUT WINDOW & DIGITS', widthPx:'Width (px)', heightPx:'Height (px)', applySize:'Apply size',
-    sizeHelp:'Logical pixels (like an OBS Browser Source). Applying exits fullscreen and disables Grid/Compact only for the selected window. Use its ⛶ button for fullscreen.',
+    outputLayoutTitle:'OUTPUT WINDOW & DIGITS', widthPx:'Width (logical)', heightPx:'Height (logical)', applySize:'Apply size',
+    sizeHelp:'Dimensions use logical screen units. Full HD/HD chooses window dimensions, not HDMI signal quality. Applying exits fullscreen and disables Grid/Compact only for the selected window. Use its ⛶ button for fullscreen.',
+    sizePresetTitle:'Window dimensions, not an HDMI signal setting', logicalUnits:'logical units',
+    checkOutput:'Check output', outputChecking:'Checking the app output…', outputUnchecked:'Output has not been checked',
+    outputChecked:'Last check', outputQualityClosed:'Output window is closed', outputQualityChanged:'Output changed. Check again.',
+    outputQualityUnavailable:'Check is currently unavailable. Try again.',
+    outputDisplay:'Display', outputDisplayScale:'display scale', outputZoom:'zoom', outputFullscreen:'fullscreen', outputWindowed:'windowed',
+    outputEstimatedRaster:'Estimated window raster', outputCapture:'Measured app capture', outputRenderer:'App renderer',
+    outputCaptureTooLarge:'Capture skipped because of its size; app renderer measurements are shown.',
+    outputCaptureUnavailable:'Capture unavailable; app renderer measurements are shown.',
+    outputClipped:'The timer or text extends outside the visible output. Reduce “Digit size”, move the digits toward the center or shorten the text, then check again.',
+    outputQualityHelpTitle:'Sharpness on a TV / HDMI / switcher',
+    outputQualityFullscreenHelp:'Use the selected output’s existing ⛶ button for fullscreen. For a full-screen rehearsal, you can turn off Grid/Compact. Check again after changes.',
+    outputQualityDisplayHelp:'Choose the display’s native resolution in the computer’s display settings. System scaling changes the relationship between logical units and pixels; a larger window alone does not improve the HDMI signal.',
+    outputQualitySwitcherHelp:'During rehearsal, match the computer, HDMI switcher and TV to the same supported format, such as 1920 × 1080 progressive (1080p), and the same frame rate. Check the TV’s overscan and image processing settings.',
+    outputQualityLimit:'This check measures the app output at the time of the check. It cannot verify the HDMI signal resolution, switcher processing or TV panel sharpness.',
     actualSize:'Current output', sizeFailed:'Size was not applied. Check the dimensions and try again.', sizeInvalid:'Enter whole numbers: width 80–7680 and height 60–4320.',
     adjustDigits:'Adjust digits', timerOne:'Timer 1', timerTwo:'Timer 2', centerReset:'Center · 100%',
     digitScale:'Digit size (%)', digitX:'Left / right (%)', digitY:'Up / down (%)',
@@ -1283,6 +1331,8 @@ $('btnBothStart').addEventListener('click',()=>bothRunning(true));
 $('btnBothPause').addEventListener('click',()=>bothRunning(false));
 $('btnBothReset').addEventListener('click',()=>{ TimerTools.reset(S.secondary); reset(); });
 let lastOutputGeometry=null, lastSecondaryGeometry=null;
+let outputQualityVersion=0;
+let outputQuality={role:'primary',key:null,status:'idle',result:null,checkedAt:null};
 function selectedWindow(){ return TimerTools.separateOutputs(S)&&$('outputWindowTarget').value==='secondary'?'secondary':'primary'; }
 function selectedGrid(){ return selectedWindow()==='secondary'?S.secondary:S; }
 function selectPlacement(role){
@@ -1301,8 +1351,9 @@ function renderPlacementContext(){
 }
 function renderOutputSizeStatus(){
   const info=selectedWindow()==='secondary'?lastSecondaryGeometry:lastOutputGeometry;
-  $('outputSizeStatus').textContent=info?`${t('actualSize')}: ${info.width} × ${info.height} px${info.fullscreen?' · '+t('fsTitle'):''}`:t('outClosed');
+  $('outputSizeStatus').textContent=info?`${t('actualSize')}: ${info.width} × ${info.height} ${t('logicalUnits')}${info.fullscreen?' · '+t('outputFullscreen'):''}`:t('outClosed');
   renderPlacementContext();
+  renderOutputQuality();
 }
 function showOutputGeometry(info){
   lastOutputGeometry=info;
@@ -1311,9 +1362,100 @@ function showOutputGeometry(info){
 function showSecondaryOutputGeometry(info){
   lastSecondaryGeometry=info;
   $('btnSecondaryFs').disabled=!info; $('btnCloseSecondaryOut').disabled=!info;
-  $('secondaryOutputStatus').textContent=info?`${t('secondaryOutputLive')} · ${info.width} × ${info.height} px`:t('secondaryOutputClosed');
+  $('secondaryOutputStatus').textContent=info?`${t('secondaryOutputLive')} · ${info.width} × ${info.height} ${t('logicalUnits')}`:t('secondaryOutputClosed');
   renderOutputSizeStatus();
 }
+function outputQualityKey(){
+  const role=selectedWindow(), info=role==='secondary'?lastSecondaryGeometry:lastOutputGeometry;
+  const geometry=info&&['width','height','fullscreen','displayId','scaleFactor','displayLabel','displayWidth','displayHeight','refreshRate','pixelWidth','pixelHeight','zoomFactor'].map(key=>info[key]??null);
+  const timer=role==='secondary'?S.secondary:S;
+  // Clock ticks are deliberately excluded: this is a snapshot of the selected
+  // output. Placement and presentation edits invalidate its clipping result.
+  return JSON.stringify([role,geometry,S.dualTimer,S.separateOutputs,S.dualSplit,$('layoutTarget').value,
+    role==='secondary'?timer.layout:S.outputLayout,
+    S.dualTimer&&!TimerTools.separateOutputs(S)?S.secondary.layout:null,
+    timer.gridOn,timer.gridSize,timer.gridCell,timer.outputSize,S.fitWindow,
+    timer.mode,S.text,S.textOnly,S.showNowNext,S.blackout,S.transparent,S.message?.text]);
+}
+function syncOutputQualityContext(){
+  const role=selectedWindow(), key=outputQualityKey();
+  if(outputQuality.role===role&&outputQuality.key===key) return false;
+  outputQualityVersion++;
+  outputQuality={role,key,status:'idle',result:null,checkedAt:null};
+  return true;
+}
+function refreshOutputQualityContext(){ if(syncOutputQualityContext()) renderOutputQuality(); }
+function invalidateOutputQuality(role=selectedWindow()){
+  if(role!==selectedWindow()) return;
+  outputQualityVersion++;
+  outputQuality={role,key:outputQualityKey(),status:'idle',result:null,checkedAt:null};
+  renderOutputQuality();
+}
+function qualityNumber(value){ return Number.isFinite(value)&&value>0?String(Math.round(value*100)/100):null; }
+function qualityDimensions(width,height){ return qualityNumber(width)&&qualityNumber(height)?`${qualityNumber(width)} × ${qualityNumber(height)}`:null; }
+function renderOutputQuality(){
+  syncOutputQualityContext();
+  const info=selectedWindow()==='secondary'?lastSecondaryGeometry:lastOutputGeometry;
+  const result=outputQuality.result, renderer=result?.renderer;
+  const name=t(selectedWindow()==='secondary'?'timerTwo':'timerOne');
+  let status=t(info?'outputUnchecked':'outputQualityClosed');
+  if(outputQuality.status==='checking') status=t('outputChecking');
+  else if(outputQuality.status==='checked') status=`${t('outputChecked')} · ${outputQuality.checkedAt.toLocaleTimeString(lang==='sr'?'sr-Latn':'en-GB')}`;
+  else if(outputQuality.status==='changed') status=t('outputQualityChanged');
+  else if(outputQuality.status==='unavailable') status=t('outputQualityUnavailable');
+  else if(outputQuality.status==='closed') status=t('outputQualityClosed');
+  $('outputQualityStatus').textContent=`${name} · ${status}`;
+  $('btnCheckOutput').disabled=outputQuality.status==='checking';
+  const lines=[];
+  if(info){
+    const display=[`${t('outputDisplay')}: ${info.displayLabel||info.displayId||'—'}`];
+    const size=qualityDimensions(info.displayWidth,info.displayHeight);
+    if(size) display.push(`${size} ${t('logicalUnits')}`);
+    if(qualityNumber(info.refreshRate)) display.push(`${qualityNumber(info.refreshRate)} Hz`);
+    if(qualityNumber(info.scaleFactor)) display.push(`${t('outputDisplayScale')} ${qualityNumber(info.scaleFactor)}×`);
+    const zoom=renderer?.zoomFactor??info.zoomFactor;
+    if(qualityNumber(zoom)) display.push(`${t('outputZoom')} ${qualityNumber(zoom*100)}%`);
+    lines.push(display.join(' · '));
+    const estimated=qualityDimensions(info.pixelWidth,info.pixelHeight);
+    if(estimated) lines.push(`${t('outputEstimatedRaster')}: ${estimated} px`);
+  }
+  if(result){
+    const capture=qualityDimensions(result.capture?.width,result.capture?.height);
+    if(result.captureStatus==='verified'&&capture) lines.push(`${t('outputCapture')}: ${capture} px`);
+    const viewport=qualityDimensions(renderer?.width,renderer?.height);
+    if(viewport) lines.push(`${t('outputRenderer')}: ${viewport} CSS px${qualityNumber(renderer.devicePixelRatio)?' · DPR '+qualityNumber(renderer.devicePixelRatio):''}`);
+    if(result.captureStatus!=='verified'||!capture) lines.push(t(result.captureStatus==='too-large'?'outputCaptureTooLarge':'outputCaptureUnavailable'));
+  }
+  $('outputQualityReadout').textContent=lines.join('\n');
+  $('outputQualityReadout').hidden=!lines.length;
+  $('outputQualityClipping').hidden=!result?.clipped;
+}
+async function checkOutputQuality(){
+  syncOutputQualityContext();
+  const role=selectedWindow(), key=outputQualityKey(), version=++outputQualityVersion;
+  outputQuality={role,key,status:'checking',result:null,checkedAt:null};
+  renderOutputQuality();
+  const current=()=>version===outputQualityVersion&&role===selectedWindow()&&key===outputQualityKey();
+  try{
+    const result=await api.getOutputQuality?.(role);
+    if(!current()){ refreshOutputQualityContext(); return; }
+    if(result?.ok&&result.role===role&&result.geometry){
+      if(role==='secondary') showSecondaryOutputGeometry(result.geometry); else showOutputGeometry(result.geometry);
+      outputQuality={role,key:outputQualityKey(),status:'checked',result,checkedAt:new Date()};
+    }else{
+      const code=result?.ok?'OUTPUT_CHANGED':result?.code;
+      if(code==='OUTPUT_CLOSED'){
+        if(role==='secondary') showSecondaryOutputGeometry(null); else showOutputGeometry(null);
+      }
+      outputQuality={role,key:outputQualityKey(),status:code==='OUTPUT_CLOSED'?'closed':code==='OUTPUT_CHANGED'?'changed':'unavailable',result:null,checkedAt:null};
+    }
+  }catch(_){
+    if(!current()){ refreshOutputQualityContext(); return; }
+    outputQuality={role,key,status:'unavailable',result:null,checkedAt:null};
+  }
+  renderOutputQuality();
+}
+$('btnCheckOutput').addEventListener('click',checkOutputQuality);
 function syncOutputSizeFields(){
   const size=(selectedWindow()==='secondary'?S.secondary.outputSize:S.outputSize)||{width:1920,height:1080};
   $('outputWidth').value=size.width; $('outputHeight').value=size.height; renderOutputSizeStatus();
@@ -1377,6 +1519,7 @@ function calc(now){
 }
 let lastKey='';
 function render(){
+  refreshOutputQualityContext();
   const now=engineClock.sample(), r=calc(now);
   if(S.dualTimer){
     let rem=TimerTools.remaining(S.secondary,now); if(!(S.secondary.overtime??S.overtime)) rem=Math.max(0,rem);
