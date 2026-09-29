@@ -8,6 +8,11 @@ import {createRequire} from 'node:module';
 import {WebSocketServer} from 'ws';
 const require=createRequire(import.meta.url),L=require('../../deck-layout.js'),M=require('../../deck-model.js');
 const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+function imageSvg(message){
+  const image=message.payload.image;
+  assert.match(image,/^data:image\/svg\+xml;base64,/,'SDK setImage must not receive raw SVG');
+  return Buffer.from(image.split(',')[1],'base64').toString('utf8');
+}
 async function until(predicate,message,timeout=4000){const deadline=Date.now()+timeout;while(!predicate()){if(Date.now()>deadline)throw Error(message);await delay(20);}}
 
 test('compiled SDK plugin: real event adapter, owned keys, held guards, numeric page, offline BACK and no auto switch (simulated Elgato)',{timeout:18000},async t=>{
@@ -45,7 +50,7 @@ test('compiled SDK plugin: real event adapter, owned keys, held guards, numeric 
   connection.send(JSON.stringify({event:'didReceiveDeepLink',payload:{url:`/bootstrap?port=${server.address().port}&nonce=${nonce}&streamdeck=hidden`}}));
   await until(()=>inventory?.actions.length===28,'Inventory missing');assert.equal(inventory.canActivate,false);assert.equal(inventory.devices[0].id,deviceId);assert.equal(sdkMessages.filter(m=>m.event==='switchToProfile').length,0,'startup must not change profile');
   assert.equal(sdkMessages.some(m=>m.event==='setImage'&&['key-7','key-15','key-23','key-31'].includes(m.context)),false,'FREE keys never touched');
-  await until(()=>sdkMessages.some(m=>m.event==='setImage'&&m.context==='key-2'&&m.payload.image.includes('RUNNING')),'Authoritative active graphic missing');
+  await until(()=>sdkMessages.some(m=>m.event==='setImage'&&m.context==='key-2'&&imageSvg(m).includes('RUNNING')),'Authoritative active graphic missing');
   const press=async(index,duration=30)=>{const id=`key-${index}`,a=actions.get(id),payload={controller:'Keypad',coordinates:a.coordinates,settings:a.settings};send('keyDown',id,payload);await delay(duration);send('keyUp',id,payload);};
   const deadline=raw.t1.endAt;await press(17);await until(()=>model.snapshot().timers.t1.draft.durationMs===600000,'Preset failed');assert.equal(raw.t1.endAt,deadline,'SET preset must not alter ACTIVE');
   await press(5);await delay(100);assert.equal(raw.t1.running,true,'short reset rejected');await press(5,1650);await until(()=>raw.t1.running===false,'Held reset failed');
@@ -58,6 +63,6 @@ test('compiled SDK plugin: real event adapter, owned keys, held guards, numeric 
   await until(()=>model.snapshot().numeric?.buffer==='012345','Numeric digits did not reach host');await numericPress(17);await until(()=>model.snapshot().timers.t1.draft.durationMs===5025000,'Numeric apply not 01:23:45');assert.equal(raw.t1.running,false);
   instructions=[{id:'bind-test',type:'bind',deviceId,context:'key-6',instanceId:'instance-6',layoutId:layout.id,slotId:layout.slots[16].id}];
   await until(()=>results.some(r=>r.id==='bind-test'),'Binding no response');assert.equal(results.at(-1).deviceConfirmed,true);assert.equal(actions.get('key-6').settings.slotIndex,16);assert.equal(sdkMessages.filter(m=>m.event==='switchToProfile').length,0);
-  online=false;await until(()=>sdkMessages.some(m=>m.event==='setImage'&&m.context==='key-2'&&m.payload.image.includes('OFFLINE')),'Offline display missing');
+  online=false;await until(()=>sdkMessages.some(m=>m.event==='setImage'&&m.context==='key-2'&&imageSvg(m).includes('OFFLINE')),'Offline display missing');
   const count=commands.length;await press(1,1650);assert.equal(commands.length,count,'no offline START SET');await press(30);await until(()=>sdkMessages.some(m=>m.event==='switchToProfile'),'BACK must work offline');assert.equal(sdkMessages.find(m=>m.event==='switchToProfile').payload.profile,undefined);
 });

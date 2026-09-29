@@ -1,7 +1,7 @@
 import streamDeck, {action,SingletonAction,type KeyAction,type KeyDownEvent,type KeyUpEvent,type WillAppearEvent,type WillDisappearEvent,type DidReceiveSettingsEvent} from '@elgato/streamdeck';
 import {randomUUID} from 'node:crypto';
 import {Bridge} from './bridge.js';
-import {keyImage,pinCommand,needsHold,numericBindings,formatMs} from './logic.js';
+import {keyImage,keyImageDataUrl,pinCommand,needsHold,numericBindings,formatMs} from './logic.js';
 import type {Settings,Key,Command,Frame,Instruction,TimerId} from './types.js';
 import {layout} from './shared.js';
 
@@ -57,7 +57,7 @@ async function render(item:Owned){
   const error=(item.errorUntil||0)>performance.now()?item.error:undefined;
   const image=keyImage(displayKey,state,overlay,error);
   if(image===item.lastImage)return;
-  await item.action.setImage(image);item.lastImage=image;
+  await item.action.setImage(keyImageDataUrl(image));item.lastImage=image;
 }
 async function sendInventory(){
   if(!bridge.online)return;

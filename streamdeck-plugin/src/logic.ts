@@ -18,11 +18,15 @@ export function formatMs(ms:number){
   return `${negative?'−':''}${h?h+':'+String(m).padStart(2,'0'):m}:${String(sec).padStart(2,'0')}`;
 }
 function xml(value:unknown){return String(value??'').replace(/[<>&"']/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&apos;'}[c]!));}
+// setImage accepts a file path or data URL, not raw SVG markup.
+export function keyImageDataUrl(svg:string){return `data:image/svg+xml;base64,${Buffer.from(svg,'utf8').toString('base64')}`;}
 export function keyImage(key:Key,state?:Snapshot,overlay?:{label:string;value?:string;status?:string},error?:string){
   const timerId=key.timerId==='selected'?(state?.selectedTimerId||'t1'):key.timerId,timer=state?.timers[timerId];
   let value=layout.label(key),label=timerId.toUpperCase(),status='';let color=/^#[0-9a-f]{6}$/i.test(key.color||'')?key.color!:'#6289b8';
-  // Preserve visible labels even if a user chooses a dark accent in the editor.
-  if([1,3,5].map(i=>parseInt(color.slice(i,i+2),16)).reduce((a,b)=>a+b,0)<260)color='#ced8e8';
+  // Starter keys use a dark neutral accent. Give critical controls a distinct,
+  // legible color on the LCD while retaining any brighter user-picked accent.
+  if([1,3,5].map(i=>parseInt(color.slice(i,i+2),16)).reduce((a,b)=>a+b,0)<260)
+    color=({startPause:'#42d17d',startSet:'#61adff',reset:'#ffcd5c',blackout:'#ff665f',bell:'#8fcaff',outputA:'#8fcaff',outputB:'#8fcaff'}as Record<string,string>)[key.command]||'#ced8e8';
   if(!state){value=key.command==='back'?'BACK':'OFFLINE';status=key.command==='back'?'PREVIOUS PROFILE':'NO LIVE STATE';color='#77808d';}
   else if(key.command==='activeTime'&&timer){label+= ' ACTIVE';value=timer.active.display||(timer.active.mode==='clock'?'CLOCK':formatMs(timer.active.mode==='countup'?timer.active.elapsedMs??0:timer.active.remainingMs??0));status=timer.active.status;color=status==='OVERTIME'?'#ff665f':status==='RUNNING'?'#42d17d':status==='PAUSED'?'#ffcd5c':'#ccd5df';}
   else if(key.command==='setTime'&&timer){label+=' SET';value=formatMs(timer.draft.durationMs);status=timer.draft.status==='EDITING'?'EDITING':'READY';if(timer.draft.mode!=='countdown')status+=timer.draft.mode==='countup'?' / UP':' / CLOCK';color='#61adff';}
@@ -33,9 +37,13 @@ export function keyImage(key:Key,state?:Snapshot,overlay?:{label:string;value?:s
   if(state&&key.stateDisplay===false&&!['activeTime','setTime','editTarget','adjust'].includes(key.command))status='';
   if(overlay){value=overlay.value||overlay.label;label=overlay.value?overlay.label:label;status=overlay.status||'ENTER TIME';color='#61adff';}
   if(error){value=error;status='CHECK CONTROL';color='#ffcd5c';}
-  const font=Math.max(12,Math.min(key.textSize||23,Math.floor(126/Math.max(1,value.length)*1.55),28));
+  const timeKey=['activeTime','setTime'].includes(key.command);
+  const requested=Math.max(12,Math.min(key.textSize||18,28));
+  // The 144px canvas is reduced to a 96px XL key. Scale the editor's text size
+  // for the LCD, then cap long values to the available width.
+  const font=Math.max(16,Math.min(requested*(timeKey?2.1:1.65),Math.floor(220/Math.max(1,[...value].length)),timeKey?46:34));
   const glyph=({play:'▶',pause:'Ⅱ',stop:'■',reset:'↺',bell:'♪',plus:'+',minus:'−',clock:'◷',timer:'◴',screen:'▣',grid:'▦',message:'…',settings:'⚙',back:'↩',up:'↑',down:'↓',left:'←',right:'→',lock:'●',edit:'✎'}as Record<string,string>)[key.icon||'']||'';
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="144" height="144" viewBox="0 0 144 144"><rect width="144" height="144" rx="14" fill="#10151d"/><rect x="4" y="4" width="136" height="136" rx="11" fill="none" stroke="${color}" stroke-width="3"/><text x="72" y="26" fill="#ced5df" font-family="Arial,sans-serif" font-size="15" text-anchor="middle">${xml(label)}</text><text x="72" y="48" fill="${color}" font-family="Arial,sans-serif" font-size="15" text-anchor="middle">${xml(glyph)}</text><text x="72" y="81" fill="${color}" font-family="Arial,sans-serif" font-weight="bold" font-size="${font}" text-anchor="middle">${xml(value)}</text><text x="72" y="120" fill="#e3e9f2" font-family="Arial,sans-serif" font-size="12" text-anchor="middle">${xml(status)}</text></svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="144" height="144" viewBox="0 0 144 144"><rect width="144" height="144" rx="14" fill="#10151d"/><rect x="4" y="4" width="136" height="136" rx="11" fill="none" stroke="${color}" stroke-width="3"/><text x="72" y="26" fill="#ced5df" font-family="Arial,sans-serif" font-size="16" font-weight="700" text-anchor="middle">${xml(label)}</text><text x="72" y="48" fill="${color}" font-family="Arial,sans-serif" font-size="16" text-anchor="middle">${xml(glyph)}</text><text x="72" y="87" fill="${color}" font-family="Arial,sans-serif" font-weight="bold" font-size="${font}" text-anchor="middle">${xml(value)}</text><text x="72" y="121" fill="#e3e9f2" font-family="Arial,sans-serif" font-size="13" text-anchor="middle">${xml(status)}</text></svg>`;
 }
 // Numeric overlay only binds contexts actually owned by this plugin. Never SDK
 // coordinates alone: the same coordinates recur on other pages and devices.

@@ -1,7 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
-import {pinCommand,needsHold,formatMs,keyImage,numericBindings} from '../.test-build/logic.js';
+import {pinCommand,needsHold,formatMs,keyImage,keyImageDataUrl,numericBindings} from '../.test-build/logic.js';
+
+test('LCD transport encodes SVG as an SDK image data URL, preserving Unicode',()=>{
+  const svg=keyImage(L.defaultKey('bell',{name:'Zvonce − ć'}),snapshot());
+  const image=keyImageDataUrl(svg);
+  assert.match(image,/^data:image\/svg\+xml;base64,/);
+  assert.equal(Buffer.from(image.split(',')[1],'base64').toString('utf8'),svg);
+});
 const require=createRequire(import.meta.url),L=require('../../deck-layout.js');
 const active={mode:'countdown',status:'RUNNING',running:true,version:4,remainingMs:523000,elapsedMs:0};
 const snapshot=()=>({selectedTimerId:'t1',editTarget:'set',timers:{t1:{active:{...active},draft:{mode:'countdown',durationMs:900000,version:8}},t2:{active:{...active,status:'READY',running:false,version:2},draft:{mode:'countdown',durationMs:600000,version:3}}}});
