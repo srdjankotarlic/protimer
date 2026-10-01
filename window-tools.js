@@ -1,11 +1,20 @@
 const pendingExits = new WeakMap();
 const siblingGuards = new WeakMap();
 
+function isFullscreen(win) {
+  return win.isFullScreen() || !!win.isSimpleFullScreen?.();
+}
+function setPresentationFullscreen(win, entering, simple = false, platform = process.platform) {
+  if (platform === 'darwin' && (simple || win.isSimpleFullScreen?.()) && win.setSimpleFullScreen)
+    win.setSimpleFullScreen(entering);
+  else win.setFullScreen(entering);
+}
+
 function preserveSiblingBounds(source, entering, { getSibling, screen, platform = process.platform }) {
   siblingGuards.get(source)?.();
   if (platform !== 'darwin' || source.isDestroyed() || source.isFullScreen() === entering) return;
   const sibling = getSibling?.(), win = sibling?.window;
-  if (!win || win.isDestroyed() || win.isFullScreen()) return;
+  if (!win || win.isDestroyed() || isFullscreen(win)) return;
   const bounds = win.getBounds(), displayId = screen.getDisplayMatching(bounds).id;
   const trace = (phase, detail) => { if(process.argv.includes('--smoke')) console.log('SIBLING_FULLSCREEN', phase, JSON.stringify(detail)); };
   trace('begin',{entering,bounds,revision:sibling.revision});
@@ -30,7 +39,7 @@ function preserveSiblingBounds(source, entering, { getSibling, screen, platform 
     cleanup();
     const current = getSibling?.();
     trace('finish',{entering,cancelled,closed:win.isDestroyed(),fullscreen:!win.isDestroyed()&&win.isFullScreen(),bounds:!win.isDestroyed()&&win.getBounds(),revision:current?.revision});
-    if (cancelled || source.isDestroyed() || win.isDestroyed() || win.isFullScreen() ||
+    if (cancelled || source.isDestroyed() || win.isDestroyed() || isFullscreen(win) ||
         current?.window !== win || current.revision !== sibling.revision ||
         !screen.getAllDisplays().some(d => d.id === displayId)) return;
     const actual = win.getBounds();
@@ -46,6 +55,10 @@ function preserveSiblingBounds(source, entering, { getSibling, screen, platform 
 
 function leaveFullscreen(win, timeoutMs = 4000) {
   if (win.isDestroyed()) return Promise.resolve(false);
+  if (win.isSimpleFullScreen?.()) {
+    win.setSimpleFullScreen(false);
+    return Promise.resolve(!isFullscreen(win));
+  }
   if (pendingExits.has(win)) return pendingExits.get(win);
   if (!win.isFullScreen()) return Promise.resolve(true);
   let complete;
@@ -71,4 +84,4 @@ function leaveFullscreen(win, timeoutMs = 4000) {
   return pending;
 }
 
-module.exports = { leaveFullscreen, preserveSiblingBounds };
+module.exports = { leaveFullscreen, preserveSiblingBounds, isFullscreen, setPresentationFullscreen };

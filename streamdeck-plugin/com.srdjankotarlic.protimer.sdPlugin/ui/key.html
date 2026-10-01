@@ -1,18 +1,49 @@
-<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src ws://127.0.0.1:*; img-src 'self' data:"><title>ProTimer Key</title><link rel="stylesheet" href="key.css">
-<body><h1>ProTimer Key</h1><p>Pair in <strong>ProTimer Control → Stream Deck</strong>. No IP or token is needed here.</p>
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src ws://127.0.0.1:*; img-src 'self' data:">
+<title>ProTimer Key</title>
+<link rel="stylesheet" href="key.css">
+<body>
+<h1>ProTimer Key</h1>
+<p>Pair in <strong>ProTimer Control → Stream Deck</strong>. No IP or token is needed here.</p>
 <form id="form">
-<label>Command<select id="command"></select></label>
-<label>Timer<select id="timerId"><option value="selected">Selected timer</option><option value="t1">Timer 1</option><option value="t2">Timer 2</option></select></label>
-<label>Adjustment target<select id="target"><option value="selected">EDIT SET/LIVE selection</option><option value="set">SET only</option><option value="live">LIVE — caution</option></select></label>
-<label>Name<input id="name" maxlength="24" placeholder="Automatic label"></label>
-<div class="row"><label>Signed step<input id="step" type="number" value="1" min="-360000" max="360000" step="1"></label><label>Unit<select id="unit"><option value="s">Seconds</option><option value="m">Minutes</option><option value="h">Hours</option></select></label></div>
-<label>Preset HH:MM:SS<input id="duration" value="00:05:00" pattern="[0-9]{1,2}:[0-5][0-9]:[0-5][0-9]"></label>
-<div class="row"><label>Color<input id="color" type="color" value="#61adff"></label><label>Text size<input id="textSize" type="number" min="12" max="28" value="23"></label></div>
-<label>Press policy<select id="pressPolicy"><option value="short">Short press (unprotected commands only)</option><option value="hold">Hold 1.5 seconds</option></select></label>
-<p class="notice">RESET, BLACK, LIVE editing and replacement of an active timer always require the host's safety guard. Short press cannot bypass them.</p>
-<label><input id="linked" type="checkbox"> Link to a Control layout slot</label>
-<label>Layout ID<input id="layoutId" maxlength="80"></label><label>Slot ID<input id="slotId" maxlength="80"></label>
-<p>For a linked slot, copy its layout and slot IDs from the Control editor. Adding a key here does not take ownership of any other key. To add ProTimer to a truly free position, drag <strong>ProTimer Key</strong> there in Elgato.</p>
-<button type="submit">Save key</button><output id="status" role="status"></output>
-</form><details><summary>Restore live display / Vrati prikaz uživo</summary><p>Elgato's custom title and icon overrides take priority over plugin graphics. Clear the custom title and choose Reset to Default on the icon in Elgato. The plugin cannot overwrite those choices.</p><p>Srpski: povezivanje se podešava u ProTimer kontroli. SET priprema sledeće vreme; ACTIVE je trenutno vreme. Preseti menjaju samo SET. BACK vraća prethodni profil i bez veze sa ProTimerom.</p></details>
-<script src="layout.js"></script><script src="key.js"></script></body></html>
+  <label><input id="linked" type="checkbox"> Follow a Control layout slot</label>
+  <p id="linkedHelp" class="hint" hidden>Following Control. To customize only this physical key in Elgato, select “Edit here” below. Control layout changes will no longer overwrite it.</p>
+  <button id="editHere" type="button" hidden>Edit here in Elgato / Uredi ovde</button>
+  <div id="linkFields" hidden>
+    <label>Layout ID<input id="layoutId" maxlength="96"></label>
+    <label>Slot ID<input id="slotId" maxlength="96"></label>
+    <p class="hint">Copy both IDs from the Control editor. Linking does not move or claim other physical keys.</p>
+  </div>
+  <div id="keyFields">
+    <label>Action<select id="command"></select></label>
+    <p id="commandHelp" class="hint" aria-live="polite"></p>
+    <label id="outputField" hidden>Output operation<select id="outputAction"><option value="open">Open only — safe to press again</option><option value="close">Close only — one tap</option><option value="toggle">Open / close based on state</option></select></label>
+    <label id="timerField">Timer<select id="timerId"><option value="selected">Currently selected timer</option><option value="t1">Timer 1</option><option value="t2">Timer 2</option></select></label>
+    <label id="targetField" hidden>Adjust<select id="target"><option value="set">Prepared SET time only</option><option value="selected">Current EDIT SET/LIVE selection</option><option value="live">ACTIVE time directly — caution</option></select></label>
+    <div id="adjustFields" class="row" hidden>
+      <label>Amount (+ or −)<input id="step" type="number" value="1" min="-359999" max="359999" step="1"></label>
+      <label>Unit<select id="unit"><option value="s">Seconds</option><option value="m">Minutes</option><option value="h">Hours</option></select></label>
+    </div>
+    <label id="durationField" hidden>Preset time (HH:MM:SS)<input id="duration" value="00:05:00" pattern="[0-9]{1,2}:[0-5][0-9]:[0-5][0-9]"></label>
+    <label id="nameField">Custom key label<input id="name" maxlength="28" placeholder="Automatic label"></label>
+    <p id="nameHint" class="hint">Leave the label blank to show the automatic action and timer names.</p>
+    <label>Function icon<select id="icon"></select></label>
+    <label><input id="stateDisplay" type="checkbox" checked> Show live status</label>
+    <div class="row">
+      <label id="colorField">Key color<input id="color" type="color" value="#202631"></label>
+      <label id="textSizeField">Text size<input id="textSize" type="number" min="12" max="28" value="18"></label>
+    </div>
+    <label id="pressPolicyField">Press<select id="pressPolicy"><option value="short">Tap once</option><option value="hold">Hold for 1.5 seconds</option></select></label>
+    <p id="safetyNotice" class="notice" hidden></p>
+  </div>
+  <button type="submit">Save key</button>
+  <output id="status" role="status"></output>
+</form>
+<p class="hint">A ProTimer action remains on this physical key until you remove or replace it in Elgato. To add one elsewhere, drag <strong>ProTimer Key</strong> onto a free position.</p>
+<details><summary>Help / Pomoć</summary><p>Elgato's custom title and icon overrides take priority over plugin graphics. Clear the custom title and choose Reset to Default on the icon in Elgato to restore live graphics.</p><p>Srpski: klikni „Uredi ovde” da menjaš komandu ovog tastera u Elgato aplikaciji, zatim Save key. SET priprema sledeće vreme; ACTIVE je trenutno vreme. Preseti menjaju samo SET. START SET pokreće pripremu, PAUSE pauzira, RESUME nastavlja. BACK može vratiti prethodni profil samo ako ga je plugin prethodno aktivirao; za ručno napravljen profil koristi Elgato Switch Profile na slobodnom mestu.</p></details>
+<script src="layout.js"></script><script src="key.js"></script>
+</body>
+</html>

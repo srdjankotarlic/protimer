@@ -30,20 +30,28 @@ export class Bridge {
     try {
       const frame=await this.request('/state') as Frame;
       if(generation!==this.generation)return;
-      if(frame.stale||frame.sessionId!==this.session||!Number.isSafeInteger(frame.sequence)||frame.sequence<this.lastSequence||!frame.state?.timers?.t1||!frame.state?.timers?.t2) throw Error('Invalid state');
-      this.lastSequence=frame.sequence;this.frame=frame;this.receivedAt=performance.now();
-      clearTimeout(this.staleTimer);this.staleTimer=setTimeout(()=>{if(generation===this.generation)this.disconnect();},1500);
-      await this.onFrame(frame);
+      await this.acceptFrame(frame,generation);
     } catch {if(generation===this.generation)this.disconnect();return;}
     if(generation===this.generation)this.timer=setTimeout(()=>void this.poll(generation),250);
   }
+  private async acceptFrame(frame:Frame,generation:number){
+    if(generation!==this.generation)return;
+    if(frame.stale||frame.sessionId!==this.session||!Number.isSafeInteger(frame.sequence)||!frame.state?.timers?.t1||!frame.state?.timers?.t2)throw Error('Invalid state');
+    if(frame.sequence<this.lastSequence)return; // In-flight poll predating an applied command.
+    this.lastSequence=frame.sequence;this.frame=frame;this.receivedAt=performance.now();
+    clearTimeout(this.staleTimer);this.staleTimer=setTimeout(()=>{if(generation===this.generation)this.disconnect();},1500);
+    await this.onFrame(frame);
+  }
   private async request(path:string,body?:unknown){
     if(!this.token)throw Error('OFFLINE');
-    const response=await fetch(this.endpoint+path,{method:body===undefined?'GET':'POST',headers:{Authorization:`Bearer ${this.token}`,...(body===undefined?{}:{'Content-Type':'application/json'})},body:body===undefined?undefined:JSON.stringify(body),signal:AbortSignal.timeout(1200),redirect:'error'});
+    // Commands can wait for the host's 4-second renderer acknowledgement.
+    // Keep polling, press and release requests responsive on their shorter path.
+    const timeoutMs=path==='/command'?17000:1200;
+    const response=await fetch(this.endpoint+path,{method:body===undefined?'GET':'POST',headers:{Authorization:`Bearer ${this.token}`,...(body===undefined?{}:{'Content-Type':'application/json'})},body:body===undefined?undefined:JSON.stringify(body),signal:AbortSignal.timeout(timeoutMs),redirect:'error'});
     if(!response.ok)throw Error(`Bridge rejected ${response.status}`);
     return response.json();
   }
   async send(path:string,body:unknown){if(!this.online)throw Error('OFFLINE');return this.request(path,body) as Promise<any>;}
-  async command(command:Command,deviceId:string){const result=await this.send('/command',{...command,deviceId});if(!result.ok)throw Error(result.code||'Command not applied');return result;}
+  async command(command:Command,deviceId:string){const generation=this.generation;const result=await this.send('/command',{...command,deviceId});if(generation!==this.generation)throw Error('OFFLINE');if(!result.ok)throw Error(result.code||'Command not applied');if(result.frame)await this.acceptFrame(result.frame,generation);return result;}
   disconnect(){++this.generation;clearTimeout(this.timer);clearTimeout(this.staleTimer);this.token='';this.session='';this.frame=undefined;this.lastSequence=-1;this.onOffline();}
 }

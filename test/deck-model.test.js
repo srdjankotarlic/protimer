@@ -11,8 +11,8 @@ function harness(overrides = {}) {
   const operations = [], saved = [];
   const applyOperation = op => {
     operations.push(op); const active = clocks[op.timerId];
-    if (op.type === 'startSet') Object.assign(active, { mode: op.mode, durationMs: op.durationMs, remMs: op.durationMs,
-      elapsedMs: 0, startAt: time, endAt: time + op.durationMs, running: op.mode !== 'clock' });
+    if (op.type === 'startSet'||op.type==='loadSet') Object.assign(active, { mode: op.mode, durationMs: op.durationMs, remMs: op.durationMs,
+      elapsedMs: 0, startAt:op.type==='loadSet'?0:time, endAt:op.type==='loadSet'?0:time + op.durationMs, running:op.type==='startSet'&&op.mode !== 'clock' });
     else if (op.type === 'start' || op.type === 'resume') Object.assign(active, { running: true, startAt: time, endAt: time + active.remMs });
     else if (op.type === 'pause') {
       if (active.mode === 'countup') active.elapsedMs += time - active.startAt;
@@ -44,6 +44,73 @@ test('deck modules are browser UMD as well as CommonJS, without a client timer e
   assert.equal(typeof ctx.DeckModel.create, 'function');
   assert.equal(ctx.ProTimerDeckModel, ctx.DeckModel);
   assert.throws(() => Model.create({}), /authoritative timer adapter/);
+});
+
+test('trusted native one-touch commands apply once for both timers, without bypassing versions or offline blocking',async()=>{
+  const h=harness({nativeSingleTap:true}),ctx={...h.ctx,sourceId:'native-deck'};
+  for(const id of ['t1','t2']){
+    await h.send('start',id,undefined,{},ctx);
+    await h.send('preset',id,{durationMs:900000},{},ctx);
+    const c=h.startSet(id);
+    assert.equal((await h.model.dispatch(c,ctx)).ok,true);
+    assert.equal((await h.model.dispatch(c,ctx)).ok,true);
+    assert.equal(h.operations.filter(op=>op.commandId===c.commandId).length,1);
+    assert.equal((await h.send('reset',id,undefined,{},ctx)).ok,true);
+    assert.equal(h.clocks[id].running,false);
+    assert.equal(h.model.snapshot().timers[id].draft.durationMs,900000);
+  }
+  for(const type of ['blackout','editTarget'])assert.equal((await h.send(type,'t1',type==='editTarget'?{target:'live'}:undefined,{},ctx)).ok,true);
+  assert.equal((await h.send('outputA','t1',{action:'close'},{},ctx)).ok,true);
+  const stale=h.startSet();await h.send('preset','t1',{durationMs:60000},{},ctx);
+  assert.equal((await h.model.dispatch(stale,ctx)).code,'SET_CHANGED');
+  assert.equal((await h.send('reset','t1',undefined,{}, {...ctx,connected:false})).code,'OFFLINE');
+});
+
+test('one-touch is trusted native adapter policy, not a command or keyboard bypass',async()=>{
+  const h=harness({nativeSingleTap:true});
+  for(const sourceId of ['control','local-keyboard','global-keyboard','plugin'])
+    assert.equal((await h.send('reset','t1',undefined,{}, {...h.ctx,sourceId})).code,'HOLD_REQUIRED');
+  assert.equal((await h.send('reset','t1',{nativeSingleTap:true})).code,'INVALID_PAYLOAD');
+  assert.equal((await h.send('reset','t1',undefined,{}, {...h.ctx,sourceId:'native-deck',deviceId:''})).code,'HOLD_REQUIRED');
+});
+
+test('LOAD READY copies each SET atomically without starting, preserves drafts and RESET baseline',async()=>{
+  const h=harness({nativeSingleTap:true}),ctx={...h.ctx,sourceId:'native-deck'};
+  for(const id of ['t1','t2']){
+    await h.send('preset',id,{durationMs:75000},{},ctx);
+    const s=h.model.snapshot().timers[id];
+    const command=h.command('loadSet',id,{}, {expectedDraftVersion:s.draft.version,expectedActiveVersion:s.active.version});
+    assert.equal((await h.model.dispatch(command,ctx)).ok,true);
+    assert.equal((await h.model.dispatch(command,ctx)).ok,true);
+    assert.equal(h.operations.filter(op=>op.commandId===command.commandId).length,1);
+    assert.equal(h.clocks[id].running,false);assert.equal(h.clocks[id].remMs,75000);
+    assert.equal(h.model.snapshot().timers[id].active.status,'READY');
+    assert.equal(h.model.snapshot().timers[id].draft.durationMs,75000);
+    await h.send('start',id,{}, {},ctx);h.advance(5000);
+    assert.equal(h.clocks[id].running,true);
+    await h.send('reset',id,{}, {},ctx);assert.equal(h.clocks[id].remMs,75000);
+  }
+});
+
+test('LOAD READY rejects running ACTIVE, stale versions, zero SET and disabled T2 without mutation',async()=>{
+  const h=harness({nativeSingleTap:true}),ctx={...h.ctx,sourceId:'native-deck'};
+  const c=id=>{const s=h.model.snapshot().timers[id];return h.command('loadSet',id,{}, {expectedDraftVersion:s.draft.version,expectedActiveVersion:s.active.version});};
+  await h.send('start','t1',{}, {},ctx);const before=structuredClone(h.clocks);
+  assert.equal((await h.model.dispatch(c('t1'),ctx)).code,'ACTIVE_RUNNING');assert.deepEqual(h.clocks,before);
+  const stale=c('t2');await h.send('preset','t2',{durationMs:120000},{},ctx);
+  assert.equal((await h.model.dispatch(stale,ctx)).code,'SET_CHANGED');
+  await h.send('clearSet','t2',{}, {},ctx);assert.equal((await h.model.dispatch(c('t2'),ctx)).code,'EMPTY_SET');
+  h.clocks.t2.enabled=false;assert.equal((await h.model.dispatch(c('t2'),ctx)).code,'TIMER_DISABLED');
+  assert.equal((await h.send('loadSet','t1',{}, {},ctx)).code,'VERSION_REQUIRED');
+});
+
+test('LIVE view commands are presentation-only and T2 requires enablement',async()=>{
+  const h=harness({nativeSingleTap:true}),ctx={...h.ctx,sourceId:'native-deck'};
+  await h.send('start','t1',{}, {},ctx);await h.send('start','t2',{}, {},ctx);
+  const raw=structuredClone(h.clocks),drafts=h.model.persisted();
+  for(const type of ['liveT1','liveBoth','liveT2','liveT1'])assert.equal((await h.send(type,'t1',{}, {},ctx)).ok,true);
+  assert.deepEqual(h.clocks,raw);assert.deepEqual(h.model.persisted(),drafts);
+  h.clocks.t2.enabled=false;assert.equal((await h.send('liveT2','t1',{}, {},ctx)).code,'TIMER_DISABLED');
 });
 
 test('SET adjustments and presets never mutate a running ACTIVE or the other timer', async () => {
@@ -92,6 +159,18 @@ test('running or paused ACTIVE replacement needs a real server-timed hold', asyn
   await h.send('pause');
   assert.equal(h.model.snapshot().timers.t1.active.status, 'PAUSED');
   assert.equal((await h.model.dispatch(h.startSet(), h.ctx)).code, 'HOLD_REQUIRED');
+});
+
+test('closing an audience output is held even through an old toggle command', async () => {
+  let open=false;const h=harness({readOutputOpen:()=>open});
+  assert.equal((await h.send('outputA')).ok,true,'opening a closed output is a short press');
+  open=true;
+  assert.equal((await h.send('outputA')).code,'HOLD_REQUIRED','legacy toggle cannot close accidentally');
+  assert.equal((await h.send('outputA','t1',{action:'close'})).code,'HOLD_REQUIRED');
+  const close=h.command('outputA','t1',{action:'close'}),press=h.model.beginPress(close,h.ctx);
+  h.advance(1500);
+  assert.equal((await h.model.dispatch({...close,pressId:press.pressId},h.ctx)).ok,true);
+  assert.equal(h.operations.filter(op=>op.type==='outputA').length,2);
 });
 
 test('guard is bound to source, device, command, target and displayed versions; keyUp cancels', async () => {

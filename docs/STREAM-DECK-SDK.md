@@ -35,7 +35,7 @@ The SDK may switch only to a plugin's bundled profiles; it cannot switch arbitra
 - [ ] Windows x64: equivalent installation, pairing, reconnect and packaged runtime.
 - [ ] XL LCD values: ACTIVE/DRAFT match Control for T1 and T2; long hours fit, count-up/clock/overtime correct; custom title/icon restoration documented.
 - [ ] ACTIVE continues while adjusting SET/presets/ENTER TIME → `01:23:45`; START SET is deliberate and applied once.
-- [ ] Hold RESET/BLACK/active replacement; release early, disconnect USB, change page/device and restart plugin during hold. No queued command executes later.
+- [ ] Native one-touch mode: a short press executes RESET/BLACK/active replacement immediately and once. Keep a key down, repeat keyDown, disconnect USB, change page/device and restart plugin; no auto-repeat or queued command executes later. Older app modes retain hold protection.
 - [ ] Native user change of profile, app focus, USB reconnect and app restart never automatically switch profiles.
 - [ ] BACK while ProTimer is closed requests the previous profile without sending a timer/output command.
 - [ ] Mixed profile's four true free keys accept OBS/foreign actions and remain unchanged through logical layout edits and numeric entry.

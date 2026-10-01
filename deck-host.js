@@ -30,7 +30,10 @@ module.exports = function createDeckHost({ getControl, outputCommand, smoke = fa
   function renderer(action, payload, context) {
     const win = getControl(); if (!win || win.isDestroyed()) return Promise.resolve({ ok: false, error: 'CONTROL_UNAVAILABLE' });
     const id = crypto.randomUUID();
-    return new Promise(resolve => { const timer = setTimeout(() => { requests.delete(id); resolve({ ok: false, error: 'CONTROL_TIMEOUT' }); }, 4000);
+    // macOS native fullscreen transitions may take several seconds. Only LIVE
+    // sending gets a longer applied-ACK window; commands are never replayed.
+    const timeoutMs = ['liveT1','liveBoth','liveT2'].includes(payload?.type) ? 16500 : 4000;
+    return new Promise(resolve => { const timer = setTimeout(() => { requests.delete(id); resolve({ ok: false, error: 'CONTROL_TIMEOUT' }); }, timeoutMs);
       requests.set(id, { resolve, timer }); win.webContents.send('deck-request', { id, action, payload, context, expiresAt: Date.now() + 3500 }); });
   }
   const bridge = createBridge({
@@ -47,7 +50,7 @@ module.exports = function createDeckHost({ getControl, outputCommand, smoke = fa
     // evidence, not a claim that a bundled profile is selected.
     const status = !settings.enabled ? 'disabled' : !softwareDetected ? 'no-software' : !b.connected ? pairing ? 'pairing' : 'plugin-missing' : b.pluginVersion !== '0.1.0' ? 'outdated' : b.stale ? 'stale' : !devices.length ? 'no-device' : !visible.length ? 'profile-inactive' : 'connected';
     return { ...safeSettings(), softwareDetected, status, pluginVersion: b.pluginVersion, devices, inventory: b.inventory.actions,
-      profile: { active: false, known: false, canReturn: visible.length > 0 }, profilesVerified: false, canActivate: false,
+      profile: { active: false, known: false, canReturn: false }, profilesVerified: false, canActivate: false,
       statusDetail: status === 'profile-inactive' ? 'No visible ProTimer actions on the selected device.' : '',
       audio: { ...settings.audio, available: true } };
   }
@@ -83,6 +86,11 @@ module.exports = function createDeckHost({ getControl, outputCommand, smoke = fa
   }
   async function invoke(action, payload = {}) {
     if (action === 'status') return { ...snapshot(), drafts: settings.drafts };
+    if (action === 'focusControl') {
+      const win=getControl(); if (!win || win.isDestroyed()) return { ok:false,error:'CONTROL_UNAVAILABLE' };
+      if (win.isMinimized()) win.restore();
+      win.show(); win.focus(); return { ok:true };
+    }
     if (action === 'enable' || action === 'setup') {
       settings.enabled = action === 'setup' || payload.enabled === true; persist();
       if (!settings.enabled) { pairing = false; await bridge.close(); push(); return { ok: true }; }
@@ -101,7 +109,7 @@ module.exports = function createDeckHost({ getControl, outputCommand, smoke = fa
     }
     if (action === 'activate') return { ok: false, error: 'VERIFIED_STARTER_PROFILE_REQUIRED', message: 'This build has no Elgato-exported verified profile. Place ProTimer Key actions in the Elgato editor; do not import an invented profile.' };
     if (action === 'back') {
-      if (!snapshot().profile.canReturn) return { ok: false, error: 'PROFILE_OWNERSHIP_UNKNOWN', message: 'Use the BACK ProTimer key on the device. No visible own actions; ProTimer will not take over your profile.' };
+      if (!snapshot().profile.canReturn) return { ok: false, error: 'PROFILE_OWNERSHIP_UNKNOWN', message: 'Manual profiles have no confirmed previous-profile stack. Choose another profile in Elgato, or place its Switch Profile action on a free key.' };
       return bridge.instruction('back', { deviceId: settings.selectedDeviceId });
     }
     if (action === 'applyLayout') {

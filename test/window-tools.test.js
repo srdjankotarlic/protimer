@@ -1,7 +1,7 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { EventEmitter } = require('node:events');
-const { leaveFullscreen, preserveSiblingBounds } = require('../window-tools');
+const { leaveFullscreen, preserveSiblingBounds, isFullscreen, setPresentationFullscreen } = require('../window-tools');
 
 class FakeWindow extends EventEmitter {
   full = true;
@@ -34,6 +34,20 @@ test('closed windows and failed transitions do not allow sizing', async () => {
   assert.equal(await leaveFullscreen(win, 10), false);
   win.destroyed = true;
   assert.equal(await leaveFullscreen(win), false);
+});
+
+test('macOS LIVE presentation uses independent simple fullscreen and can exit for resize',async()=>{
+  const win=new FakeWindow();win.full=false;let simple=false;
+  win.isSimpleFullScreen=()=>simple;win.setSimpleFullScreen=value=>{simple=value;};
+  setPresentationFullscreen(win,true,true,'darwin');
+  assert.equal(isFullscreen(win),true);assert.equal(win.full,false);assert.equal(win.calls,0);
+  assert.equal(await leaveFullscreen(win),true);assert.equal(isFullscreen(win),false);
+  setPresentationFullscreen(win,true,true,'darwin');
+  setPresentationFullscreen(win,false,false,'darwin');assert.equal(isFullscreen(win),false);
+});
+test('Windows LIVE presentation uses native fullscreen, never the macOS API',()=>{
+  const win=new FakeWindow();win.full=false;win.setSimpleFullScreen=()=>assert.fail('macOS only');
+  setPresentationFullscreen(win,true,true,'win32');assert.equal(win.full,true);assert.equal(win.calls,1);
 });
 
 function guardFixture(){

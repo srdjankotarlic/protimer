@@ -1,7 +1,7 @@
 export type TimerId = 't1' | 't2';
-export type Key = { id: string; command: string; timerId: TimerId | 'selected'; target?: 'set' | 'live' | 'selected'; name?: string; color?: string; icon?: string; textSize?: number; stateDisplay?: boolean; step?: number; unit?: 'h'|'m'|'s'; durationMs?: number; pressPolicy?: string; hotkey?: unknown };
+export type Key = { id: string; command: string; timerId: TimerId | 'selected'; target?: 'set' | 'live' | 'selected'; name?: string; color?: string; icon?: string; textSize?: number; stateDisplay?: boolean; step?: number; unit?: 'h'|'m'|'s'; durationMs?: number; pressPolicy?: string; outputAction?: 'open'|'close'|'toggle'; hotkey?: unknown };
 export type Settings = { instanceId?: string; layoutId?: string; slotId?: string; slotIndex?:number;key?: Key; [key: string]: any };
-export type Active = { status: string; version: number; mode: string; running?:boolean;durationMs?: number; remainingMs?: number; remMs?: number; elapsedMs?: number; displayMs?: number; display?: string; valueMs?: number };
+export type Active = { status: string; version: number; mode: string; running?:boolean;enabled?:boolean;durationMs?: number; remainingMs?: number; remMs?: number; elapsedMs?: number; displayMs?: number; display?: string; text?:string; valueMs?: number };
 export type Draft = { mode: string; durationMs: number; version: number;status?:'READY'|'EDITING' };
 export type Snapshot = { selectedTimerId: TimerId; editTarget: 'set'|'live'; timers: Record<TimerId, { active: Active; draft: Draft }>; numeric?: any; [key:string]: any };
 export type Layout = {schemaVersion:number;id:string;name:string;slots:(Key|null)[]};

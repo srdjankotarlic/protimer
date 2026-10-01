@@ -4,13 +4,19 @@
 
 ProTimer remains the timer application. Elgato Stream Deck software owns the USB controller; the native ProTimer plugin sends commands to the existing timer engine. It does not press keyboard shortcuts or run another countdown. Companion remains optional and its existing HTTP/OSC integration is unchanged.
 
+![LCD design preview — colored function keys and separate ACTIVE/SET readouts, not a USB test](stream-deck-buttons.png)
+
+**Quick start:** the native plugin is included in the preview desktop installer. Open **Control → Stream Deck → Install / update plugin**, confirm in Elgato, then **Set up integration**. A separate `.streamDeckPlugin` download is also provided in the preview release. You do not need Node or a terminal. The manual profile/action step below is still required; installing the plugin is not the same as activating a profile.
+
+Color groups help identify a function at a glance: green playback, amber pause, blue/purple presets and preparation, mint/rose plus/minus, violet bell, red hide-picture and green restore-picture. Large white icons/labels and explicit status remain readable without relying on color alone. Screen icons show 1, 2 or a split 1|2. User-selected icons and colors are retained.
+
 ## Availability in this development build
 
 The native plugin can be built, validated and packaged. The in-app editor works with a data-only 8 × 4 layout and with ProTimer Key actions that the user places in Elgato software. **The two starter layouts are not yet verified, exported Elgato profiles.** This checkout does not pretend that an unverified ZIP is a usable `.streamDeckProfile`.
 
 Consequently, the **Activate ProTimer profile** button remains unavailable until real exported profiles have been bundled and verified. For this build, create/select your ProTimer profile manually in Elgato, drag in ProTimer Key actions, and bind them in Control as described below. This is a working manual setup path, not a claim of completed one-click profile provisioning.
 
-Elgato Stream Deck software/protocol registration was not found in the development environment, and a physical Stream Deck XL was not verified. A validated plugin package and simulated SDK tests are **not** proof of a physical USB test. Finish the hardware checklist below before an event or a public plug-and-play release.
+Elgato software and the user's XL profile are available on the local Mac. Installation, handshake and LCD rendering can be observed there; automated SDK tests simulate key events and are **not** proof of physical USB button operation. Finish the hardware checklist below before an event or a public plug-and-play release.
 
 ## Requirements and first setup
 
@@ -38,9 +44,10 @@ Each timer has both states. **Timer 2 is a second timer, not the SET value of Ti
 | −/+ hours, minutes, seconds | Changes SET by default. Each step and unit is configurable. |
 | EDIT SET / LIVE | Explicitly changes the adjustment target. Entering LIVE is protected. Returning to SET is immediate. |
 | Presets | Always prepare SET, even while LIVE is selected. |
-| START SET | Atomically loads the displayed SET version and starts it. Replacing a running/paused timer requires holding 1.5 seconds or explicit confirmation. |
+| START SET | One native Deck tap atomically loads the displayed SET version and starts it, immediately replacing running/paused ACTIVE. Keyboard/Control confirmation remains. |
 | START / PAUSE | Starts, pauses or resumes the existing ACTIVE value. It never silently loads SET. |
-| RESET | Restores ACTIVE to its last started duration. SET is kept. Protected by a 1.5-second hold/confirmation. |
+| PAUSE / PLAY ACTIVE | PAUSE pauses ACTIVE; PLAY ACTIVE starts its already loaded value or resumes it. Neither loads SET. Explicit RESUME remains in the catalogue. |
+| RESET | One native Deck tap stops and restores ACTIVE to its last started duration. SET is kept. |
 | CLEAR SET | Clears only the prepared duration. |
 
 For example, ACTIVE may continue from `08:43 RUNNING` while a `15:00 SET` is changed to `16:00`. Nothing replaces ACTIVE until **START SET**. When ACTIVE has no valid loaded duration, use SET and START SET; the command returns an explanation instead of guessing.
@@ -61,12 +68,18 @@ The initial **logical** layout is:
 
 | | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | START/PAUSE | START SET | ACTIVE | SET | EDIT SET/LIVE | RESET | BELL | FREE |
+| 1 | START SET | PAUSE | PLAY ACTIVE | ACTIVE | SET | RESET | BELL | FREE |
 | 2 | −1h | +1h | −1m | +1m | −1s | +1s | ENTER TIME | FREE |
 | 3 | 5 MIN | 10 MIN | 15 MIN | 30 MIN | 60 MIN | COUNT UP | CLOCK | FREE |
-| 4 | BLACK | OUT A | OUT B | TIMER 1/2 | MESSAGE | SETTINGS | BACK | FREE |
+| 4 | TIMER 1 | TIMER 2 | OPEN A | OPEN B | BLACK ON | BLACK OFF | CLEAR SET | FREE |
 
-**Full 32** uses the four additional slots for PREV, NEXT, LOAD SELECTED and FULLSCREEN. COUNTDOWN is available in the command catalogue. COUNT UP and CLOCK prepare SET mode; they do not change ACTIVE before START SET. PREV/NEXT select a rundown item and LOAD SELECTED prepares it without starting it. Existing GO behavior remains separate and compatible.
+**Full 32** adds LOAD READY, LIVE T1, LIVE T1 + T2 and LIVE T2. COUNTDOWN, LOAD SELECTED, SETTINGS, FULLSCREEN, PREV/NEXT and the legacy START/PAUSE and EDIT SET/LIVE remain in the command catalogue. Starter adjustments explicitly target SET regardless of the current edit mode. COUNT UP and CLOCK prepare SET mode; they do not change ACTIVE before START SET. Existing GO behavior remains compatible. An untouched old starter is upgraded; customized and named layouts are preserved.
+
+Daily workflow: select TIMER 1 or TIMER 2, choose a preset or adjust SET, check SET TIME, then START SET. Pause and resume with their separate keys. **All native Deck commands use one tap**, including RESET, BLACK, output closing and replacement of running/paused time. There is no second press or hold. These actions are immediate: choose deliberately. ACTIVE TIME and SET TIME are read-only LCD displays, not executable commands. Imported legacy hold settings do not impose holding in this app's native one-touch mode. Older app builds retain their guarded behavior.
+
+### Customize in Elgato
+
+Select a ProTimer Key in Elgato. Linked starter keys show **Edit here in Elgato / Uredi ovde**. Click it, choose the command, timer, step/preset, function icon, label or appearance, then **Save key**. Only that physical key becomes independent; Control layout updates no longer overwrite it. Moving or duplicating actions uses the normal Elgato editor. Re-link deliberately from Control if you want it managed there again. Saving never executes a timer command. Custom Elgato image/title overrides still have priority over live plugin graphics.
 
 In **Control → Stream Deck → Edit layout**:
 
@@ -94,19 +107,29 @@ Open **Stream Deck → Audio and shortcuts**. Choose the built-in synthesized be
 
 An explicitly selected output that disappears must produce an error; it must not silently route the bell elsewhere. Select an available output and run the manual test again. The system-default option is an explicit choice, not a guarantee that the OS's default hardware will never change. Available output selection depends on OS/Chromium support and permissions.
 
-OUT A and OUT B control the existing ProTimer output windows and their configured displays. These names do not identify physical HDMI sockets. An open-window status is not proof that a remote television is showing a picture. Output open/close/fullscreen and BACK do not reset or stop a timer.
+Starter OPEN A and OPEN B only open the existing configured output; repeated taps never close it. The editor offers explicit Open only, Close only or legacy Open/close. Native closing is one tap. OUT B shows SET UP until Timer 2 and separate outputs are enabled. These names do not identify physical HDMI sockets. An open-window status is not proof that a remote television is showing a picture. Output open/close/fullscreen do not reset or stop a timer.
 
-Configure executable commands' shortcuts in the layout editor. Duplicates are rejected. Local shortcuts do not execute while editing text; protected local shortcuts use a second deliberate press and ignore key-repeat. Global shortcuts are off unless explicitly enabled; Space is not registered globally. OS registration conflicts are reported. **All global commands require an explicit native confirmation dialog**, because global APIs cannot reliably distinguish holding/repeated callbacks from a new physical press. Stream Deck keys use SDK press/release events instead of emulating keystrokes. Physical protected keys always require holding; the keyboard-confirmation policy does not remove that hardware protection.
+Configure executable commands' shortcuts in the layout editor. Duplicates are rejected. Local shortcuts do not execute while editing text; protected local shortcuts use a second deliberate press and ignore key-repeat. Global shortcuts are off unless explicitly enabled; Space is not registered globally. OS registration conflicts are reported. **All global commands require an explicit native confirmation dialog**, because global APIs cannot reliably distinguish holding/repeated callbacks from a new physical press. Native Stream Deck keys use real SDK events and one-touch commands. This trusted authenticated adapter policy does not remove keyboard/Control guards or existing LAN authentication.
 
 ## Profile return and connection recovery
 
-For a profile entered through a supported ProTimer profile-switch request, **BACK** requests the official return to the preceding profile. The plugin must not take control back after the user has independently switched away. The SDK does not provide a general catalogue or definitive identity of all user profiles; the UI reports visible own actions and unknown states honestly. A plugin-local BACK can work with ProTimer disconnected, but cannot stop the timer or close its outputs.
+The current manual profile has no confirmed ProTimer-created previous-profile stack, so the starter board uses **CLEAR SET** instead of a misleading BACK key. To leave that profile from the device, put Elgato's own **Switch Profile** action on one of the genuinely free keys and choose the destination in Elgato. A custom ProTimer BACK action remains available only for a profile entered through a supported plugin profile-switch request; that workflow is not verified in this build. The SDK does not provide a definitive identity of arbitrary user profiles.
 
 If the controller disconnects, ACTIVE continues in ProTimer. Stale/offline LCDs are labeled accordingly, timer-changing commands are blocked, held presses are canceled and commands are not replayed later. Reconnection pulls a fresh state and resets edit target to SET; it does not activate a profile.
 
 Check the connection status in order: software found → plugin handshake → chosen connected device → visible ProTimer actions/profile. Reinstall/update the plugin if its version is incompatible. Run setup again if pairing cannot recover. Never expose or copy diagnostic pairing secrets into a support screenshot.
 
 ## Build, validation and manual acceptance
+
+### READY loading and audience selection
+
+`LOAD READY` copies the selected timer's prepared SET into ACTIVE without starting it. SET is kept. Pause ACTIVE first if it is running; the command refuses to interrupt it. Use PLAY ACTIVE afterward, or START SET for immediate loading and playback.
+
+`LIVE T1`, `LIVE T1 + T2`, and `LIVE T2` open the actual output on the screen chosen in Control. Neither clock is stopped or restarted. Choose Together for a split view on one screen, or Separate for two destinations. The LIVE mode selector in Output window & digits chooses fullscreen or configured window/Grid. Automatic mode uses fullscreen unless Grid is enabled. Repeated presses keep a fullscreen window in place. LIVE restores the picture after blackout. Enable Timer 2 before choosing T2 or BOTH. A disconnected screen is an error, never a silent fallback to another screen.
+
+`BLACK ON` hides the picture; `BLACK OFF` restores it. These are separate one-touch commands, not a toggle. Neither stops a timer. The legacy BLACK toggle remains in the catalogue. `PLAY ACTIVE` starts an already loaded value or resumes it without loading SET; explicit RESUME remains available for custom keys.
+
+The full 32-key layout includes these four controls in column 8. Existing mixed/custom layouts keep their free keys. Add ProTimer Key actions in Elgato, uncheck Follow a Control layout slot, choose the function, and Save key. This edits settings only, never executes the command. Local preview 8 places these four standalone keys in the user's empty last column, leaving the other 28 keys unchanged.
 
 Developer commands, from the repository root:
 
@@ -130,7 +153,7 @@ Before calling the integration plug-and-play, perform and record these checks on
 - [ ] Export both starter profiles from Elgato, validate/reimport them there, bundle with automatic switching disabled, and test explicit activation/previous-profile return.
 - [ ] Leave four genuine FREE keys in the mixed profile. Add a foreign action there and confirm layout edits/numeric entry never touch it.
 - [ ] Run ACTIVE while changing SET/presets/modes; enter 01:23:45 entirely on the device. Test both timers and each concrete/selected target.
-- [ ] Verify exact displayed versions, duplicate/reordered command handling, short-press rejection and one command per held press. Release/unplug/change page during a hold.
+- [ ] Verify exact displayed versions, duplicate/reordered commands, immediate short-tap RESET/BLACK/active replacement, and exactly one action per press even if the key stays down. Unplug/reconnect must not replay commands.
 - [ ] Compare LCD state/color/time with Control and audience output, including long times, pause, zero and overtime. Remove custom Elgato overrides and verify recovery.
 - [ ] Unplug USB, restart the plugin, stop/restart the bridge, suspend/resume, and move system time forward/back. No replay, profile takeover or interruption of ACTIVE is acceptable.
 - [ ] Test named layouts, import rejection, Apply/Cancel, drag/drop, Undo/Redo, native Elgato move/duplicate, multiple pages and two connected devices.

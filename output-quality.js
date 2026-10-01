@@ -1,4 +1,5 @@
 const TimerTools = require('./timer-tools');
+const {isFullscreen} = require('./window-tools');
 
 const MAX_CAPTURE_PIXELS = 16 * 1024 * 1024;
 // This fixed script observes layout only. It never reads timer text, URLs or
@@ -51,7 +52,7 @@ function outputGeometry(win, screen) {
   const display = screen.getDisplayMatching(win.getBounds());
   const info = displayInfo(display, Math.max(0, screen.getAllDisplays().findIndex(d => d.id === display.id)));
   const [width, height] = win.getContentSize();
-  return { ...info, width, height, fullscreen: win.isFullScreen(),
+  return { ...info, width, height, fullscreen: isFullscreen(win),
     pixelWidth: Math.round(width * info.scaleFactor), pixelHeight: Math.round(height * info.scaleFactor),
     zoomFactor: positive(win.webContents.getZoomFactor?.()) };
 }
@@ -63,7 +64,7 @@ function gridBounds(display, state) {
     y: b.y + Math.floor(grid.gridCell / grid.gridSize) * height, width, height };
 }
 function reflowGridForDisplay({ win, display, metrics, state, targetId, placing, beforeMove }) {
-  if (!win || win.isDestroyed() || win.isFullScreen() || placing || !state?.gridOn || targetId !== display.id ||
+  if (!win || win.isDestroyed() || isFullscreen(win) || placing || !state?.gridOn || targetId !== display.id ||
       !metrics.some(metric => ['bounds', 'scaleFactor', 'rotation', 'workArea'].includes(metric))) return false;
   const bounds = gridBounds(display, state), old = win.getBounds();
   if (Object.keys(bounds).every(key => old[key] === bounds[key])) return false;

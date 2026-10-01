@@ -105,7 +105,7 @@ module.exports = async function smokeOutputQuality({ controlWin, getOutput, getS
     return { quality: q, dom: live };
   };
   try {
-    await ctl(`autoNext=false;cancelAutoAdvance();S.dualTimer=false;S.separateOutputs=false;
+    await ctl(`autoNext=false;cancelAutoAdvance();S.dualTimer=false;S.separateOutputs=false;S.liveTimerView='both';
       S.transparent=false;S.gridOn=false;S.secondary.gridOn=false;S.fitWindow=false;S.blackout=false;
       S.text='';S.textOnly=false;S.message={text:'',flash:false};S.showNowNext=false;S.showProgress=false;
       S.soundZero=false;S.secondary.soundZero=false;S.outputLayout=TimerTools.layout();

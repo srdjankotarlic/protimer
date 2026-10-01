@@ -2,6 +2,16 @@
 
 Notable ProTimer changes are listed here. The complete notes and installers are available on the [Releases page](https://github.com/srdjankotarlic/protimer/releases).
 
+## 2.5.0-streamdeck.11 — prerelease
+
+- Native one-touch transport, LOAD READY without playback, explicit BLACK ON/OFF and real LIVE T1 / split T1+T2 / T2 output sending.
+- Colored vector LCD graphics with distinct function icons, large readable digits and confirmed live/offline states. Per-key customization remains available in Elgato.
+- Independent macOS LIVE fullscreen windows, applied output acknowledgement and reconnect safeguards.
+- Official native plugin package included in both desktop installers and as a separately checksummed release asset.
+- Preserved legacy APIs, phone/OBS/Companion, rundown, independent timer settings and Control-only startup. Initial Elgato action placement and physical acceptance remain explicit requirements.
+
+[Preview downloads and setup](docs/RELEASE-NOTES-2.5.0-streamdeck.11.md)
+
 ## 2.5.0-streamdeck.4 — prerelease
 
 - Added **Check output** for either timer: distinguish logical window dimensions, estimated physical pixels and measured capture dimensions, with warnings for clipped digits or text. The check does not open a closed output or alter the running timer.

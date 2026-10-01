@@ -100,6 +100,12 @@ function createBridge({ getSnapshot, onRequest, onDisconnect = () => {}, onChang
       if (!['/command', '/press', '/release'].includes(req.url)) return write(res, 404, { ok: false, error: 'NOT_FOUND' });
       if (now() - frameAt > staleMs) return write(res, 409, { ok: false, error: 'AUTHORITATIVE_STATE_STALE' });
       const result = await onRequest(req.url.slice(1), body, context(body));
+      // Applied commands carry the latest authoritative frame, not just an ACK.
+      // A following key press must see the confirmed timer/SET selection without
+      // waiting for the next polling interval. Frame sequence prevents rollback.
+      if (req.url === '/command' && result?.ok && session === authorizedSession)
+        return write(res, 200, { ...result, frame: { ...(getSnapshot?.() || {}), sessionId: session.id,
+          sequence, stale: now() - frameAt > staleMs, state: frame } });
       return write(res, 200, result || { ok: false, error: 'NO_APPLIED_RESULT' });
     } catch (error) {
       // Never echo request bodies or credentials in diagnostics.
