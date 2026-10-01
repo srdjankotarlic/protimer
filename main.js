@@ -616,7 +616,9 @@ ipcMain.handle('resize-output', async (e, requested) => {
   // is our placement, not an operator drag; otherwise it cancels this resize.
   outputPlacing = revision;
   try {
-  if (!await leaveOutputFullscreen(win) || win !== outputWin || win.isDestroyed() || revision !== outputPlacementVersion) return { ok: false };
+  const exited = await leaveOutputFullscreen(win);
+  if (SMOKE) console.log('OUTPUT_RESIZE_TRANSITION',JSON.stringify({size,exited,same:win===outputWin,destroyed:win.isDestroyed(),revision,currentRevision:outputPlacementVersion,placing:outputPlacing,grid:lastState?.gridOn,fit:lastState?.fitWindow,fullscreen:!win.isDestroyed()&&isFullscreen(win),maximized:!win.isDestroyed()&&win.isMaximized?.()}));
+  if (!exited || win !== outputWin || win.isDestroyed() || revision !== outputPlacementVersion) return { ok: false };
   if (lastState?.gridOn || lastState?.fitWindow) return { ok: false, error: 'automatic size enabled' };
   if (!outputPlaced) {
     // Applying a size can supersede the async ready-to-show placement. Finish
@@ -632,6 +634,7 @@ ipcMain.handle('resize-output', async (e, requested) => {
   } else win.setContentSize(size.width, size.height);
   pushOutputGeometry();
   const actual = outputGeometry();
+  if (SMOKE) console.log('OUTPUT_RESIZE_APPLIED',JSON.stringify({requested:size,actual}));
   return { ok: actual.width === size.width && actual.height === size.height, ...actual };
   } finally { if (outputPlacing === revision) outputPlacing = null; }
 });

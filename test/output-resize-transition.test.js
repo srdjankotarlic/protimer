@@ -14,7 +14,7 @@ test('real primary resize handler ignores Windows restoration will-move without 
   win.setFullScreen=v=>{win.emit('will-move',{}, {x:0,y:0});win.emit('leave-full-screen');full=v;};
   win.setContentSize=(w,h)=>{win.emit('will-move',{}, {x:0,y:0});size=[w,h];};
   let handler;const sender={};
-  const context={ipcMain:{handle:(_name,fn)=>handler=fn},TimerTools,controlWin:{webContents:sender},outputWin:win,current:win,
+  const context={SMOKE:false,ipcMain:{handle:(_name,fn)=>handler=fn},TimerTools,controlWin:{webContents:sender},outputWin:win,current:win,
     outputReady:true,outputPlaced:true,outputPlacing:null,outputPlacementVersion:0,outputTargetId:1,lastState:{gridOn:false,fitWindow:false},
     screen:{getAllDisplays:()=>[{id:1}],getDisplayMatching:()=>({id:1})},leaveOutputFullscreen:()=>leaveFullscreen(win),
     pushOutputGeometry:()=>{},outputGeometry:()=>({width:size[0],height:size[1],fullscreen:full})};
