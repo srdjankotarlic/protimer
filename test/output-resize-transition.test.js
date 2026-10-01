@@ -15,7 +15,9 @@ test('real primary resize handler ignores Windows restoration will-move without 
   win.setContentSize=()=>{win.emit('will-move',{}, {x:0,y:0});}; // reproduce restored Windows no-op
   win.getContentSize=()=>size;
   win.getBounds=()=>({x:0,y:0,width:size[0],height:size[1]});
-  win.setBounds=b=>{size=[b.width,b.height];};
+  let restoredStyle=false;
+  win.restore=()=>{restoredStyle=true;};
+  win.setBounds=b=>{if(restoredStyle)size=[b.width,b.height];};
   let handler;const sender={};
   const context={process:{platform:'win32'},SMOKE:false,ipcMain:{handle:(_name,fn)=>handler=fn},TimerTools,controlWin:{webContents:sender},outputWin:win,current:win,
     outputReady:true,outputPlaced:true,outputPlacing:null,outputPlacementVersion:0,outputTargetId:1,lastState:{gridOn:false,fitWindow:false},
