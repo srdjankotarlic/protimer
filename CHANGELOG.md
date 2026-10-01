@@ -8,7 +8,9 @@ Notable ProTimer changes are listed here. The complete notes and installers are 
 - Colored vector LCD graphics with distinct function icons, large readable digits and confirmed live/offline states. Per-key customization remains available in Elgato.
 - Independent macOS LIVE fullscreen windows, applied output acknowledgement and reconnect safeguards.
 - Official native plugin package included in both desktop installers and as a separately checksummed release asset.
-- Preserved legacy APIs, phone/OBS/Companion, rundown, independent timer settings and Control-only startup. Initial Elgato action placement and physical acceptance remain explicit requirements.
+- Genuine editable Elgato XL Full 32 export bundled for manual activation from Control, with first-install confirmation and conservative previous-profile return protection. Requires Stream Deck 7.6+; no automatic profile takeover.
+- Prevent Windows fullscreen-restoration movement events from cancelling an explicitly requested output resize.
+- Preserved legacy APIs, phone/OBS/Companion, rundown, independent timer settings and Control-only startup. Physical acceptance remains a separate requirement.
 
 [Preview downloads and setup](docs/RELEASE-NOTES-2.5.0-streamdeck.11.md)
 

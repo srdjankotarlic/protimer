@@ -11,7 +11,7 @@
   "CodePath": "bin/plugin.js",
   "SDKVersion": 3,
   "Software": {
-    "MinimumVersion": "7.0"
+    "MinimumVersion": "7.6"
   },
   "OS": [
     {
@@ -26,6 +26,15 @@
   "Nodejs": {
     "Version": "20"
   },
+  "Profiles": [
+    {
+      "Name": "profiles/protimer-xl-full",
+      "DeviceType": 2,
+      "Readonly": false,
+      "DontAutoSwitchWhenInstalled": true,
+      "AutoInstall": false
+    }
+  ],
   "Actions": [
     {
       "UUID": "com.srdjankotarlic.protimer.key",

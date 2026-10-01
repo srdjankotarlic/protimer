@@ -4,7 +4,7 @@
 
 ![Pregled stvarne LCD grafike — nije fizički USB test](stream-deck-buttons.png)
 
-**Ukratko:** plugin dolazi uz probnu instalaciju ProTimera. Otvori **Control → Stream Deck → Instaliraj / ažuriraj plugin**, potvrdi u Elgato aplikaciji i klikni **Podesi integraciju**. Paket možeš preuzeti i zasebno iz probnog GitHub izdanja. Ne treba terminal niti Node. Početno postavljanje profila/akcija u Elgato editoru još je potrebno; instalacija plugina nije isto što i aktiviranje profila.
+**Ukratko:** plugin i pravi izvezeni **XL profil sa 32 dugmeta** dolaze uz probnu instalaciju ProTimera. Otvori **Control → Stream Deck → Instaliraj / ažuriraj plugin**, potvrdi u Elgato aplikaciji i klikni **Podesi integraciju → Aktiviraj ProTimer profil**. Ako Elgato pita, potvrdi prvu instalaciju profila. Paket možeš preuzeti i zasebno. Ne treba terminal, Node, IP adresa niti ručno postavljanje 32 dugmeta. Instalacija/povezivanje nisu isto što i aktiviranje profila.
 
 Velike bele ikone i natpisi jasno označavaju funkciju, uz različite grupe boja: zeleno puštanje, žuta pauza, plavo/ljubičasto priprema, mint/roze plus/minus, ljubičasto zvonce, crveno sakrivanje i zeleno vraćanje slike. Ikone ekrana imaju 1, 2 ili podelu 1|2. Status i naziv objašnjavaju dugme i bez oslanjanja samo na boju. Svoje boje i ikone možeš i dalje birati u Elgato editoru.
 
@@ -24,22 +24,22 @@ ProTimer ostaje program koji meri vreme. Elgato aplikacija upravlja USB uređaje
 
 Plugin može da se izgradi, validira i spakuje. Editor u Control prozoru uređuje logički raspored 8 × 4 i ProTimer Key akcije koje korisnik postavi kroz Elgato.
 
-**Početni rasporedi još nisu potvrđeni, izvezeni Elgato profili.** Zato je dugme **Aktiviraj ProTimer profil** nedostupno dok se stvarni profili ne izvezu, dodaju u plugin i provere. Za sada ručno napravi/izaberi profil u Elgato aplikaciji, dodaj ProTimer Key akcije i poveži ih kroz Control. To je podržan ručni put, a ne obećanje gotovog automatskog postavljanja profila.
+Plugin sadrži **jedan stvarni XL profil sa 32 dugmeta, izvezen iz Elgato 7.6**. Datoteka nije menjana, njen checksum se proverava pri buildu, a manifest isključuje automatsko instaliranje/prebacivanje profila. **Standard 28 + 4 slobodna** je logički raspored u Controlu, ne drugi izvezeni profil. Za mixed profil dupliraj Full 32 u Elgato aplikaciji i obriši četiri akcije poslednje kolone; tada su te pozicije stvarno tvoje. Na drugim Stream Deck modelima ručno postavi ProTimer Key akcije.
 
 Na lokalnom Macu dostupni su Elgato softver i korisnikov XL profil. Instalacija, povezivanje i LCD grafika mogu da se provere; automatski SDK testovi simuliraju pritiske i nisu dokaz rada fizičkog USB tastera. Pre nastupa uradi proveru stvarnog uređaja na kraju ovog uputstva.
 
 ## Prvo povezivanje
 
-Potrebni su Windows 10+ x64 ili macOS 13+ Apple Silicon, u okviru podržanih sistema same ProTimer aplikacije, i **Elgato Stream Deck 7.0+**. Plugin koristi zvanični SDK 3 i Node 20 koji obezbeđuje Elgato. Korisnik ne instalira Node, ne otvara terminal i ne pokreće server.
+Potrebni su Windows 10+ x64 ili macOS 13+ Apple Silicon i **Elgato Stream Deck 7.6+**, verzija iz koje je profil izvezen. Plugin koristi zvanični SDK 3 i Node 20 koji obezbeđuje Elgato. Korisnik ne instalira Node, ne otvara terminal i ne pokreće server.
 
 1. Otvori **ProTimer Control → Stream Deck**. Integracija je opciona; tajmer radi i kada je isključena.
 2. Klikni **Instaliraj / ažuriraj plugin**. Otvara se pravi `.streamDeckPlugin` paket. Potvrdi instalaciju koju traži Elgato.
 3. Klikni **Podesi integraciju** i uključi povezivanje. Lokalno uparivanje koristi podržani deep-link mehanizam, bez upisivanja IP adrese i stalnog kopiranja tokena.
 4. Sačekaj potvrdu od plugina i izaberi uređaj. Sam folder na disku nije dokaz da plugin radi.
-5. U ovom izdanju napravi profil u Elgato aplikaciji i prevuci **ProTimer Key** na željena dugmad. Za četiri stvarno slobodna mesta ostavi poslednju kolonu praznu.
-6. Otvori **Uredi raspored**, izaberi logičko mesto, pronađi odgovarajući vidljivi **ProTimer Key na uređaju**, pa klikni **Poveži ovo mesto**. Novi raspored prvo primeni. Ovim se povezuje naša već postavljena akcija; ne dodaje se dugme preko tuđe OBS/Elgato akcije.
+5. Izaberi XL i **ProTimer XL · Full 32 → Aktiviraj ProTimer profil**. Potvrdi Elgato instalaciju ako se pojavi. Ne moraš ručno postavljati 32 dugmeta. Aktiviranje ne pušta vreme niti otvara izlaz.
+6. Menjaj povezane akcije kroz **Uredi raspored**, ili izaberi taster u Elgato editoru i **Edit here / Save key**. Za dodatne ručno postavljene akcije, u Controlu izaberi vidljivi **ProTimer Key na uređaju → Poveži ovo mesto**. Ne prepisuju se tuđe OBS/Elgato akcije.
 
-Povezivanje nije aktiviranje profila. Pokretanje ProTimera, promena fokusa, USB reconnect ili restart plugina ne smeju sami promeniti profil. Kada potvrđeni profili budu dostupni, aktiviranje iz Control prozora biće isključivo tvoj ručni izbor, bez startovanja vremena ili otvaranja izlaza.
+Povezivanje nije aktiviranje profila. Pokretanje ProTimera, promena fokusa, USB reconnect ili restart plugina ne menjaju profil. Aktiviranje iz Control prozora je isključivo tvoj ručni izbor, bez startovanja vremena ili otvaranja izlaza.
 
 ## ACTIVE i SET
 
@@ -104,7 +104,7 @@ Prečice se podešavaju po komandi u editoru. Duplikati se odbijaju; lokalne pre
 
 ## Povratak i oporavak veze
 
-Ručno izabran profil nema potvrđen prethodni profil u ProTimer pluginu, pa početni raspored umesto varljivog BACK tastera koristi **CLEAR SET**. Ako želiš povratak sa uređaja, postavi Elgato **Switch Profile** akciju na jedno zaista slobodno mesto i izaberi ciljni profil u njihovom editoru. Prilagođena ProTimer BACK akcija namenjena je samo profilu otvorenom podržanom plugin komandom; taj tok u ovom izdanju nije potvrđen. SDK ne daje pouzdanu identifikaciju proizvoljnih profila.
+**Vrati profil / deaktiviraj** koristi Elgato povratak samo posle ručnog aktiviranja koje je dobilo komplet novih vidljivih naših akcija, i samo dok su njihove instance nepromenjene. Kasnija promena profila/stranice/USB-a ili zastarela veza ukida povratak, da ne preuzmemo profil koji si sam izabrao. SDK ne daje pouzdan naziv proizvoljnog aktivnog profila. Ako povratak nije potvrđen, izaberi prethodni profil u Elgato aplikaciji. Prilagođeni **BACK** taster radi i bez povezivanja sa ProTimerom; koristi ga samo za profil otvoren plugin komandom. Nijedan povratak ne zaustavlja vreme niti zatvara izlaz.
 
 Kod prekida veze ACTIVE nastavlja u programu. Tasteri prikazuju OFFLINE/STALE, nove komande se blokiraju, držanje se otkazuje i ništa se ne izvršava naknadno po povezivanju. Povratak veze povlači novo stanje i vraća cilj na SET, bez automatskog aktiviranja profila.
 

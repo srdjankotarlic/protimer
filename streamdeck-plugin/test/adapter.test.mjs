@@ -49,7 +49,7 @@ test('compiled SDK plugin: one-touch native commands, owned keys, spatial numeri
   connection.send(JSON.stringify({event:'deviceDidConnect',device:deviceId,deviceInfo:info.devices[0]}));
   const layout=L.defaultLayout();for(let i=0;i<32;i++){const key=layout.slots[i];if(!key)continue;const context=`key-${i}`,a={settings:{instanceId:`instance-${i}`,key},coordinates:{row:Math.floor(i/8),column:i%8}};actions.set(context,a);send('willAppear',context,{controller:'Keypad',coordinates:a.coordinates,settings:a.settings,isInMultiAction:false});}
   connection.send(JSON.stringify({event:'didReceiveDeepLink',payload:{url:`/bootstrap?port=${server.address().port}&nonce=${nonce}&streamdeck=hidden`}}));
-  await until(()=>inventory?.actions.length===28,'Inventory missing');assert.equal(inventory.canActivate,false);assert.equal(inventory.devices[0].id,deviceId);assert.equal(sdkMessages.filter(m=>m.event==='switchToProfile').length,0,'startup must not change profile');
+  await until(()=>inventory?.actions.length===28,'Inventory missing');assert.equal(inventory.canActivate,true);assert.deepEqual(inventory.profiles,['profiles/protimer-xl-full']);assert.equal(inventory.devices[0].id,deviceId);assert.equal(sdkMessages.filter(m=>m.event==='switchToProfile').length,0,'startup must not change profile');
   assert.equal(sdkMessages.some(m=>m.event==='setImage'&&['key-7','key-15','key-23','key-31'].includes(m.context)),false,'FREE keys never touched');
   await until(()=>sdkMessages.some(m=>m.event==='setImage'&&m.context==='key-3'&&imageSvg(m).includes('RUNNING')),'Authoritative active graphic missing');
   const press=async(index,duration=30)=>{const id=`key-${index}`,a=actions.get(id),payload={controller:'Keypad',coordinates:a.coordinates,settings:a.settings};send('keyDown',id,payload);await delay(duration);send('keyUp',id,payload);};
@@ -111,4 +111,18 @@ test('compiled SDK plugin: one-touch native commands, owned keys, spatial numeri
   send('didReceiveSettings','key-30',{controller:'Keypad',coordinates:actions.get('key-30').coordinates,settings:customBack});
   await delay(50);await press(30);await until(()=>sdkMessages.some(m=>m.event==='switchToProfile'),'optional custom BACK remains available offline');
   assert.equal(sdkMessages.find(m=>m.event==='switchToProfile').payload.profile,undefined);
+  online=true;
+  const reconnectSequence=stateSequence;
+  connection.send(JSON.stringify({event:'didReceiveDeepLink',payload:{url:`/bootstrap?port=${server.address().port}&nonce=${nonce}&streamdeck=hidden`}}));
+  await until(()=>stateSequence>reconnectSequence&&inventory?.devices.length===1,'Reconnect inventory missing');
+  const commandsBeforeProfile=commands.length;
+  instructions=[{id:'activate-native',type:'activate',deviceId,profile:'profiles/protimer-xl-full'}];
+  await until(()=>results.some(r=>r.id==='activate-native'),'Manual native profile request missing');
+  assert.equal(results.find(r=>r.id==='activate-native').ok,true);
+  assert.equal(sdkMessages.filter(m=>m.event==='switchToProfile'&&m.payload.profile==='profiles/protimer-xl-full').length,1);
+  instructions=[{id:'activate-native',type:'activate',deviceId,profile:'profiles/protimer-xl-full'}];await delay(500);
+  assert.equal(sdkMessages.filter(m=>m.event==='switchToProfile'&&m.payload.profile==='profiles/protimer-xl-full').length,1,'duplicate instruction must not switch twice');
+  instructions=[{id:'invalid-profile',type:'activate',deviceId,profile:'private-user-profile'}];
+  await until(()=>results.some(r=>r.id==='invalid-profile'),'Invalid profile response missing');
+  assert.equal(results.find(r=>r.id==='invalid-profile').ok,false);assert.equal(commands.length,commandsBeforeProfile,'profile activation never runs a timer command');
 });

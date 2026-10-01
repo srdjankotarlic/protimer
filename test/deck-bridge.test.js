@@ -122,7 +122,7 @@ test('inventory only reports visible owned actions, never synthesizes ownership 
     actions: [...h.inventory.actions, { context: 'other-device', deviceId: 'absent', row: 0, column: 1 },
       { context: 'out-of-range', deviceId: 'xl-1', row: -1, column: 1 }] });
   assert.equal(result.actions.length, 1); assert.equal(result.actions[0].context, 'action-a'); assert.equal(result.actions[0].visible, true);
-  assert.equal(result.token, undefined); assert.equal(result.profiles, undefined);
+  assert.equal(result.token, undefined); assert.deepEqual(result.profiles, []);assert.equal(result.canActivate,false);
   assert.equal(h.bridge.status().inventory.actions.length, 1);
   assert.throws(() => cleanInventory({ devices: [...h.inventory.devices, ...h.inventory.devices], actions: [] }), /INVALID_INVENTORY/);
   assert.throws(() => cleanInventory({ devices: h.inventory.devices, actions: [...h.inventory.actions, ...h.inventory.actions] }), /INVALID_INVENTORY/);

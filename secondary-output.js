@@ -150,6 +150,8 @@ module.exports = function secondaryOutput({ BrowserWindow, screen, getState, con
     }
     if (win !== current || current.isDestroyed()) return { ok: false };
     const version = ++revision;
+    placing = version;
+    try {
     if (current && !current.isDestroyed()) protectSibling(current, false);
     if (!current || !await leaveFullscreen(current) || win !== current ||
         version !== revision || !enabled() || state().gridOn) return { ok: false };
@@ -157,6 +159,7 @@ module.exports = function secondaryOutput({ BrowserWindow, screen, getState, con
     const actual = geometry();
     notify();
     return { ok: !!actual && actual.width === size.width && actual.height === size.height, ...actual };
+    } finally { if (placing === version) placing = null; }
   }
   function displaysChanged() {
     if (win && !screen.getAllDisplays().some(d => d.id === targetId)) close();

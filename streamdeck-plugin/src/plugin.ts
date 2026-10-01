@@ -18,11 +18,10 @@ const owned=new Map<string,Owned>(), presses=new Map<string,Press>();
 // its ACK arrives. This is command intent only, never a fabricated live state.
 const selecting=new Map<string,{timerId:TimerId;commandId:string}>();
 const defaultKey=():Key=>layout.defaultKey('empty',{name:'SET UP'});
-let inventoryDirty=true, inventoryAt=0, sequence=0;
+let inventoryDirty=true, inventoryAt=0, sequence=0,visibilityVersion=0;
 let numeric:{deviceId:string;timerId:TimerId;bindings:NonNullable<ReturnType<typeof numericBindings>>;pending:boolean}|undefined;
-// The checked-in package intentionally has no invented native profile exports.
-// A verified exported starter profile can later be registered here and manifest.
-const bundledProfiles:ReadonlySet<string>=new Set();
+// Genuine Stream Deck 7.6 export, registered in manifest; never an invented ZIP.
+const bundledProfiles:ReadonlySet<string>=new Set(['profiles/protimer-xl-full']);
 const instructionIds=new Set<string>();
 async function readback(item:Owned){
   let timeout:ReturnType<typeof setTimeout>|undefined;
@@ -79,7 +78,7 @@ async function sendInventory(){
     protocolVersion:1,pluginVersion:'0.1.0',softwareVersion:streamDeck.info.application.version,
     devices:[...streamDeck.devices].filter(device=>device.isConnected).map(device=>({id:device.id,name:device.name,type:device.type,size:device.size})),
     actions:[...owned.values()].filter(item=>item.action.device.isConnected).map(item=>({context:item.action.id,instanceId:item.settings.instanceId,deviceId:item.action.device.id,row:item.action.coordinates?.row,column:item.action.coordinates?.column,layoutId:item.settings.layoutId,slotId:item.settings.slotId,slotIndex:item.settings.slotIndex})),
-    canActivate:bundledProfiles.size>0,profiles:[...bundledProfiles],layoutRevision:bridge.frame?.layoutRevision,
+    canActivate:bundledProfiles.size>0,profiles:[...bundledProfiles],visibilityVersion,layoutRevision:bridge.frame?.layoutRevision,
     profileEvidence:'visible-own-actions-only',
     profileUnavailableReason:bundledProfiles.size?undefined:'Starter profiles require export and validation in the Elgato application; manual ProTimer Key placement is available.'
   });
@@ -134,6 +133,7 @@ async function instruction(i:Instruction){
 class ProTimerKey extends SingletonAction<Settings>{
   override async onWillAppear(ev:WillAppearEvent<Settings>){
     if(!ev.action.isKey()||ev.action.isInMultiAction())return;
+    visibilityVersion++;
     const settings={...ev.payload.settings};
     // Elgato duplicates persisted settings. A visible collision gets a fresh
     // stable identity; device + context remains the current lifecycle identity.
@@ -142,7 +142,7 @@ class ProTimerKey extends SingletonAction<Settings>{
     }
     owned.set(ev.action.id,{action:ev.action,settings});inventoryDirty=true;await render(owned.get(ev.action.id)!);
   }
-  override async onWillDisappear(ev:WillDisappearEvent<Settings>){await cancelPress(ev.action.id);owned.delete(ev.action.id);if(numeric?.bindings.has(ev.action.id))numeric=undefined;inventoryDirty=true;}
+  override async onWillDisappear(ev:WillDisappearEvent<Settings>){visibilityVersion++;await cancelPress(ev.action.id);owned.delete(ev.action.id);if(numeric?.bindings.has(ev.action.id))numeric=undefined;inventoryDirty=true;}
   override async onDidReceiveSettings(ev:DidReceiveSettingsEvent<Settings>){
     const item=owned.get(ev.action.id);if(!item)return;
     await cancelPress(ev.action.id);item.settings={...ev.payload.settings};item.lastImage=undefined;inventoryDirty=true;await render(item);
@@ -212,13 +212,15 @@ bridge.onFrame=async(frame:Frame)=>{
 };
 streamDeck.system.onDidReceiveDeepLink(ev=>{void bridge.bootstrap(ev.url.path,ev.url.queryParameters);});
 streamDeck.devices.onDeviceDidConnect(ev=>{
+  visibilityVersion++;
   // USB lifecycle is not action/profile lifecycle. Elgato may retain visible
   // action contexts across reconnect without emitting willAppear again.
   for(const item of owned.values())if(item.action.device.id===ev.device.id)item.lastImage=undefined;
   inventoryDirty=true;
 });
-streamDeck.devices.onDeviceDidChange(()=>{cancelAll();inventoryDirty=true;});
+streamDeck.devices.onDeviceDidChange(()=>{visibilityVersion++;cancelAll();inventoryDirty=true;});
 streamDeck.devices.onDeviceDidDisconnect(()=>{
+  visibilityVersion++;
   cancelAll();inventoryDirty=true;
   // Keep SDK-proven action identities until willDisappear. Offline devices are
   // excluded from inventory/rendering and cannot send commands. Never replay.

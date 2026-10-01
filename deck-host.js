@@ -6,6 +6,7 @@ const path = require('node:path');
 const crypto = require('node:crypto');
 const Layout = require('./deck-layout');
 const { createBridge } = require('./deck-bridge');
+const { createProfileGuard } = require('./deck-profile-guard');
 const UUID = 'com.srdjankotarlic.protimer';
 module.exports = function createDeckHost({ getControl, outputCommand, smoke = false }) {
   const file = path.join(app.getPath('userData'), 'stream-deck.json');
@@ -24,6 +25,7 @@ module.exports = function createDeckHost({ getControl, outputCommand, smoke = fa
   } catch (_) { /* Missing/corrupt integration settings never break ProTimer. */ }
   if (smoke) settings.enabled = false;
   let softwareDetected = false, bootstrapAt = 0, pairing = false, disposed = false;
+  const profileGuard=createProfileGuard();
   let lastFrame = null; const requests = new Map(), registered = new Set();
   function persist() { const temp = `${file}.tmp`; fs.writeFileSync(temp, JSON.stringify(settings, null, 2), { mode: 0o600 }); fs.renameSync(temp, file); }
   function authorized(e) { const win = getControl(); return win && !win.isDestroyed() && e.sender === win.webContents; }
@@ -46,11 +48,14 @@ module.exports = function createDeckHost({ getControl, outputCommand, smoke = fa
     const b = bridge.status(), devices = b.inventory.devices;
     if (!settings.selectedDeviceId && devices.length === 1) settings.selectedDeviceId = devices[0].id;
     const visible = b.inventory.actions.filter(a => a.deviceId === settings.selectedDeviceId);
+    const canReturn=profileGuard.observe(b.inventory,b.sessionId,b.connected&&!b.stale);
     // No supported API for arbitrary active profile. Visible own keys are only
     // evidence, not a claim that a bundled profile is selected.
     const status = !settings.enabled ? 'disabled' : !softwareDetected ? 'no-software' : !b.connected ? pairing ? 'pairing' : 'plugin-missing' : b.pluginVersion !== '0.1.0' ? 'outdated' : b.stale ? 'stale' : !devices.length ? 'no-device' : !visible.length ? 'profile-inactive' : 'connected';
     return { ...safeSettings(), softwareDetected, status, pluginVersion: b.pluginVersion, devices, inventory: b.inventory.actions,
-      profile: { active: false, known: false, canReturn: false }, profilesVerified: false, canActivate: false,
+      profile: { active: false, known: false, canReturn }, profilesVerified: b.inventory.profiles?.includes('profiles/protimer-xl-full')===true,
+      canActivate: status==='connected'||status==='profile-inactive' ? b.inventory.canActivate===true&&devices.some(d=>d.id===settings.selectedDeviceId&&d.type===2) : false,
+      profiles: b.inventory.profiles?.map(name=>({name,label:'ProTimer XL · Full 32'}))||[],
       statusDetail: status === 'profile-inactive' ? 'No visible ProTimer actions on the selected device.' : '',
       audio: { ...settings.audio, available: true } };
   }
@@ -104,12 +109,19 @@ module.exports = function createDeckHost({ getControl, outputCommand, smoke = fa
     if (action === 'selectDevice') {
       if (!bridge.status().inventory.devices.some(d => d.id === payload.deviceId)) return { ok: false, error: 'DEVICE_NOT_CONNECTED' };
       const connection=bridge.status();
+      profileGuard.reset();
       if(connection.sessionId&&settings.selectedDeviceId)await renderer('disconnect',{}, {sourceId:'native-deck',sessionId:connection.sessionId,deviceId:settings.selectedDeviceId,connected:false});
       settings.selectedDeviceId = payload.deviceId; persist(); await renderer('resetEditTarget', {}, { sourceId: 'control', sessionId: 'local' }); push(); return { ok: true };
     }
-    if (action === 'activate') return { ok: false, error: 'VERIFIED_STARTER_PROFILE_REQUIRED', message: 'This build has no Elgato-exported verified profile. Place ProTimer Key actions in the Elgato editor; do not import an invented profile.' };
+    if (action === 'activate') {
+      if (!snapshot().canActivate || payload.profile!=='profiles/protimer-xl-full') return {ok:false,error:'VERIFIED_STARTER_PROFILE_REQUIRED'};
+      const b=bridge.status();profileGuard.request(b.inventory,settings.selectedDeviceId,b.sessionId);
+      const result=await bridge.instruction('activate',{deviceId:settings.selectedDeviceId,profile:payload.profile});
+      profileGuard.acknowledge(result.ok);push();return {...result,confirmationRequired:true};
+    }
     if (action === 'back') {
       if (!snapshot().profile.canReturn) return { ok: false, error: 'PROFILE_OWNERSHIP_UNKNOWN', message: 'Manual profiles have no confirmed previous-profile stack. Choose another profile in Elgato, or place its Switch Profile action on a free key.' };
+      profileGuard.reset();
       return bridge.instruction('back', { deviceId: settings.selectedDeviceId });
     }
     if (action === 'applyLayout') {

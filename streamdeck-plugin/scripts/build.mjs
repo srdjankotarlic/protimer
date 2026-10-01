@@ -2,6 +2,8 @@ import {build} from 'esbuild';
 import {mkdir,writeFile,copyFile} from 'node:fs/promises';
 import {deflateSync} from 'node:zlib';
 import {fileURLToPath} from 'node:url';
+import {checkBundledProfile} from './check-profile.mjs';
+checkBundledProfile();
 const root=new URL('../',import.meta.url),target=new URL('com.srdjankotarlic.protimer.sdPlugin/',root);
 await mkdir(new URL('bin/',target),{recursive:true});await mkdir(new URL('imgs/',target),{recursive:true});
 await copyFile(new URL('../deck-layout.js',root),new URL('ui/layout.js',target));

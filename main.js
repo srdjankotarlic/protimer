@@ -612,6 +612,10 @@ ipcMain.handle('resize-output', async (e, requested) => {
   // first paint. The original request must never resize a replacement output.
   if (win !== outputWin || win.isDestroyed()) return { ok: false };
   const revision = ++outputPlacementVersion; // an explicit size wins over any older monitor/grid move
+  // Windows sends will-move while restoring the window from fullscreen. That
+  // is our placement, not an operator drag; otherwise it cancels this resize.
+  outputPlacing = revision;
+  try {
   if (!await leaveOutputFullscreen(win) || win !== outputWin || win.isDestroyed() || revision !== outputPlacementVersion) return { ok: false };
   if (lastState?.gridOn || lastState?.fitWindow) return { ok: false, error: 'automatic size enabled' };
   if (!outputPlaced) {
@@ -629,6 +633,7 @@ ipcMain.handle('resize-output', async (e, requested) => {
   pushOutputGeometry();
   const actual = outputGeometry();
   return { ok: actual.width === size.width && actual.height === size.height, ...actual };
+  } finally { if (outputPlacing === revision) outputPlacing = null; }
 });
 // kompaktan prozor: izlaz traži da visina prozora prati visinu tajmera (samo kad NIJE fullscreen)
 ipcMain.on('fit-window', (e, h) => {

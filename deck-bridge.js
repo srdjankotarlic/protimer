@@ -23,7 +23,9 @@ function cleanInventory(value) {
   if (new Set(devices.map(d=>d.id)).size!==devices.length || new Set(actions.map(a=>a.context)).size!==actions.length || new Set(actions.filter(a=>a.instanceId).map(a=>a.instanceId)).size!==actions.filter(a=>a.instanceId).length) throw new Error('INVALID_INVENTORY');
   // Presence proves only that these actions are visible. Missing coordinates
   // are UNKNOWN, never evidence that a foreign button is free.
-  return { devices, actions, softwareVersion: string(value.softwareVersion,40) };
+  const profiles=Array.isArray(value.profiles)?[...new Set(value.profiles.filter(p=>typeof p==='string'&&/^profiles\/protimer-xl-full$/.test(p)))]:[];
+  return { devices, actions, softwareVersion: string(value.softwareVersion,40), profiles, canActivate:value.canActivate===true&&profiles.length>0,
+    visibilityVersion:Number.isSafeInteger(value.visibilityVersion)&&value.visibilityVersion>=0?value.visibilityVersion:undefined };
 }
 function createBridge({ getSnapshot, onRequest, onDisconnect = () => {}, onChange = () => {}, now = () => performance.now(), staleMs = 2500 } = {}) {
   let server = null, port = 0, nonce = null, nonceUntil = 0, session = null, heartbeat = null;
