@@ -487,7 +487,7 @@ function createOutputWindow(displayId, presentation = 'configured') {
     resizable: true,
     enableLargerThanScreen: true,
     alwaysOnTop: forceOnTop,
-    webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false }
+    webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, backgroundThrottling: false }
   });
   const current = outputWin;
   outputPlaced = false; outputReady = false;

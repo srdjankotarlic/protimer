@@ -72,8 +72,11 @@ module.exports = async function smokeDeck({ controlWin, deckHost, getOutput, get
   assert.equal(getOutput().isFullScreen(),false);if(twoDisplays)assert.equal(getSecondary().isFullScreen(),false);
   for(const type of ['blackoutOn','blackoutOff']){
     assert.equal((await command(make(type))).ok,true);
-    await delay(80);
-    for(const win of [getOutput(),getSecondary()].filter(Boolean))assert.equal(await win.webContents.executeJavaScript("$('blackout').style.display"),type==='blackoutOn'?'block':'none');
+    for(const win of [getOutput(),getSecondary()].filter(Boolean)){
+      const expected=type==='blackoutOn'?'block':'none';
+      for(let n=0;n<60&&await win.webContents.executeJavaScript("$('blackout').style.display")!==expected;n++)await delay(50);
+      assert.equal(await win.webContents.executeJavaScript("$('blackout').style.display"),expected);
+    }
   }
   snapshot=await state();
   assert.equal((await command({...make('loadSet','t1'),expectedActiveVersion:snapshot.timers.t1.active.version,expectedDraftVersion:snapshot.timers.t1.draft.version})).code,'ACTIVE_RUNNING');

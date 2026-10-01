@@ -74,8 +74,13 @@ module.exports = async function ({ controlWin, getOutput, getSecondary, screen }
   await waitFor(() => first('isFS'), 'First output did not enter fullscreen');
   await ctl(`$('btnFs').click();`);
   await waitFor(() => first('!isFS'), 'Control failed to exit first output fullscreen');
-  await waitFor(() => JSON.stringify(getSecondary().getBounds())===JSON.stringify(secondaryBounds),
-    'Native fullscreen did not restore the second output');
+  await waitFor(() => {
+    const actual=getSecondary().getBounds();
+    // X11 window managers may reposition a window on the same display when
+    // another enters fullscreen. macOS/Windows must restore the exact frame;
+    // Linux still verifies both content dimensions, not WM-owned coordinates.
+    return (process.platform==='linux'?['width','height']:['x','y','width','height']).every(k=>actual[k]===secondaryBounds[k]);
+  }, 'Native fullscreen did not restore the second output');
   const otherDisplay = screen.getAllDisplays().find(d => d.id !== hostDisplay);
   if (otherDisplay) {
     const clocks = await ctl(`({first:S.remMs,second:S.secondary.remMs})`);

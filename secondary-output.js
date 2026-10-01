@@ -68,7 +68,7 @@ module.exports = function secondaryOutput({ BrowserWindow, screen, getState, con
       title: 'ProTimer — Tajmer 2', backgroundColor: transparent ? '#00000000' : '#000000',
       transparent, frame: false, hasShadow: false, movable: true, resizable: true,
       enableLargerThanScreen: true, alwaysOnTop: transparent || !!s.gridOn,
-      webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false }
+      webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, backgroundThrottling: false }
     });
     win = current;
     placed = false; ready = false;

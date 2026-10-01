@@ -136,6 +136,7 @@ function applyState(s){
   if (!clockSynced && Number.isFinite(s._serverNow)) clockOffsetMs=s._serverNow-Date.now();
   S = TimerTools.audienceState(s);
   $('connection').textContent = s.lang === 'en' ? 'RECONNECTING…' : 'PONOVNO POVEZIVANJE…';
+  render(); // Apply BLACK/LIVE and layout changes immediately, not on the next background timer tick.
   return true;
 }
 

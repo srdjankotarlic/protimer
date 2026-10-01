@@ -28,6 +28,16 @@ test('macOS asynchronous transitions finish before applying a size', async () =>
   assert.equal(await leaveFullscreen(win), true);
   assert.equal(win.full, false);
 });
+test('fullscreen exit waits for the delayed native restored frame before allowing a resize', async () => {
+  const win = new FakeWindow(); let restored = false;
+  win.setFullScreen = value => {
+    win.emit('leave-full-screen'); win.full = value;
+    setTimeout(() => { restored = true; win.emit('resize'); }, 70);
+  };
+  assert.equal(await leaveFullscreen(win), true);
+  assert.equal(restored, true);
+  assert.equal(win.listenerCount('resize'), 0);
+});
 test('closed windows and failed transitions do not allow sizing', async () => {
   const win = new FakeWindow();
   win.setFullScreen = () => {};
