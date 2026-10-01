@@ -156,6 +156,8 @@ module.exports = function secondaryOutput({ BrowserWindow, screen, getState, con
     if (!current || !await leaveFullscreen(current) || win !== current ||
         version !== revision || !enabled() || state().gridOn) return { ok: false };
     current.setContentSize(size.width, size.height);
+    if (platform === 'win32' && current.getContentSize().some((n,i)=>n!==[size.width,size.height][i]))
+      current.setBounds({...current.getBounds(),...size});
     const actual = geometry();
     notify();
     return { ok: !!actual && actual.width === size.width && actual.height === size.height, ...actual };

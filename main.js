@@ -632,6 +632,11 @@ ipcMain.handle('resize-output', async (e, requested) => {
     if (outputPlacing === revision) outputPlacing = null;
     pushDisplays();
   } else win.setContentSize(size.width, size.height);
+  // On Windows a frameless restored window can retain fullscreen content-frame
+  // conversion in setContentSize. Reassert its explicit outer rectangle if that
+  // API did not apply the requested size; these audience windows have no frame.
+  if (process.platform === 'win32' && win.getContentSize().some((n,i)=>n!==[size.width,size.height][i]))
+    win.setBounds({...win.getBounds(),...size});
   pushOutputGeometry();
   const actual = outputGeometry();
   if (SMOKE) console.log('OUTPUT_RESIZE_APPLIED',JSON.stringify({requested:size,actual}));

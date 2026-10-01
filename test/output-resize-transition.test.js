@@ -12,9 +12,12 @@ test('real primary resize handler ignores Windows restoration will-move without 
   const win=new EventEmitter();let full=true,size=[1920,1080];
   win.isDestroyed=()=>false;win.isFocused=()=>true;win.isFullScreen=()=>full;
   win.setFullScreen=v=>{win.emit('will-move',{}, {x:0,y:0});win.emit('leave-full-screen');full=v;};
-  win.setContentSize=(w,h)=>{win.emit('will-move',{}, {x:0,y:0});size=[w,h];};
+  win.setContentSize=()=>{win.emit('will-move',{}, {x:0,y:0});}; // reproduce restored Windows no-op
+  win.getContentSize=()=>size;
+  win.getBounds=()=>({x:0,y:0,width:size[0],height:size[1]});
+  win.setBounds=b=>{size=[b.width,b.height];};
   let handler;const sender={};
-  const context={SMOKE:false,ipcMain:{handle:(_name,fn)=>handler=fn},TimerTools,controlWin:{webContents:sender},outputWin:win,current:win,
+  const context={process:{platform:'win32'},SMOKE:false,ipcMain:{handle:(_name,fn)=>handler=fn},TimerTools,controlWin:{webContents:sender},outputWin:win,current:win,
     outputReady:true,outputPlaced:true,outputPlacing:null,outputPlacementVersion:0,outputTargetId:1,lastState:{gridOn:false,fitWindow:false},
     screen:{getAllDisplays:()=>[{id:1}],getDisplayMatching:()=>({id:1})},leaveOutputFullscreen:()=>leaveFullscreen(win),
     pushOutputGeometry:()=>{},outputGeometry:()=>({width:size[0],height:size[1],fullscreen:full})};
