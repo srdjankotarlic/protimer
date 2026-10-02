@@ -37,3 +37,13 @@ Subsequent CI exposed a delayed Windows restored-frame operation and background 
 ## Pending acceptance
 
 A clean-machine first setup; physical XL presses/LCDs/audio and long USB/sleep rehearsal; Windows device/runtime acceptance. The local native profile import and editor rendering were observed in real Elgato software, not invented ZIPs. Automated CI and simulated SDK events must not be reported as physical button presses or these remaining hardware checks. No arbitrary user profiles or foreign buttons are overwritten.
+
+## Final cross-platform checks — 2026-10-02
+
+The final resize implementation verifies the applied native content size and retries only the current Windows request during the bounded native restoration interval. Identity/revision guards cancel superseded requests. This does not recreate either timer or replay timer commands. The separate-output smoke also waits for the actual restored dimensions before recording the next fullscreen test's baseline.
+
+- `npm test`: **211/211 passed**; the additional tests cover discarded Windows size requests and cancellation by newer operator requests.
+- `npm run deck:test`: TypeScript and **33/33 passed** again.
+- GitHub smoke run `36981366028` at commit `cdd304d`: **macOS, Windows and Linux passed**. This is native Electron on CI hosts, not Windows Stream Deck hardware acceptance.
+- Final locally built Mac application: full packaged smoke **SMOKE_OK**. Actual `app.asar` SHA-256: `6b32868bc3c4eedf17d76d14b0b89ee7205d717abdccda884794258119389534`.
+- Desktop ProTimer.app was replaced with this same final build; previous builds and user data remain backed up. Plugin artwork/profile binaries are unchanged from the successful real Elgato installation described above.
