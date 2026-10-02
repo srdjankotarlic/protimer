@@ -14,15 +14,19 @@
         active.color = host.color(id);
       }
       value.blackout = host.blackout();
+      value.liveTimerView=host.liveView?.()||'both';
+      value.singleTap = true;
+      value.separateOutputs = host.separateOutputs();
+      value.outputs = { aOpen: host.outputOpen('a'), bOpen: host.outputOpen('b') };
       api.deckFrame(value); ui?.update({ ...settings, ...value });
       if(lastLanguage!==host.language()){lastLanguage=host.language();ui?.setLanguage(lastLanguage);}
       return value;
     }
-    model = root.DeckModel.create({ readActive: host.readActive, persisted: settings.drafts,
+    model = root.DeckModel.create({ nativeSingleTap: true, readActive: host.readActive, readOutputOpen: host.outputOpen, persisted: settings.drafts,
       now: () => Date.now(), guardNow: () => performance.now(), readRundown: host.readRundown,
       applyOperation: async operation => {
         if (operation.type === 'bell') return audio.play(settings.audio);
-        if (operation.type === 'settings') { ui.openSettings(); return { ok: true }; }
+        if (operation.type === 'settings') { const focused=await api.deckInvoke('focusControl'); if (!focused.ok) return focused; ui.openSettings(); return { ok: true }; }
         if (operation.type === 'back') return api.deckInvoke('back');
         return host.applyOperation(operation);
       }, onChange: (_state, persisted) => {
@@ -33,7 +37,7 @@
     function pin(command) {
       const state = model.snapshot(), timerId = command.timerId === 't2' ? 't2' : command.timerId === 't1' ? 't1' : state.selectedTimerId;
       const value = { ...command, commandId: command.commandId || crypto.randomUUID(), timerId, sequence: ++sequence };
-      if (value.type === 'startSet') { value.expectedActiveVersion ??= state.timers[timerId].active.version; value.expectedDraftVersion ??= state.timers[timerId].draft.version; }
+      if (['startSet','loadSet'].includes(value.type)) { value.expectedActiveVersion ??= state.timers[timerId].active.version; value.expectedDraftVersion ??= state.timers[timerId].draft.version; }
       return value;
     }
     function fromKey(key) {
@@ -41,6 +45,8 @@
       const command = { type: key.command, timerId, commandId: crypto.randomUUID(), payload: {} };
       if (key.command === 'adjust') command.payload = { step: key.step, unit: key.unit, target: key.target === 'selected' ? state.editTarget : key.target };
       if (key.command === 'preset') command.payload = { durationMs: key.durationMs };
+      if (key.command === 'selectTimer' && key.timerId !== 'selected') command.payload = { timerId };
+      if (['outputA','outputB'].includes(key.command) && key.outputAction && key.outputAction !== 'toggle') command.payload = { action: key.outputAction };
       return pin(command);
     }
     async function execute(command, source = context) { const result = await model.confirmTwice(pin(command), source); frame(); return result; }

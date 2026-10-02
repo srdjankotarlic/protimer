@@ -1,10 +1,10 @@
 # Stream Deck SDK boundaries and native profile validation
 
-Checked against official Elgato documentation and published npm packages on 2026-09-25. This document separates implemented API behavior from checks that require real Elgato software/hardware.
+Checked against official Elgato documentation and published npm packages; native XL export added on 2026-10-01. This document separates implemented API behavior from checks that require real Elgato software/hardware.
 
 ## Verified SDK choices
 
-`@elgato/streamdeck` 3.0.0 and `@elgato/cli` 1.10.0 are pinned and MIT licensed. SDK's declared runtime minimum is Node 20.5.1; Stream Deck 7.0 includes Node 20.19.0. The plugin uses its bundled Node 20 and targets Stream Deck 7.0+, not ProTimer's Node development installation. SDK 3 defaults to settings behavior requiring 7.1; `useLegacySettingsBehavior=true` is enabled for compatibility and actual settings readback. [Plugin environment](https://docs.elgato.com/streamdeck/sdk/introduction/plugin-environment/), [SDK 3 upgrade](https://docs.elgato.com/streamdeck/sdk/releases/upgrading/v3/).
+`@elgato/streamdeck` 3.0.0 and `@elgato/cli` 1.10.0 are pinned and MIT licensed. SDK's declared runtime minimum is Node 20.5.1. The plugin uses Elgato's bundled Node 20 and now targets **Stream Deck 7.6+**, matching the genuine profile export, not ProTimer's Node development installation. `useLegacySettingsBehavior=true` remains enabled for actual settings readback. [Plugin environment](https://docs.elgato.com/streamdeck/sdk/introduction/plugin-environment/), [SDK 3 upgrade](https://docs.elgato.com/streamdeck/sdk/releases/upgrading/v3/).
 
 The plugin sets graphics through `setImage` only on its own key contexts, caches unchanged SVGs, and uses settings for persistent stable instance identities. Context is only a current-session identity, not a durable ID. User title/icon overrides have priority; the UI explains how to reset them. [Keys](https://docs.elgato.com/streamdeck/sdk/guides/keys/), [WebSocket API](https://docs.elgato.com/streamdeck/sdk/references/websocket/plugin/).
 
@@ -12,22 +12,21 @@ Passive bootstrap uses `streamdeck://plugins/message/com.srdjankotarlic.protimer
 
 The real plugin artifact is produced by `streamdeck pack`, which validates the manifest and supporting resources. No Maker Console submission, marketplace publication, signing or license changes are performed. [Distribution](https://docs.elgato.com/streamdeck/sdk/introduction/distribution/).
 
-## Important remaining limitation: native starter profiles
+## Genuine native starter profile
 
-**No Elgato application or physical XL was available for this implementation's profile-authoring verification.** The official workflow is to arrange actions in Elgato and export a `.streamDeckProfile`. No officially supported headless profile creation/validation tool was established. Accordingly this build does not contain invented profile ZIPs and does not claim plug-and-play native profile installation.
+The user exported the existing 32-key ProTimer XL profile through **Elgato Preferences → Profiles → Export**, using Stream Deck 7.6.0.23012 on macOS. The unchanged export is bundled at `profiles/protimer-xl-full.streamDeckProfile`. It contains only ProTimer actions, no connection secrets or foreign controls. Build/tests inspect bounded ZIP metadata and pin SHA-256 `e86a1cecc8535f87987e8925f7e95c24aeae331afac0ef8fad20f4e301fa9fe3`; they do not invent or rewrite native profile databases.
 
-The default **Standard 28 + 4 free** and **Full 32** are validated ProTimer logical JSON layouts. They are not falsely labeled native Elgato profiles. The working universal action may already be placed/configured/bound manually in Elgato. [Official profile guide](https://docs.elgato.com/streamdeck/sdk/guides/profiles/).
+The manifest registers editable XL Full 32 with `DeviceType:2`, `Readonly:false`, `DontAutoSwitchWhenInstalled:true`, `AutoInstall:false`. Installation is requested only by explicit activation from Control and may require Elgato confirmation. Capability is reported through the connected plugin's allowlisted inventory, not inferred from a folder. **Standard 28 + 4 free** remains a logical JSON layout, not a second native profile. To make a mixed physical profile, duplicate Full 32 in Elgato and remove its last-column actions. [Official profile guide](https://docs.elgato.com/streamdeck/sdk/guides/profiles/).
 
 The SDK may switch only to a plugin's bundled profiles; it cannot switch arbitrary user profiles or query all their contents. Omitting the profile in `switchToProfile(deviceId)` requests the previous profile. That promise confirms request transmission, not the identity of the resulting profile. Visible owned actions provide limited evidence only. Control and plugin must not treat absent actions as proof a position is empty. [Profile commands](https://docs.elgato.com/streamdeck/sdk/references/websocket/plugin/#switchtoprofile).
 
-## Required completion steps in real Elgato software
+## Activation and return boundaries
 
-1. Install this locally built plugin on a test machine with Stream Deck 7.0+ and an XL. Do not replace or automatically select a live-show profile.
-2. Create two new XL profiles in Elgato: Standard 28 + 4 free and Full 32. Place the real ProTimer Key action at the corresponding logical positions. Standard's last column must contain **no action at all**, not ProTimer inactive placeholders. Leave those profiles user-editable.
-3. Set explicit bindings from ProTimer Control for each placed own action. Verify separate ACTIVE/SET LCD keys and all six adjustment labels. Export both profiles using Elgato's native Export menu.
-4. Add only those verified export files to `streamdeck-plugin/com.srdjankotarlic.protimer.sdPlugin/profiles/`. Register manifest Profiles with XL `DeviceType:2`, `Readonly:false`, `DontAutoSwitchWhenInstalled:true`, `AutoInstall:false`; names omit file extensions. Register matching exact profile paths in the plugin's bundledProfiles allowlist. Do not infer any prior-profile identity.
-5. Rebuild, run official `validate` and `pack`; install on a fresh test profile/machine. Confirm Elgato prompts, manual activation from Control, no timer/output side effect, explicit BACK, native editing and persistence. A passing CLI package validation alone is insufficient evidence of native-profile import or USB behavior.
-6. Only after those tests change the runtime capability from `canActivate:false`. Never set the flag based only on a profile folder existing.
+Control sends only the exact registered bundled-profile path on a connected XL. An acknowledgement means the SDK request was sent, not that Elgato's confirmation was accepted or the active profile identity was proved. Timer commands and output routing are not involved.
+
+Control's previous-profile return becomes available only after an acknowledged manual activation produces a new visible set of 32 own contexts. A session, USB, page or action-lifecycle change revokes this conservative return lease; it never reappears merely because the old contexts become visible. If identity cannot be established, choose the desired profile directly in Elgato. A deliberately configured BACK key uses the SDK previous-profile request and remains available offline.
+
+Remaining acceptance: clean-machine first install/reimport on both target platforms and physical XL checks below. A passing CLI package validation or simulated SDK test is not proof of those scenarios.
 
 ## Physical / OS acceptance checklist
 
@@ -35,7 +34,7 @@ The SDK may switch only to a plugin's bundled profiles; it cannot switch arbitra
 - [ ] Windows x64: equivalent installation, pairing, reconnect and packaged runtime.
 - [ ] XL LCD values: ACTIVE/DRAFT match Control for T1 and T2; long hours fit, count-up/clock/overtime correct; custom title/icon restoration documented.
 - [ ] ACTIVE continues while adjusting SET/presets/ENTER TIME → `01:23:45`; START SET is deliberate and applied once.
-- [ ] Hold RESET/BLACK/active replacement; release early, disconnect USB, change page/device and restart plugin during hold. No queued command executes later.
+- [ ] Native one-touch mode: a short press executes RESET/BLACK/active replacement immediately and once. Keep a key down, repeat keyDown, disconnect USB, change page/device and restart plugin; no auto-repeat or queued command executes later. Older app modes retain hold protection.
 - [ ] Native user change of profile, app focus, USB reconnect and app restart never automatically switch profiles.
 - [ ] BACK while ProTimer is closed requests the previous profile without sending a timer/output command.
 - [ ] Mixed profile's four true free keys accept OBS/foreign actions and remain unchanged through logical layout edits and numeric entry.
@@ -47,6 +46,6 @@ Automated adapter tests simulate Elgato messages, not physical USB or actual pro
 
 ## Srpski — šta još mora fizički da se proveri
 
-Plugin i paket su stvarni i automatski testirani, ali pripremljeni Elgato profili još nisu izvezeni/provereni u Elgato aplikaciji. Zato je automatska aktivacija tih profila iskreno nedostupna. Do tada **ProTimer Key** postavite ručno, zatim komande uređujte u ProTimeru.
+Plugin sadrži pravi XL Full 32 profil izvezen kroz Elgato 7.6. Profil se aktivira samo namernim klikom u kontroli, uz prvi Elgato zahtev za instalaciju. Ne postavlja se automatski pri pokretanju ili povezivanju USB-a. Tasteri ostaju izmenljivi u Elgato editoru.
 
-ProTimer može menjati samo podešavanja svojih postojećih akcija. Ne može postavljati novu akciju preko OBS dugmeta, pomerati tuđa dugmad ili pouzdano utvrditi naziv proizvoljnog aktivnog profila. Logički raspored nije dokaz rasporeda fizičkih akcija. Za potpuno gotov plug-and-play paket potrebno je izvršiti korake izvoza i hardversku kontrolnu listu iznad, na Macu i Windowsu.
+ProTimer može menjati samo podešavanja svojih postojećih akcija. Ne može postavljati novu akciju preko OBS dugmeta, pomerati tuđa dugmad ili pouzdano utvrditi naziv proizvoljnog aktivnog profila. Logički raspored nije dokaz rasporeda fizičkih akcija. Prva instalacija na čistom računaru i fizička hardverska kontrolna lista iznad moraju se proveriti posebno na Macu i Windowsu.

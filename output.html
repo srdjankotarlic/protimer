@@ -134,8 +134,9 @@ function applyState(s){
     lastStateVersion = version;
   }
   if (!clockSynced && Number.isFinite(s._serverNow)) clockOffsetMs=s._serverNow-Date.now();
-  S = s;
+  S = TimerTools.audienceState(s);
   $('connection').textContent = s.lang === 'en' ? 'RECONNECTING…' : 'PONOVNO POVEZIVANJE…';
+  render(); // Apply BLACK/LIVE and layout changes immediately, not on the next background timer tick.
   return true;
 }
 
@@ -253,6 +254,7 @@ function render(){
   // fit (kompaktan prozor) — samo ako NIJE grid i NIJE fullscreen
   fitMode = IS_ELECTRON && !!S.fitWindow && !isFS && !S.gridOn && !S.dualTimer;
   document.body.classList.toggle('windowed',IS_ELECTRON&&!isFS&&!S.gridOn);
+  setStyle($('stage'),'visibility',S.liveHidden?'hidden':'visible');
   setClass($('stage'),S.dualTimer?'dual '+(S.dualSplit==='rows'?'rows':'columns'):'');
 
   paint(text, fg, bg, neg, blink, S.text || '', S.message ? S.message.text : '',

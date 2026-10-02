@@ -2,4 +2,4 @@
 // @ts-expect-error The existing application intentionally uses dependency-free JS.
 import shared from '../../deck-layout.js';
 import type {Key} from './types.js';
-export const layout=shared as {normalizeKey(value:unknown):Key|null;defaultKey(command?:string,overrides?:Partial<Key>):Key;label(key:Key):string};
+export const layout=shared as {normalizeKey(value:unknown):Key|null;defaultKey(command?:string,overrides?:Partial<Key>):Key;label(key:Key):string;commandIcon(key:Key):string;iconSvg(icon:string):string};

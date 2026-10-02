@@ -50,14 +50,31 @@
   }
   function reset(timer) { timer.running = false; timer.remMs = timer.durationMs; timer.endAt = 0; timer.elapsedMs = 0; timer.startAt = 0; }
   function separateOutputs(state) { return !!(state && state.dualTimer && state.separateOutputs); }
+  function liveView(value){ return ['t1','t2','both'].includes(value)?value:'both'; }
+  function secondaryView(state){
+    const timer=state.secondary;
+    return {...state,dualTimer:false,fitWindow:false,mode:timer.mode||'countdown',
+      durationMs:timer.durationMs,remMs:timer.remMs,endAt:timer.endAt,running:timer.running,
+      elapsedMs:timer.elapsedMs||0,startAt:timer.startAt||0,overtime:timer.overtime??state.overtime,
+      flashZero:timer.flashZero??state.flashZero??true,soundZero:!!timer.soundZero,
+      outputLayout:timer.layout,outputSize:size(timer.outputSize),...grid(timer),text:'',textOnly:false,showNowNext:false};
+  }
+  // Presentation only: never mutate either timer, routing or window lifecycle.
+  function audienceState(state){
+    if(!state)return state;
+    const view=liveView(state.liveTimerView);
+    if(state.outputTimerId)return {...state,liveHidden:view!=='both'&&view!==state.outputTimerId};
+    if(!state.dualTimer||view==='both')return state;
+    return view==='t1'?{...state,dualTimer:false,fitWindow:false}:secondaryView(state);
+  }
   // Project the existing clocks into desktop outputs; never start, pause or copy
   // a clock deadline. Network viewers keep the original combined state.
   function outputState(state, role = 'primary') {
     if (!state || !separateOutputs(state)) return state;
-    if (role !== 'secondary') return { ...state, dualTimer: false, fitWindow: false };
+    if (role !== 'secondary') return { ...state, dualTimer: false, fitWindow: false,outputTimerId:'t1' };
     const timer = state.secondary;
     return {
-      ...state, dualTimer: false, fitWindow: false, mode: timer.mode || 'countdown',
+      ...state, dualTimer: false, fitWindow: false,outputTimerId:'t2', mode: timer.mode || 'countdown',
       durationMs: timer.durationMs, remMs: timer.remMs, endAt: timer.endAt,
       running: timer.running, elapsedMs: timer.elapsedMs || 0, startAt: timer.startAt || 0,
       overtime: timer.overtime ?? state.overtime,
@@ -67,5 +84,5 @@
       text: '', textOnly: false, showNowNext: false
     };
   }
-  return { MAX_DURATION, clamp, layout, size, grid, secondary, remaining, elapsed, setRunning, reset, separateOutputs, outputState };
+  return { MAX_DURATION, clamp, layout, size, grid, secondary, remaining, elapsed, setRunning, reset, separateOutputs, outputState,liveView,audienceState };
 });

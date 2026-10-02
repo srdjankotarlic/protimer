@@ -7,8 +7,8 @@
   'use strict';
   const SCHEMA_VERSION = 1, MAX_DURATION = 359999000, HOLD_MS = 1500, CONFIRM_MS = 5000;
   const TIMER_IDS = ['t1', 't2'], MODES = ['countdown', 'countup', 'clock'];
-  const TYPES = new Set(['startPause', 'startSet', 'start', 'pause', 'resume', 'reset', 'adjust', 'preset', 'clearSet',
-    'editTarget', 'selectTimer', 'countdown', 'countup', 'clock', 'bell', 'blackout', 'outputA', 'outputB',
+  const TYPES = new Set(['startPause', 'startSet', 'loadSet', 'start', 'pause', 'resume', 'reset', 'adjust', 'preset', 'clearSet',
+    'editTarget', 'selectTimer', 'countdown', 'countup', 'clock', 'bell', 'blackout', 'blackoutOn', 'blackoutOff', 'outputA', 'outputB','liveT1','liveT2','liveBoth',
     'message', 'settings', 'back', 'prev', 'next', 'loadSelected', 'fullscreen', 'enterTime',
     'numericBegin', 'numericDigit', 'numericField', 'numericBackspace', 'numericClear', 'numericApply', 'numericCancel']);
   const clone = value => JSON.parse(JSON.stringify(value));
@@ -110,14 +110,18 @@
       return JSON.stringify([command.type, command.timerId, command.payload || {}, command.expectedActiveVersion, command.expectedDraftVersion]);
     }
     function protectedCommand(command) {
-      if (['reset', 'blackout'].includes(command.type)) return true;
+      if (['reset', 'blackout', 'blackoutOn', 'blackoutOff'].includes(command.type)) return true;
+      if (['outputA', 'outputB'].includes(command.type)) {
+        const action=command.payload?.action || 'toggle';
+        return action==='close'||(action==='toggle'&&options.readOutputOpen?.(command.type==='outputB'?'b':'a')===true);
+      }
       if (command.type === 'editTarget') return command.payload?.target === 'live' || (!command.payload?.target && editTarget === 'set');
-      if (command.type === 'startSet') return ['RUNNING', 'PAUSED', 'OVERTIME'].includes(activeView(command.timerId).status);
+      if (['startSet','loadSet'].includes(command.type)) return ['RUNNING', 'PAUSED', 'OVERTIME'].includes(activeView(command.timerId).status);
       return false;
     }
     function checkVersions(command) {
       observe(); const timer = timers[command.timerId];
-      if (command.type === 'startSet' && (command.expectedActiveVersion === undefined || command.expectedDraftVersion === undefined)) return fail('VERSION_REQUIRED', 'START SET requires the displayed ACTIVE and SET versions');
+      if (['startSet','loadSet'].includes(command.type) && (command.expectedActiveVersion === undefined || command.expectedDraftVersion === undefined)) return fail('VERSION_REQUIRED', 'Loading SET requires the displayed ACTIVE and SET versions');
       if (command.expectedActiveVersion !== undefined && command.expectedActiveVersion !== timer.version) return fail('ACTIVE_CHANGED', 'ACTIVE changed; review its current state and press again');
       if (command.expectedDraftVersion !== undefined && command.expectedDraftVersion !== timer.draft.version) return fail('SET_CHANGED', 'SET changed; review the prepared time and press again');
       return null;
@@ -158,6 +162,10 @@
     function enforceGuard(command, context) {
       const guard = guards.get(command.pressId), source = contextKey(context);
       if (command.pressId) guards.delete(command.pressId); // A physical press can apply at most once.
+      // The operator explicitly chose one-touch native Deck controls. This is
+      // trusted adapter context, never an importable command/payload flag. LAN,
+      // local/global keyboard and Control confirmations are not weakened.
+      if (options.nativeSingleTap === true && context.sourceId === 'native-deck' && safeId(context.deviceId)) return null;
       if (!protectedCommand(command) && !command.pressId) return null;
       if (!guard || guard.source !== source || guard.commandId !== command.commandId || guard.signature !== commandSignature(command) ||
           guard.epoch !== (epochs.get(source) || 0)) return fail('HOLD_REQUIRED', 'Hold for 1.5 seconds, or explicitly confirm this action');
@@ -186,6 +194,7 @@
       invalid = validatePayload(command.type, payload) || checkVersions(command); if (invalid) return invalid;
       invalid = enforceGuard(command, context); if (invalid) return invalid;
       const state = activeView(id), type = command.type;
+      if(['liveT2','liveBoth'].includes(type)&&!activeView('t2').enabled)return fail('TIMER_DISABLED','Enable Timer 2 in Control before showing it live');
       if (['preset', 'clearSet', 'countdown', 'countup', 'clock'].includes(type)) {
         if (type === 'preset') { if (!boundedMs(payload.durationMs) || payload.durationMs % 1000) return fail('INVALID_DURATION', 'SET must be a whole-second duration from 00:00:00 to 99:59:59'); updateDraft(id, { mode: 'countdown', durationMs: payload.durationMs }); }
         else if (type === 'clearSet') updateDraft(id, { durationMs: 0 });
@@ -224,10 +233,11 @@
         return result;
       }
       let operation = { type, timerId: id, commandId: command.commandId };
-      if (['startSet', 'startPause', 'start', 'pause', 'resume', 'reset'].includes(type)) {
+      if (['startSet', 'loadSet', 'startPause', 'start', 'pause', 'resume', 'reset'].includes(type)) {
         if (!state.enabled) return fail('TIMER_DISABLED', 'Enable Timer 2 before controlling its ACTIVE timer');
-        if (type === 'startSet') {
-          if (timer.draft.mode === 'countdown' && timer.draft.durationMs === 0) return fail('EMPTY_SET', 'Prepare a duration greater than zero before START SET');
+        if (type === 'startSet' || type === 'loadSet') {
+          if(type==='loadSet'&&state.running)return fail('ACTIVE_RUNNING','Pause ACTIVE before loading READY. Use START SET for deliberate immediate replacement.');
+          if (timer.draft.mode === 'countdown' && timer.draft.durationMs === 0) return fail('EMPTY_SET', 'Prepare a duration greater than zero before loading SET');
           operation = { ...operation, mode: timer.draft.mode, durationMs: timer.draft.durationMs };
         } else if (type === 'reset') operation.durationMs = timer.lastStartDurationMs || state.durationMs;
         else {
@@ -250,8 +260,9 @@
       if (!result.ok) return result;
       if (type === 'startSet' || operation.type === 'start') { timer.lastStartDurationMs = type === 'startSet' ? operation.durationMs : state.durationMs; timer.hasStarted = true; }
       if (type === 'reset') timer.hasStarted = false;
+      if(type==='loadSet'){timer.lastStartDurationMs=operation.durationMs;timer.hasStarted=false;}
       observe();
-      if (['startSet', 'start', 'pause', 'resume', 'reset'].includes(operation.type) && timer.version === beforeVersion) timer.version++;
+      if (['startSet', 'loadSet', 'start', 'pause', 'resume', 'reset'].includes(operation.type) && timer.version === beforeVersion) timer.version++;
       notify(); return result;
     }
     async function apply(operation) {

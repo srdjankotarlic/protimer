@@ -1,12 +1,13 @@
 const path = require('path');
 const TimerTools = require('./timer-tools');
-const { leaveFullscreen, preserveSiblingBounds } = require('./window-tools');
+const { leaveFullscreen, preserveSiblingBounds, isFullscreen, setPresentationFullscreen, applyContentSize } = require('./window-tools');
 const OutputQuality = require('./output-quality');
 
 // A second desktop output only. The existing output, LAN/OBS streams and timer
 // transport remain owned by their original paths.
 module.exports = function secondaryOutput({ BrowserWindow, screen, getState, controlDisplayId, changed, getSibling, platform = process.platform }) {
   let win = null, targetId = null, revision = 0, transparent = false, placed = false, placing = null, ready = false;
+  let requestedPresentation = 'configured';
   const state = () => TimerTools.outputState(getState(), 'secondary');
   const enabled = () => TimerTools.separateOutputs(getState());
   const notify = () => { changed(); };
@@ -15,10 +16,14 @@ module.exports = function secondaryOutput({ BrowserWindow, screen, getState, con
     return OutputQuality.outputGeometry(win, screen);
   }
   function mode() {
-    if (win && !win.isDestroyed()) win.webContents.send('win-fs', win.isFullScreen());
+    if (win && !win.isDestroyed()) win.webContents.send('win-fs', isFullscreen(win));
     notify();
   }
-  async function position(target) {
+  async function position(target, presentation = 'configured') {
+    if (presentation === 'fullscreen' && ready && placed && placing === null &&
+        win && !win.isDestroyed() && isFullscreen(win) && screen.getDisplayMatching(win.getBounds()).id === target.id) {
+      targetId = target.id; win.show(); mode(); return;
+    }
     const current = win, version = ++revision;
     placing = version;
     targetId = target.id;
@@ -29,11 +34,14 @@ module.exports = function secondaryOutput({ BrowserWindow, screen, getState, con
     if (!target) { if (placing === version) placing = null; return; }
     const s = state();
     if (!enabled()) { if (placing === version) placing = null; return; }
-    if (s.gridOn && s.gridSize) {
+    if (presentation === 'fullscreen') {
+      current.setBounds(target.bounds);
+      setPresentationFullscreen(current, true, true, platform);
+    } else if (s.gridOn && s.gridSize) {
       current.setBounds(OutputQuality.gridBounds(target, s));
     } else if (TimerTools.size(s.outputSize)) {
       current.setBounds({ x: target.workArea.x, y: target.workArea.y, ...s.outputSize });
-    } else if (target.id !== controlDisplayId()) {
+    } else if (presentation !== 'window' && target.id !== controlDisplayId()) {
       current.setBounds(target.bounds);
       protectSibling(current, true);
       current.setFullScreen(true);
@@ -46,12 +54,13 @@ module.exports = function secondaryOutput({ BrowserWindow, screen, getState, con
     if (placing === version) placing = null;
     mode();
   }
-  function open(displayId) {
+  function open(displayId, presentation = 'configured') {
     const target = screen.getAllDisplays().find(d => d.id === displayId);
     // A disconnected/stale selection must never silently appear on another TV.
     if (!enabled() || !target) return { ok: false };
     targetId = target.id;
-    if (win && !win.isDestroyed()) { if (ready) position(target); return { ok: true }; }
+    requestedPresentation = presentation;
+    if (win && !win.isDestroyed()) { if (ready) position(target, presentation); return { ok: true }; }
     const s = state();
     transparent = !!s.transparent;
     const current = new BrowserWindow({
@@ -59,7 +68,7 @@ module.exports = function secondaryOutput({ BrowserWindow, screen, getState, con
       title: 'ProTimer — Tajmer 2', backgroundColor: transparent ? '#00000000' : '#000000',
       transparent, frame: false, hasShadow: false, movable: true, resizable: true,
       enableLargerThanScreen: true, alwaysOnTop: transparent || !!s.gridOn,
-      webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false }
+      webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, backgroundThrottling: false }
     });
     win = current;
     placed = false; ready = false;
@@ -72,7 +81,7 @@ module.exports = function secondaryOutput({ BrowserWindow, screen, getState, con
       if (win !== current) return;
       ready = true;
       const selected = screen.getAllDisplays().find(d => d.id === targetId);
-      if (win === current && selected) position(selected);
+      if (win === current && selected) position(selected, requestedPresentation);
     });
     current.on('enter-full-screen', () => setImmediate(mode));
     current.on('leave-full-screen', () => setImmediate(mode));
@@ -141,13 +150,16 @@ module.exports = function secondaryOutput({ BrowserWindow, screen, getState, con
     }
     if (win !== current || current.isDestroyed()) return { ok: false };
     const version = ++revision;
+    placing = version;
+    try {
     if (current && !current.isDestroyed()) protectSibling(current, false);
     if (!current || !await leaveFullscreen(current) || win !== current ||
         version !== revision || !enabled() || state().gridOn) return { ok: false };
-    current.setContentSize(size.width, size.height);
+    if (!await applyContentSize(current,size,{platform,valid:()=>win===current && version===revision && enabled() && !state().gridOn})) return {ok:false};
     const actual = geometry();
     notify();
     return { ok: !!actual && actual.width === size.width && actual.height === size.height, ...actual };
+    } finally { if (placing === version) placing = null; }
   }
   function displaysChanged() {
     if (win && !screen.getAllDisplays().some(d => d.id === targetId)) close();
@@ -158,7 +170,8 @@ module.exports = function secondaryOutput({ BrowserWindow, screen, getState, con
     notify();
   }
   return { open, close, update, resize, geometry, displaysChanged, displayMetricsChanged, getWindow: () => win, getRevision: () => revision,
+    settled: () => ready && placed && placing === null,
     toggleFullscreen() {
-      if (win && !win.isDestroyed()) { const entering=!win.isFullScreen(); protectSibling(win, entering); win.setFullScreen(entering); }
+      if (win && !win.isDestroyed()) { const entering=!isFullscreen(win); if(!win.isSimpleFullScreen?.())protectSibling(win, entering); setPresentationFullscreen(win, entering, false, platform); mode(); }
     } };
 };

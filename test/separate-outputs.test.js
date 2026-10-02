@@ -75,7 +75,9 @@ test('second window targets TV 2, preserves its own clock, and moves only when s
   assert.equal(win.sent.find(m => m.channel === 'state').data.durationMs, 330000);
   f.setDisplays([f.primary, f.tv1, f.tv2, { ...f.primary, id: 4 }]);
   f.output.displaysChanged(); assert.deepEqual(win.bounds, f.tv2.bounds);
-  f.output.open(2); await tick(); await tick();
+  f.output.open(2);
+  for(let n=0;n<100&&!f.output.settled();n++)await new Promise(resolve=>setTimeout(resolve,10));
+  assert.equal(f.output.settled(),true);
   assert.equal(f.windows.length, 1); assert.deepEqual(win.bounds, f.tv1.bounds);
   f.output.close();
 });

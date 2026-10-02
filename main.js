@@ -6,9 +6,10 @@ const os = require('os');
 const crypto = require('crypto');
 const { spawn } = require('child_process');
 const TimerTools = require('./timer-tools');
-const { leaveFullscreen, preserveSiblingBounds } = require('./window-tools');
+const { leaveFullscreen, preserveSiblingBounds, isFullscreen, setPresentationFullscreen, applyContentSize } = require('./window-tools');
 const { waitForTunnelReady } = require('./tunnel-tools');
 const OutputQuality = require('./output-quality');
+const {livePlan} = require('./deck-output-plan');
 
 const SMOKE = process.argv.includes('--smoke');
 // UI tests must never overwrite the operator's saved rundown or preferences.
@@ -28,6 +29,7 @@ let outputFrameless = false;     // da li je bez okvira (providan ili grid)
 let outputTargetId = null;       // na kom monitoru je Ekran
 let outputPlacementVersion = 0;
 let outputPlaced = false, outputReady = false, outputPlacing = null;
+let outputRequestedPresentation = 'configured';
 const secondaryOutput = require('./secondary-output')({
   BrowserWindow, screen, getState: () => lastState, controlDisplayId,
   getSibling: () => TimerTools.separateOutputs(lastState) ? {window:outputWin,revision:outputPlacementVersion} : null,
@@ -354,9 +356,10 @@ function protectSecondaryBounds(win, entering) {
   preserveSiblingBounds(win, entering, {screen, getSibling:()=>TimerTools.separateOutputs(lastState)
     ? {window:secondaryOutput.getWindow(),revision:secondaryOutput.getRevision()} : null});
 }
-function setOutputFullscreen(win, entering) {
-  protectSecondaryBounds(win, entering);
-  win.setFullScreen(entering);
+function setOutputFullscreen(win, entering, simple = false) {
+  if (!simple && !win.isSimpleFullScreen?.()) protectSecondaryBounds(win, entering);
+  setPresentationFullscreen(win, entering, simple);
+  setImmediate(pushOutMode);
 }
 function leaveOutputFullscreen(win) {
   protectSecondaryBounds(win, false);
@@ -414,8 +417,14 @@ function createControlWindow() {
   });
 }
 
-async function positionOutput(target) {
+async function positionOutput(target, presentation = 'configured') {
   if (!outputWin || outputWin.isDestroyed()) return;
+  // Re-sending the current full-screen view only changes its content. Avoid
+  // exiting/re-entering macOS Spaces for every T1/BOTH/T2 press.
+  if (presentation === 'fullscreen' && outputReady && outputPlaced && outputPlacing === null &&
+      isFullscreen(outputWin) && screen.getDisplayMatching(outputWin.getBounds()).id === target.id) {
+    outputTargetId = target.id; outputWin.show(); pushDisplays(); return;
+  }
   const win = outputWin, revision = ++outputPlacementVersion;
   outputPlacing = revision;
   outputTargetId = target.id;
@@ -428,12 +437,15 @@ async function positionOutput(target) {
   if (!target) { if (outputPlacing === revision) outputPlacing = null; return; }
   const ctlId = controlDisplayId();
   const g = lastState || {};
-  if (g.gridOn && g.gridSize) {
+  if (presentation === 'fullscreen') {
+    outputWin.setBounds(target.bounds);
+    setOutputFullscreen(outputWin, true, true);
+  } else if (g.gridOn && g.gridSize) {
     // GRID: prozor = izabrana kockica N×N tog monitora (mali timer-prozor)
     outputWin.setBounds(OutputQuality.gridBounds(target, g));
   } else if (TimerTools.size(g.outputSize)) {
     outputWin.setBounds({ x: target.workArea.x, y: target.workArea.y, ...g.outputSize });
-  } else if (target.id !== ctlId) {
+  } else if (presentation !== 'window' && target.id !== ctlId) {
     outputWin.setBounds(target.bounds);
     setOutputFullscreen(outputWin, true);
   } else {
@@ -445,16 +457,17 @@ async function positionOutput(target) {
   outputWin.show();
   outputPlaced = true;
   if (outputPlacing === revision) outputPlacing = null;
-  pushDisplays();
+  pushDisplays(); pushOutMode();
 }
 
-function createOutputWindow(displayId) {
+function createOutputWindow(displayId, presentation = 'configured') {
   const displays = screen.getAllDisplays();
   const target = displays.find(d => d.id === displayId)
     || displays.find(d => d.id !== controlDisplayId()) || displays[0];
   outputTargetId = target.id;
+  outputRequestedPresentation = presentation;
 
-  if (outputWin && !outputWin.isDestroyed()) { if (outputReady) positionOutput(target); return; }
+  if (outputWin && !outputWin.isDestroyed()) { if (outputReady) positionOutput(target, presentation); return; }
 
   const transparent = !!(lastState && lastState.transparent);
   const grid = !!(lastState && lastState.gridOn);
@@ -474,7 +487,7 @@ function createOutputWindow(displayId) {
     resizable: true,
     enableLargerThanScreen: true,
     alwaysOnTop: forceOnTop,
-    webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false }
+    webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, backgroundThrottling: false }
   });
   const current = outputWin;
   outputPlaced = false; outputReady = false;
@@ -509,7 +522,7 @@ function createOutputWindow(displayId) {
     if (outputWin !== current) return;
     outputReady = true;
     const selected = screen.getAllDisplays().find(display => display.id === outputTargetId);
-    if (selected) positionOutput(selected);
+    if (selected) positionOutput(selected, outputRequestedPresentation);
   });
   outputWin.on('closed', () => {
     if (outputWin !== current) return;
@@ -522,7 +535,7 @@ function createOutputWindow(displayId) {
 
 // javi izlazu da li je u punom ekranu (da odluči: grid vs kompaktan prozor)
 function pushOutMode() {
-  if (outputWin && !outputWin.isDestroyed()) outputWin.webContents.send('win-fs', outputWin.isFullScreen());
+  if (outputWin && !outputWin.isDestroyed()) outputWin.webContents.send('win-fs', isFullscreen(outputWin));
   pushOutputGeometry();
 }
 
@@ -567,7 +580,7 @@ ipcMain.on('send-to-display', (e, displayId) => {
   if (d) positionOutput(d);
 });
 ipcMain.on('close-output', () => { if (outputWin && !outputWin.isDestroyed()) outputWin.close(); });
-ipcMain.on('toggle-fullscreen', () => { if (outputWin && !outputWin.isDestroyed()) setOutputFullscreen(outputWin, !outputWin.isFullScreen()); });
+ipcMain.on('toggle-fullscreen', () => { if (outputWin && !outputWin.isDestroyed()) setOutputFullscreen(outputWin, !isFullscreen(outputWin)); });
 ipcMain.on('exit-fullscreen', () => { if (outputWin && !outputWin.isDestroyed()) setOutputFullscreen(outputWin, false); });
 ipcMain.handle('output-geometry', () => outputGeometry());
 ipcMain.handle('output-quality', (e, role = 'primary') => {
@@ -599,7 +612,13 @@ ipcMain.handle('resize-output', async (e, requested) => {
   // first paint. The original request must never resize a replacement output.
   if (win !== outputWin || win.isDestroyed()) return { ok: false };
   const revision = ++outputPlacementVersion; // an explicit size wins over any older monitor/grid move
-  if (!await leaveOutputFullscreen(win) || win !== outputWin || win.isDestroyed() || revision !== outputPlacementVersion) return { ok: false };
+  // Windows sends will-move while restoring the window from fullscreen. That
+  // is our placement, not an operator drag; otherwise it cancels this resize.
+  outputPlacing = revision;
+  try {
+  const exited = await leaveOutputFullscreen(win);
+  if (SMOKE) console.log('OUTPUT_RESIZE_TRANSITION',JSON.stringify({size,exited,same:win===outputWin,destroyed:win.isDestroyed(),revision,currentRevision:outputPlacementVersion,placing:outputPlacing,grid:lastState?.gridOn,fit:lastState?.fitWindow,fullscreen:!win.isDestroyed()&&isFullscreen(win),maximized:!win.isDestroyed()&&win.isMaximized?.()}));
+  if (!exited || win !== outputWin || win.isDestroyed() || revision !== outputPlacementVersion) return { ok: false };
   if (lastState?.gridOn || lastState?.fitWindow) return { ok: false, error: 'automatic size enabled' };
   if (!outputPlaced) {
     // Applying a size can supersede the async ready-to-show placement. Finish
@@ -612,14 +631,18 @@ ipcMain.handle('resize-output', async (e, requested) => {
     outputPlaced = true;
     if (outputPlacing === revision) outputPlacing = null;
     pushDisplays();
-  } else win.setContentSize(size.width, size.height);
+  }
+  const sized = await applyContentSize(win,size,{valid:()=>win===outputWin && revision===outputPlacementVersion && !lastState?.gridOn && !lastState?.fitWindow});
+  if (!sized) return {ok:false,error:'size not applied'};
   pushOutputGeometry();
   const actual = outputGeometry();
+  if (SMOKE) console.log('OUTPUT_RESIZE_APPLIED',JSON.stringify({requested:size,actual,bounds:win.getBounds(),resizable:win.isResizable?.()}));
   return { ok: actual.width === size.width && actual.height === size.height, ...actual };
+  } finally { if (outputPlacing === revision) outputPlacing = null; }
 });
 // kompaktan prozor: izlaz traži da visina prozora prati visinu tajmera (samo kad NIJE fullscreen)
 ipcMain.on('fit-window', (e, h) => {
-  if (!outputWin || outputWin.isDestroyed() || outputWin.isFullScreen()) return;
+  if (!outputWin || outputWin.isDestroyed() || isFullscreen(outputWin)) return;
   if (e.sender !== outputWin.webContents) return;
   const want = Math.max(80, Math.min(Math.round(h) || 0, 2200));
   const [w, cur] = outputWin.getContentSize();
@@ -1018,7 +1041,22 @@ app.whenReady().then(() => {
   createControlWindow();
   powerMonitor.on('suspend', () => { if (controlWin && !controlWin.isDestroyed()) controlWin.webContents.send('clock-power', 'suspend'); });
   powerMonitor.on('resume', () => { if (controlWin && !controlWin.isDestroyed()) controlWin.webContents.send('clock-power', 'resume'); });
-  deckHost = require('./deck-host')({ getControl: () => controlWin, smoke: SMOKE, outputCommand: async payload => {
+  deckHost = require('./deck-host')({ getControl: () => controlWin, smoke: SMOKE, outputCommand: async function outputCommand(payload) {
+    if (payload.action === 'live' || payload.action === 'liveCheck') {
+      const plan = livePlan(lastState, payload, screen.getAllDisplays());
+      if (!plan.ok) return plan;
+      if (payload.action === 'liveCheck') return plan;
+      // AppKit cannot safely start two native Spaces transitions concurrently.
+      for (const output of plan.outputs) {
+        const result = await outputCommand({...output,action:'open'});
+        if (!result.ok) return result;
+      }
+      for (const role of plan.close) {
+        const result = await outputCommand({role,action:'close'});
+        if (!result.ok) return result;
+      }
+      return {ok:true,view:payload.view,outputs:plan.outputs};
+    }
     const role = payload.role === 'secondary' ? 'secondary' : 'primary';
     if (!['open', 'close', 'toggle', 'fullscreen'].includes(payload.action)) return { ok: false, code: 'INVALID_OUTPUT_ACTION' };
     if (role === 'secondary' && !TimerTools.separateOutputs(lastState)) return { ok: false, code: 'SEPARATE_OUTPUT_REQUIRED', message: 'Enable two timers and separate outputs in Control first.' };
@@ -1030,18 +1068,30 @@ app.whenReady().then(() => {
     }
     if (payload.action === 'fullscreen') {
       if (!exists) return { ok: false, code: 'OUTPUT_CLOSED', message: 'Open the output first.' };
-      const wanted = !win.isFullScreen();
+      const wanted = !isFullscreen(win);
       if (role === 'secondary') secondaryOutput.toggleFullscreen(); else setOutputFullscreen(win, wanted);
       const until = Date.now() + 2500;
-      while (!win.isDestroyed() && win.isFullScreen() !== wanted && Date.now() < until) await new Promise(r => setTimeout(r, 40));
-      return { ok: !win.isDestroyed() && win.isFullScreen() === wanted };
+      while (!win.isDestroyed() && isFullscreen(win) !== wanted && Date.now() < until) await new Promise(r => setTimeout(r, 40));
+      return { ok: !win.isDestroyed() && isFullscreen(win) === wanted };
     }
     const display = screen.getAllDisplays().find(d => d.id === payload.displayId);
     if (!display) return { ok: false, code: 'DISPLAY_NOT_CONNECTED', message: 'Select a connected display in Control.' };
-    if (role === 'secondary') secondaryOutput.open(display.id); else createOutputWindow(display.id);
-    const until = Date.now() + 2500;
-    while (current() && !current().isDestroyed() && !current().isVisible() && Date.now() < until) await new Promise(r => setTimeout(r, 40));
-    const opened = current(); return { ok: !!opened && !opened.isDestroyed() && opened.isVisible() };
+    if (role === 'secondary') secondaryOutput.open(display.id,payload.presentation); else createOutputWindow(display.id,payload.presentation);
+    const settled = () => role === 'secondary' ? secondaryOutput.settled() : outputReady && outputPlaced && outputPlacing === null;
+    const applied = () => {
+      const opened = current();
+      return !!opened && !opened.isDestroyed() && opened.isVisible() && settled() &&
+        screen.getDisplayMatching(opened.getBounds()).id === display.id &&
+        (payload.presentation !== 'fullscreen' || isFullscreen(opened)) &&
+        (payload.presentation !== 'window' || !isFullscreen(opened));
+    };
+    const until = Date.now() + 7500;
+    while (!applied() && Date.now() < until) await new Promise(r => setTimeout(r, 40));
+    if (SMOKE && !applied()) {
+      const opened=current();
+      console.log('DECK_OUTPUT_DIAGNOSTIC',JSON.stringify({role,presentation:payload.presentation,target:display.id,visible:opened?.isVisible(),settled:settled(),bounds:opened?.getBounds(),actualDisplay:opened&&screen.getDisplayMatching(opened.getBounds()).id,fullscreen:opened?.isFullScreen(),ready:outputReady,placed:outputPlaced,placing:outputPlacing}));
+    }
+    return applied() ? {ok:true} : {ok:false,code:'OUTPUT_NOT_APPLIED',message:'The output did not confirm its selected screen and mode.'};
   } });
 
   // Live-safe startup: restored settings must never put a window on the audience

@@ -11,7 +11,7 @@
 
 <p align="center"><strong>Latest release: ProTimer 2.4.1 — free, open source, no account and no watermark.</strong></p>
 
-**Testing preview:** [ProTimer 2.5.0-streamdeck.4 prerelease](https://github.com/srdjankotarlic/protimer/releases/tag/v2.5.0-streamdeck.4) adds **Check output** for both timers, clearer resolution information and safer display-change/window handling. Independent zero alerts, the natural synthesized bell and optional native Stream Deck controls remain included. Native actions require manual placement; starter profiles and physical XL acceptance are still pending. **2.4.1 remains the latest stable release.** [Preview notes](docs/RELEASE-NOTES-2.5.0-streamdeck.4.md) · [Output quality guide](docs/OUTPUT-QUALITY.md).
+**Stream Deck preview:** [ProTimer 2.5.0-streamdeck.11](https://github.com/srdjankotarlic/protimer/releases/tag/v2.5.0-streamdeck.11) brings colorful LCD controls, separate ACTIVE/SET readouts and one-touch commands. The native Elgato plugin and a genuine editable **XL Full 32 profile** come inside the Mac and Windows installers; the plugin is also a separate release download. No Node, terminal or Companion required. Stream Deck 7.6+ is required. Physical XL and clean-machine acceptance remain separate from automated tests. **2.4.1 remains the latest stable release.** [What's new and preview downloads](docs/RELEASE-NOTES-2.5.0-streamdeck.11.md) · [Setup guide](docs/STREAM-DECK.md).
 
 <p align="center">
   <a href="https://github.com/srdjankotarlic/protimer/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/srdjankotarlic/protimer/actions/workflows/ci.yml/badge.svg"></a>
@@ -258,9 +258,15 @@ Clean stack, almost no dependencies: **Electron** + plain HTML/CSS/JS + a Node `
 
 ### Native Stream Deck integration — prerelease
 
-The [2.5.0-streamdeck.4 prerelease](https://github.com/srdjankotarlic/protimer/releases/tag/v2.5.0-streamdeck.4) includes an optional native Elgato SDK plugin, separate ACTIVE/SET preparations for both timers, and an 8×4 editor inside Control. This is **not included in stable 2.4.1**. The timer remains independent of Stream Deck and Companion.
+The [2.5.0-streamdeck.11 preview](https://github.com/srdjankotarlic/protimer/releases/tag/v2.5.0-streamdeck.11) includes an optional native Elgato SDK plugin, separate ACTIVE/SET preparations for both timers, an 8×4 editor inside Control, and colorful live LCD buttons. This is **not included in stable 2.4.1**. The timer remains independent of Stream Deck and Companion.
 
-The plugin builds and packages with Elgato's official CLI. **Verified native starter-profile exports and physical XL/Windows acceptance testing are still required**; this preview supports user-placed ProTimer Key actions and does not claim finished one-click profile installation. Automatic profile switching is never enabled.
+1. Install the preview ProTimer app for your computer. The plugin is included.
+2. Open **Control → Stream Deck → Install / update plugin** and confirm in Elgato Stream Deck 7.6+.
+3. Click **Set up integration**, choose your XL, select **ProTimer XL · Full 32** and click **Activate profile**. Confirm Elgato's first profile-install prompt. No need to place 32 actions manually. Configure individual ProTimer keys directly in Elgato or use the Control layout editor.
+
+Daily use: select T1/T2 → choose a preset or adjust SET → **START SET**. Separate PAUSE, PLAY ACTIVE, LOAD READY and BLACK ON/OFF keys remove guesswork. LIVE T1 / T1+T2 / T2 use the output choices in Control. **Every native command is one tap**, including reset and replacing running time; use deliberately. ACTIVE and SET are read-only LCDs.
+
+The plugin builds and packages with Elgato's official CLI. The native Full 32 profile is an unchanged real Elgato export. Standard 28 + 4 free remains a logical template: duplicate Full 32 in Elgato and remove its last-column actions to make those four keys genuinely free. Physical XL/Windows acceptance and clean-machine setup still need hardware testing. Installation, app focus and reconnect never automatically select a profile.
 
 Guides: [English](docs/STREAM-DECK.md) · [Srpski](docs/STREAM-DECK.sr.md) · [SDK constraints](docs/STREAM-DECK-SDK.md) · [Verification results and editor screenshot](docs/STREAM-DECK-VERIFICATION.md).
 

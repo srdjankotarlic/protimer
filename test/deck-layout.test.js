@@ -8,15 +8,19 @@ test('Standard 28 starter contains exactly four genuine null free slots', () => 
   const layout = Layout.defaultLayout();
   assert.equal(layout.slots.length, 32); assert.equal(Layout.validate(layout).ok, true);
   assert.deepEqual(layout.slots.map((key, i) => key === null ? i : -1).filter(i => i !== -1), [7, 15, 23, 31]);
-  assert.deepEqual(layout.slots.slice(0, 7).map(k => k.command), ['startPause', 'startSet', 'activeTime', 'setTime', 'editTarget', 'reset', 'bell']);
+  assert.deepEqual(layout.slots.slice(0, 7).map(k => k.command), ['startSet', 'pause', 'start', 'activeTime', 'setTime', 'reset', 'bell']);
+  assert.ok(layout.slots.slice(8,14).every(k=>k.target==='set'));
+  assert.deepEqual(layout.slots.slice(24,26).map(k=>k.timerId),['t1','t2']);
+  assert.ok(layout.slots.slice(26,28).every(k=>k.outputAction==='open'));
   assert.deepEqual(layout.slots.slice(8, 14).map(Layout.label), ['−1h', '+1h', '−1m', '+1m', '−1s', '+1s']);
   assert.deepEqual(layout.slots.slice(16, 21).map(k => k.durationMs), [300000, 600000, 900000, 1800000, 3600000]);
+  assert.equal(layout.slots[30].command, 'clearSet', 'a manual profile cannot promise BACK, so the starter key clears only SET');
   assert.equal(new Set(layout.slots.filter(Boolean).map(k => k.id)).size, 28);
 });
 
 test('Full 32 adds only implemented catalog commands and no false free placeholders', () => {
   const layout = Layout.defaultLayout('full'); assert.equal(layout.slots.filter(Boolean).length, 32);
-  assert.deepEqual([7, 15, 23, 31].map(i => layout.slots[i].command), ['prev', 'next', 'loadSelected', 'fullscreen']);
+  assert.deepEqual([7, 15, 23, 31].map(i => layout.slots[i].command), ['loadSet', 'liveT1', 'liveBoth', 'liveT2']);
   assert.equal(Layout.validate(layout).ok, true);
   const empty = Layout.defaultKey('empty'); assert.ok(empty); assert.equal(Layout.label(empty), 'INACTIVE SLOT');
   assert.equal(Layout.label(null), 'FREE');
@@ -60,12 +64,53 @@ test('hotkeys are normalized and conflicts cannot silently apply', () => {
   assert.equal(Layout.validateKey(Layout.defaultKey('activeTime', { hotkey: 'A' })).ok, false);
 });
 
-test('protected controls cannot become accidental short presses through import', () => {
-  for (const command of ['reset', 'blackout', 'startSet']) {
-    assert.equal(Layout.defaultKey(command).pressPolicy, 'hold');
-    assert.equal(Layout.validateKey(Layout.defaultKey(command, { pressPolicy: 'short' })).ok, false);
+test('native one-touch starter accepts short RESET and BLACK without changing legacy policies', () => {
+  for (const command of ['reset', 'blackout']) {
+    assert.equal(Layout.defaultKey(command).pressPolicy, 'short');
+    assert.equal(Layout.validateKey(Layout.defaultKey(command, { pressPolicy: 'short' })).ok, true);
     assert.equal(Layout.validateKey(Layout.defaultKey(command, { pressPolicy: 'confirm' })).ok, true);
   }
+  assert.equal(Layout.defaultKey('startSet').pressPolicy, 'short');
+  assert.equal(Layout.validateKey(Layout.defaultKey('startSet')).ok, true);
+});
+
+test('only an untouched legacy starter layout receives the ergonomic key update', () => {
+  const old = Layout.defaultLayout();
+  ['startPause','startSet','activeTime','setTime','editTarget','reset','bell'].forEach((command,i)=>{old.slots[i]=Layout.defaultKey(command,{id:`protimer-slot-${i+1}`});});
+  ['blackout','outputA','outputB','selectTimer','message','settings','back'].forEach((command,i)=>{old.slots[24+i]=Layout.defaultKey(command,{id:`protimer-slot-${25+i}`});});
+  old.slots.slice(8,14).forEach(key=>{key.target='selected';});old.slots[1].pressPolicy='hold';
+  old.slots[5].pressPolicy='hold';old.slots[24].pressPolicy='hold';
+  const migrated = Layout.migrate(old);
+  assert.equal(migrated.slots[0].command, 'startSet');
+  assert.equal(migrated.slots[0].pressPolicy, 'short');
+  assert.equal(migrated.slots[30].command, 'clearSet');
+  old.slots[4].name = 'My show';
+  const custom = Layout.migrate(old);
+  assert.equal(custom.slots[1].pressPolicy, 'hold');
+  assert.equal(custom.slots[30].command, 'back');
+});
+
+test('only untouched previous starter hold settings migrate to one-touch defaults', () => {
+  const old=Layout.defaultLayout();old.slots[28]=Layout.defaultKey('blackout',{id:'protimer-slot-29'});old.slots[29]=Layout.defaultKey('message',{id:'protimer-slot-30'});old.slots[5].pressPolicy='hold';old.slots[28].pressPolicy='hold';
+  old.slots[2]=Layout.defaultKey('resume',{id:'protimer-slot-3'});
+  assert.equal(Layout.migrate(old).slots[5].pressPolicy,'short');
+  old.slots[5].name='Show reset';
+  assert.equal(Layout.migrate(old).slots[5].name,'Show reset');
+  assert.equal(Layout.migrate(old).slots[5].pressPolicy,'hold');
+});
+
+test('untouched one-touch starter migrates BLACK into separate ON and RESTORE commands',()=>{
+  const old=Layout.defaultLayout();old.slots[28]=Layout.defaultKey('blackout',{id:'protimer-slot-29'});old.slots[29]=Layout.defaultKey('message',{id:'protimer-slot-30'});
+  old.slots[2]=Layout.defaultKey('resume',{id:'protimer-slot-3'});
+  const updated=Layout.migrate(old);
+  assert.equal(updated.slots[28].command,'blackoutOn');assert.equal(updated.slots[29].command,'blackoutOff');
+  old.slots[29].name='Speaker message';assert.equal(Layout.migrate(old).slots[29].command,'message','custom shows are preserved');
+});
+
+test('untouched current starter gains PLAY ACTIVE while custom RESUME keys are preserved',()=>{
+  const old=Layout.defaultLayout();old.slots[2]=Layout.defaultKey('resume',{id:'protimer-slot-3'});
+  assert.equal(Layout.migrate(old).slots[2].command,'start');
+  old.slots[2].name='Resume show';assert.equal(Layout.migrate(old).slots[2].command,'resume');
 });
 
 test('layout undo/redo and restore are detached data and do not erase named files', () => {
@@ -75,8 +120,8 @@ test('layout undo/redo and restore are detached data and do not erase named file
   assert.equal(history.undo().name, 'Show A'); assert.equal(history.undo().name, first.name);
   assert.equal(history.redo().name, 'Show A'); assert.equal(history.redo().name, restored.name);
   const detached = history.current(); detached.slots[0].command = 'shell';
-  assert.equal(history.current().slots[0].command, 'startPause');
-  assert.equal(first.slots[0].command, 'startPause');
+  assert.equal(history.current().slots[0].command, 'startSet');
+  assert.equal(first.slots[0].command, 'startSet');
 });
 
 test('schema migrations are bounded and future versions are not guessed', () => {

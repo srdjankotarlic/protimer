@@ -519,6 +519,10 @@
       </div>
       <p id="placementContext" class="panel-help placement-context" hidden></p>
       <div class="layout-row">
+        <label><span data-i18n="deckLiveModeLabel">Stream Deck LIVE</span><select id="deckLiveMode"><option value="auto" data-i18n="deckLiveAuto">Pun ekran · Grid ako je uključen</option><option value="fullscreen" data-i18n="deckLiveFullscreen">Uvek pun ekran</option><option value="window" data-i18n="deckLiveWindow">Prozor · podešena veličina / Grid</option></select></label>
+      </div>
+      <p class="panel-help" data-i18n="deckLiveHelp">LIVE dugmad šalju prikaz na izabrane ekrane i vraćaju sliku iz BLACKOUT-a. Ne pokreću niti zaustavljaju odbrojavanje. Podelu i ekrane biraš u kontroli.</p>
+      <div class="layout-row">
         <label><span data-i18n="widthPx">Širina (logička)</span><input id="outputWidth" type="number" min="80" max="7680" step="1" value="1920"></label>
         <span>×</span>
         <label><span data-i18n="heightPx">Visina (logička)</span><input id="outputHeight" type="number" min="60" max="4320" step="1" value="1080"></label>
@@ -895,6 +899,8 @@ const I18N = {
     localCheckFailed:'Server ne odgovara na ovoj adresi. Izaberi drugu mrežu i pogledaj „Telefon se ne povezuje?“ ispod.',
     shareFailureHelp:'Online servis nije dostupan. Proveri internet/VPN i pokušaj ponovo. Lokalna kontrola ostaje dostupna na istoj mreži.',
     outputLayoutTitle:'IZLAZNI PROZOR I CIFRE', widthPx:'Širina (logička)', heightPx:'Visina (logička)', applySize:'Primeni veličinu',
+    deckLiveModeLabel:'Stream Deck LIVE',deckLiveAuto:'Pun ekran · Grid ako je uključen',deckLiveFullscreen:'Uvek pun ekran',deckLiveWindow:'Prozor · podešena veličina / Grid',
+    deckLiveHelp:'LIVE dugmad šalju prikaz na izabrane ekrane i vraćaju sliku iz BLACKOUT-a. Ne pokreću niti zaustavljaju odbrojavanje. Podelu i ekrane biraš u kontroli.',
     sizeHelp:'Dimenzije su u logičkim jedinicama ekrana. Full HD/HD bira veličinu prozora, ne kvalitet HDMI signala. Primena izlazi iz punog ekrana i isključuje Grid/Kompaktan samo za izabrani prozor. Pun ekran uključi njegovim dugmetom ⛶.',
     sizePresetTitle:'Dimenzije prozora, ne podešavanje HDMI signala', logicalUnits:'logičkih jedinica',
     checkOutput:'Proveri izlaz', outputChecking:'Proveravam prikaz aplikacije…', outputUnchecked:'Izlaz još nije proveren',
@@ -1008,6 +1014,8 @@ const I18N = {
     localCheckFailed:'The server does not respond at this address. Select another network and see “Phone cannot connect?” below.',
     shareFailureHelp:'The online service is unavailable. Check internet/VPN and retry. Local control remains available on the same network.',
     outputLayoutTitle:'OUTPUT WINDOW & DIGITS', widthPx:'Width (logical)', heightPx:'Height (logical)', applySize:'Apply size',
+    deckLiveModeLabel:'Stream Deck LIVE',deckLiveAuto:'Fullscreen · Grid when enabled',deckLiveFullscreen:'Always fullscreen',deckLiveWindow:'Window · configured size / Grid',
+    deckLiveHelp:'LIVE keys send the picture to your selected displays and restore it from BLACKOUT. They do not start or stop either clock. Choose split and displays in Control.',
     sizeHelp:'Dimensions use logical screen units. Full HD/HD chooses window dimensions, not HDMI signal quality. Applying exits fullscreen and disables Grid/Compact only for the selected window. Use its ⛶ button for fullscreen.',
     sizePresetTitle:'Window dimensions, not an HDMI signal setting', logicalUnits:'logical units',
     checkOutput:'Check output', outputChecking:'Checking the app output…', outputUnchecked:'Output has not been checked',
@@ -1101,7 +1109,7 @@ let S = {
   // kompaktan prozor (prozor prati veličinu tajmera kad nije fullscreen)
   fitWindow:false,
   outputSize:null, outputLayout:TimerTools.layout(),
-  dualTimer:false, dualSplit:'columns', separateOutputs:false, secondary:TimerTools.secondary(),
+  dualTimer:false, dualSplit:'columns', separateOutputs:false, liveTimerView:'both',deckLiveMode:'auto',secondary:TimerTools.secondary(),
   // rundown / raspored
   cues:[], currentCue:-1, showStart:'', showNowNext:false,
   lang:lang
@@ -1296,6 +1304,7 @@ $('outputRouting').addEventListener('change',e=>{
   S.separateOutputs=e.target.value==='separate';
   syncRoutingUI(); syncOutputSizeFields(); send();
 });
+$('deckLiveMode').addEventListener('change',e=>{S.deckLiveMode=e.target.value;saveSettings();});
 function selectedLayout(){
   const role=TimerTools.separateOutputs(S)?selectedWindow():S.dualTimer?$('layoutTarget').value:'primary';
   return role==='secondary'?S.secondary.layout:S.outputLayout;
@@ -1321,6 +1330,7 @@ $('btnLayoutReset').addEventListener('click',()=>{ Object.assign(selectedLayout(
 $('chkDual').addEventListener('change',e=>{
   S.dualTimer=e.target.checked;
   if(!S.dualTimer) TimerTools.setRunning(S.secondary,false,Date.now());
+  if(!S.dualTimer)S.liveTimerView='t1';
   if(S.dualTimer){ S.fitWindow=false; $('chkFit').checked=false; }
   syncDualUI(); send();
 });
@@ -1749,7 +1759,7 @@ function saveSettings(){
     showStart:S.showStart,showNowNext:S.showNowNext,
     gridOn:S.gridOn,gridSize:S.gridSize,gridCell:S.gridCell,fitWindow:S.fitWindow,
     outputSize:S.outputSize,outputLayout:S.outputLayout,dualTimer:S.dualTimer,dualSplit:S.dualSplit,
-    separateOutputs:S.separateOutputs,
+    separateOutputs:S.separateOutputs,liveTimerView:TimerTools.liveView(S.liveTimerView),deckLiveMode:S.deckLiveMode,
     secondary:{mode:S.secondary.mode,durationMs:S.secondary.durationMs,overtime:S.secondary.overtime,flashZero:S.secondary.flashZero,soundZero:S.secondary.soundZero,layout:S.secondary.layout,outputSize:S.secondary.outputSize,...TimerTools.grid(S.secondary)}
   }));
 }
@@ -1769,7 +1779,7 @@ function load(){
       ...TimerTools.grid(st),
       fitWindow:st.fitWindow??S.fitWindow,
       outputSize:TimerTools.size(st.outputSize),outputLayout:TimerTools.layout(st.outputLayout),
-      dualTimer:!!st.dualTimer,dualSplit:st.dualSplit==='rows'?'rows':'columns',separateOutputs:!!st.separateOutputs,secondary:TimerTools.secondary(st.secondary,st)
+      dualTimer:!!st.dualTimer,dualSplit:st.dualSplit==='rows'?'rows':'columns',separateOutputs:!!st.separateOutputs,liveTimerView:TimerTools.liveView(st.liveTimerView),deckLiveMode:['auto','fullscreen','window'].includes(st.deckLiveMode)?st.deckLiveMode:'auto',secondary:TimerTools.secondary(st.secondary,st)
     });
     S.remMs=S.durationMs; autoNext=!!st.autoNext;
     cues=JSON.parse(localStorage.getItem('pt_cues')||'[]');
@@ -1785,6 +1795,7 @@ function load(){
   $('chkWarn').checked=S.useWarnColors; $('warnYellow').value=S.warnYellow; $('warnRed').value=S.warnRed;
   $('chkTextOnly').checked=S.textOnly; $('chkTransparent').checked=S.transparent;
   $('chkFit').checked=S.fitWindow;
+  $('deckLiveMode').value=S.deckLiveMode;
   if(S.outputSize){ $('outputWidth').value=S.outputSize.width; $('outputHeight').value=S.outputSize.height; }
   syncDualUI();
   syncDurationDisplays();
@@ -2345,11 +2356,13 @@ load(); $('cueEditor').open=!cues.length; refreshDisplays(); send(); updateButto
 // particular START SET is one synchronous mutation followed by one state send.
 async function applyDeckOperation(op){
   const now=engineClock.sample(),primary=op.timerId==='t1', timer=primary?S:S.secondary;
-  if(['startSet','start','pause','resume','reset','adjust'].includes(op.type)){
+  if(['startSet','loadSet','start','pause','resume','reset','adjust'].includes(op.type)){
     if(!primary&&!S.dualTimer) return {ok:false,code:'TIMER_DISABLED',message:'Enable Timer 2 in Control first.'};
+    if(op.type==='loadSet'&&timer.running)return {ok:false,code:'ACTIVE_RUNNING',message:'Pause ACTIVE before loading READY.'};
     if(primary){cancelAutoAdvance();clearTargetArm(true);}
-    if(op.type==='startSet'){
-      Object.assign(timer,{mode:op.mode,durationMs:op.durationMs,remMs:op.durationMs,elapsedMs:0,startAt:now,endAt:now+op.durationMs,running:op.mode!=='clock'});
+    if(op.type==='startSet'||op.type==='loadSet'){
+      const start=op.type==='startSet';
+      Object.assign(timer,{mode:op.mode,durationMs:op.durationMs,remMs:op.durationMs,elapsedMs:0,startAt:start?now:0,endAt:start?now+op.durationMs:0,running:start&&op.mode!=='clock'});
       if(primary){currentCue=-1;zeroFired=false;setModeTabs();renderCues();}
     }else if(op.type==='reset'){
       timer.durationMs=op.durationMs;TimerTools.reset(timer);if(primary)zeroFired=false;
@@ -2361,14 +2374,26 @@ async function applyDeckOperation(op){
     }else TimerTools.setRunning(timer,op.type!=='pause',now);
     send();updateButtons();return {ok:true};
   }
-  if(op.type==='blackout'){S.blackout=!S.blackout;$('btnBlackout').classList.toggle('on',S.blackout);send();return {ok:true};}
+  if(['blackout','blackoutOn','blackoutOff'].includes(op.type)){S.blackout=op.type==='blackout'?!S.blackout:op.type==='blackoutOn';$('btnBlackout').classList.toggle('on',S.blackout);send();return {ok:true};}
+  if(['liveT1','liveT2','liveBoth'].includes(op.type)){
+    if(op.type!=='liveT1'&&!S.dualTimer)return {ok:false,code:'TIMER_DISABLED',message:'Enable Timer 2 in Control first.'};
+    const output={view:{liveT1:'t1',liveT2:'t2',liveBoth:'both'}[op.type],mode:S.deckLiveMode,
+      displayId:Number($('displaySel').value),secondaryDisplayId:Number($('secondaryDisplaySel').value)};
+    const checked=await api.deckInvoke('output',{...output,action:'liveCheck'});
+    if(!checked.ok)return checked;
+    const previous={liveTimerView:S.liveTimerView,blackout:S.blackout};
+    S.liveTimerView=output.view;S.blackout=false;$('btnBlackout').classList.remove('on');send();
+    const applied=await api.deckInvoke('output',{...output,action:'live'});
+    if(!applied.ok){Object.assign(S,previous);$('btnBlackout').classList.toggle('on',S.blackout);send();}
+    return applied;
+  }
   if(op.type==='prev'||op.type==='next'){
     if(!cues.length)return {ok:false,code:'NO_CUE',message:'The rundown is empty.'};
     const i=cues.indexOf(selectedCue);selectedCue=cues[Math.max(0,Math.min(cues.length-1,i<0?0:i+(op.type==='next'?1:-1)))];renderCues();revealCue(cues.indexOf(selectedCue));return {ok:true};
   }
   if(op.type==='loadSelected')return selectedCue?{ok:true,cue:{durationMs:selectedCue.durationMs}}:{ok:false,code:'NO_CUE',message:'Select a rundown item first.'};
   if(op.type==='message'){
-    if(op.text===undefined){$('msgInput').scrollIntoView({block:'center'});$('msgInput').focus();return {ok:true};}
+    if(op.text===undefined){const focused=await api.deckInvoke('focusControl');if(!focused.ok)return focused;$('msgInput').scrollIntoView({block:'center'});$('msgInput').focus();return {ok:true};}
     S.message={text:op.text,flash:!!op.flash};$('msgInput').value=op.text;send();return {ok:true};
   }
   if(['outputA','outputB','fullscreen'].includes(op.type)){
@@ -2379,6 +2404,7 @@ async function applyDeckOperation(op){
 }
 if(window.ProTimerDeckController&&api.deckInvoke)ProTimerDeckController({
   element:$('streamDeckHost'),language:()=>lang,blackout:()=>S.blackout,audio:bellAudio,
+  liveView:()=>TimerTools.liveView(S.liveTimerView),separateOutputs:()=>TimerTools.separateOutputs(S),outputOpen:role=>role==='b'?!!lastSecondaryGeometry:outputOpen,
   readActive:id=>{engineClock.sample();const timer=id==='t1'?S:S.secondary;return {...timer,enabled:id==='t1'||S.dualTimer,overtime:timer.overtime??S.overtime};},
   readRundown:()=>({selected:selectedCue}),applyOperation:applyDeckOperation,
   color:id=>id==='t1'?calc(Date.now()).fg:(S.secondary.mode&&S.secondary.mode!=='countdown')?S.fgColor:(TimerTools.remaining(S.secondary,Date.now())<=0?S.warnRed:S.fgColor),

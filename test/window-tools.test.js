@@ -1,7 +1,7 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { EventEmitter } = require('node:events');
-const { leaveFullscreen, preserveSiblingBounds } = require('../window-tools');
+const { leaveFullscreen, preserveSiblingBounds, isFullscreen, setPresentationFullscreen, applyContentSize } = require('../window-tools');
 
 class FakeWindow extends EventEmitter {
   full = true;
@@ -28,12 +28,50 @@ test('macOS asynchronous transitions finish before applying a size', async () =>
   assert.equal(await leaveFullscreen(win), true);
   assert.equal(win.full, false);
 });
+test('fullscreen exit waits for the delayed native restored frame before allowing a resize', async () => {
+  const win = new FakeWindow(); let restored = false;
+  win.setFullScreen = value => {
+    win.emit('leave-full-screen'); win.full = value;
+    setTimeout(() => { restored = true; win.emit('resize'); }, 70);
+  };
+  assert.equal(await leaveFullscreen(win), true);
+  assert.equal(restored, true);
+  assert.equal(win.listenerCount('resize'), 0);
+});
 test('closed windows and failed transitions do not allow sizing', async () => {
   const win = new FakeWindow();
   win.setFullScreen = () => {};
   assert.equal(await leaveFullscreen(win, 10), false);
   win.destroyed = true;
   assert.equal(await leaveFullscreen(win), false);
+});
+
+test('macOS LIVE presentation uses independent simple fullscreen and can exit for resize',async()=>{
+  const win=new FakeWindow();win.full=false;let simple=false;
+  win.isSimpleFullScreen=()=>simple;win.setSimpleFullScreen=value=>{simple=value;};
+  setPresentationFullscreen(win,true,true,'darwin');
+  assert.equal(isFullscreen(win),true);assert.equal(win.full,false);assert.equal(win.calls,0);
+  assert.equal(await leaveFullscreen(win),true);assert.equal(isFullscreen(win),false);
+  setPresentationFullscreen(win,true,true,'darwin');
+  setPresentationFullscreen(win,false,false,'darwin');assert.equal(isFullscreen(win),false);
+});
+test('Windows LIVE presentation uses native fullscreen, never the macOS API',()=>{
+  const win=new FakeWindow();win.full=false;win.setSimpleFullScreen=()=>assert.fail('macOS only');
+  setPresentationFullscreen(win,true,true,'win32');assert.equal(win.full,true);assert.equal(win.calls,1);
+});
+test('Windows sizing retries a discarded native restore request and verifies the applied size',async()=>{
+  const win=new FakeWindow();win.full=false;let size=[1920,1080],calls=0;
+  win.getContentSize=()=>size;win.getBounds=()=>({x:40,y:60,width:size[0],height:size[1]});
+  win.setContentSize=(w,h)=>{if(++calls===3)size=[w,h];};win.setBounds=()=>{};
+  assert.equal(await applyContentSize(win,{width:1280,height:720},{platform:'win32'}),true);
+  assert.equal(calls,3);assert.deepEqual(size,[1280,720]);
+});
+test('a newer operator request cancels Windows size retry instead of overriding it',async()=>{
+  const win=new FakeWindow();win.full=false;let valid=true,calls=0;
+  win.getContentSize=()=>[1920,1080];win.getBounds=()=>({x:0,y:0,width:1920,height:1080});
+  win.setContentSize=()=>{calls++;valid=false;};win.setBounds=()=>{};
+  assert.equal(await applyContentSize(win,{width:1280,height:720},{platform:'win32',valid:()=>valid}),false);
+  assert.equal(calls,1);
 });
 
 function guardFixture(){

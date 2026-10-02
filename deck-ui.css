@@ -47,7 +47,8 @@
 .pt-deck-key[aria-selected=true]{outline:2px solid var(--focus-ring);outline-offset:2px;}
 .pt-deck-key.pt-deck-free{background:#0a0b0d!important;border:1px dashed #505057!important;box-shadow:none;color:#aaaab2;}
 .pt-deck-key.pt-deck-drop{outline:3px solid var(--accent);outline-offset:1px;}
-.pt-deck-key .pt-deck-key-icon{font-size:19px;line-height:1;color:#c8d4e3;}
+.pt-deck-key .pt-deck-key-icon{width:32px;height:32px;line-height:1;color:var(--key-accent);filter:brightness(1.8);flex-shrink:0;}
+.pt-deck-key-icon svg{width:100%;height:100%;display:block;}
 .pt-deck-key .pt-deck-key-name{font-size:10px;font-weight:700;line-height:1.15;text-align:center;max-width:100%;overflow-wrap:anywhere;}
 .pt-deck-key .pt-deck-key-time{font:600 clamp(12px,1.6vw,21px)/1.15 "SF Mono",ui-monospace,Menlo,monospace;max-width:100%;letter-spacing:-.5px;}
 .pt-deck-key .pt-deck-key-meta{font-size:8px;line-height:1.15;color:#c2c9d3;text-align:center;}

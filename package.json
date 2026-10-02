@@ -1,7 +1,7 @@
 {
   "name": "pro-timer",
   "productName": "ProTimer",
-  "version": "2.5.0-streamdeck.4",
+  "version": "2.5.0-streamdeck.11",
   "config": {
     "stableVersion": "2.4.1"
   },
@@ -37,6 +37,7 @@
     "deck:test": "npm --prefix streamdeck-plugin run typecheck && npm --prefix streamdeck-plugin test",
     "deck:package": "npm --prefix streamdeck-plugin run package",
     "deck:validate": "npm --prefix streamdeck-plugin run validate",
+    "deck:preview": "electron streamdeck-plugin/scripts/preview.cjs",
     "smoke:deck": "electron . --smoke --deck-only",
     "smoke:alerts": "electron . --smoke --alerts-only",
     "smoke:quality": "electron . --smoke --quality-only",

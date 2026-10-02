@@ -2,7 +2,7 @@
   "$schema": "https://schemas.elgato.com/streamdeck/plugins/manifest.json",
   "UUID": "com.srdjankotarlic.protimer",
   "Name": "ProTimer",
-  "Version": "0.1.0.0",
+  "Version": "0.1.0.10",
   "Author": "Srdjan Kotarlic",
   "Description": "Optional local controller for ProTimer. Separate ACTIVE and SET, two timers, deliberate live-event controls and editable owned keys.",
   "Icon": "imgs/plugin",
@@ -11,7 +11,7 @@
   "CodePath": "bin/plugin.js",
   "SDKVersion": 3,
   "Software": {
-    "MinimumVersion": "7.0"
+    "MinimumVersion": "7.6"
   },
   "OS": [
     {
@@ -26,6 +26,15 @@
   "Nodejs": {
     "Version": "20"
   },
+  "Profiles": [
+    {
+      "Name": "profiles/protimer-xl-full",
+      "DeviceType": 2,
+      "Readonly": false,
+      "DontAutoSwitchWhenInstalled": true,
+      "AutoInstall": false
+    }
+  ],
   "Actions": [
     {
       "UUID": "com.srdjankotarlic.protimer.key",

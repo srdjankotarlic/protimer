@@ -81,6 +81,20 @@ function state() {
     secondary: { ...TimerTools.secondary({ flashZero: true }), remMs: -1000 } };
 }
 
+test('audience live selection fills combined output or hides only its separate output, without changing either clock',()=>{
+  const page=view('output.html'),current=state();current.remMs=30000;current.secondary.remMs=600000;
+  const raw=structuredClone(current);
+  current.liveTimerView='t1';page.render(current);assert.equal(page.node('stage').classList.contains('dual'),false);assert.equal(page.node('timer').textContent,'0:30');
+  current.liveTimerView='t2';page.render(current);assert.equal(page.node('stage').classList.contains('dual'),false);assert.equal(page.node('timer').textContent,'10:00');
+  current.liveTimerView='both';page.render(current);assert.equal(page.node('stage').classList.contains('dual'),true);
+  current.separateOutputs=true;current.liveTimerView='t1';
+  page.render(TimerTools.outputState(current,'secondary'));assert.equal(page.node('stage').style.visibility,'hidden');
+  page.render(TimerTools.outputState(current,'primary'));assert.equal(page.node('stage').style.visibility,'visible');
+  current.liveTimerView='t2';page.render(TimerTools.outputState(current,'primary'));assert.equal(page.node('stage').style.visibility,'hidden');
+  page.render(TimerTools.outputState(current,'secondary'));assert.equal(page.node('stage').style.visibility,'visible');
+  assert.equal(current.remMs,raw.remMs);assert.deepEqual(current.secondary,raw.secondary);
+});
+
 for (const [file, primary, secondary] of [
   ['output.html', 'timer', 'secondaryTimer'], ['remote.html', 'time', 'secondaryTime']
 ]) {

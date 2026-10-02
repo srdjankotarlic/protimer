@@ -18,7 +18,7 @@ module.exports = async function smokeAlerts({controlWin,getOutput,getSecondary,d
   try {
     await ctl(`window.__alertPlay=bellAudio.play; window.__alertCalls=0;
       bellAudio.play=async()=>{window.__alertCalls++;return {ok:true};};
-      autoNext=false;cancelAutoAdvance();S.dualTimer=true;S.separateOutputs=false;
+      autoNext=false;cancelAutoAdvance();S.dualTimer=true;S.separateOutputs=false;S.liveTimerView='both';
       S.gridOn=false;S.secondary.gridOn=false;S.blackout=false;S.text='';S.textOnly=false;S.message={text:'',flash:false};
       S.transparent=false;S.outputSize={width:640,height:360};S.secondary.outputSize={width:480,height:270};
       S.useWarnColors=false;S.warnRed='#ff4540';S.overtime=true;S.secondary.overtime=true;syncDualUI();`);

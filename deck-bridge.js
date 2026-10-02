@@ -23,7 +23,9 @@ function cleanInventory(value) {
   if (new Set(devices.map(d=>d.id)).size!==devices.length || new Set(actions.map(a=>a.context)).size!==actions.length || new Set(actions.filter(a=>a.instanceId).map(a=>a.instanceId)).size!==actions.filter(a=>a.instanceId).length) throw new Error('INVALID_INVENTORY');
   // Presence proves only that these actions are visible. Missing coordinates
   // are UNKNOWN, never evidence that a foreign button is free.
-  return { devices, actions, softwareVersion: string(value.softwareVersion,40) };
+  const profiles=Array.isArray(value.profiles)?[...new Set(value.profiles.filter(p=>typeof p==='string'&&/^profiles\/protimer-xl-full$/.test(p)))]:[];
+  return { devices, actions, softwareVersion: string(value.softwareVersion,40), profiles, canActivate:value.canActivate===true&&profiles.length>0,
+    visibilityVersion:Number.isSafeInteger(value.visibilityVersion)&&value.visibilityVersion>=0?value.visibilityVersion:undefined };
 }
 function createBridge({ getSnapshot, onRequest, onDisconnect = () => {}, onChange = () => {}, now = () => performance.now(), staleMs = 2500 } = {}) {
   let server = null, port = 0, nonce = null, nonceUntil = 0, session = null, heartbeat = null;
@@ -100,6 +102,12 @@ function createBridge({ getSnapshot, onRequest, onDisconnect = () => {}, onChang
       if (!['/command', '/press', '/release'].includes(req.url)) return write(res, 404, { ok: false, error: 'NOT_FOUND' });
       if (now() - frameAt > staleMs) return write(res, 409, { ok: false, error: 'AUTHORITATIVE_STATE_STALE' });
       const result = await onRequest(req.url.slice(1), body, context(body));
+      // Applied commands carry the latest authoritative frame, not just an ACK.
+      // A following key press must see the confirmed timer/SET selection without
+      // waiting for the next polling interval. Frame sequence prevents rollback.
+      if (req.url === '/command' && result?.ok && session === authorizedSession)
+        return write(res, 200, { ...result, frame: { ...(getSnapshot?.() || {}), sessionId: session.id,
+          sequence, stale: now() - frameAt > staleMs, state: frame } });
       return write(res, 200, result || { ok: false, error: 'NO_APPLIED_RESULT' });
     } catch (error) {
       // Never echo request bodies or credentials in diagnostics.
