@@ -1,7 +1,7 @@
 {
   "name": "pro-timer",
   "productName": "ProTimer",
-  "version": "2.5.0-streamdeck.11",
+  "version": "2.5.0-streamdeck.12",
   "config": {
     "stableVersion": "2.4.1"
   },

@@ -126,6 +126,23 @@ test('SET adjustments and presets never mutate a running ACTIVE or the other tim
   assert.equal(h.operations.length, 1);
   assert.deepEqual(h.saved.at(-1).drafts.t1, { mode: 'countdown', durationMs: 960000 });
 });
+test('LIVE additions and deductions keep both countdowns running, preserve SET and apply exactly once',async()=>{
+  const h=harness({nativeSingleTap:true}),ctx={...h.ctx,sourceId:'native-deck'};
+  for(const id of ['t1','t2'])await h.send('start',id,{}, {},ctx);
+  h.advance(17000);
+  for(const id of ['t1','t2']){
+    const other=id==='t1'?'t2':'t1',otherBefore=structuredClone(h.clocks[other]);
+    const draft=structuredClone(h.model.snapshot().timers[id].draft),before=h.clocks[id].endAt;
+    const add=h.command('adjust',id,{step:1,unit:'m',target:'live'});
+    assert.equal((await h.model.dispatch(add,ctx)).ok,true);assert.equal((await h.model.dispatch(add,ctx)).ok,true);
+    assert.equal(h.clocks[id].endAt,before+60000);assert.equal(h.clocks[id].running,true);
+    h.advance(1000);
+    assert.equal((await h.send('adjust',id,{step:-10,unit:'s',target:'live'}, {},ctx)).ok,true);
+    assert.equal(h.clocks[id].endAt,before+50000);assert.equal(h.clocks[id].running,true);
+    assert.deepEqual(h.model.snapshot().timers[id].draft,draft);assert.deepEqual(h.clocks[other],otherBefore);
+    assert.equal(h.operations.filter(op=>op.commandId===add.commandId).length,1);
+  }
+});
 
 test('optional held commands also cancel on release and device change', async () => {
   const h=harness(),command=h.command('bell');

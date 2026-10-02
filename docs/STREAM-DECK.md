@@ -42,7 +42,7 @@ Each timer has both states. **Timer 2 is a second timer, not the SET value of Ti
 | ACTIVE TIME | Shows the selected timer's authoritative value, T1/T2 and READY, RUNNING, PAUSED or OVERTIME. |
 | SET TIME | Shows the separately prepared duration and READY/EDITING. |
 | −/+ hours, minutes, seconds | Changes SET by default. Each step and unit is configurable. |
-| EDIT SET / LIVE | Explicitly changes the adjustment target. Native Deck keys act with one deliberate tap; keyboard/Control safeguards remain. Returning to SET is immediate. |
+| EDIT SET / LIVE | Changes the shared target only for adjustments configured to follow it. Explicit SET/LIVE keys keep their configured target. |
 | Presets | Always prepare SET, even while LIVE is selected. |
 | START SET | One native Deck tap atomically loads the displayed SET version and starts it, immediately replacing running/paused ACTIVE. Keyboard/Control confirmation remains. |
 | START / PAUSE | Starts, pauses or resumes the existing ACTIVE value. It never silently loads SET. |
@@ -52,7 +52,15 @@ Each timer has both states. **Timer 2 is a second timer, not the SET value of Ti
 
 For example, ACTIVE may continue from `08:43 RUNNING` while a `15:00 SET` is changed to `16:00`. Nothing replaces ACTIVE until **START SET**. When ACTIVE has no valid loaded duration, use SET and START SET; the command returns an explanation instead of guessing.
 
-Switching the selected timer, restarting or losing the controller connection returns the edit target to SET. Every command captures a concrete T1/T2 target before execution, so changing the selection does not redirect a command already pressed.
+Switching the selected timer, restarting or losing the controller connection returns the shared edit target to SET. Explicit LIVE keys remain LIVE. Every command captures a concrete T1/T2 target before execution, so changing the selection does not redirect a command already pressed.
+
+### Adjust a speaker's time while LIVE
+
+Local preview 12 adds **Control → Stream Deck → LIVE adjustment**: −1m, +1m, −10s and +10s for the selected T1/T2. Each tap changes ACTIVE immediately without pausing, changing SET or touching the other timer. For example, +1m changes approximately 08:43 to 09:43. Audience outputs receive the same authoritative state.
+
+For an existing physical −1m/+1m key, use **Edit layout → Adjustment target → LIVE → Apply layout**. Alternatively, use Elgato **ProTimer Key → Edit here → LIVE −1m / +1m → Save key**; adjust the step/unit before saving if needed. The LCD labels the key **LIVE**. One press applies one correction. TIMER 1/2 chooses the speaker when the key targets the selected timer. Editing/saving does not execute a correction.
+
+LIVE adjustment supports countdown mode, not clock or count-up. Subtracting beyond zero respects that timer's overtime option. No START SET or pause is needed. The starter layout remains SET for new users until they explicitly choose LIVE.
 
 ### Enter 01:23:45 without a keyboard
 

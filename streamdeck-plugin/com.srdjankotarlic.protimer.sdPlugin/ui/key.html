@@ -20,6 +20,8 @@
   <div id="keyFields">
     <label>Action<select id="command"></select></label>
     <p id="commandHelp" class="hint" aria-live="polite"></p>
+    <div class="row"><button id="liveMinus" type="button">LIVE −1m</button><button id="livePlus" type="button">LIVE +1m</button></div>
+    <p class="hint">Configure this key to adjust the speaker's ACTIVE time without pausing. These buttons only prepare settings; Save key applies them. / Podešava dugme za aktivno vreme, bez pauze. Save key čuva; ovde se tajmer ne menja.</p>
     <label id="outputField" hidden>Output operation<select id="outputAction"><option value="open">Open only — safe to press again</option><option value="close">Close only — one tap</option><option value="toggle">Open / close based on state</option></select></label>
     <label id="timerField">Timer<select id="timerId"><option value="selected">Currently selected timer</option><option value="t1">Timer 1</option><option value="t2">Timer 2</option></select></label>
     <label id="targetField" hidden>Adjust<select id="target"><option value="set">Prepared SET time only</option><option value="selected">Current EDIT SET/LIVE selection</option><option value="live">ACTIVE time directly — caution</option></select></label>

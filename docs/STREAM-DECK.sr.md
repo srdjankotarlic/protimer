@@ -47,11 +47,19 @@ Povezivanje nije aktiviranje profila. Pokretanje ProTimera, promena fokusa, USB 
 
 - Dok ACTIVE radi na `08:43`, promeni SET sa `15:00` na `16:00`. ACTIVE nastavlja normalno.
 - Šest tastera −/+ za sate, minute i sekunde podrazumevano menja SET. Korak i jedinicu menjaš u editoru.
-- **EDIT SET/LIVE** namerno prebacuje korekcije na aktivno vreme. Na native Decku radi jednim namernim dodirom; zaštite tastature i Controla ostaju. Povratak u SET je odmah. Preseti uvek menjaju SET.
+- **EDIT SET/LIVE** prebacuje samo korekcije čiji je cilj „Izabrani”; ne menja tastere izričito podešene za SET ili LIVE. Preseti uvek menjaju SET.
 - **START SET** jednim dodirom na Decku atomski učitava baš potvrđenu verziju SET-a i pokreće tajmer. Odmah zamenjuje tekuće ili pauzirano vreme. Potvrde u Controlu i na tastaturi ostaju.
 - **PAUSE** pauzira ACTIVE, a **PLAY ACTIVE** pokreće već učitano vreme ili nastavlja pauzirano. Ne učitavaju SET. Stari START/PAUSE i zasebni RESUME ostaju u katalogu.
 - **RESET** jednim dodirom zaustavlja i vraća ACTIVE na poslednje pokrenuto trajanje. SET ostaje. **CLEAR SET** je zasebna komanda.
-- Promena ciljnog tajmera, restart ili prekid veze vraća korekcije na SET. Na prikazima i komandama jasno se razlikuju T1 i T2.
+- Promena ciljnog tajmera, restart ili prekid veze vraća zajednički edit target na SET. Namensko LIVE dugme ostaje LIVE. Na prikazima i komandama jasno se razlikuju T1 i T2.
+
+### Dodaj ili oduzmi vreme govorniku tokom LIVE-a
+
+U lokalnom preview-u 12, **Control → Stream Deck → LIVE korekcija** ima −1m, +1m, −10s i +10s za izabrani T1/T2. Korekcija menja ACTIVE odmah: odbrojavanje nastavlja, SET i drugi tajmer ostaju nepromenjeni. Na primer, +1m menja približno 08:43 u 09:43. Prikaz publici dobija isto stvarno stanje.
+
+Za fizički taster izaberi postojeće −1m/+1m u **Uredi raspored**, postavi **Cilj korekcije → LIVE · aktivno vreme** i klikni **Primeni raspored**. Alternativno, u Elgato editoru izaberi **ProTimer Key → Uredi ovde → LIVE −1m / +1m → Save key**. Korak i jedinicu možeš promeniti pre čuvanja. Taster prikazuje **LIVE**; jedan pritisak je jedna korekcija. TIMER 1/2 bira govornika ako je cilj tastera „Izabrani tajmer”. Uređivanje/čuvanje ne izvršava korekciju.
+
+LIVE korekcija je za odbrojavanje, ne za sat ili štopericu. Oduzimanje preko nule poštuje opciju „Minus posle nule” tog tajmera. Promena minute ne zahteva START SET niti pauzu. Početni raspored za nove korisnike ostaje SET dok sami ne izaberu LIVE.
 
 ### Unos 01:23:45 bez tastature
 
