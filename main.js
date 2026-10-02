@@ -6,7 +6,7 @@ const os = require('os');
 const crypto = require('crypto');
 const { spawn } = require('child_process');
 const TimerTools = require('./timer-tools');
-const { leaveFullscreen, preserveSiblingBounds, isFullscreen, setPresentationFullscreen } = require('./window-tools');
+const { leaveFullscreen, preserveSiblingBounds, isFullscreen, setPresentationFullscreen, applyContentSize } = require('./window-tools');
 const { waitForTunnelReady } = require('./tunnel-tools');
 const OutputQuality = require('./output-quality');
 const {livePlan} = require('./deck-output-plan');
@@ -631,14 +631,9 @@ ipcMain.handle('resize-output', async (e, requested) => {
     outputPlaced = true;
     if (outputPlacing === revision) outputPlacing = null;
     pushDisplays();
-  } else win.setContentSize(size.width, size.height);
-  // On Windows a frameless restored window can retain fullscreen content-frame
-  // conversion in setContentSize. Reassert its explicit outer rectangle if that
-  // API did not apply the requested size; these audience windows have no frame.
-  if (process.platform === 'win32' && win.getContentSize().some((n,i)=>n!==[size.width,size.height][i])) {
-    win.restore(); // reapply native resizable frame styling after fullscreen
-    win.setBounds({...win.getBounds(),...size});
   }
+  const sized = await applyContentSize(win,size,{valid:()=>win===outputWin && revision===outputPlacementVersion && !lastState?.gridOn && !lastState?.fitWindow});
+  if (!sized) return {ok:false,error:'size not applied'};
   pushOutputGeometry();
   const actual = outputGeometry();
   if (SMOKE) console.log('OUTPUT_RESIZE_APPLIED',JSON.stringify({requested:size,actual,bounds:win.getBounds(),resizable:win.isResizable?.()}));

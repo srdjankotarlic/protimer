@@ -93,4 +93,22 @@ function leaveFullscreen(win, timeoutMs = 4000) {
   return pending;
 }
 
-module.exports = { leaveFullscreen, preserveSiblingBounds, isFullscreen, setPresentationFullscreen };
+async function applyContentSize(win, size, {platform = process.platform, valid = () => true} = {}) {
+  const matches = () => win.getContentSize().every((n,i) => n === [size.width,size.height][i]);
+  // A Windows fullscreen event/flag can precede the native widget's restored
+  // frame. A size issued inside that interval is discarded, not queued. Retry
+  // only this explicit request, with a bounded deadline and identity/revision
+  // guard. Never replay a superseded operator action or change timer state.
+  for (let attempt=0; attempt<(platform==='win32'?8:1); attempt++) {
+    if (win.isDestroyed() || !valid() || isFullscreen(win)) return false;
+    win.setContentSize(size.width,size.height);
+    if (matches()) return true;
+    if (platform!=='win32') return false;
+    win.setBounds({...win.getBounds(),...size});
+    if (matches()) return true;
+    await new Promise(resolve => setTimeout(resolve,100));
+  }
+  return !win.isDestroyed() && valid() && matches();
+}
+
+module.exports = { leaveFullscreen, preserveSiblingBounds, isFullscreen, setPresentationFullscreen, applyContentSize };

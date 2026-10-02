@@ -66,6 +66,8 @@ module.exports = async function ({ controlWin, getOutput, getSecondary, screen }
   await waitFor(async() => getSecondary().isFullScreen()&&await second('isFS'), 'Second output did not enter fullscreen');
   await ctl(`$('btnSecondaryFs').click();`);
   await waitFor(async() => !getSecondary().isFullScreen()&&await second('!isFS'), 'Control failed to exit second output fullscreen');
+  await waitFor(()=>getSecondary().getContentSize()[0]===800&&getSecondary().getContentSize()[1]===450,
+    'Second output did not finish restoring its windowed dimensions');
   await waitFor(() => JSON.stringify(getOutput().getBounds())===JSON.stringify(primaryBounds),
     'Native fullscreen did not restore the first output');
   unchangedPrimary('After second fullscreen');

@@ -3,7 +3,7 @@ const assert=require('node:assert/strict');
 const {readFileSync}=require('node:fs');
 const vm=require('node:vm');
 const {EventEmitter}=require('node:events');
-const {leaveFullscreen}=require('../window-tools');
+const {leaveFullscreen,applyContentSize}=require('../window-tools');
 const TimerTools=require('../timer-tools');
 test('real primary resize handler ignores Windows restoration will-move without cancelling size or changing target',async()=>{
   const source=readFileSync(require.resolve('../main'),'utf8');
@@ -15,13 +15,13 @@ test('real primary resize handler ignores Windows restoration will-move without 
   win.setContentSize=()=>{win.emit('will-move',{}, {x:0,y:0});}; // reproduce restored Windows no-op
   win.getContentSize=()=>size;
   win.getBounds=()=>({x:0,y:0,width:size[0],height:size[1]});
-  let restoredStyle=false;
-  win.restore=()=>{restoredStyle=true;};
-  win.setBounds=b=>{if(restoredStyle)size=[b.width,b.height];};
+  let attempts=0;
+  win.setBounds=b=>{if(++attempts>1)size=[b.width,b.height];};
   let handler;const sender={};
   const context={process:{platform:'win32'},SMOKE:false,ipcMain:{handle:(_name,fn)=>handler=fn},TimerTools,controlWin:{webContents:sender},outputWin:win,current:win,
     outputReady:true,outputPlaced:true,outputPlacing:null,outputPlacementVersion:0,outputTargetId:1,lastState:{gridOn:false,fitWindow:false},
     screen:{getAllDisplays:()=>[{id:1}],getDisplayMatching:()=>({id:1})},leaveOutputFullscreen:()=>leaveFullscreen(win),
+    applyContentSize:(w,s,options)=>applyContentSize(w,s,{...options,platform:'win32'}),
     pushOutputGeometry:()=>{},outputGeometry:()=>({width:size[0],height:size[1],fullscreen:full})};
   vm.runInNewContext(move+"\noutputWin.on('will-move',operatorMove);\n"+source.slice(start,end),context);
   const result=await handler({sender},{width:1280,height:720});

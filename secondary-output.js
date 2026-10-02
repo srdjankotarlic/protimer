@@ -1,6 +1,6 @@
 const path = require('path');
 const TimerTools = require('./timer-tools');
-const { leaveFullscreen, preserveSiblingBounds, isFullscreen, setPresentationFullscreen } = require('./window-tools');
+const { leaveFullscreen, preserveSiblingBounds, isFullscreen, setPresentationFullscreen, applyContentSize } = require('./window-tools');
 const OutputQuality = require('./output-quality');
 
 // A second desktop output only. The existing output, LAN/OBS streams and timer
@@ -155,11 +155,7 @@ module.exports = function secondaryOutput({ BrowserWindow, screen, getState, con
     if (current && !current.isDestroyed()) protectSibling(current, false);
     if (!current || !await leaveFullscreen(current) || win !== current ||
         version !== revision || !enabled() || state().gridOn) return { ok: false };
-    current.setContentSize(size.width, size.height);
-    if (platform === 'win32' && current.getContentSize().some((n,i)=>n!==[size.width,size.height][i])) {
-      current.restore();
-      current.setBounds({...current.getBounds(),...size});
-    }
+    if (!await applyContentSize(current,size,{platform,valid:()=>win===current && version===revision && enabled() && !state().gridOn})) return {ok:false};
     const actual = geometry();
     notify();
     return { ok: !!actual && actual.width === size.width && actual.height === size.height, ...actual };
