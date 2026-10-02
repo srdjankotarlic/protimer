@@ -47,9 +47,9 @@ Povezivanje nije aktiviranje profila. Pokretanje ProTimera, promena fokusa, USB 
 
 - Dok ACTIVE radi na `08:43`, promeni SET sa `15:00` na `16:00`. ACTIVE nastavlja normalno.
 - Šest tastera −/+ za sate, minute i sekunde podrazumevano menja SET. Korak i jedinicu menjaš u editoru.
-- **EDIT SET/LIVE** namerno prebacuje korekcije na aktivno vreme. Ulazak u LIVE traži zaštitu; povratak u SET je odmah. Preseti uvek menjaju SET.
+- **EDIT SET/LIVE** namerno prebacuje korekcije na aktivno vreme. Na native Decku radi jednim namernim dodirom; zaštite tastature i Controla ostaju. Povratak u SET je odmah. Preseti uvek menjaju SET.
 - **START SET** jednim dodirom na Decku atomski učitava baš potvrđenu verziju SET-a i pokreće tajmer. Odmah zamenjuje tekuće ili pauzirano vreme. Potvrde u Controlu i na tastaturi ostaju.
-- **START/PAUSE** startuje, pauzira ili nastavlja samo već učitani ACTIVE. Nikad ne učitava SET krišom.
+- **PAUSE** pauzira ACTIVE, a **PLAY ACTIVE** pokreće već učitano vreme ili nastavlja pauzirano. Ne učitavaju SET. Stari START/PAUSE i zasebni RESUME ostaju u katalogu.
 - **RESET** jednim dodirom zaustavlja i vraća ACTIVE na poslednje pokrenuto trajanje. SET ostaje. **CLEAR SET** je zasebna komanda.
 - Promena ciljnog tajmera, restart ili prekid veze vraća korekcije na SET. Na prikazima i komandama jasno se razlikuju T1 i T2.
 

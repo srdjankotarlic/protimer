@@ -42,7 +42,7 @@ Each timer has both states. **Timer 2 is a second timer, not the SET value of Ti
 | ACTIVE TIME | Shows the selected timer's authoritative value, T1/T2 and READY, RUNNING, PAUSED or OVERTIME. |
 | SET TIME | Shows the separately prepared duration and READY/EDITING. |
 | −/+ hours, minutes, seconds | Changes SET by default. Each step and unit is configurable. |
-| EDIT SET / LIVE | Explicitly changes the adjustment target. Entering LIVE is protected. Returning to SET is immediate. |
+| EDIT SET / LIVE | Explicitly changes the adjustment target. Native Deck keys act with one deliberate tap; keyboard/Control safeguards remain. Returning to SET is immediate. |
 | Presets | Always prepare SET, even while LIVE is selected. |
 | START SET | One native Deck tap atomically loads the displayed SET version and starts it, immediately replacing running/paused ACTIVE. Keyboard/Control confirmation remains. |
 | START / PAUSE | Starts, pauses or resumes the existing ACTIVE value. It never silently loads SET. |
