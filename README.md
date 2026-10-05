@@ -277,7 +277,7 @@ Daily use: select T1/T2 → choose a preset or enter SET → **START SET**. The 
 
 The plugin builds and packages with Elgato's official CLI. The native Full 32 profile is an unchanged real Elgato export. Standard 28 + 4 free remains a logical template: duplicate Full 32 in Elgato and remove its last-column actions to make those four keys genuinely free. Physical XL/Windows acceptance and clean-machine setup still need hardware testing. Installation, app focus and reconnect never automatically select a profile.
 
-Guides: [English](docs/STREAM-DECK.md) · [Srpski](docs/STREAM-DECK.sr.md) · [SDK constraints](docs/STREAM-DECK-SDK.md) · [Verification results and editor screenshot](docs/STREAM-DECK-VERIFICATION.md).
+Guides: [English](docs/STREAM-DECK.md) · [Srpski](docs/STREAM-DECK.sr.md) · [SDK constraints](docs/STREAM-DECK-SDK.md) · [2.5.0 verification results](docs/STREAM-DECK-VERIFICATION-2.5.0.md) · [Historical editor screenshot](docs/STREAM-DECK-VERIFICATION.md).
 
 ```sh
 npm run deck:build
