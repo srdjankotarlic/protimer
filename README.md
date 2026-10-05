@@ -9,9 +9,9 @@
   Send a clear timer to a projector, confidence monitor, browser source or phone from one local app.
 </p>
 
-<p align="center"><strong>Latest release: ProTimer 2.4.1 — free, open source, no account and no watermark.</strong></p>
+<p align="center"><strong>Latest release: ProTimer 2.5.0 — free, open source, no account and no watermark.</strong></p>
 
-**Stream Deck preview:** [ProTimer 2.5.0-streamdeck.11](https://github.com/srdjankotarlic/protimer/releases/tag/v2.5.0-streamdeck.11) brings colorful LCD controls, separate ACTIVE/SET readouts and one-touch commands. The native Elgato plugin and a genuine editable **XL Full 32 profile** come inside the Mac and Windows installers; the plugin is also a separate release download. No Node, terminal or Companion required. Stream Deck 7.6+ is required. Physical XL and clean-machine acceptance remain separate from automated tests. **2.4.1 remains the latest stable release.** [What's new and preview downloads](docs/RELEASE-NOTES-2.5.0-streamdeck.11.md) · [Setup guide](docs/STREAM-DECK.md).
+**Stream Deck is included in 2.5.0.** Colorful LCD controls, separate ACTIVE/SET readouts and one-touch commands, including **T1 LIVE −/+10, −/+5 and −/+1 minute**. Both desktop installers include the native Elgato plugin and a genuine editable **XL Full 32 profile**. No Node, terminal or Companion required; Elgato Stream Deck 7.6+ is required. [Simple setup guide](docs/STREAM-DECK.md).
 
 <p align="center">
   <a href="https://github.com/srdjankotarlic/protimer/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/srdjankotarlic/protimer/actions/workflows/ci.yml/badge.svg"></a>
@@ -49,12 +49,12 @@
 
 | Your computer | Recommended download | Install |
 |---|---|---|
-| Apple Silicon Mac (M1 or newer) | **[Download the macOS DMG](https://github.com/srdjankotarlic/protimer/releases/download/v2.4.1/ProTimer-2.4.1-arm64.dmg)** | Open the DMG and drag **ProTimer** to Applications. |
-| Windows 10/11 x64 | **[Download the Windows installer](https://github.com/srdjankotarlic/protimer/releases/download/v2.4.1/ProTimer-Setup-2.4.1.exe)** | Run Setup and follow the installer. |
+| Apple Silicon Mac (M1 or newer) | **[Download the macOS DMG](https://github.com/srdjankotarlic/protimer/releases/download/v2.5.0/ProTimer-2.5.0-arm64.dmg)** | Open the DMG and drag **ProTimer** to Applications. |
+| Windows 10/11 x64 | **[Download the Windows installer](https://github.com/srdjankotarlic/protimer/releases/download/v2.5.0/ProTimer-Setup-2.5.0.exe)** | Run Setup and follow the installer. |
 
-Need a Windows build that does not install? Use the [portable EXE](https://github.com/srdjankotarlic/protimer/releases/download/v2.4.1/ProTimer-2.4.1-portable.exe). Most Windows users should choose Setup.
+Need a Windows build that does not install? Use the [portable EXE](https://github.com/srdjankotarlic/protimer/releases/download/v2.5.0/ProTimer-2.5.0-portable.exe). Most Windows users should choose Setup.
 
-Every installer is built by the public release workflow. You can verify a download with the [ProTimer 2.4.1 SHA-256 checksums](https://github.com/srdjankotarlic/protimer/releases/download/v2.4.1/ProTimer-2.4.1-SHA256SUMS.txt).
+Every installer is built by the public release workflow. You can verify a download with the [ProTimer 2.5.0 SHA-256 checksums](https://github.com/srdjankotarlic/protimer/releases/download/v2.5.0/ProTimer-2.5.0-SHA256SUMS.txt).
 
 <details>
 <summary><strong>First-launch security warning</strong></summary>
@@ -66,11 +66,20 @@ The current downloads are not Apple-notarized or Windows Authenticode-signed.
 
 </details>
 
-## New in ProTimer 2.4.1
+## New in ProTimer 2.5.0
 
-- **A Grid for each timer:** choose different grid sizes and cells on the two displays. Resizing one window no longer switches off the other timer's Grid.
-- **One clear editing target:** **Adjust screen → Timer 1 / Timer 2** selects whose window size, digits and Grid you are editing. Extra selectors appear only when needed.
-- **Your placement stays:** independent settings survive mode changes and relaunch. Existing 2.4.0 settings migrate without resetting the rundown.
+- **Native Stream Deck control:** install the bundled plugin from **Control → Stream Deck**, pair and manually activate the XL profile. Each executable key has one function and one tap. No automatic profile takeover.
+- **LIVE speaker corrections:** the second row is dedicated to Timer 1: **−10m / +10m / −5m / +5m / −1m / +1m**. The countdown keeps running; SET and Timer 2 are unchanged. Customize any key in Control or Elgato.
+- **Separate ACTIVE and SET:** prepare a preset or enter HH:MM:SS without interrupting the speaker. **LOAD READY** loads without playing; **START SET** loads and starts. PAUSE and PLAY ACTIVE control the already loaded time.
+- **Real output commands:** LIVE T1, LIVE T1 + T2 and LIVE T2 use the displays and presentation mode chosen in Control. Separate BLACK ON/OFF keys hide and restore the picture without stopping the timer.
+- **Independent zero alerts:** choose flashing red, a natural synthesized bell and negative overtime separately for each timer. Turn any of these off; red overtime can remain steady.
+- **Output-quality diagnostics:** check output dimensions and digit clipping, with per-screen pixel-density handling. The app check cannot certify a downstream switcher or TV signal.
+
+### Stream Deck setup on another computer
+
+Install the same recommended ProTimer download, then **Control → Stream Deck → Install / update plugin**. Confirm Elgato's installation, **Set up integration**, select XL and **Activate ProTimer profile**. The plugin/profile comes with ProTimer; no development tools are needed. For plugin-only installation use the [native Stream Deck package](https://github.com/srdjankotarlic/protimer/releases/download/v2.5.0/com.srdjankotarlic.protimer.streamDeckPlugin). [English guide](docs/STREAM-DECK.md) · [Srpski](docs/STREAM-DECK.sr.md).
+
+Customized layouts and existing settings are preserved. Only untouched starter layouts receive the new T1 LIVE row automatically. To opt in on a customized board, use **Edit layout → Restore defaults → Apply**, or configure individual keys deliberately.
 
 ### From ProTimer 2.4
 
@@ -99,7 +108,7 @@ The current downloads are not Apple-notarized or Windows Authenticode-signed.
 
 The scrollable rundown, duration picker, Colors/Text, Grid, Thresholds, Message, audience QR and Backstage controls remain available.
 
-See the complete [2.4.1 release notes](docs/RELEASE-NOTES-2.4.1.md).
+See the complete [2.5.0 release notes](docs/RELEASE-NOTES-2.5.0.md).
 
 [How to size the output, position digits, use two timers and connect a phone →](docs/OUTPUT-AND-PHONE-CONTROL.md)
 
@@ -120,7 +129,7 @@ See the complete [2.4.1 release notes](docs/RELEASE-NOTES-2.4.1.md).
 - **Phone remote and QR access** over the local production network, including an audience QR on the stage output.
 - **Simple event rundown** with NOW, NEXT, planned times and over/under status.
 - **Backstage view** for crew, green room, stage manager or lobby display.
-- **Stream Deck and automation control** through Bitfocus Companion, HTTP and OSC.
+- **Native Stream Deck plugin and editable XL profile**, with Companion, HTTP and OSC still available.
 - **Excel/Sheets rundown paste**, speaker messages, grid placement and a compact output option.
 - **English and Serbian interface**, no account, no subscription and no watermark.
 
@@ -256,15 +265,15 @@ npm run dist:win     # build the Windows installer + portable
 
 Clean stack, almost no dependencies: **Electron** + plain HTML/CSS/JS + a Node `http` server. LAN viewers use SSE; public HTTPS viewers use reliable versioned long-polling because Cloudflare Quick Tunnels do not support SSE. Browser clocks synchronise to the ProTimer host, preventing phone-clock drift. `qrcode`, a bundled and verified official `cloudflared` binary and a `localtunnel` fallback provide the share features. All the logic lives in `controller.html` (control), `output.html` (screen/OBS), `backstage.html` (crew schedule), `remote.html` (phone), and `main.js` (windows + server).
 
-### Native Stream Deck integration — prerelease
+### Native Stream Deck integration — included
 
-The [2.5.0-streamdeck.11 preview](https://github.com/srdjankotarlic/protimer/releases/tag/v2.5.0-streamdeck.11) includes an optional native Elgato SDK plugin, separate ACTIVE/SET preparations for both timers, an 8×4 editor inside Control, and colorful live LCD buttons. This is **not included in stable 2.4.1**. The timer remains independent of Stream Deck and Companion.
+**ProTimer 2.5.0 includes** the optional native Elgato SDK plugin, separate ACTIVE/SET preparations for both timers, an 8×4 editor inside Control and colorful live LCD buttons. The starter's second row provides T1 LIVE −/+10, −/+5 and −/+1 minute corrections. The timer remains independent of Stream Deck and Companion.
 
-1. Install the preview ProTimer app for your computer. The plugin is included.
+1. Install the recommended ProTimer app for your computer. The plugin is included.
 2. Open **Control → Stream Deck → Install / update plugin** and confirm in Elgato Stream Deck 7.6+.
 3. Click **Set up integration**, choose your XL, select **ProTimer XL · Full 32** and click **Activate profile**. Confirm Elgato's first profile-install prompt. No need to place 32 actions manually. Configure individual ProTimer keys directly in Elgato or use the Control layout editor.
 
-Daily use: select T1/T2 → choose a preset or adjust SET → **START SET**. Separate PAUSE, PLAY ACTIVE, LOAD READY and BLACK ON/OFF keys remove guesswork. LIVE T1 / T1+T2 / T2 use the output choices in Control. **Every native command is one tap**, including reset and replacing running time; use deliberately. ACTIVE and SET are read-only LCDs.
+Daily use: select T1/T2 → choose a preset or enter SET → **START SET**. The second row corrects T1 LIVE by −/+10, −/+5 and −/+1 minute. Separate PAUSE, PLAY ACTIVE, LOAD READY and BLACK ON/OFF keys remove guesswork. LIVE T1 / T1+T2 / T2 use the output choices in Control. **Every native command is one tap**, including reset and replacing running time; use deliberately. ACTIVE and SET are read-only LCDs.
 
 The plugin builds and packages with Elgato's official CLI. The native Full 32 profile is an unchanged real Elgato export. Standard 28 + 4 free remains a logical template: duplicate Full 32 in Elgato and remove its last-column actions to make those four keys genuinely free. Physical XL/Windows acceptance and clean-machine setup still need hardware testing. Installation, app focus and reconnect never automatically select a profile.
 

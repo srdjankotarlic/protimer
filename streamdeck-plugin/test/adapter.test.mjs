@@ -18,7 +18,7 @@ async function until(predicate,message,timeout=4000){const deadline=Date.now()+t
 test('compiled SDK plugin: one-touch native commands, owned keys, spatial numeric page and no auto switch (simulated Elgato)',{timeout:18000},async t=>{
   const deviceId='test-xl',actions=new Map(),sdkMessages=[],commands=[],results=[];let inventory,connection,online=true,token='t'.repeat(48),nonce='n'.repeat(48),instructions=[],board=L.defaultLayout();
   const raw={t1:{mode:'countdown',running:true,endAt:Date.now()+523000,remMs:523000,durationMs:900000},t2:{mode:'countdown',running:false,remMs:600000,durationMs:600000}};
-  let bells=0,liveView='both';const model=M.create({nativeSingleTap:true,readActive:id=>({...raw[id],enabled:true,overtime:true}),applyOperation:async op=>{const a=raw[op.timerId];if(op.type==='reset'){a.running=false;a.remMs=op.durationMs;}else if(op.type==='pause'){a.remMs=a.endAt-Date.now();a.running=false;}else if(['start','resume'].includes(op.type)){a.endAt=Date.now()+a.remMs;a.running=true;}else if(op.type==='bell')bells++;else if(['startSet','loadSet'].includes(op.type)){a.mode=op.mode;a.durationMs=op.durationMs;a.remMs=op.durationMs;a.endAt=op.type==='startSet'?Date.now()+op.durationMs:0;a.running=op.type==='startSet'&&op.mode!=='clock';}else if(op.type.startsWith('live'))liveView={liveT1:'t1',liveT2:'t2',liveBoth:'both'}[op.type];return{ok:true};}});
+  let bells=0,liveView='both';const model=M.create({nativeSingleTap:true,readActive:id=>({...raw[id],enabled:true,overtime:true}),applyOperation:async op=>{const a=raw[op.timerId];if(op.type==='reset'){a.running=false;a.remMs=op.durationMs;}else if(op.type==='pause'){a.remMs=a.endAt-Date.now();a.running=false;}else if(['start','resume'].includes(op.type)){a.endAt=Date.now()+a.remMs;a.running=true;}else if(op.type==='bell')bells++;else if(['startSet','loadSet'].includes(op.type)){a.mode=op.mode;a.durationMs=op.durationMs;a.remMs=op.durationMs;a.endAt=op.type==='startSet'?Date.now()+op.durationMs:0;a.running=op.type==='startSet'&&op.mode!=='clock';}else if(op.type==='adjust'){if(a.running)a.endAt+=op.deltaMs;else a.remMs=Math.max(0,a.remMs+op.deltaMs);a.durationMs=Math.max(1000,a.durationMs+op.deltaMs);}else if(op.type.startsWith('live'))liveView={liveT1:'t1',liveT2:'t2',liveBoth:'both'}[op.type];return{ok:true};}});
   const snapshot=()=>({...model.snapshot(),singleTap:true,liveTimerView:liveView});
   const context={sourceId:'native-deck',sessionId:'test-session',deviceId};let stateSequence=0;
   const server=http.createServer(async(req,res)=>{
@@ -62,12 +62,20 @@ test('compiled SDK plugin: one-touch native commands, owned keys, spatial numeri
   connection.send(JSON.stringify({event:'deviceDidConnect',device:deviceId,deviceInfo:info.devices[0]}));
   await until(()=>inventory?.actions.length===28&&inventory?.devices.length===1,'USB reconnect lost visible owned actions');
   const deadline=raw.t1.endAt;await press(17);await until(()=>model.snapshot().timers.t1.draft.durationMs===600000,'Preset failed');assert.equal(raw.t1.endAt,deadline,'SET preset must not alter ACTIVE');
-  await press(11);await until(()=>model.snapshot().timers.t1.draft.durationMs===660000,'SET +1 minute tap failed');assert.equal(raw.t1.endAt,deadline);
-  await press(25);await press(11);await until(()=>model.snapshot().timers.t2.draft.durationMs===660000,'Immediate T2 SET adjustment before selection ACK failed');assert.equal(model.snapshot().timers.t1.draft.durationMs,660000);assert.equal(commands.at(-1).timerId,'t2');
+  const draft=model.snapshot().timers.t1.draft;
+  for(const i of [8,9,10,11,12,13]){
+    const previous=raw.t1.endAt,step=layout.slots[i].step;
+    await press(i);await until(()=>raw.t1.endAt===previous+step*60000,'T1 LIVE correction failed');
+    assert.deepEqual(model.snapshot().timers.t1.draft,draft);assert.equal(raw.t1.running,true);
+  }
+  assert.equal(raw.t1.endAt,deadline,'paired additions/deductions cancel exactly');
+  await press(25);await press(18);await until(()=>model.snapshot().timers.t2.draft.durationMs===900000,'Immediate T2 preset before selection ACK failed');assert.equal(model.snapshot().timers.t1.draft.durationMs,600000);assert.equal(commands.at(-1).timerId,'t2');
+  const secondClock=JSON.stringify(raw.t2),beforeCorrection=raw.t1.endAt;
+  await press(13);await until(()=>raw.t1.endAt===beforeCorrection+60000,'Fixed T1 LIVE correction followed T2 selection');assert.equal(JSON.stringify(raw.t2),secondClock);
   await press(24);await until(()=>model.snapshot().selectedTimerId==='t1','Explicit T1 selection failed');
-  await press(1);await until(()=>!raw.t1.running,'PAUSE tap failed');assert.equal(model.snapshot().timers.t1.draft.durationMs,660000);
-  await press(2);await until(()=>raw.t1.running,'RESUME tap failed');assert.equal(model.snapshot().timers.t1.draft.durationMs,660000);
-  await press(0);await until(()=>raw.t1.durationMs===660000&&raw.t1.running,'One-touch running replacement failed');
+  await press(1);await until(()=>!raw.t1.running,'PAUSE tap failed');assert.equal(model.snapshot().timers.t1.draft.durationMs,600000);
+  await press(2);await until(()=>raw.t1.running,'RESUME tap failed');assert.equal(model.snapshot().timers.t1.draft.durationMs,600000);
+  await press(0);await until(()=>raw.t1.durationMs===600000&&raw.t1.running,'One-touch running replacement failed');
   await press(5);await until(()=>raw.t1.running===false,'One-touch reset failed');
   assert.equal(commands.filter(c=>c.type==='reset').length,1);
   const bellPayload={controller:'Keypad',coordinates:actions.get('key-6').coordinates,settings:actions.get('key-6').settings};

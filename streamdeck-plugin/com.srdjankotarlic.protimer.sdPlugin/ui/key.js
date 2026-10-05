@@ -147,6 +147,13 @@ $('editHere').addEventListener('click', () => {
   $('linked').checked=false; updateFields();
   $('status').textContent='Editing this key only. Choose an action and Save key. / Izaberi komandu pa Save key.';
 });
+for (const [id,step] of [['liveMinus',-1],['livePlus',1]]) $(id).addEventListener('click',()=>{
+  $('linked').checked=false;
+  $('command').value='adjust';$('target').value='live';$('step').value=String(step);$('unit').value='m';
+  $('name').value='';$('icon').value='none';$('pressPolicy').value='short';
+  updateFields();
+  $('status').textContent='LIVE adjustment prepared. Save key to apply. ACTIVE is unchanged. / Sačuvaj dugme; tajmer još nije promenjen.';
+});
 $('form').addEventListener('submit', event => {
   event.preventDefault();
   if (socket?.readyState !== WebSocket.OPEN) {

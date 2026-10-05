@@ -1,9 +1,9 @@
 {
   "name": "pro-timer",
   "productName": "ProTimer",
-  "version": "2.5.0-streamdeck.11",
+  "version": "2.5.0",
   "config": {
-    "stableVersion": "2.4.1"
+    "stableVersion": "2.5.0"
   },
   "description": "Free stage timer and speaker countdown for live events, conferences and OBS",
   "main": "main.js",

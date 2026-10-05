@@ -15,7 +15,7 @@ function inspector(settings = {}) {
     'textSize', 'pressPolicy', 'linked', 'layoutId', 'slotId', 'status', 'linkedHelp',
     'linkFields', 'keyFields', 'timerField', 'targetField', 'adjustFields',
     'durationField', 'nameField', 'colorField', 'textSizeField', 'pressPolicyField',
-    'commandHelp', 'safetyNotice', 'nameHint', 'editHere', 'icon', 'stateDisplay', 'outputAction', 'outputField'
+    'commandHelp', 'safetyNotice', 'nameHint', 'editHere', 'icon', 'stateDisplay', 'outputAction', 'outputField','liveMinus','livePlus'
   ];
   const elements = Object.fromEntries(ids.map(id => [id, {
     value: '', checked: false, hidden: false, disabled: false, textContent: '', options: [], handlers: {},
@@ -133,6 +133,17 @@ test('direct LIVE adjustment is one-touch but invalid visible values are rejecte
   assert.equal(messages[0].payload.key.target, 'live');
   assert.equal(messages[0].payload.key.step, -5);
   assert.equal(messages[0].payload.key.pressPolicy, 'short');
+});
+test('LIVE shortcuts configure only this key, pin ACTIVE target, preserve timer and send no command',()=>{
+  for(const [button,step] of [['liveMinus',-1],['livePlus',1]]){
+    const {elements:el,messages}=inspector({instanceId:'own-key',layoutId:'protimer-standard',slotId:'protimer-slot-11',slotIndex:10,key:DeckLayout.defaultKey('adjust',{timerId:'t2',target:'set',step:5,unit:'s'})});
+    el[button].fire('click');assert.equal(messages.length,0);assert.equal(el.linked.checked,false);
+    assert.equal(el.target.value,'live');assert.equal(el.timerId.value,'t2');assert.equal(el.unit.value,'m');
+    el.form.fire('submit');assert.equal(messages.length,1);assert.equal(messages[0].event,'setSettings');
+    assert.equal(messages[0].payload.key.target,'live');assert.equal(messages[0].payload.key.timerId,'t2');
+    assert.equal(messages[0].payload.key.step,step);assert.equal(messages[0].payload.key.unit,'m');
+    assert.equal(Object.hasOwn(messages[0].payload,'layoutId'),false);
+  }
 });
 
 test('Elgato edits detach only this key, preserve its configuration, and never execute a command',()=>{

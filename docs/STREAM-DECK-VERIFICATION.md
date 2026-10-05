@@ -1,6 +1,6 @@
 # Stream Deck implementation and verification
 
-**Current prerelease: `2.5.0-streamdeck.3`. Latest stable release: `2.4.1`. Physical Stream Deck acceptance is still pending.**
+**Historical verification record for the early Stream Deck previews.** Current release: [ProTimer 2.5.0](RELEASE-NOTES-2.5.0.md), with a genuine bundled XL profile and native plugin. The original results below describe the earlier builds, not current installation availability. Physical hardware checks remain separate from automated tests; use the current [setup guide](STREAM-DECK.md).
 
 This page separates local verification from public CI and hardware testing. The command table below records the original `2.5.0-streamdeck.1` preview on 2026-09-25; it is retained as historical evidence. The current prerelease adds independent overtime/blink/bell settings and the 2.2-second synthesized bell; its local results are recorded in [Zero alerts](ZERO-ALERTS.md#local-verification--2026-09-26).
 

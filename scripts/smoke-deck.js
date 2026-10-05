@@ -45,6 +45,28 @@ module.exports = async function smokeDeck({ controlWin, deckHost, getOutput, get
   assert.equal(await js('S.secondary.durationMs'),5025000);
   assert.equal(await js('S.endAt'),deadline);
   console.log('DECK_NUMERIC_T2_012345_OK=true');
+  // Real UI and authenticated native commands change the existing deadline,
+  // not the running flag, prepared time, or the other speaker's timer.
+  for(const id of ['t1','t2']){
+    await command(make('selectTimer',id,{timerId:id}));
+    const drafts=JSON.stringify((await state()).timers[id].draft);
+    const field=id==='t1'?'S':'S.secondary',other=id==='t1'?'S.secondary':'S';
+    const otherDeadline=await js(`${other}.endAt`),initial=await js(`${field}.endAt`);
+    let expected=initial;
+    for(const [step,unit] of [[1,'m'],[-1,'m'],[10,'s'],[-10,'s']]){
+      expected+=step*(unit==='m'?60000:1000);
+      await js(`document.querySelector('[data-live-step="${step}"][data-live-unit="${unit}"]').click()`);
+      for(let retry=0;retry<40&&await js(`${field}.endAt`)!==expected;retry++)await delay(25);
+      assert.equal(await js(`${field}.endAt`),expected);assert.equal(await js(`${field}.running`),true);
+    }
+    for(const step of [1,-1]){
+      expected+=step*60000;assert.equal((await command(make('adjust',id,{step,unit:'m',target:'live'}))).ok,true);
+      assert.equal(await js(`${field}.endAt`),expected);assert.equal(await js(`${field}.running`),true);
+    }
+    assert.equal(expected,initial);assert.equal(await js(`${other}.endAt`),otherDeadline);
+    assert.equal(JSON.stringify((await state()).timers[id].draft),drafts);
+  }
+  console.log('DECK_LIVE_ADJUST_RUNNING_BOTH_UI_AND_NATIVE_OK=true');
   assert.equal((await command(make('countup','t2'))).ok,true);
   assert.equal(await js('S.secondary.mode'),'countdown','SET mode must not change ACTIVE');
   const modes=await js(`(async()=>{

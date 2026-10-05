@@ -184,7 +184,7 @@ async function editorChecks(measureGeometry) {
     keys()[8].dispatchEvent(new DragEvent('dragstart', { dataTransfer: transfer, bubbles: true }));
     keys()[9].dispatchEvent(new DragEvent('dragover', { dataTransfer: transfer, bubbles: true, cancelable: true }));
     keys()[9].dispatchEvent(new DragEvent('drop', { dataTransfer: transfer, bubbles: true, cancelable: true }));
-    assert(keys()[8].textContent.includes('+1h') && keys()[9].textContent.includes('−1h'), 'Drag and drop swaps logical commands');
+    assert(keys()[8].textContent.includes('+10m') && keys()[9].textContent.includes('−10m'), 'Drag and drop swaps logical commands');
     keys()[8].click();
     change('Signed step', -5);
     change('Unit', 'm');

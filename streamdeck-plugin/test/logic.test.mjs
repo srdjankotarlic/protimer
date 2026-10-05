@@ -31,7 +31,13 @@ test('presets never resolve to LIVE and mode preparation uses supported commands
 test('single-purpose starter keys keep their operation and target despite state changes',()=>{
   const s=snapshot(),board=L.defaultLayout();
   for(const type of ['pause','start']){const key=board.slots.find(k=>k?.command===type);assert.equal(pinCommand(key,s).type,type);s.timers.t1.active.running=false;assert.equal(pinCommand(key,s).type,type);}
-  s.editTarget='live';assert.equal(pinCommand(board.slots[11],s).payload.target,'set');
+  s.editTarget='set';s.selectedTimerId='t2';
+  for(const key of board.slots.slice(8,14)){
+    const command=pinCommand(key,s);
+    assert.equal(command.timerId,'t1');
+    assert.deepEqual(command.payload,{step:key.step,unit:'m',target:'live'});
+    assert.match(keyImage(key,s),/T1 LIVE/);
+  }
   assert.deepEqual(pinCommand(board.slots[24],s).payload,{timerId:'t1'});
   assert.deepEqual(pinCommand(board.slots[25],s).payload,{timerId:'t2'});
   s.outputs={aOpen:true,bOpen:true};assert.deepEqual(pinCommand(board.slots[26],s).payload,{action:'open'});
