@@ -4,7 +4,7 @@
 
 ![Pregled stvarne LCD grafike — nije fizički USB test](stream-deck-buttons.png)
 
-**Ukratko:** plugin i pravi izvezeni **XL profil sa 32 dugmeta** dolaze uz probnu instalaciju ProTimera. Otvori **Control → Stream Deck → Instaliraj / ažuriraj plugin**, potvrdi u Elgato aplikaciji i klikni **Podesi integraciju → Aktiviraj ProTimer profil**. Ako Elgato pita, potvrdi prvu instalaciju profila. Paket možeš preuzeti i zasebno. Ne treba terminal, Node, IP adresa niti ručno postavljanje 32 dugmeta. Instalacija/povezivanje nisu isto što i aktiviranje profila.
+**Ukratko:** plugin i pravi izvezeni **XL profil sa 32 dugmeta** dolaze uz instalaciju ProTimera 2.5.0. Otvori **Control → Stream Deck → Instaliraj / ažuriraj plugin**, potvrdi u Elgato aplikaciji i klikni **Podesi integraciju → Aktiviraj ProTimer profil**. Ako Elgato pita, potvrdi prvu instalaciju profila. Paket možeš preuzeti i zasebno. Ne treba terminal, Node, IP adresa niti ručno postavljanje 32 dugmeta. Instalacija/povezivanje nisu isto što i aktiviranje profila.
 
 Velike bele ikone i natpisi jasno označavaju funkciju, uz različite grupe boja: zeleno puštanje, žuta pauza, plavo/ljubičasto priprema, mint/roze plus/minus, ljubičasto zvonce, crveno sakrivanje i zeleno vraćanje slike. Ikone ekrana imaju 1, 2 ili podelu 1|2. Status i naziv objašnjavaju dugme i bez oslanjanja samo na boju. Svoje boje i ikone možeš i dalje birati u Elgato editoru.
 
@@ -20,7 +20,7 @@ Velike bele ikone i natpisi jasno označavaju funkciju, uz različite grupe boja
 
 ProTimer ostaje program koji meri vreme. Elgato aplikacija upravlja USB uređajem, a native ProTimer plugin šalje stvarne komande postojećem tajmeru. Ne simulira tastaturu i ne pravi svoje odbrojavanje. Companion nije obavezna instalacija; postojeća HTTP/OSC podrška ostaje.
 
-## Šta je dostupno u ovom razvojnom izdanju
+## Šta je uključeno u ProTimer 2.5.0
 
 Plugin može da se izgradi, validira i spakuje. Editor u Control prozoru uređuje logički raspored 8 × 4 i ProTimer Key akcije koje korisnik postavi kroz Elgato.
 
@@ -46,7 +46,7 @@ Povezivanje nije aktiviranje profila. Pokretanje ProTimera, promena fokusa, USB 
 **ACTIVE** je postojeće aktivno vreme. **SET** je pripremljeno vreme za sledeće pokretanje. Svaki od dva tajmera ima oba podatka; Tajmer 2 nije SET Tajmera 1.
 
 - Dok ACTIVE radi na `08:43`, promeni SET sa `15:00` na `16:00`. ACTIVE nastavlja normalno.
-- Šest tastera −/+ za sate, minute i sekunde podrazumevano menja SET. Korak i jedinicu menjaš u editoru.
+- Drugi red ima šest tastera za T1 LIVE: −10/+10, −5/+5 i −1/+1 minut. Menjaju aktivno odbrojavanje Tajmera 1. Korak, jedinicu i cilj menjaš u editoru.
 - **EDIT SET/LIVE** prebacuje samo korekcije čiji je cilj „Izabrani”; ne menja tastere izričito podešene za SET ili LIVE. Preseti uvek menjaju SET.
 - **START SET** jednim dodirom na Decku atomski učitava baš potvrđenu verziju SET-a i pokreće tajmer. Odmah zamenjuje tekuće ili pauzirano vreme. Potvrde u Controlu i na tastaturi ostaju.
 - **PAUSE** pauzira ACTIVE, a **PLAY ACTIVE** pokreće već učitano vreme ili nastavlja pauzirano. Ne učitavaju SET. Stari START/PAUSE i zasebni RESUME ostaju u katalogu.
@@ -55,11 +55,11 @@ Povezivanje nije aktiviranje profila. Pokretanje ProTimera, promena fokusa, USB 
 
 ### Dodaj ili oduzmi vreme govorniku tokom LIVE-a
 
-U lokalnom preview-u 12, **Control → Stream Deck → LIVE korekcija** ima −1m, +1m, −10s i +10s za izabrani T1/T2. Korekcija menja ACTIVE odmah: odbrojavanje nastavlja, SET i drugi tajmer ostaju nepromenjeni. Na primer, +1m menja približno 08:43 u 09:43. Prikaz publici dobija isto stvarno stanje.
+U ProTimeru 2.5.0, **Control → Stream Deck → LIVE korekcija** ima −1m, +1m, −10s i +10s za izabrani T1/T2. Korekcija menja ACTIVE odmah: odbrojavanje nastavlja, SET i drugi tajmer ostaju nepromenjeni. Na primer, +1m menja približno 08:43 u 09:43. Prikaz publici dobija isto stvarno stanje.
 
 Za fizički taster izaberi postojeće −1m/+1m u **Uredi raspored**, postavi **Cilj korekcije → LIVE · aktivno vreme** i klikni **Primeni raspored**. Alternativno, u Elgato editoru izaberi **ProTimer Key → Uredi ovde → LIVE −1m / +1m → Save key**. Korak i jedinicu možeš promeniti pre čuvanja. Taster prikazuje **LIVE**; jedan pritisak je jedna korekcija. TIMER 1/2 bira govornika ako je cilj tastera „Izabrani tajmer”. Uređivanje/čuvanje ne izvršava korekciju.
 
-LIVE korekcija je za odbrojavanje, ne za sat ili štopericu. Oduzimanje preko nule poštuje opciju „Minus posle nule” tog tajmera. Promena minute ne zahteva START SET niti pauzu. Početni raspored za nove korisnike ostaje SET dok sami ne izaberu LIVE.
+LIVE korekcija je za odbrojavanje, ne za sat ili štopericu. Oduzimanje preko nule poštuje opciju „Minus posle nule” tog tajmera. Promena minute ne zahteva START SET niti pauzu. Drugi red je izričito T1 LIVE: −10/+10, −5/+5 i −1/+1 minut. Izbor Tajmera 2 ne preusmerava ovih šest tastera. Preseti i ENTER TIME pripremaju SET izabranog tajmera. Posebna dugmad za SET korekcije možeš dodati u editoru.
 
 ### Unos 01:23:45 bez tastature
 
@@ -71,7 +71,7 @@ COUNT UP i CLOCK pripremaju režim u SET-u. Menjaju ACTIVE tek sa START SET. PRE
 
 ## Raspored i uređivanje
 
-**Standard 28 + 4 slobodna** ima zasebne START SET, PAUSE i PLAY ACTIVE komande, ACTIVE i SET na posebnim LCD tasterima, šest korekcija pripremljenog vremena, unos HH:MM:SS i presete 5/10/15/30/60 minuta. TIMER 1 i TIMER 2 su zaseban izbor. OPEN A/B samo otvaraju izlaz, bez slučajnog zatvaranja ponovnim pritiskom. Tu su i režimi, BLACK ON/OFF, zvonce, RESET i CLEAR SET. Poslednja kolona ostaje stvarno slobodna. **Svih 32** dodaje LOAD READY, LIVE T1, LIVE T1 + T2 i LIVE T2. COUNTDOWN, LOAD SELECTED, SETTINGS, FULLSCREEN, PREV/NEXT, RESUME, START/PAUSE i EDIT SET/LIVE ostaju u katalogu. Samo netaknut stari početni raspored se automatski unapređuje; prilagođeni i sačuvani rasporedi ostaju.
+**Standard 28 + 4 slobodna** ima zasebne START SET, PAUSE i PLAY ACTIVE komande, ACTIVE i SET na posebnim LCD tasterima, šest T1 LIVE korekcija (−/+10m, −/+5m, −/+1m), unos HH:MM:SS i presete 5/10/15/30/60 minuta. TIMER 1 i TIMER 2 su zaseban izbor. OPEN A/B samo otvaraju izlaz, bez slučajnog zatvaranja ponovnim pritiskom. Tu su i režimi, BLACK ON/OFF, zvonce, RESET i CLEAR SET. Poslednja kolona ostaje stvarno slobodna. **Svih 32** dodaje LOAD READY, LIVE T1, LIVE T1 + T2 i LIVE T2. COUNTDOWN, LOAD SELECTED, SETTINGS, FULLSCREEN, PREV/NEXT, RESUME, START/PAUSE i EDIT SET/LIVE ostaju u katalogu. Samo netaknut stari početni raspored se automatski unapređuje; prilagođeni i sačuvani rasporedi ostaju.
 
 Tok rada: izaberi TIMER 1 ili TIMER 2 → pripremi SET presetom ili korekcijama → proveri SET TIME → START SET. PAUSE pauzira, RESUME nastavlja. **Sve izvršne komande na Decku rade jednim dodirom**, uključujući RESET, BLACK, zatvaranje izlaza i zamenu tekućeg/pauziranog vremena. Nema držanja niti drugog pritiska. Te radnje deluju odmah: izaberi ih namerno. ACTIVE TIME i SET TIME su LCD prikazi, ne izvršne komande. Stara uvezena pravila držanja ne menjaju novi native režim; starije verzije aplikacije zadržavaju zaštite.
 
@@ -82,7 +82,7 @@ Izaberi ProTimer Key i klikni **Edit here in Elgato / Uredi ovde**. Promeni koma
 U **Control → Stream Deck → Uredi raspored**:
 
 1. Klikni dugme da izmeniš komandu, naziv, ugrađenu ikonu, boju, veličinu slova, prikaz statusa, tajmer i cilj korekcije. Klik za uređivanje nikada ne izvršava komandu.
-2. Za ± komande zadaj korak i jedinicu; za preset trajanje; za izvršne komande prečicu i dozvoljeno pravilo pritiska. RESET, BLACK i zaštićena zamena vremena ne mogu se učiniti nezaštićenim kratkim pritiskom.
+2. Za ± komande zadaj korak i jedinicu; za preset trajanje; za izvršne komande prečicu i dozvoljeno pravilo pritiska. Native Deck komande se izvršavaju na jedan dodir; RESET, BLACK i zamenu vremena biraj namerno. Zaštite u Control/tastatura komandnom putu ostaju odvojene.
 3. Prevuci za premeštanje/zamenu logičkih komandi, ili koristi izbor **Premesti**. Strelice biraju mesto. Dupliranje pravi novi identitet, bez kopiranja iste prečice.
 4. **Primeni** atomski čuva proveren raspored. **Otkaži** odbacuje izmene iz editora. Vreme se ne resetuje. Potvrda čuvanja u ProTimeru razlikuje se od potvrde plugina/uređaja.
 5. Sačuvaj pod nazivom, koristi Poništi/Ponovi i početni raspored. Vraćanje početnog rasporeda menja samo nacrt, ne briše druge sačuvane rasporede.

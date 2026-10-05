@@ -2,7 +2,17 @@
 
 Notable ProTimer changes are listed here. The complete notes and installers are available on the [Releases page](https://github.com/srdjankotarlic/protimer/releases).
 
-## 2.5.0-streamdeck.11 — prerelease
+## 2.5.0 — 2026-10-05
+
+- Promoted the current native Stream Deck features into one main Mac/Windows release with the bundled plugin and verified XL profile.
+- Dedicated T1 LIVE correction row: −/+10, −/+5 and −/+1 minute, one tap, with SET and Timer 2 unchanged.
+- Added selected-timer LIVE correction controls and per-key LIVE setup shortcuts in Elgato.
+- Preserved customized layouts; exact migrations upgrade only untouched starters. Current downloads and guides now converge on 2.5.0.
+- Retained independent zero bells, overtime flashing/negative-time options, output diagnostics, one-touch transport/output commands and all previous timer workflows.
+
+[Main release and setup](docs/RELEASE-NOTES-2.5.0.md)
+
+## 2.5.0-streamdeck.11 — archived prerelease
 
 - Native one-touch transport, LOAD READY without playback, explicit BLACK ON/OFF and real LIVE T1 / split T1+T2 / T2 output sending.
 - Colored vector LCD graphics with distinct function icons, large readable digits and confirmed live/offline states. Per-key customization remains available in Elgato.

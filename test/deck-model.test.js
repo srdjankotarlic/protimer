@@ -144,6 +144,27 @@ test('LIVE additions and deductions keep both countdowns running, preserve SET a
   }
 });
 
+test('all six shipped T1 LIVE minute corrections apply once without changing either SET or T2',async()=>{
+  const Layout=require('../deck-layout');
+  const h=harness({nativeSingleTap:true}),ctx={...h.ctx,sourceId:'native-deck'};
+  h.clocks.t1.durationMs=h.clocks.t1.remMs=3600000;
+  for(const id of ['t1','t2'])await h.send('start',id,{}, {},ctx);
+  await h.send('selectTimer','t1',{timerId:'t2'}, {},ctx);
+  const drafts=h.model.persisted(),other=structuredClone(h.clocks.t2);
+  for(const key of Layout.defaultLayout().slots.slice(8,14)){
+    const before=h.clocks.t1.endAt;
+    const command=h.command('adjust',key.timerId,{step:key.step,unit:key.unit,target:key.target});
+    assert.equal((await h.model.dispatch(command,ctx)).ok,true);
+    assert.equal((await h.model.dispatch(command,ctx)).ok,true);
+    assert.equal(h.clocks.t1.endAt,before+key.step*60000);
+    assert.equal(h.clocks.t1.running,true);
+    assert.deepEqual(h.clocks.t2,other);
+    assert.deepEqual(h.model.persisted(),drafts);
+    assert.equal(h.operations.filter(op=>op.commandId===command.commandId).length,1);
+    h.advance(1000);
+  }
+});
+
 test('optional held commands also cancel on release and device change', async () => {
   const h=harness(),command=h.command('bell');
   const press=h.model.beginPress(command,h.ctx);h.advance(1600);

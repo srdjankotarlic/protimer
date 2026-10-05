@@ -6,9 +6,9 @@
 
 <p align="center"><strong>Besplatan stage timer za događaje uživo, konferencije, prezentacije i OBS.</strong><br>Nema naloga, pretplate, vodenog žiga ni vremenskog ograničenja.</p>
 
-**Stream Deck probna verzija:** [ProTimer 2.5.0-streamdeck.11](https://github.com/srdjankotarlic/protimer/releases/tag/v2.5.0-streamdeck.11) donosi obojena LCD dugmad, odvojene ACTIVE/SET prikaze i komande na jedan dodir. Native Elgato plugin i pravi, izmenljiv **XL Full 32 profil** dolaze uz Mac i Windows instalaciju; plugin je dostupan i zasebno. Potreban je Stream Deck 7.6+, ali nisu potrebni Node, terminal niti Companion. Fizička XL provera i instalacija na čistom računaru ostaju odvojene od automatizovanih testova. **2.4.1 ostaje najnovija stabilna verzija.** [Novosti i preuzimanje](docs/RELEASE-NOTES-2.5.0-streamdeck.11.md#srpski) · [Jednostavno uputstvo](docs/STREAM-DECK.sr.md).
+**Glavna verzija je ProTimer 2.5.0 — Stream Deck je uključen.** Obojena LCD dugmad, odvojeni ACTIVE/SET prikazi i komande na jedan dodir, uključujući **T1 LIVE −/+10, −/+5 i −/+1 minut**. Native Elgato plugin i pravi, izmenljiv **XL Full 32 profil** dolaze uz Mac i Windows instalaciju. Potreban je Stream Deck 7.6+, ali ne Node, terminal niti Companion. [Novosti](docs/RELEASE-NOTES-2.5.0.md#srpski) · [Uputstvo](docs/STREAM-DECK.sr.md).
 
-Za Stream Deck: instaliraj probni ProTimer → **Control → Stream Deck → Instaliraj / ažuriraj plugin** → potvrdi u Elgato aplikaciji → **Podesi integraciju**. Izaberi XL i **ProTimer XL · Full 32**, pa **Aktiviraj profil**; potvrdi prvi Elgato zahtev za instalaciju profila. Ne moraš ručno postavljati 32 tastera. Svaki naš taster možeš menjati i u Elgato editoru. Svakodnevni rad: T1/T2 → pripremi SET → START SET; zasebni PAUSE, PLAY ACTIVE i BLACK ON/OFF. Detalji i ograničenja su u uputstvu.
+Za Stream Deck: instaliraj ProTimer 2.5.0 → **Control → Stream Deck → Instaliraj / ažuriraj plugin** → potvrdi u Elgato aplikaciji → **Podesi integraciju**. Izaberi XL i **ProTimer XL · Full 32**, pa **Aktiviraj profil**; potvrdi prvi Elgato zahtev za instalaciju profila. Ne moraš ručno postavljati 32 tastera. Svaki naš taster možeš menjati i u Elgato editoru. Svakodnevni rad: T1/T2 → pripremi SET → START SET; zasebni PAUSE, PLAY ACTIVE i BLACK ON/OFF. Detalji i ograničenja su u uputstvu.
 
 <p align="center">
   <a href="README.md"><strong>English</strong></a> ·
@@ -27,16 +27,26 @@ Izaberi samo jedan instalacioni fajl. GitHubovi automatski **Source code** ZIP i
 
 | Računar | Preporučeni fajl |
 |---|---|
-| Apple Silicon Mac (M1 ili noviji) | **[Preuzmi macOS DMG](https://github.com/srdjankotarlic/protimer/releases/download/v2.4.1/ProTimer-2.4.1-arm64.dmg)** |
-| Windows 10/11 x64 | **[Preuzmi Windows Setup](https://github.com/srdjankotarlic/protimer/releases/download/v2.4.1/ProTimer-Setup-2.4.1.exe)** |
+| Apple Silicon Mac (M1 ili noviji) | **[Preuzmi macOS DMG](https://github.com/srdjankotarlic/protimer/releases/download/v2.5.0/ProTimer-2.5.0-arm64.dmg)** |
+| Windows 10/11 x64 | **[Preuzmi Windows Setup](https://github.com/srdjankotarlic/protimer/releases/download/v2.5.0/ProTimer-Setup-2.5.0.exe)** |
 
-Za Windows bez instalacije postoji i [portable EXE](https://github.com/srdjankotarlic/protimer/releases/download/v2.4.1/ProTimer-2.4.1-portable.exe). Za većinu korisnika je bolji Setup.
+Za Windows bez instalacije postoji i [portable EXE](https://github.com/srdjankotarlic/protimer/releases/download/v2.5.0/ProTimer-2.5.0-portable.exe). Za većinu korisnika je bolji Setup.
 
-Svaki instalacioni fajl možeš da proveriš pomoću [ProTimer 2.4.1 SHA-256 checksum liste](https://github.com/srdjankotarlic/protimer/releases/download/v2.4.1/ProTimer-2.4.1-SHA256SUMS.txt).
+Svaki instalacioni fajl možeš da proveriš pomoću [ProTimer 2.5.0 SHA-256 checksum liste](https://github.com/srdjankotarlic/protimer/releases/download/v2.5.0/ProTimer-2.5.0-SHA256SUMS.txt).
 
 > Aplikacija još nije digitalno potpisana. Na Windowsu izaberi **More info → Run anyway** samo za fajl preuzet sa ovog repozitorijuma. Na macOS-u, ako je blokirana, otvori **System Settings → Privacy & Security → Open Anyway**.
 
-## Novo u verziji 2.4.1
+## Novo u verziji 2.5.0
+
+- **Native Stream Deck:** plugin i pravi XL profil dolaze uz Mac i Windows instalaciju. Svaka izvršna komanda radi na jedan dodir; profil se aktivira isključivo ručno.
+- **Drugi red za T1 LIVE:** −10/+10, −5/+5 i −1/+1 minut. Odbrojavanje nastavlja, SET i Tajmer 2 ostaju nepromenjeni. Dugmad možeš sam menjati u Controlu ili Elgato editoru.
+- **ACTIVE i SET odvojeno:** preseti/numerički unos pripremaju SET. START SET učitava i pušta; LOAD READY učitava bez puštanja. PAUSE i PLAY ACTIVE upravljaju već učitanim vremenom.
+- **LIVE T1 / T1+T2 / T2 i BLACK ON/OFF:** stvarno slanje na ekran i vraćanje slike, bez resetovanja tajmera.
+- **Opcije za oba tajmera:** uključi/isključi treptanje crvenog, prirodno zvonce na nuli i minus posle nule. Dodata je i provera veličine izlaza i odsecanja cifara.
+
+Prilagođeni i sačuvani rasporedi ostaju. Samo netaknut početni raspored automatski dobija novi LIVE red. Na drugom računaru instaliraj istu 2.5.0 verziju i otvori instalaciju plugina iz Kontrole. [Plugin zasebno](https://github.com/srdjankotarlic/protimer/releases/download/v2.5.0/com.srdjankotarlic.protimer.streamDeckPlugin).
+
+### Zadržano iz verzije 2.4.1
 
 - **Zaseban Grid za svaki tajmer:** druga mreža i kockica na svakom displeju. Promena rezolucije jednog prozora više ne isključuje Grid drugog.
 - **Jasan izbor „Podesi ekran“:** izaberi Tajmer 1 ili Tajmer 2 za veličinu prozora, cifre i Grid. Dodatni izbori se prikazuju samo kada su potrebni.
@@ -69,7 +79,7 @@ Svaki instalacioni fajl možeš da proveriš pomoću [ProTimer 2.4.1 SHA-256 che
 
 Postojeći rundown, boje, tekst, Grid, pragovi, poruke i Backstage ostaju dostupni. **Online deljenje je i dalje eksperimentalna usluga treće strane** — za nastup obezbedi lokalnu kontrolu i probaj telefon na stvarnoj mreži.
 
-[Uputstvo za nove kontrole i povezivanje telefona](docs/OUTPUT-AND-PHONE-CONTROL.md#kratko-uputstvo-sr) · [Sve izmene u 2.4.1](docs/RELEASE-NOTES-2.4.1.md)
+[Uputstvo za nove kontrole i povezivanje telefona](docs/OUTPUT-AND-PHONE-CONTROL.md#kratko-uputstvo-sr) · [Sve izmene u 2.5.0](docs/RELEASE-NOTES-2.5.0.md)
 
 ## Pokretanje za 60 sekundi
 

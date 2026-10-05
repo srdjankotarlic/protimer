@@ -6,17 +6,17 @@ ProTimer remains the timer application. Elgato Stream Deck software owns the USB
 
 ![LCD design preview — colored function keys and separate ACTIVE/SET readouts, not a USB test](stream-deck-buttons.png)
 
-**Quick start:** the native plugin and a genuine exported **XL Full 32** profile are included in the preview desktop installer. Open **Control → Stream Deck → Install / update plugin**, confirm in Elgato, then **Set up integration → Activate ProTimer profile**. Confirm the profile's first installation if Elgato asks. A separate `.streamDeckPlugin` download is also provided. You do not need Node, a terminal, an IP address or manual placement of 32 actions. Installing/pairing is not the same as activating a profile.
+**Quick start:** the native plugin and a genuine exported **XL Full 32** profile are included in the ProTimer 2.5.0 desktop installer. Open **Control → Stream Deck → Install / update plugin**, confirm in Elgato, then **Set up integration → Activate ProTimer profile**. Confirm the profile's first installation if Elgato asks. A separate `.streamDeckPlugin` download is also provided. You do not need Node, a terminal, an IP address or manual placement of 32 actions. Installing/pairing is not the same as activating a profile.
 
 Color groups help identify a function at a glance: green playback, amber pause, blue/purple presets and preparation, mint/rose plus/minus, violet bell, red hide-picture and green restore-picture. Large white icons/labels and explicit status remain readable without relying on color alone. Screen icons show 1, 2 or a split 1|2. User-selected icons and colors are retained.
 
-## Availability in this development build
+## Included in ProTimer 2.5.0
 
 The native plugin includes **one real XL Full 32 profile exported from Elgato Stream Deck 7.6**, unmodified and integrity-checked during build. It is registered in the manifest, user-editable, with automatic installation/switching disabled. Activation happens only after an explicit Control click. No invented profile ZIP or live Elgato database editing is used.
 
 The **Standard 28 + 4 free** template remains a logical Control layout, not a second exported native profile. To create a mixed Elgato profile, duplicate Full 32 in Elgato and delete its last-column actions yourself; those four positions then genuinely belong to you. The Control editor cannot remove a native action to make a foreign/free button. Other Stream Deck models use manually placed ProTimer Key actions, not the XL starter.
 
-Elgato software and the user's XL profile are available on the local Mac. Installation, handshake and LCD rendering can be observed there; automated SDK tests simulate key events and are **not** proof of physical USB button operation. Finish the hardware checklist below before an event or a public plug-and-play release.
+Elgato software and the user's XL profile are available on the local Mac. Installation, handshake and LCD rendering can be observed there; automated SDK tests simulate key events and are **not** proof of physical USB button operation. Finish the hardware checklist below before an event.
 
 ## Requirements and first setup
 
@@ -41,7 +41,7 @@ Each timer has both states. **Timer 2 is a second timer, not the SET value of Ti
 | --- | --- |
 | ACTIVE TIME | Shows the selected timer's authoritative value, T1/T2 and READY, RUNNING, PAUSED or OVERTIME. |
 | SET TIME | Shows the separately prepared duration and READY/EDITING. |
-| −/+ hours, minutes, seconds | Changes SET by default. Each step and unit is configurable. |
+| T1 LIVE −/+10m, −/+5m, −/+1m | The starter's second row changes Timer 1 ACTIVE, without pausing. Each step, unit and target is configurable. |
 | EDIT SET / LIVE | Changes the shared target only for adjustments configured to follow it. Explicit SET/LIVE keys keep their configured target. |
 | Presets | Always prepare SET, even while LIVE is selected. |
 | START SET | One native Deck tap atomically loads the displayed SET version and starts it, immediately replacing running/paused ACTIVE. Keyboard/Control confirmation remains. |
@@ -56,11 +56,11 @@ Switching the selected timer, restarting or losing the controller connection ret
 
 ### Adjust a speaker's time while LIVE
 
-Local preview 12 adds **Control → Stream Deck → LIVE adjustment**: −1m, +1m, −10s and +10s for the selected T1/T2. Each tap changes ACTIVE immediately without pausing, changing SET or touching the other timer. For example, +1m changes approximately 08:43 to 09:43. Audience outputs receive the same authoritative state.
+ProTimer 2.5.0 includes **Control → Stream Deck → LIVE adjustment**: −1m, +1m, −10s and +10s for the selected T1/T2. Each tap changes ACTIVE immediately without pausing, changing SET or touching the other timer. For example, +1m changes approximately 08:43 to 09:43. Audience outputs receive the same authoritative state.
 
 For an existing physical −1m/+1m key, use **Edit layout → Adjustment target → LIVE → Apply layout**. Alternatively, use Elgato **ProTimer Key → Edit here → LIVE −1m / +1m → Save key**; adjust the step/unit before saving if needed. The LCD labels the key **LIVE**. One press applies one correction. TIMER 1/2 chooses the speaker when the key targets the selected timer. Editing/saving does not execute a correction.
 
-LIVE adjustment supports countdown mode, not clock or count-up. Subtracting beyond zero respects that timer's overtime option. No START SET or pause is needed. The starter layout remains SET for new users until they explicitly choose LIVE.
+LIVE adjustment supports countdown mode, not clock or count-up. Subtracting beyond zero respects that timer's overtime option. No START SET or pause is needed. The starter's second row is explicitly T1 LIVE: −10/+10, −5/+5 and −1/+1 minute. Selecting Timer 2 does not redirect these six keys. Presets and ENTER TIME still prepare SET for the selected timer. Configure separate SET adjustment keys if desired.
 
 ### Enter 01:23:45 without a keyboard
 
@@ -77,13 +77,13 @@ The initial **logical** layout is:
 | | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | START SET | PAUSE | PLAY ACTIVE | ACTIVE | SET | RESET | BELL | FREE |
-| 2 | −1h | +1h | −1m | +1m | −1s | +1s | ENTER TIME | FREE |
+| 2 | T1 LIVE −10m | T1 LIVE +10m | T1 LIVE −5m | T1 LIVE +5m | T1 LIVE −1m | T1 LIVE +1m | ENTER TIME | FREE |
 | 3 | 5 MIN | 10 MIN | 15 MIN | 30 MIN | 60 MIN | COUNT UP | CLOCK | FREE |
 | 4 | TIMER 1 | TIMER 2 | OPEN A | OPEN B | BLACK ON | BLACK OFF | CLEAR SET | FREE |
 
-**Full 32** adds LOAD READY, LIVE T1, LIVE T1 + T2 and LIVE T2. COUNTDOWN, LOAD SELECTED, SETTINGS, FULLSCREEN, PREV/NEXT and the legacy START/PAUSE and EDIT SET/LIVE remain in the command catalogue. Starter adjustments explicitly target SET regardless of the current edit mode. COUNT UP and CLOCK prepare SET mode; they do not change ACTIVE before START SET. Existing GO behavior remains compatible. An untouched old starter is upgraded; customized and named layouts are preserved.
+**Full 32** adds LOAD READY, LIVE T1, LIVE T1 + T2 and LIVE T2. COUNTDOWN, LOAD SELECTED, SETTINGS, FULLSCREEN, PREV/NEXT and the legacy START/PAUSE and EDIT SET/LIVE remain in the command catalogue. Starter adjustments explicitly target T1 LIVE regardless of the current edit mode or selected timer. COUNT UP and CLOCK prepare SET mode; they do not change ACTIVE before START SET. Existing GO behavior remains compatible. An untouched old starter is upgraded; customized and named layouts are preserved.
 
-Daily workflow: select TIMER 1 or TIMER 2, choose a preset or adjust SET, check SET TIME, then START SET. Pause and resume with their separate keys. **All native Deck commands use one tap**, including RESET, BLACK, output closing and replacement of running/paused time. There is no second press or hold. These actions are immediate: choose deliberately. ACTIVE TIME and SET TIME are read-only LCD displays, not executable commands. Imported legacy hold settings do not impose holding in this app's native one-touch mode. Older app builds retain their guarded behavior.
+Daily workflow: select TIMER 1 or TIMER 2, choose a preset or enter SET, check SET TIME, then START SET. Pause and resume with their separate keys. **All native Deck commands use one tap**, including RESET, BLACK, output closing and replacement of running/paused time. There is no second press or hold. These actions are immediate: choose deliberately. ACTIVE TIME and SET TIME are read-only LCD displays, not executable commands. Imported legacy hold settings do not impose holding in this app's native one-touch mode. Older app builds retain their guarded behavior.
 
 ### Customize in Elgato
 
@@ -92,7 +92,7 @@ Select a ProTimer Key in Elgato. Linked starter keys show **Edit here in Elgato 
 In **Control → Stream Deck → Edit layout**:
 
 1. Click a slot to edit it, never to execute it. Choose a command, target timer, label, built-in icon, color, text size and state display.
-2. Configure adjustment step/unit, preset duration, shortcut and allowed press rule where relevant. Protected commands cannot be made unsafe by selecting a short press.
+2. Configure adjustment step/unit, preset duration, shortcut and allowed press rule where relevant. Native Deck commands execute on one tap; choose destructive commands deliberately. Hold/confirmation policies remain relevant for the separate Control/keyboard command path.
 3. Drag to move/swap logical commands; or use the **Move** selector for keyboard-accessible reordering. Arrow keys select slots. Duplicate creates a separate logical slot identity and does not copy its shortcut.
 4. **Apply** commits the validated layout atomically. **Cancel** discards editor changes. Neither operation resets a timer. Device application is reported separately from saving the layout in ProTimer.
 5. Save named layouts, use Undo/Redo, or restore a default into the current editor draft. Restoring a default does not delete named layouts.
@@ -137,7 +137,7 @@ Check the connection status in order: software found → plugin handshake → ch
 
 `BLACK ON` hides the picture; `BLACK OFF` restores it. These are separate one-touch commands, not a toggle. Neither stops a timer. The legacy BLACK toggle remains in the catalogue. `PLAY ACTIVE` starts an already loaded value or resumes it without loading SET; explicit RESUME remains available for custom keys.
 
-The full 32-key layout includes these four controls in column 8. Existing mixed/custom layouts keep their free keys. Add ProTimer Key actions in Elgato, uncheck Follow a Control layout slot, choose the function, and Save key. This edits settings only, never executes the command. Local preview 8 places these four standalone keys in the user's empty last column, leaving the other 28 keys unchanged.
+The full 32-key layout includes these four controls in column 8. Existing mixed/custom layouts keep their free keys. Add ProTimer Key actions in Elgato, uncheck Follow a Control layout slot, choose the function, and Save key. This edits settings only, never executes the command. The bundled Full 32 profile supplies these four commands; existing customized profiles are not silently reimported.
 
 Developer commands, from the repository root:
 

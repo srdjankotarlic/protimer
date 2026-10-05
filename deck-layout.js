@@ -114,8 +114,9 @@
       previous.slots[5].pressPolicy='hold';previous.slots[28].pressPolicy='hold';
       if(JSON.stringify(valid)===JSON.stringify(previous))return defaultLayout(kind);
       if(JSON.stringify(valid)===JSON.stringify(previousLayout(kind)))return defaultLayout(kind);
-      const lastStarter=defaultLayout(kind);lastStarter.slots[2]=defaultKey('resume',{id:'protimer-slot-3'});
+      const lastStarter=previewLayout(kind);lastStarter.slots[2]=defaultKey('resume',{id:'protimer-slot-3'});
       if(JSON.stringify(valid)===JSON.stringify(lastStarter))return defaultLayout(kind);
+      if(JSON.stringify(valid)===JSON.stringify(previewLayout(kind)))return defaultLayout(kind);
     }
     return valid;
   }
@@ -148,12 +149,21 @@
     board.slots[26].outputAction='open'; board.slots[27].outputAction='open';
     return board;
   }
-  function defaultLayout(kind = 'standard') {
+  // Keep the published preview shape for exact, non-destructive migrations.
+  function previewLayout(kind = 'standard') {
     const board=previousLayout(kind);
     board.slots[2]=defaultKey('start',{id:'protimer-slot-3'});
     board.slots[28]=defaultKey('blackoutOn',{id:'protimer-slot-29'});
     board.slots[29]=defaultKey('blackoutOff',{id:'protimer-slot-30'});
     if(kind==='full')for(const [index,command] of [[7,'loadSet'],[15,'liveT1'],[23,'liveBoth'],[31,'liveT2']])board.slots[index]=defaultKey(command,{id:`protimer-slot-${index+1}`});
+    return board;
+  }
+  function defaultLayout(kind = 'standard') {
+    const board=previewLayout(kind);
+    // Dedicated speaker corrections: never follow a changing T1/T2 selection.
+    [-10,10,-5,5,-1,1].forEach((step,i)=>Object.assign(board.slots[8+i],{
+      step,unit:'m',target:'live',timerId:'t1'
+    }));
     return board;
   }
   function label(key) {
