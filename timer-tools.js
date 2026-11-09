@@ -23,6 +23,11 @@
     const gridCell = Number.isInteger(v.gridCell) ? clamp(v.gridCell, 0, gridSize * gridSize - 1, 0) : Math.floor(gridSize * gridSize / 2);
     return { gridOn: !!v.gridOn, gridSize, gridCell };
   }
+  function outputLayer(value) { return ['auto', 'above', 'normal'].includes(value) ? value : 'auto'; }
+  function outputOnTop(state = {}) {
+    const layer = outputLayer(state.outputLayer);
+    return layer === 'above' || (layer === 'auto' && !!(state.transparent || state.gridOn));
+  }
   function secondary(value, legacyGrid) {
     const v = value || {};
     const mode = ['countdown', 'countup', 'clock'].includes(v.mode) ? v.mode : 'countdown';
@@ -31,7 +36,7 @@
     // Before independent placement, both outputs used the primary grid. Import
     // that grid once for old settings; later edits belong to this timer only.
     // Migrate overtime and the visual alert once too; secondary audio remains opt-in.
-    return { mode, durationMs, remMs: durationMs, endAt: 0, elapsedMs: 0, startAt: 0, running: false, layout: layout(v.layout), outputSize: size(v.outputSize),
+    return { mode, durationMs, remMs: durationMs, endAt: 0, elapsedMs: 0, startAt: 0, running: false, layout: layout(v.layout), outputSize: size(v.outputSize), outputLayer: outputLayer(v.outputLayer),
       overtime: !!(v.overtime ?? legacyGrid?.overtime ?? true),
       flashZero: !!(v.flashZero ?? legacyGrid?.flashZero ?? true), soundZero: !!(v.soundZero ?? false),
       ...grid(Object.hasOwn(v, 'gridOn') ? v : legacyGrid) };
@@ -79,10 +84,10 @@
       running: timer.running, elapsedMs: timer.elapsedMs || 0, startAt: timer.startAt || 0,
       overtime: timer.overtime ?? state.overtime,
       flashZero: timer.flashZero ?? state.flashZero ?? true, soundZero: !!timer.soundZero,
-      outputLayout: timer.layout, outputSize: size(timer.outputSize),
+      outputLayout: timer.layout, outputSize: size(timer.outputSize), outputLayer: outputLayer(timer.outputLayer),
       ...grid(timer),
       text: '', textOnly: false, showNowNext: false
     };
   }
-  return { MAX_DURATION, clamp, layout, size, grid, secondary, remaining, elapsed, setRunning, reset, separateOutputs, outputState,liveView,audienceState };
+  return { MAX_DURATION, clamp, layout, size, grid, outputLayer, outputOnTop, secondary, remaining, elapsed, setRunning, reset, separateOutputs, outputState,liveView,audienceState };
 });

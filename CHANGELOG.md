@@ -2,6 +2,16 @@
 
 Notable ProTimer changes are listed here. The complete notes and installers are available on the [Releases page](https://github.com/srdjankotarlic/protimer/releases).
 
+## 2.5.1 — 2026-11-09
+
+- Added a single **Timer on top** checkbox, separate from **Control on top**, and a separate Timer 2 checkbox for independent outputs.
+- Fixed presentation overlay priority on macOS, including fullscreen workspace visibility, higher projection-window levels and reapplication after placement/fullscreen transitions.
+- Keep explicitly unchecked output priority off across Grid/transparency changes; persist both outputs independently without changing clocks, geometry or Control-only startup.
+- Verified the installed Mac preview over an actual PowerPoint fullscreen show, including native foreground order and off/on behavior; added regression and optional read-only native window-order probes.
+- Preserved native Stream Deck, T1 LIVE adjustments, phone/OBS/Companion, rundown, two outputs and saved settings. No changes to Elgato profile switching or plugin commands.
+
+[Release notes and downloads](docs/RELEASE-NOTES-2.5.1.md) · [Overlay setup](docs/OUTPUT-OVERLAY.md)
+
 ## 2.5.0 — 2026-10-05
 
 - Promoted the current native Stream Deck features into one main Mac/Windows release with the bundled plugin and verified XL profile.

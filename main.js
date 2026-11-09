@@ -6,7 +6,7 @@ const os = require('os');
 const crypto = require('crypto');
 const { spawn } = require('child_process');
 const TimerTools = require('./timer-tools');
-const { leaveFullscreen, preserveSiblingBounds, isFullscreen, setPresentationFullscreen, applyContentSize } = require('./window-tools');
+const { leaveFullscreen, preserveSiblingBounds, isFullscreen, setPresentationFullscreen, applyContentSize, applyOutputLayer } = require('./window-tools');
 const { waitForTunnelReady } = require('./tunnel-tools');
 const OutputQuality = require('./output-quality');
 const {livePlan} = require('./deck-output-plan');
@@ -359,7 +359,10 @@ function protectSecondaryBounds(win, entering) {
 function setOutputFullscreen(win, entering, simple = false) {
   if (!simple && !win.isSimpleFullScreen?.()) protectSecondaryBounds(win, entering);
   setPresentationFullscreen(win, entering, simple);
-  setImmediate(pushOutMode);
+  setImmediate(()=>{
+    if(win===outputWin&&!win.isDestroyed()) applyOutputLayer(win,lastState||{},{refresh:true});
+    pushOutMode();
+  });
 }
 function leaveOutputFullscreen(win) {
   protectSecondaryBounds(win, false);
@@ -423,7 +426,7 @@ async function positionOutput(target, presentation = 'configured') {
   // exiting/re-entering macOS Spaces for every T1/BOTH/T2 press.
   if (presentation === 'fullscreen' && outputReady && outputPlaced && outputPlacing === null &&
       isFullscreen(outputWin) && screen.getDisplayMatching(outputWin.getBounds()).id === target.id) {
-    outputTargetId = target.id; outputWin.show(); pushDisplays(); return;
+    outputTargetId = target.id; outputWin.show(); applyOutputLayer(outputWin,lastState||{},{refresh:true}); pushDisplays(); return;
   }
   const win = outputWin, revision = ++outputPlacementVersion;
   outputPlacing = revision;
@@ -455,6 +458,7 @@ async function positionOutput(target, presentation = 'configured') {
     outputWin.setBounds({ x: b.x + b.width - w - 24, y: b.y + 48, width: w, height: h });
   }
   outputWin.show();
+  applyOutputLayer(outputWin, lastState || {}, {refresh:true});
   outputPlaced = true;
   if (outputPlacing === revision) outputPlacing = null;
   pushDisplays(); pushOutMode();
@@ -470,9 +474,8 @@ function createOutputWindow(displayId, presentation = 'configured') {
   if (outputWin && !outputWin.isDestroyed()) { if (outputReady) positionOutput(target, presentation); return; }
 
   const transparent = !!(lastState && lastState.transparent);
-  const grid = !!(lastState && lastState.gridOn);
   const frameless = true;   // publika nikad ne vidi naslovnu traku / okvir operativnog prozora
-  const forceOnTop = transparent || grid;
+  const forceOnTop = TimerTools.outputOnTop(lastState || {});
   outputTransparent = transparent;
   outputFrameless = frameless;
 
@@ -491,7 +494,7 @@ function createOutputWindow(displayId, presentation = 'configured') {
   });
   const current = outputWin;
   outputPlaced = false; outputReady = false;
-  if (forceOnTop) outputWin.setAlwaysOnTop(true, 'floating');
+  applyOutputLayer(outputWin, lastState || {});
   outputWin.loadFile('output.html');
   if (SMOKE) outputWin.webContents.on('console-message', (e, l, m, ln) => console.log(`OUT_CONSOLE [${l}] ${m} (line ${ln})`));
   outputWin.webContents.on('did-finish-load', () => {
@@ -500,8 +503,12 @@ function createOutputWindow(displayId, presentation = 'configured') {
     if (outputQrState) outputWin.webContents.send('audience-qr', outputQrState);
     pushDisplays(); pushOutMode();
   });
-  outputWin.on('enter-full-screen', () => setImmediate(pushOutMode));
-  outputWin.on('leave-full-screen', () => setImmediate(pushOutMode));
+  const refreshOutputMode=()=>setImmediate(()=>{
+    if(outputWin===current&&!current.isDestroyed()) applyOutputLayer(current,lastState||{},{refresh:true});
+    pushOutMode();
+  });
+  outputWin.on('enter-full-screen', refreshOutputMode);
+  outputWin.on('leave-full-screen', refreshOutputMode);
   outputWin.on('resize', pushOutputGeometry);
   const operatorMove = (_event, bounds) => {
     if (outputWin === current && outputPlaced && outputPlacing === null && current.isFocused() &&
@@ -560,7 +567,7 @@ ipcMain.on('state', (e, s) => {
     if (!!s.transparent !== outputTransparent) {
       recreateOutputForTransparency();   // Electron transparent svojstvo zahteva novi prozor
     } else {
-      outputWin.setAlwaysOnTop(!!s.transparent || !!s.gridOn, 'floating');
+      applyOutputLayer(outputWin, s);
       outputWin.webContents.send('state', TimerTools.outputState(s));
       if (gridModeChanged || (gridPosChanged && s.gridOn)) {   // uklj/isklj ili druga kockica → presloži prozor
         const d = screen.getAllDisplays().find(x => x.id === outputTargetId) || screen.getPrimaryDisplay();
@@ -1158,6 +1165,10 @@ app.whenReady().then(() => {
         const smokeFailures = [];
         const check = (name, ok) => { if (!ok) smokeFailures.push(name); return !!ok; };
         await waitLoad(controlWin);
+        if(process.argv.includes('--overlay-only')){
+          await require('./scripts/smoke-output-layer')({controlWin,getOutput:()=>outputWin,getSecondary:secondaryOutput.getWindow,screen});
+          console.log('SMOKE_OK'); app.exit(0);return;
+        }
         if(process.argv.includes('--quality-only')){
           await require('./scripts/smoke-output-quality')({controlWin,getOutput:()=>outputWin,getSecondary:secondaryOutput.getWindow,screen});
           console.log('SMOKE_OK'); app.exit(0);return;
@@ -1738,6 +1749,7 @@ app.whenReady().then(() => {
         await require('./scripts/smoke-deck')({controlWin,deckHost,getOutput:()=>outputWin,getSecondary:secondaryOutput.getWindow});
         await require('./scripts/smoke-alerts')({controlWin,getOutput:()=>outputWin,getSecondary:secondaryOutput.getWindow,displayId:screen.getPrimaryDisplay().id});
         await require('./scripts/smoke-output-quality')({controlWin,getOutput:()=>outputWin,getSecondary:secondaryOutput.getWindow,screen});
+        await require('./scripts/smoke-output-layer')({controlWin,getOutput:()=>outputWin,getSecondary:secondaryOutput.getWindow,screen});
         if(smokeFailures.length) throw new Error('Failed checks: '+smokeFailures.join(', '));
         console.log('SMOKE_OK');
         app.exit(0);

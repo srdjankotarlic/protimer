@@ -1,4 +1,4 @@
-const { BrowserWindow } = require('electron');
+const { BrowserWindow, screen } = require('electron');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -28,6 +28,17 @@ module.exports = async function smokeLayout({ controlWin, getOutput, serverPort,
   report('EXACT_OUTPUT_SIZE_OK', sized.width === 1920 && sized.height === 1080 && !sized.fullscreen && viewport.width === 1920 && viewport.height === 1080, { sized, viewport });
   const rejected = await ctl(`api.resizeOutput({width:NaN,height:0})`);
   report('INVALID_OUTPUT_SIZE_OK', rejected.ok === false, rejected);
+  // The preceding 1920-wide test intentionally exceeds a laptop work area.
+  // AppKit can refuse a native fullscreen transition from that oversized,
+  // off-screen restored frame (also reproduced on the unchanged baseline).
+  // Establish a valid visible restored frame first; still require real native
+  // fullscreen entry and the exact 1280 × 720 exit/resize below.
+  const area=screen.getDisplayMatching(controlWin.getBounds()).workArea;
+  const restoredWidth=Math.min(900,Math.floor(area.width*.7));
+  const restoredHeight=Math.min(506,Math.floor(area.height*.7));
+  getOutput().setBounds({x:area.x+20,y:area.y+20,width:restoredWidth,height:restoredHeight});
+  getOutput().show();
+  await waitFor(getOutput(), `innerWidth===${restoredWidth}&&innerHeight===${restoredHeight}`);
   // Native fullscreen may be asynchronous (especially on macOS).
   getOutput().setFullScreen(true);
   const fullscreenEntered = await waitFor(getOutput(), 'isFS');
