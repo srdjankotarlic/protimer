@@ -17,6 +17,7 @@ The plugin and genuine editable XL profile are already included in both installe
 - **macOS projection fix:** use a documented higher window level and fullscreen-workspace visibility for overlays; refresh priority after placement/fullscreen transitions rather than repeatedly raising windows on clock ticks.
 - **Simple and predictable:** no multi-mode dropdown. Checking/unchecking never opens an output, starts/pauses a timer, changes its position/size/Grid, or changes browser/OBS composition. Saved preferences and Control-only startup remain intact. Explicitly off stays off through Grid/transparency edits.
 - **Existing functionality preserved:** T1 LIVE −/+10, −/+5 and −/+1 minute, ACTIVE/SET, one-touch native Stream Deck commands, per-timer zero bell/flashing/overtime, two displays, rundown, phone remote, QR, OBS and HTTP/OSC/Companion.
+- **Dependency maintenance:** patched the transitive HTTP redirect helper to follow-redirects 1.16.2 for known credential-header redirect advisories. No Electron major/minor or native plugin command changes are included.
 
 ## Use it
 

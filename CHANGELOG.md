@@ -7,6 +7,7 @@ Notable ProTimer changes are listed here. The complete notes and installers are 
 - Added a single **Timer on top** checkbox, separate from **Control on top**, and a separate Timer 2 checkbox for independent outputs.
 - Fixed presentation overlay priority on macOS, including fullscreen workspace visibility, higher projection-window levels and reapplication after placement/fullscreen transitions.
 - Keep explicitly unchecked output priority off across Grid/transparency changes; persist both outputs independently without changing clocks, geometry or Control-only startup.
+- Updated the transitive HTTP redirect dependency to follow-redirects 1.16.2 to address known credential-header redirect advisories.
 - Verified the installed Mac preview over an actual PowerPoint fullscreen show, including native foreground order and off/on behavior; added regression and optional read-only native window-order probes.
 - Preserved native Stream Deck, T1 LIVE adjustments, phone/OBS/Companion, rundown, two outputs and saved settings. No changes to Elgato profile switching or plugin commands.
 
