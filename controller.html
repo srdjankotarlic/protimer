@@ -27,11 +27,12 @@
     -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;}
 
   /* ---- top bar ---- */
-  .topbar{flex:0 0 auto; display:flex; align-items:center; gap:10px; padding:12px 18px;
+  .topbar{flex:0 0 auto; display:flex; flex-wrap:wrap; align-items:center; gap:10px; padding:12px 18px;
     border-bottom:1px solid var(--border); background:var(--panel);}
   .brand{font-weight:700; letter-spacing:3.2px; font-size:13.5px;}
   .brand b{color:var(--accent); font-weight:700;}
   .grow{flex:1;}
+  .window-flags{display:flex; flex-wrap:wrap; align-items:center; gap:10px;}
 
   button,input,select,textarea{font-family:inherit;}
   select,input[type=text],input[type=time],input[type=number]{background:var(--input); color:var(--text);
@@ -61,6 +62,7 @@
   label.chk{display:flex; align-items:center; gap:6px; color:var(--dim); font-size:12.5px; cursor:pointer; transition:color .15s;}
   label.chk:hover{color:var(--text);}
   label.chk input{accent-color:var(--accent);}
+  .topbar .chk{white-space:nowrap;}
 
   .main{flex:1 1 auto; min-height:0; display:grid; grid-template-columns:1fr 300px; align-items:start;
     gap:14px; padding:14px; overflow-y:auto; overflow-x:hidden;}
@@ -413,8 +415,11 @@
   <button id="btnFs" data-i18n-title="fsTitle" title="Pun ekran (F)">⛶</button>
   <button id="btnCloseOut" class="ghost" data-i18n-title="closeTitle" title="Zatvori izlazni prozor">✕</button>
   <div class="sep"></div>
+  <div class="window-flags">
   <label class="chk" data-i18n-title="fitTitle" title="Prozor (kad nije pun ekran) prati veličinu tajmera"><input type="checkbox" id="chkFit"> <span data-i18n="fitWindow">Kompaktan</span></label>
-  <label class="chk"><input type="checkbox" id="chkOnTop"> <span data-i18n="onTop">Na vrhu</span></label>
+  <label class="chk" data-i18n-title="timerOnTopTitle" title="Izlaz tajmera ostaje preko prezentacije"><input type="checkbox" id="chkOutputOnTop"> <span data-i18n="timerOnTop">Tajmer na vrhu</span></label>
+  <label class="chk"><input type="checkbox" id="chkOnTop"> <span data-i18n="onTop">Kontrola na vrhu</span></label>
+  </div>
 </div>
 
 <div class="main">
@@ -505,6 +510,7 @@
             <button id="btnOpenSecondaryOut" class="primary" data-i18n="sendTimerTwo">Pošalji Tajmer 2</button>
             <button id="btnSecondaryFs" data-i18n-title="secondaryFsTitle" title="Pun ekran — Tajmer 2" disabled>⛶</button>
             <button id="btnCloseSecondaryOut" class="ghost" data-i18n-title="secondaryCloseTitle" title="Zatvori ekran Tajmera 2" disabled>✕</button>
+            <label class="chk" data-i18n-title="timerOnTopTitle" title="Izlaz tajmera ostaje preko prezentacije"><input type="checkbox" id="chkSecondaryOutputOnTop"> <span data-i18n="timerTwoOnTop">Tajmer 2 na vrhu</span></label>
           </div>
           <div id="secondaryOutputStatus" class="panel-help" role="status"></div>
           <p class="panel-help" data-i18n="separateSharedHelp">Boje, upozorenja, poruka i BLACKOUT važe za oba ekrana. Tekst, NOW/NEXT i QR ostaju na ekranu Tajmera 1. OBS i linkovi zadržavaju zajednički prikaz. Televizore podesi kao proširene ekrane, ne preslikane.</p>
@@ -848,6 +854,7 @@ const api = window.pt || {
 // ---------- JEZIK / LANGUAGE ----------
 const I18N = {
   sr: {
+    timerOnTop:'Tajmer na vrhu',timerTwoOnTop:'Tajmer 2 na vrhu',timerOnTopTitle:'Izlaz tajmera ostaje preko prezentacije; ne menja kontrolu, vreme ili poziciju',
     outputRouting:'Prikaz', outputsTogether:'Zajedno na jednom ekranu', outputsSeparate:'Na dva odvojena ekrana',
     primaryOutputLabel:'Tajmer 1 na', sendTimerTwo:'Pošalji Tajmer 2', resizeWindow:'Prozor',
     adjustOutput:'Podesi ekran', placementOnly:'Veličina, cifre i Grid menjaju samo', gridOnly:'Grid pomera samo',
@@ -926,7 +933,7 @@ const I18N = {
     networkAddress:'Lokalna mreža računara', noNetwork:'Nema lokalne mreže — poveži Wi-Fi/Ethernet',
     publicRemoteLabel:'Online kontrola', phoneHelpTitle:'Telefon se ne povezuje?',
     outLabel:'Izlaz na', displayTitle:'Monitor za izlazni ekran', sendScreen:'Pošalji na ekran',
-    fsTitle:'Pun ekran (F)', closeTitle:'Zatvori izlazni prozor', onTop:'Na vrhu',
+    fsTitle:'Pun ekran (F)', closeTitle:'Zatvori izlazni prozor', onTop:'Kontrola na vrhu',
     mode:'Režim', modeCountdown:'Odbrojavanje', modeCountup:'Štoperica', modeClock:'Sat',
     set:'Postavi', endAt:'Kraj u', targetTitle:'Izaberi vreme završetka, zatim pokreni velikim START dugmetom',
     duration:'Trajanje', durTitle:'Postavi sate, minute i sekunde', quick:'Brzo',
@@ -963,6 +970,7 @@ const I18N = {
     shortcuts:'<kbd>Space</kbd> start/pauza · <kbd>R</kbd> reset · <kbd>N</kbd> sledeći · <kbd>↑↓</kbd> ±1m · <kbd>←→</kbd> ±10s · <kbd>B</kbd> blackout · <kbd>F</kbd> pun ekran · <kbd>M</kbd> poruka · <kbd>C</kbd> obriši poruku'
   },
   en: {
+    timerOnTop:'Timer on top',timerTwoOnTop:'Timer 2 on top',timerOnTopTitle:'Keep the timer output above the presentation; does not change Control, timing or placement',
     outputRouting:'Display', outputsTogether:'Together on one screen', outputsSeparate:'On two separate screens',
     primaryOutputLabel:'Timer 1 to', sendTimerTwo:'Send Timer 2', resizeWindow:'Window',
     adjustOutput:'Adjust screen', placementOnly:'Size, digits and Grid affect only', gridOnly:'Grid positions only',
@@ -1041,7 +1049,7 @@ const I18N = {
     networkAddress:'Computer local network', noNetwork:'No local network — connect Wi-Fi/Ethernet',
     publicRemoteLabel:'Online control', phoneHelpTitle:'Phone cannot connect?',
     outLabel:'Output to', displayTitle:'Monitor for the output screen', sendScreen:'Send to screen',
-    fsTitle:'Fullscreen (F)', closeTitle:'Close output window', onTop:'On top',
+    fsTitle:'Fullscreen (F)', closeTitle:'Close output window', onTop:'Control on top',
     mode:'Mode', modeCountdown:'Countdown', modeCountup:'Stopwatch', modeClock:'Clock',
     set:'Set', endAt:'End at', targetTitle:'Choose an end time, then use the large START button',
     duration:'Duration', durTitle:'Set hours, minutes and seconds', quick:'Quick',
@@ -1108,7 +1116,7 @@ let S = {
   gridOn:false, gridSize:3, gridCell:4,
   // kompaktan prozor (prozor prati veličinu tajmera kad nije fullscreen)
   fitWindow:false,
-  outputSize:null, outputLayout:TimerTools.layout(),
+  outputSize:null, outputLayout:TimerTools.layout(), outputLayer:'normal',
   dualTimer:false, dualSplit:'columns', separateOutputs:false, liveTimerView:'both',deckLiveMode:'auto',secondary:TimerTools.secondary(),
   // rundown / raspored
   cues:[], currentCue:-1, showStart:'', showNowNext:false,
@@ -1468,8 +1476,12 @@ async function checkOutputQuality(){
 $('btnCheckOutput').addEventListener('click',checkOutputQuality);
 function syncOutputSizeFields(){
   const size=(selectedWindow()==='secondary'?S.secondary.outputSize:S.outputSize)||{width:1920,height:1080};
+  $('chkOutputOnTop').checked=TimerTools.outputOnTop(S);
+  $('chkSecondaryOutputOnTop').checked=TimerTools.outputOnTop(S.secondary);
   $('outputWidth').value=size.width; $('outputHeight').value=size.height; renderOutputSizeStatus();
 }
+$('chkOutputOnTop').addEventListener('change',e=>{S.outputLayer=e.target.checked?'above':'normal';send();});
+$('chkSecondaryOutputOnTop').addEventListener('change',e=>{S.secondary.outputLayer=e.target.checked?'above':'normal';send();});
 $('outputWindowTarget').addEventListener('change',()=>selectPlacement($('outputWindowTarget').value));
 $('gridTarget').addEventListener('change',()=>selectPlacement($('gridTarget').value));
 api.onSecondaryOutputGeometry(showSecondaryOutputGeometry);
@@ -1758,9 +1770,9 @@ function saveSettings(){
     warnYellow:S.warnYellow,warnRed:S.warnRed,textOnly:S.textOnly,transparent:S.transparent,
     showStart:S.showStart,showNowNext:S.showNowNext,
     gridOn:S.gridOn,gridSize:S.gridSize,gridCell:S.gridCell,fitWindow:S.fitWindow,
-    outputSize:S.outputSize,outputLayout:S.outputLayout,dualTimer:S.dualTimer,dualSplit:S.dualSplit,
+    outputSize:S.outputSize,outputLayout:S.outputLayout,outputLayer:TimerTools.outputLayer(S.outputLayer),dualTimer:S.dualTimer,dualSplit:S.dualSplit,
     separateOutputs:S.separateOutputs,liveTimerView:TimerTools.liveView(S.liveTimerView),deckLiveMode:S.deckLiveMode,
-    secondary:{mode:S.secondary.mode,durationMs:S.secondary.durationMs,overtime:S.secondary.overtime,flashZero:S.secondary.flashZero,soundZero:S.secondary.soundZero,layout:S.secondary.layout,outputSize:S.secondary.outputSize,...TimerTools.grid(S.secondary)}
+    secondary:{mode:S.secondary.mode,durationMs:S.secondary.durationMs,overtime:S.secondary.overtime,flashZero:S.secondary.flashZero,soundZero:S.secondary.soundZero,layout:S.secondary.layout,outputSize:S.secondary.outputSize,outputLayer:TimerTools.outputLayer(S.secondary.outputLayer),...TimerTools.grid(S.secondary)}
   }));
 }
 function load(){
@@ -1778,9 +1790,10 @@ function load(){
       showStart:st.showStart??S.showStart, showNowNext:st.showNowNext??S.showNowNext,
       ...TimerTools.grid(st),
       fitWindow:st.fitWindow??S.fitWindow,
-      outputSize:TimerTools.size(st.outputSize),outputLayout:TimerTools.layout(st.outputLayout),
+      outputSize:TimerTools.size(st.outputSize),outputLayout:TimerTools.layout(st.outputLayout),outputLayer:TimerTools.outputOnTop(st)?'above':'normal',
       dualTimer:!!st.dualTimer,dualSplit:st.dualSplit==='rows'?'rows':'columns',separateOutputs:!!st.separateOutputs,liveTimerView:TimerTools.liveView(st.liveTimerView),deckLiveMode:['auto','fullscreen','window'].includes(st.deckLiveMode)?st.deckLiveMode:'auto',secondary:TimerTools.secondary(st.secondary,st)
     });
+    S.secondary.outputLayer=TimerTools.outputOnTop(S.secondary)?'above':'normal';
     S.remMs=S.durationMs; autoNext=!!st.autoNext;
     cues=JSON.parse(localStorage.getItem('pt_cues')||'[]');
   }catch(e){}

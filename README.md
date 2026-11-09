@@ -9,9 +9,9 @@
   Send a clear timer to a projector, confidence monitor, browser source or phone from one local app.
 </p>
 
-<p align="center"><strong>Latest release: ProTimer 2.5.0 — free, open source, no account and no watermark.</strong></p>
+<p align="center"><strong>Latest release: ProTimer 2.5.1 — free, open source, no account and no watermark.</strong></p>
 
-**Stream Deck is included in 2.5.0.** Colorful LCD controls, separate ACTIVE/SET readouts and one-touch commands, including **T1 LIVE −/+10, −/+5 and −/+1 minute**. Both desktop installers include the native Elgato plugin and a genuine editable **XL Full 32 profile**. No Node, terminal or Companion required; Elgato Stream Deck 7.6+ is required. [Simple setup guide](docs/STREAM-DECK.md).
+**Stream Deck is included in 2.5.1.** Colorful LCD controls, separate ACTIVE/SET readouts and one-touch commands, including **T1 LIVE −/+10, −/+5 and −/+1 minute**. Both desktop installers include the native Elgato plugin and a genuine editable **XL Full 32 profile**. No Node, terminal or Companion required; Elgato Stream Deck 7.6+ is required. [Simple setup guide](docs/STREAM-DECK.md).
 
 <p align="center">
   <a href="https://github.com/srdjankotarlic/protimer/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/srdjankotarlic/protimer/actions/workflows/ci.yml/badge.svg"></a>
@@ -49,12 +49,12 @@
 
 | Your computer | Recommended download | Install |
 |---|---|---|
-| Apple Silicon Mac (M1 or newer) | **[Download the macOS DMG](https://github.com/srdjankotarlic/protimer/releases/download/v2.5.0/ProTimer-2.5.0-arm64.dmg)** | Open the DMG and drag **ProTimer** to Applications. |
-| Windows 10/11 x64 | **[Download the Windows installer](https://github.com/srdjankotarlic/protimer/releases/download/v2.5.0/ProTimer-Setup-2.5.0.exe)** | Run Setup and follow the installer. |
+| Apple Silicon Mac (M1 or newer) | **[Download the macOS DMG](https://github.com/srdjankotarlic/protimer/releases/download/v2.5.1/ProTimer-2.5.1-arm64.dmg)** | Open the DMG and drag **ProTimer** to Applications. |
+| Windows 10/11 x64 | **[Download the Windows installer](https://github.com/srdjankotarlic/protimer/releases/download/v2.5.1/ProTimer-Setup-2.5.1.exe)** | Run Setup and follow the installer. |
 
-Need a Windows build that does not install? Use the [portable EXE](https://github.com/srdjankotarlic/protimer/releases/download/v2.5.0/ProTimer-2.5.0-portable.exe). Most Windows users should choose Setup.
+Need a Windows build that does not install? Use the [portable EXE](https://github.com/srdjankotarlic/protimer/releases/download/v2.5.1/ProTimer-2.5.1-portable.exe). Most Windows users should choose Setup.
 
-Every installer is built by the public release workflow. You can verify a download with the [ProTimer 2.5.0 SHA-256 checksums](https://github.com/srdjankotarlic/protimer/releases/download/v2.5.0/ProTimer-2.5.0-SHA256SUMS.txt).
+Every installer is built by the public release workflow. You can verify a download with the [ProTimer 2.5.1 SHA-256 checksums](https://github.com/srdjankotarlic/protimer/releases/download/v2.5.1/ProTimer-2.5.1-SHA256SUMS.txt).
 
 <details>
 <summary><strong>First-launch security warning</strong></summary>
@@ -66,7 +66,15 @@ The current downloads are not Apple-notarized or Windows Authenticode-signed.
 
 </details>
 
-## New in ProTimer 2.5.0
+## New in ProTimer 2.5.1
+
+- **Timer on top:** one checkbox beside the output controls keeps the audience timer above a presentation. Uncheck to restore ordinary window stacking; Control's own on-top checkbox is separate.
+- **Independent outputs:** Timer 2 has its own on-top checkbox when using separate screens. Live timing, window size, Grid and saved layouts are preserved.
+- **macOS presentation fix:** output priority now accounts for fullscreen presentations and higher-level projection windows. Tested with a real PowerPoint fullscreen show; see the [overlay guide and verification limits](docs/OUTPUT-OVERLAY.md).
+
+Send the timer using **Send to screen** after choosing its display. The checkbox does not open an output automatically. For a small side overlay, keep the timer windowed and use Grid or a smaller window size.
+
+### Stream Deck and timer features retained
 
 - **Native Stream Deck control:** install the bundled plugin from **Control → Stream Deck**, pair and manually activate the XL profile. Each executable key has one function and one tap. No automatic profile takeover.
 - **LIVE speaker corrections:** the second row is dedicated to Timer 1: **−10m / +10m / −5m / +5m / −1m / +1m**. The countdown keeps running; SET and Timer 2 are unchanged. Customize any key in Control or Elgato.
@@ -77,7 +85,7 @@ The current downloads are not Apple-notarized or Windows Authenticode-signed.
 
 ### Stream Deck setup on another computer
 
-Install the same recommended ProTimer download, then **Control → Stream Deck → Install / update plugin**. Confirm Elgato's installation, **Set up integration**, select XL and **Activate ProTimer profile**. The plugin/profile comes with ProTimer; no development tools are needed. For plugin-only installation use the [native Stream Deck package](https://github.com/srdjankotarlic/protimer/releases/download/v2.5.0/com.srdjankotarlic.protimer.streamDeckPlugin). [English guide](docs/STREAM-DECK.md) · [Srpski](docs/STREAM-DECK.sr.md).
+Install the same recommended ProTimer download, then **Control → Stream Deck → Install / update plugin**. Confirm Elgato's installation, **Set up integration**, select XL and **Activate ProTimer profile**. The plugin/profile comes with ProTimer; no development tools are needed. For plugin-only installation use the [native Stream Deck package](https://github.com/srdjankotarlic/protimer/releases/download/v2.5.1/com.srdjankotarlic.protimer.streamDeckPlugin). [English guide](docs/STREAM-DECK.md) · [Srpski](docs/STREAM-DECK.sr.md).
 
 Customized layouts and existing settings are preserved. Only untouched starter layouts receive the new T1 LIVE row automatically. To opt in on a customized board, use **Edit layout → Restore defaults → Apply**, or configure individual keys deliberately.
 
@@ -108,7 +116,7 @@ Customized layouts and existing settings are preserved. Only untouched starter l
 
 The scrollable rundown, duration picker, Colors/Text, Grid, Thresholds, Message, audience QR and Backstage controls remain available.
 
-See the complete [2.5.0 release notes](docs/RELEASE-NOTES-2.5.0.md).
+See the complete [2.5.1 release notes](docs/RELEASE-NOTES-2.5.1.md).
 
 [How to size the output, position digits, use two timers and connect a phone →](docs/OUTPUT-AND-PHONE-CONTROL.md)
 
@@ -267,7 +275,7 @@ Clean stack, almost no dependencies: **Electron** + plain HTML/CSS/JS + a Node `
 
 ### Native Stream Deck integration — included
 
-**ProTimer 2.5.0 includes** the optional native Elgato SDK plugin, separate ACTIVE/SET preparations for both timers, an 8×4 editor inside Control and colorful live LCD buttons. The starter's second row provides T1 LIVE −/+10, −/+5 and −/+1 minute corrections. The timer remains independent of Stream Deck and Companion.
+**ProTimer 2.5.1 includes** the optional native Elgato SDK plugin, separate ACTIVE/SET preparations for both timers, an 8×4 editor inside Control and colorful live LCD buttons. The starter's second row provides T1 LIVE −/+10, −/+5 and −/+1 minute corrections. The timer remains independent of Stream Deck and Companion.
 
 1. Install the recommended ProTimer app for your computer. The plugin is included.
 2. Open **Control → Stream Deck → Install / update plugin** and confirm in Elgato Stream Deck 7.6+.
@@ -277,7 +285,7 @@ Daily use: select T1/T2 → choose a preset or enter SET → **START SET**. The 
 
 The plugin builds and packages with Elgato's official CLI. The native Full 32 profile is an unchanged real Elgato export. Standard 28 + 4 free remains a logical template: duplicate Full 32 in Elgato and remove its last-column actions to make those four keys genuinely free. Physical XL/Windows acceptance and clean-machine setup still need hardware testing. Installation, app focus and reconnect never automatically select a profile.
 
-Guides: [English](docs/STREAM-DECK.md) · [Srpski](docs/STREAM-DECK.sr.md) · [SDK constraints](docs/STREAM-DECK-SDK.md) · [2.5.0 verification results](docs/STREAM-DECK-VERIFICATION-2.5.0.md) · [Historical editor screenshot](docs/STREAM-DECK-VERIFICATION.md).
+Guides: [English](docs/STREAM-DECK.md) · [Srpski](docs/STREAM-DECK.sr.md) · [SDK constraints](docs/STREAM-DECK-SDK.md) · [2.5.1 verification results](docs/STREAM-DECK-VERIFICATION-2.5.1.md) · [Historical editor screenshot](docs/STREAM-DECK-VERIFICATION.md).
 
 ```sh
 npm run deck:build

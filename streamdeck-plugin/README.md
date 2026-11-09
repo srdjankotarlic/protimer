@@ -1,6 +1,6 @@
 # ProTimer native Stream Deck plugin
 
-Included with **ProTimer 2.5.0** for Windows x64 and macOS Apple Silicon. This is a real TypeScript/Node plugin using the official Elgato SDK, not a HID driver or keyboard macro. Elgato owns USB; ProTimer owns all timer state. The app also works without Stream Deck.
+Included with **ProTimer 2.5.1** for Windows x64 and macOS Apple Silicon. This is a real TypeScript/Node plugin using the official Elgato SDK, not a HID driver or keyboard macro. Elgato owns USB; ProTimer owns all timer state. The app also works without Stream Deck.
 
 ## Install and use
 
@@ -46,6 +46,6 @@ Simulation is **not** a physical USB test or proof of clean-machine Elgato impor
 
 ## Srpski
 
-Plugin dolazi uz **ProTimer 2.5.0**. Instaliraj Elgato 7.6+, zatim u Controlu otvori instalaciju plugina, potvrdi je, poveži XL i ručno aktiviraj pravi profil sa 32 dugmeta. Ne treba terminal, Node niti Companion.
+Plugin dolazi uz **ProTimer 2.5.1**. Instaliraj Elgato 7.6+, zatim u Controlu otvori instalaciju plugina, potvrdi je, poveži XL i ručno aktiviraj pravi profil sa 32 dugmeta. Ne treba terminal, Node niti Companion.
 
 Drugi red menja **T1 LIVE −/+10, −/+5 i −/+1 minut**, bez pauziranja i bez promene SET-a/T2. Preseti i unos vremena pripremaju SET; START SET učitava i pušta, PAUSE i PLAY ACTIVE rade nad ACTIVE. Svaka izvršna native komanda radi na jedan dodir. Tastere menjaš u Controlu ili zasebno u Elgato editoru. Tuđe akcije i prava slobodna mesta se ne prepisuju. [Uputstvo i fizička provera](../docs/STREAM-DECK.sr.md).

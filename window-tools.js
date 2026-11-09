@@ -1,5 +1,29 @@
 const pendingExits = new WeakMap();
 const siblingGuards = new WeakMap();
+const outputLayers = new WeakMap();
+const TimerTools = require('./timer-tools');
+
+// Only audience windows call this. Cache native changes: clock ticks must not
+// repeatedly raise windows, steal focus or transform the macOS process type.
+function applyOutputLayer(win, state = {}, { platform = process.platform, refresh = false } = {}) {
+  if (!win || win.isDestroyed()) return;
+  const top = TimerTools.outputOnTop(state);
+  const fullscreenSpaces = TimerTools.outputLayer(state.outputLayer) === 'above';
+  // Presentation apps (including StageDeck) use screen-saver, far above the
+  // ordinary floating level. macOS allows one level above screen-saver.
+  const level = fullscreenSpaces ? 'screen-saver' : 'floating';
+  const previous = outputLayers.get(win);
+  const changed = !previous || previous.top !== top || previous.level !== level;
+  if (changed || refresh || (win.isAlwaysOnTop && win.isAlwaysOnTop() !== top))
+    win.setAlwaysOnTop(top, level, platform === 'darwin' && fullscreenSpaces ? 1 : 0);
+  if (platform === 'darwin' && (!previous || previous.fullscreenSpaces !== fullscreenSpaces)) {
+    // Do not change workspace behavior at all for legacy/default windows.
+    if (fullscreenSpaces || previous?.fullscreenSpaces)
+      win.setVisibleOnAllWorkspaces?.(fullscreenSpaces, { visibleOnFullScreen: fullscreenSpaces });
+  }
+  if (fullscreenSpaces && (changed || refresh)) win.moveTop?.();
+  outputLayers.set(win, { top, fullscreenSpaces, level });
+}
 
 function isFullscreen(win) {
   return win.isFullScreen() || !!win.isSimpleFullScreen?.();
@@ -111,4 +135,4 @@ async function applyContentSize(win, size, {platform = process.platform, valid =
   return !win.isDestroyed() && valid() && matches();
 }
 
-module.exports = { leaveFullscreen, preserveSiblingBounds, isFullscreen, setPresentationFullscreen, applyContentSize };
+module.exports = { leaveFullscreen, preserveSiblingBounds, isFullscreen, setPresentationFullscreen, applyContentSize, applyOutputLayer };
