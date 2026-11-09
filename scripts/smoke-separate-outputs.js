@@ -17,9 +17,14 @@ module.exports = async function ({ controlWin, getOutput, getSecondary, screen }
   const second = code => getSecondary().webContents.executeJavaScript(code);
   const host = screen.getDisplayMatching(controlWin.getBounds());
   const hostDisplay = host.id;
-  await ctl(`$('chkDual').checked=true; $('chkDual').dispatchEvent(new Event('change')); S.transparent=false; S.gridOn=false; S.secondary.gridOn=false; S.fitWindow=false; S.blackout=false; S.text=''; S.textOnly=false; S.message={text:'',flash:false}; S.outputLayout=TimerTools.layout(); S.secondary.layout=TimerTools.layout(); setDuration(600000); secondaryDuration(330000); $('outputRouting').value='separate'; $('outputRouting').dispatchEvent(new Event('change'));`);
+  // This suite checks native fullscreen geometry in ordinary window mode.
+  // The startup fixture restores a legacy Grid setting, now migrated to an
+  // explicit on-top preference. Do not accidentally inherit that overlay into
+  // this unrelated suite; smoke-output-layer independently exercises top/off.
+  await ctl(`$('chkDual').checked=true; $('chkDual').dispatchEvent(new Event('change')); S.transparent=false; S.gridOn=false; S.secondary.gridOn=false; S.outputLayer='normal'; S.secondary.outputLayer='normal'; S.fitWindow=false; S.blackout=false; S.text=''; S.textOnly=false; S.message={text:'',flash:false}; S.outputLayout=TimerTools.layout(); S.secondary.layout=TimerTools.layout(); setDuration(600000); secondaryDuration(330000); $('outputRouting').value='separate'; $('outputRouting').dispatchEvent(new Event('change'));`);
   assert.equal(getSecondary(), null, 'Changing mode must not open a second screen');
   await waitFor(() => first(`!!S&&!S.dualTimer&&S.durationMs===600000`), 'Timer 1 did not become standalone');
+  assert.equal(getOutput().isAlwaysOnTop(),false,'Geometry fixture must start in ordinary window mode');
   // The previous exact-resolution test deliberately exceeds small CI screens.
   // Establish an on-screen window before checking independent native fullscreen;
   // macOS may otherwise restore an older frame when changing Spaces.
