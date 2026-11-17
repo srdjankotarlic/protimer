@@ -26,7 +26,7 @@ For the layout requested in #55, enable Timer 2, select Clock, then use Free lay
 
 ## Verification
 
-The release workflow runs application and plugin tests, packages the Windows x64 and macOS arm64 applications, and runs the full functional smoke suite against each packaged application before publication. Checks cover both timer engines, free layout and clipping, stored settings, rundown, output routing, overlays, phone/HTTP/OSC control and the Stream Deck command path.
+Both Windows x64 and macOS arm64 packages passed the full functional suite in [release run 44121207874](https://github.com/srdjankotarlic/protimer/actions/runs/44121207874), together with 224 application tests and 34 plugin tests. Windows Setup also passed installation, in-place reinstallation and uninstall checks. Checks cover both timer engines, free layout and clipping, stored settings, rundown, output routing, overlays, phone/HTTP/OSC control and the Stream Deck command path.
 
 CI verifies software behavior. Physical Windows displays, Stream Deck USB/LCD hardware, audio speakers and venue video chains require testing on that equipment. Long intervals and clock jumps are tested with a simulated clock. See the [release verification record](https://github.com/srdjankotarlic/protimer/blob/main/docs/RELEASE-VERIFICATION-2.5.2.md) for results and limits.
 
