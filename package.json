@@ -1,9 +1,9 @@
 {
   "name": "pro-timer",
   "productName": "ProTimer",
-  "version": "2.5.1",
+  "version": "2.5.2",
   "config": {
-    "stableVersion": "2.5.1"
+    "stableVersion": "2.5.2"
   },
   "description": "Free stage timer and speaker countdown for live events, conferences and OBS",
   "main": "main.js",
@@ -42,6 +42,8 @@
     "smoke:alerts": "electron . --smoke --alerts-only",
     "smoke:quality": "electron . --smoke --quality-only",
     "smoke:overlay": "electron . --smoke --overlay-only",
+    "smoke:free-layout": "electron . --smoke --free-layout-only",
+    "smoke:timer-controls": "electron . --smoke --timer-controls-only",
     "check:public-docs": "node scripts/check-public-docs.js",
     "check:indexnow": "node scripts/submit-indexnow.js --dry-run",
     "check:packaging": "node scripts/check-packaging.js",
@@ -94,6 +96,8 @@
       "scripts/smoke-alerts.js",
       "scripts/smoke-output-quality.js",
       "scripts/smoke-output-layer.js",
+      "scripts/smoke-free-layout.js",
+      "scripts/smoke-timer-controls.js",
       "controller.html",
       "output.html",
       "remote.html",

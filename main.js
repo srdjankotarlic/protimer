@@ -1165,6 +1165,14 @@ app.whenReady().then(() => {
         const smokeFailures = [];
         const check = (name, ok) => { if (!ok) smokeFailures.push(name); return !!ok; };
         await waitLoad(controlWin);
+        if(process.argv.includes('--timer-controls-only')){
+          await require('./scripts/smoke-timer-controls')({controlWin,getOutput:()=>outputWin,screen});
+          console.log('SMOKE_OK'); app.exit(0); return;
+        }
+        if(process.argv.includes('--free-layout-only')){
+          await require('./scripts/smoke-free-layout')({controlWin,getOutput:()=>outputWin,screen,serverPort});
+          console.log('SMOKE_OK'); app.exit(0); return;
+        }
         if(process.argv.includes('--overlay-only')){
           await require('./scripts/smoke-output-layer')({controlWin,getOutput:()=>outputWin,getSecondary:secondaryOutput.getWindow,screen});
           console.log('SMOKE_OK'); app.exit(0);return;
@@ -1750,6 +1758,8 @@ app.whenReady().then(() => {
         await require('./scripts/smoke-alerts')({controlWin,getOutput:()=>outputWin,getSecondary:secondaryOutput.getWindow,displayId:screen.getPrimaryDisplay().id});
         await require('./scripts/smoke-output-quality')({controlWin,getOutput:()=>outputWin,getSecondary:secondaryOutput.getWindow,screen});
         await require('./scripts/smoke-output-layer')({controlWin,getOutput:()=>outputWin,getSecondary:secondaryOutput.getWindow,screen});
+        await require('./scripts/smoke-timer-controls')({controlWin,getOutput:()=>outputWin,screen});
+        await require('./scripts/smoke-free-layout')({controlWin,getOutput:()=>outputWin,screen,serverPort});
         if(smokeFailures.length) throw new Error('Failed checks: '+smokeFailures.join(', '));
         console.log('SMOKE_OK');
         app.exit(0);

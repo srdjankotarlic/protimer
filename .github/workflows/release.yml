@@ -68,9 +68,24 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force (Join-Path (Get-Location).Drive.Root 'tmp') | Out-Null
+          $version = node -p "require('./package.json').version"
+          $installDir = Join-Path $env:RUNNER_TEMP 'ProTimer-install-test'
+          $setup = Join-Path (Get-Location) "dist-installers/ProTimer-Setup-$version.exe"
+          $appExe = Join-Path $installDir 'ProTimer.exe'
+          # Exercise first installation and an in-place reinstall through NSIS.
+          foreach ($attempt in 1..2) {
+            $installer = Start-Process -FilePath $setup -ArgumentList "/S /D=$installDir" -Wait -PassThru
+            if ($installer.ExitCode -ne 0) { throw "Setup attempt $attempt failed with exit code $($installer.ExitCode)" }
+            if (-not (Test-Path -LiteralPath $appExe)) { throw 'Setup did not install ProTimer.exe' }
+            if ((Get-Item $appExe).VersionInfo.ProductVersion -ne $version) { throw 'Installed application version differs from release' }
+          }
+          foreach ($resource in @('streamdeck/com.srdjankotarlic.protimer.streamDeckPlugin', 'cloudflared.exe')) {
+            if (-not (Test-Path (Join-Path "$installDir/resources" $resource))) { throw "Missing installed resource $resource" }
+          }
+          "PROTIMER_TEST_INSTALL_DIR=$installDir" | Out-File -FilePath $env:GITHUB_ENV -Append
           $stdout = Join-Path $env:RUNNER_TEMP 'protimer-smoke-stdout.log'
           $stderr = Join-Path $env:RUNNER_TEMP 'protimer-smoke-stderr.log'
-          $process = Start-Process -FilePath ".\dist-installers\win-unpacked\ProTimer.exe" -ArgumentList "--smoke", "--disable-gpu" -Wait -PassThru -RedirectStandardOutput $stdout -RedirectStandardError $stderr
+          $process = Start-Process -FilePath $appExe -ArgumentList "--smoke", "--disable-gpu" -Wait -PassThru -RedirectStandardOutput $stdout -RedirectStandardError $stderr
           Get-Content $stdout
           Get-Content $stderr
           if ($process.ExitCode -ne 0) {
@@ -78,6 +93,17 @@ jobs:
           }
           if (-not (Select-String -Path $stdout -Pattern '^SMOKE_OK$' -Quiet)) { throw 'Smoke completion marker missing' }
           if ($env:PROTIMER_TEST_ONLINE -eq '1' -and -not (Select-String -Path $stdout -Pattern '^PHONE_REAL_HTTPS_OK=true' -Quiet)) { throw 'Online control was not verified' }
+      - name: Uninstall tested Windows application
+        if: runner.os == 'Windows' && always() && env.PROTIMER_TEST_INSTALL_DIR != ''
+        shell: pwsh
+        run: |
+          $uninstaller = Join-Path $env:PROTIMER_TEST_INSTALL_DIR 'Uninstall ProTimer.exe'
+          $result = Start-Process -FilePath $uninstaller -ArgumentList '/S' -Wait -PassThru
+          if ($result.ExitCode -ne 0) { throw "Uninstall failed with exit code $($result.ExitCode)" }
+          $appExe = Join-Path $env:PROTIMER_TEST_INSTALL_DIR 'ProTimer.exe'
+          for ($attempt = 0; $attempt -lt 60 -and (Test-Path -LiteralPath $appExe); $attempt++) { Start-Sleep -Milliseconds 500 }
+          if (Test-Path -LiteralPath $appExe) { throw 'Uninstall left the application executable behind' }
+          Write-Output 'WINDOWS_SETUP_REINSTALL_LAUNCH_UNINSTALL_OK'
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: installers-${{ matrix.os }}

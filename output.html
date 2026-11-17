@@ -54,6 +54,19 @@
   #nownext .now .ttl{font-size:4vh;}
   #nownext .next{opacity:.62;} #nownext .next .ttl{font-size:3vh;}
 
+  /* The free layout has one clipping boundary: the output window. Pane
+     containers stop creating boxes; every foreground anchor uses the stage. */
+  .free-audience #stage{display:block;}
+  .free-audience #stage .timer-pane,
+  .free-audience #stage .timer-content,
+  .free-audience #stage.dual #secondaryPane{display:contents;}
+  .free-audience #stage:not(.dual) #secondaryPane{display:none;}
+  .free-audience #timer,.free-audience #secondaryTimer,.free-audience #text,
+  .free-audience #msg,.free-audience #nownext,.free-audience #prog{position:absolute; right:auto; bottom:auto;}
+  .free-audience #text,.free-audience #msg{width:max-content; max-width:90vw; padding:0; margin:0!important; overflow-wrap:anywhere;}
+  .free-audience #nownext{width:80vw;}
+  .free-audience #prog{height:1vh;}
+
   #blackout{position:absolute; inset:0; background:#000; z-index:80; display:none;}
   #audienceQr{position:absolute; inset:0; z-index:70; display:none; align-items:center; justify-content:center;
     padding:4vh 4vw; background:#000; color:#0b0d11; font-family:-apple-system,"Helvetica Neue",system-ui,sans-serif;}
@@ -252,18 +265,21 @@ function render(){
   // tajmer UVEK puni prozor; grid se realizuje veličinom/pozicijom samog PROZORA (main proces)
   { const st=$('stage'); if(st.style.left){ st.style.inset='0'; st.style.left=st.style.top=st.style.width=st.style.height=''; } }
   // fit (kompaktan prozor) — samo ako NIJE grid i NIJE fullscreen
-  fitMode = IS_ELECTRON && !!S.fitWindow && !isFS && !S.gridOn && !S.dualTimer;
+  const free = TimerTools.hasFreeLayout(S);
+  fitMode = IS_ELECTRON && !!S.fitWindow && !isFS && !S.gridOn && !S.dualTimer && !free;
+  document.body.classList.toggle('free-audience',free);
   document.body.classList.toggle('windowed',IS_ELECTRON&&!isFS&&!S.gridOn);
   setStyle($('stage'),'visibility',S.liveHidden?'hidden':'visible');
   setClass($('stage'),S.dualTimer?'dual '+(S.dualSplit==='rows'?'rows':'columns'):'');
 
   paint(text, fg, bg, neg, blink, S.text || '', S.message ? S.message.text : '',
-        S.message && S.message.flash, S.showProgress ? prog : null);
+        S.message && S.message.flash, S.showProgress ? prog : null,free);
   applyLayout($('primaryContent'),S.outputLayout);
-  if(S.dualTimer&&S.secondary) renderSecondary(now);
+  if(S.dualTimer&&S.secondary) renderSecondary(now,free);
 
   if (fitMode) requestFit();
-  renderNowNext(fg);
+  renderNowNext(fg,free);
+  renderFreeLayout(free);
   setStyle($('blackout'),'display',S.blackout?'block':'none');
 }
 
@@ -271,14 +287,30 @@ function applyLayout(element,value){
   const layout=TimerTools.layout(value);
   setStyle(element,'transform',`translate(${layout.x}%, ${layout.y}%) scale(${layout.scale/100})`);
 }
-function renderSecondary(now){
+const freeNodes = {primary:'timer',secondary:'secondaryTimer',title:'text',message:'msg',rundown:'nownext',progress:'prog'};
+let appliedFreeLayout, lastFreeState;
+function renderFreeLayout(enabled){
+  if(S===lastFreeState) return;
+  lastFreeState=S;
+  const values=enabled ? TimerTools.freeLayout(S.freeLayout,S.dualTimer,S.dualSplit) : null;
+  const key=values ? JSON.stringify(values) : '';
+  if(key===appliedFreeLayout) return;
+  appliedFreeLayout=key;
+  for(const [element,id] of Object.entries(freeNodes)){
+    const el=$(id), pos=values?.[element];
+    setStyle(el,'left',pos?(pos.x+100)/2+'%':'');
+    setStyle(el,'top',pos?(pos.y+100)/2+'%':'');
+    setStyle(el,'transform',pos?`translate(-50%, -50%) scale(${pos.scale/100})`:'');
+  }
+}
+function renderSecondary(now,free){
   const timer=S.secondary, pane=$('secondaryPane'), el=$('secondaryTimer');
   let rem=TimerTools.remaining(timer,now); if(!(timer.overtime??S.overtime)) rem=Math.max(0,rem);
   const mode=timer.mode||'countdown',text=mode==='clock'?new Date(now).toLocaleTimeString('en-GB',{hour12:false}):mode==='countup'?fmtSecs(Math.floor(TimerTools.elapsed(timer,now)/1000),false):fmtMs(rem);
   const fg=mode!=='countdown'?S.fgColor:rem<=0?(S.warnRed||'#ff4540'):S.useWarnColors?(rem<=S.redSec*1000?S.warnRed:rem<=S.yellowSec*1000?S.warnYellow:S.fgColor):S.fgColor;
   const neg=mode==='countdown'&&rem<0, blink=mode==='countdown'&&rem<=0&&(timer.flashZero??S.flashZero??true);
   setText(el,text); setStyle(el,'color',fg); setClass(el,[neg?'neg':'',blink?'blink':''].filter(Boolean).join(' '));
-  setStyle(el,'fontSize',Math.min(pane.clientWidth*0.92/(text.length*0.6),pane.clientHeight*0.7)+'px');
+  setStyle(el,'fontSize',free?freeDigits(text):Math.min(pane.clientWidth*0.92/(text.length*0.6),pane.clientHeight*0.7)+'px');
   applyLayout($('secondaryContent'),timer.layout);
 }
 
@@ -292,7 +324,7 @@ function requestFit(){
   if (h > 4 && Math.abs(want - lastFitH) > 4){ lastFitH = want; api.fitWindow(want); }
 }
 
-function renderNowNext(fg){
+function renderNowNext(fg,free){
   const el = $('nownext');
   const cues = S.cues || [];
   if (!S.showNowNext || S.currentCue == null || S.currentCue < 0 || !cues.length){
@@ -311,15 +343,16 @@ function renderNowNext(fg){
     if(nxt) setText(el.querySelector('.next .ttl'),nxt.name);
   }
   setStyle(el,'color',fg);
-  setStyle(el,'bottom',S.showProgress?'1vh':'0');
+  setStyle(el,'bottom',free?'':S.showProgress?'1vh':'0');
   setStyle(el,'display','flex');
-  setStyle($('msg'),'bottom',nxt?'17vh':'12vh');
+  setStyle($('msg'),'bottom',free?'':nxt?'17vh':'12vh');
 }
 
-function paint(timeText, fg, bg, neg, blink, bigText, msgText, msgFlash, prog){
+function freeDigits(text){ return Math.min(innerWidth*.43/(text.length*.6),innerHeight*.34)+'px'; }
+function paint(timeText, fg, bg, neg, blink, bigText, msgText, msgFlash, prog,free=false){
   setStyle(document.body,'background',bg);
 
-  const tEl = $('timer'), txtEl = $('text'), st = $('primaryPane');
+  const tEl = $('timer'), txtEl = $('text'), st = free ? $('stage') : $('primaryPane');
   // veličina referentne oblasti = #stage (ceo ekran, ili kockica grida)
   const sw = st.clientWidth || innerWidth, sh = st.clientHeight || innerHeight;
   const textOnly = S && S.textOnly && bigText;
@@ -345,7 +378,9 @@ function paint(timeText, fg, bg, neg, blink, bigText, msgText, msgFlash, prog){
     setText(tEl,timeText);
     setStyle(tEl,'color',fg);
     setClass(tEl,[neg?'neg':'',blink?'blink':''].filter(Boolean).join(' '));
-    if (fitMode){
+    if (free){
+      setStyle(tEl,'fontSize',freeDigits(timeText)); lastKey='';
+    } else if (fitMode){
       // puni širinu prozora; rezervisana dužina (stabilna) da se prozor ne trza po cifri
       const refLen = Math.max(timeText.length, fmtMs(S.durationMs||0).length, 4);
       setStyle(tEl,'fontSize',Math.max(14,sw*0.86/(refLen*0.6))+'px');
@@ -366,7 +401,8 @@ function paint(timeText, fg, bg, neg, blink, bigText, msgText, msgFlash, prog){
 
   // traka napretka
   const pEl = $('prog');
-  if (prog !== null){ setStyle(pEl,'display','block'); setStyle(pEl,'width',(prog*100)+'%'); setStyle(pEl,'background',fg); }
+  setStyle(pEl,'clipPath',free&&prog!==null?`inset(0 ${(1-prog)*100}% 0 0)`:'');
+  if (prog !== null){ setStyle(pEl,'display','block'); setStyle(pEl,'width',free?'65%':(prog*100)+'%'); setStyle(pEl,'background',fg); }
   else setStyle(pEl,'display','none');
 }
 
