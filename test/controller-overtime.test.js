@@ -35,6 +35,7 @@ function host(settings) {
     api: { sendState() { sent++; }, deckInvoke() {} },
     syncDualUI() {}, syncDurationDisplays() {}, buildGrid() {}, renderCues() {},
     cancelAutoAdvance() {}, clearTargetArm() {}, updateButtons() {}, setModeTabs() {},
+    clearSecondaryTarget() {},
     $: node
   });
   for (const [start, end] of [

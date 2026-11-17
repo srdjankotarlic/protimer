@@ -10,6 +10,8 @@ The background, including the existing transparency setting, is separate from th
 
 The option is for one audience canvas, with one or two timers; two independently routed physical outputs keep their existing per-window placement controls. Free positions are saved separately from the standard left/right and top/bottom layouts. Turning off Free layout restores the prior split and its settings; no countdown is restarted.
 
+For a countdown over a clock: turn on **Show second timer**, choose **Clock** in the **Timer 2** section, then position each timer with **Free layout**. Both timer sections have their own Start/Pause, Reset, Countdown/Stopwatch/Clock mode, duration, presets, End at and at-zero options. The ± adjustments work in countdown mode. Warning thresholds and colors are shared and grouped together; BLACKOUT still affects both outputs.
+
 ## Srpski
 
 1. U kontroli otvori **Izlazni prozor i raspored** i uključi **Slobodan raspored**.
@@ -17,3 +19,5 @@ The option is for one audience canvas, with one or two timers; two independently
 3. Klizačima ili upisom broja podesi X, Y i veličinu. Nula je centar celog izlaza, a −100 i +100 su ivice. Prelazak preko sredine više ne seče element. **Vrati položaj i veličinu** vraća samo izabrani element.
 
 Pozadina je odvojena od sadržaja koji pomeraš. Raspored važi i za browser prikaz / OBS. Dva odvojena fizička izlaza zadržavaju postojeća podešavanja. Isključi opciju za povratak na prethodnu podelu; slobodan raspored ostaje sačuvan. Odbrojavanje, BLACKOUT i QR nisu vezani za pomeranje elemenata.
+
+Za odbrojavanje iznad sata: uključi **Prikaži drugi tajmer**, izaberi **Sat** u sekciji **Tajmer 2**, pa podesi oba položaja kroz **Slobodan raspored**. Oba tajmera imaju svoj Start/Pauzu, Reset, režim, trajanje, presete, „Kraj u” i opcije za nulu. Dugmad ± rade u odbrojavanju. Pragovi i boje upozorenja su zajedno i važe za oba tajmera; BLACKOUT je zajednički.

@@ -108,8 +108,6 @@
     font-variant-numeric:tabular-nums; line-height:.95; white-space:nowrap;}
   .pv-time.blink,.secondary-readout.blink{animation:pulse 1s steps(2,start) infinite;}
   .zero-alert-row{display:flex;align-items:center;gap:12px 18px;flex-wrap:wrap;}
-  .zero-alert-row + .zero-alert-row{margin-top:12px;}
-  .zero-alert-row strong{font-size:12px;min-width:70px;}
   .zero-alert-row[hidden]{display:none;}
   #zeroSoundStatus{color:var(--warn-yellow,#ffc23a);}
   @keyframes pulse{50%{opacity:.25;}}
@@ -124,17 +122,19 @@
   .badge.bk{background:#b8322b; color:#fff; border-color:#b8322b;}
 
   /* ---- transport ---- */
+  .timer-control,.timer-sections,#dualOptions{display:flex;flex-direction:column;gap:10px;min-width:0;}
+  .timer-heading{color:var(--dim);font-size:12px;letter-spacing:.08em;text-transform:uppercase;margin:0;}
   .transport{display:flex; gap:8px;}
-  #btnStart{flex:1.7; font-size:17px; font-weight:600; padding:15px 8px; letter-spacing:.8px; border-radius:11px;}
-  #btnStart.running{background:#82591f; border-color:rgba(255,255,255,.12); color:#fff;}
-  #btnStart.running:hover{background:#936521;}
-  #btnReset{flex:.7; font-size:14px; border-radius:11px;}
+  .transport .timer-start{flex:1.7; font-size:17px; font-weight:600; padding:15px 8px; letter-spacing:.8px; border-radius:11px;}
+  .transport .timer-start.running{background:#82591f; border-color:rgba(255,255,255,.12); color:#fff;}
+  .transport .timer-start.running:hover{background:#936521;}
+  .transport .timer-reset{flex:.7; font-size:14px; border-radius:11px;}
   .adjust{display:flex; gap:6px; flex:3;}
   .adjust button{flex:1; font-family:"SF Mono",ui-monospace,Menlo,monospace; font-size:12.5px; padding:8px 4px;
     font-variant-numeric:tabular-nums;}
-  #btnBlackout{flex:1; border-radius:11px;}
-  #btnBlackout.on{background:#b8322b; border-color:rgba(255,255,255,.12); color:#fff;}
-  #btnBlackout.on:hover{background:#c63730;}
+  .transport .timer-blackout{flex:1; border-radius:11px;}
+  .transport .timer-blackout.on{background:#b8322b; border-color:rgba(255,255,255,.12); color:#fff;}
+  .transport .timer-blackout.on:hover{background:#c63730;}
 
   /* segmented kontrola (Apple-stil) */
   .tabs{display:inline-flex; gap:2px; background:var(--input); border:1px solid var(--border);
@@ -381,7 +381,6 @@
   .output-quality summary{cursor:pointer; font-weight:600;}
   .output-quality details ol{margin:8px 0; padding-left:20px;}
   .output-quality details li+li{margin-top:6px;}
-  .secondary-readout{font:700 clamp(32px,5vw,64px)/1.2 "SF Mono",Menlo,monospace; text-align:center; padding:12px; background:#000; border-radius:8px;}
   #networkSel{width:100%; margin:6px 0 8px; font-size:12px;}
 
   @media (prefers-reduced-motion:reduce){
@@ -393,9 +392,9 @@
     .topbar>.grow{flex:0 0 100%; height:0;}
     .topbar #displaySel{flex:1 1 180px; min-width:150px; max-width:220px!important;}
     .transport{flex-wrap:wrap;}
-    #btnStart{flex:2 1 160px;}
-    #btnReset{flex:1 1 100px;}
-    #btnBlackout{flex:1 1 120px;}
+    .transport .timer-start{flex:2 1 160px;}
+    .transport .timer-reset{flex:1 1 100px;}
+    .transport .timer-blackout{flex:1 1 120px;}
     .transport .adjust{order:4; flex:1 0 100%;}
   }
 </style>
@@ -425,6 +424,9 @@
 <div class="main">
   <div class="left">
 
+    <div class="timer-sections">
+    <section id="timerOneControls" class="timer-control" aria-labelledby="timerOneHeading">
+    <h3 class="timer-heading" id="timerOneHeading" data-i18n="timerOne">Tajmer 1</h3>
     <div class="preview" id="preview">
       <div class="pv-checker" id="pvChecker"></div>
       <div class="badges">
@@ -440,8 +442,8 @@
     </div>
 
     <div class="transport">
-      <button id="btnStart" class="primary">▶ START</button>
-      <button id="btnReset">↺ RESET</button>
+      <button id="btnStart" class="primary timer-start">▶ START</button>
+      <button id="btnReset" class="timer-reset">↺ RESET</button>
       <div class="adjust">
         <button data-adj="-300">−5m</button>
         <button data-adj="-60">−1m</button>
@@ -450,7 +452,7 @@
         <button data-adj="60">+1m</button>
         <button data-adj="300">+5m</button>
       </div>
-      <button id="btnBlackout">■ BLACKOUT</button>
+      <button id="btnBlackout" class="timer-blackout" data-i18n-title="sharedBlackout">■ BLACKOUT</button>
     </div>
 
     <div class="panel">
@@ -478,7 +480,14 @@
         <span class="glabel" data-i18n="quick">Brzo</span>
         <div class="chips" id="chips"></div>
       </div>
+      <div class="field zero-alert-row" role="group" aria-labelledby="zeroTimerOne">
+        <span class="glabel" id="zeroTimerOne" data-i18n="zeroAlerts" data-i18n-title="zeroAlertsHelp">Na nuli</span>
+        <label class="chk"><input type="checkbox" id="chkOver" checked> <span data-i18n="overtime">Minus posle nule</span></label>
+        <label class="chk"><input type="checkbox" id="chkFlash" checked> <span data-i18n="flashZero">Treptanje na / posle nule</span></label>
+        <label class="chk"><input type="checkbox" id="chkSound"> <span data-i18n="sound">Zvonce na nuli</span></label>
+      </div>
     </div>
+    </section>
 
     <div class="panel" id="dualPanel">
       <div class="layout-head">
@@ -491,12 +500,57 @@
         </div>
         <div class="layout-row">
           <label id="dualSplitLabel"><span data-i18n="splitLabel">Podela</span><select id="dualSplit"><option value="columns" data-i18n="splitColumns">Levo / desno │</option><option value="rows" data-i18n="splitRows">Gore / dole ─</option></select></label>
-          <button id="secondaryDurationTrigger" class="duration-trigger" type="button" aria-haspopup="dialog" aria-controls="durationPopover" aria-expanded="false">
-            <span class="caption" data-i18n="timerTwo">Tajmer 2</span><span class="value" id="secondaryDurationValue">00:10:00</span>
-          </button>
         </div>
-        <div id="secondaryReadout" class="secondary-readout">10:00</div>
+        <section id="timerTwoControls" class="timer-control" aria-labelledby="timerTwoHeading">
+          <h3 class="timer-heading" id="timerTwoHeading" data-i18n="timerTwo">Tajmer 2</h3>
+          <div class="preview" id="secondaryPreview">
+            <div class="pv-checker" id="secondaryChecker"></div>
+            <div class="pv-stage"><div class="pv-time secondary-readout" id="secondaryReadout">10:00</div></div>
+          </div>
+          <div class="transport">
+            <button id="btnSecondaryStart" class="primary timer-start">▶ START</button>
+            <button id="btnSecondaryReset" class="timer-reset">↺ RESET</button>
+            <div class="adjust">
+              <button data-adj-secondary="-300">−5m</button><button data-adj-secondary="-60">−1m</button><button data-adj-secondary="-10">−10s</button>
+              <button data-adj-secondary="10">+10s</button><button data-adj-secondary="60">+1m</button><button data-adj-secondary="300">+5m</button>
+            </div>
+            <button id="btnSecondaryBlackout" class="timer-blackout" data-i18n-title="sharedBlackout">■ BLACKOUT</button>
+          </div>
+          <div class="panel">
+            <div class="field">
+              <span class="glabel" data-i18n="mode">Režim</span>
+              <div class="tabs">
+                <button data-mode-secondary="countdown" class="active" data-i18n="modeCountdown">Odbrojavanje</button>
+                <button data-mode-secondary="countup" data-i18n="modeCountup">Štoperica</button>
+                <button data-mode-secondary="clock" data-i18n="modeClock">Sat</button>
+              </div>
+              <div class="sep"></div>
+              <div class="duration-control">
+                <button id="secondaryDurationTrigger" class="duration-trigger" type="button" aria-haspopup="dialog" aria-controls="durationPopover" aria-expanded="false" data-i18n-title="durTitle">
+                  <span class="caption" data-i18n="duration">Trajanje</span><span class="value" id="secondaryDurationValue">00:10:00</span>
+                </button>
+                <button id="btnSetSecondaryDur" class="ghost" data-i18n="set">Postavi</button>
+              </div>
+              <div class="target-control">
+                <div class="sep"></div>
+                <label class="lbl" for="secondaryTargetInput" data-i18n="endAt">Kraj u</label>
+                <input type="time" id="secondaryTargetInput" data-i18n-title="targetTitle">
+              </div>
+            </div>
+            <div class="field">
+              <span class="glabel" data-i18n="quick">Brzo</span>
+              <div class="chips" id="secondaryChips"></div>
+            </div>
+            <div class="field zero-alert-row" id="secondaryZeroAlerts" role="group" aria-labelledby="zeroTimerTwo" hidden>
+              <span class="glabel" id="zeroTimerTwo" data-i18n="zeroAlerts" data-i18n-title="zeroAlertsHelp">Na nuli</span>
+              <label class="chk"><input type="checkbox" id="chkOver2" checked> <span data-i18n="overtime">Minus posle nule</span></label>
+              <label class="chk"><input type="checkbox" id="chkFlash2" checked> <span data-i18n="flashZero">Treptanje na / posle nule</span></label>
+              <label class="chk"><input type="checkbox" id="chkSound2"> <span data-i18n="sound">Zvonce na nuli</span></label>
+            </div>
+          </div>
+        </section>
         <div class="layout-row">
+          <span class="lbl" data-i18n="bothTimers">Oba tajmera</span>
           <button id="btnSecondaryStart" class="primary">▶ START 2</button><button id="btnSecondaryReset">↺ RESET 2</button>
           <button id="btnBothStart" data-i18n="startBoth">▶ Pokreni oba</button><button id="btnBothPause" data-i18n="pauseBoth">⏸ Pauziraj oba</button><button id="btnBothReset" data-i18n="resetBoth">↺ Resetuj oba</button>
         </div>
@@ -516,6 +570,7 @@
           <p class="panel-help" data-i18n="separateSharedHelp">Boje, upozorenja, poruka i BLACKOUT važe za oba ekrana. Tekst, NOW/NEXT i QR ostaju na ekranu Tajmera 1. OBS i linkovi zadržavaju zajednički prikaz. Televizore podesi kao proširene ekrane, ne preslikane.</p>
         </div>
       </div>
+    </div>
     </div>
 
     <div class="panel" id="outputLayoutPanel">
@@ -561,7 +616,7 @@
       <p class="panel-help" id="layoutHelp" data-i18n="layoutHelp">0 = centar. Položaj je procenat širine/visine svakog dela ekrana. Promene važe i za OBS/telefon; pregled u kontroli ostaje centriran. Prevelika skala ili pomeranje mogu iseći cifre.</p>
     </div>
 
-    <div class="panel">
+    <div class="panel" id="zeroAlertsPanel">
       <div class="field">
         <span class="glabel" data-i18n="colors">Boje</span>
         <label class="swatch"><span data-i18n="background">Pozadina</span> <input type="color" id="bgColor" value="#000000"></label>
@@ -572,6 +627,14 @@
         <span class="warn-sw"><span class="tag" data-i18n="tagR">C</span><input type="color" id="warnRed" value="#ff4540" data-i18n-title="red" title="Crveno"></span>
         <div class="sep"></div>
         <label class="chk"><input type="checkbox" id="chkTransparent"> <span data-i18n="transparent">Providna pozadina (OBS)</span></label>
+      </div>
+      <div class="field">
+        <span class="glabel" data-i18n="thresholds">Pragovi</span>
+        <label class="swatch"><span data-i18n="yellowAt">Žuto na</span> <input type="text" id="yellowInput" class="short" value="2:00"></label>
+        <label class="swatch"><span data-i18n="redAt">Crveno na</span> <input type="text" id="redInput" class="short" value="1:00"></label>
+        <label class="chk"><input type="checkbox" id="chkProg"> <span data-i18n="progress">Traka napretka</span></label>
+        <button id="btnTestZeroBell" class="ghost" data-i18n="testZeroBell">Probaj zvonce</button>
+        <p id="zeroSoundStatus" class="panel-help" role="status" hidden></p>
       </div>
       <div class="field">
         <span class="glabel" data-i18n="text">Tekst</span>
@@ -599,36 +662,6 @@
           </div>
           <div class="gridsel" id="gridSel"></div>
           <p class="panel-help" data-i18n="gridHelp">Grid postavlja prozor u izabrani deo displeja. Isključi ga za slobodno pomeranje mišem i tačnu veličinu prozora.</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="panel" id="zeroAlertsPanel">
-      <div class="field">
-        <span class="glabel" data-i18n="thresholds">Pragovi</span>
-        <label class="swatch"><span data-i18n="yellowAt">Žuto na</span> <input type="text" id="yellowInput" class="short" value="2:00"></label>
-        <label class="swatch"><span data-i18n="redAt">Crveno na</span> <input type="text" id="redInput" class="short" value="1:00"></label>
-        <div class="sep"></div>
-        <label class="chk"><input type="checkbox" id="chkProg"> <span data-i18n="progress">Traka napretka</span></label>
-      </div>
-      <div class="field" style="align-items:flex-start">
-        <span class="glabel" data-i18n="zeroAlerts">Na nuli</span>
-        <div style="flex:1;min-width:0">
-          <div class="zero-alert-row" role="group" aria-labelledby="zeroTimerOne">
-            <strong id="zeroTimerOne" data-i18n="timerOne">Tajmer 1</strong>
-            <label class="chk"><input type="checkbox" id="chkOver" checked> <span data-i18n="overtime">Minus posle nule</span></label>
-            <label class="chk"><input type="checkbox" id="chkFlash" checked> <span data-i18n="flashZero">Treptanje na / posle nule</span></label>
-            <label class="chk"><input type="checkbox" id="chkSound"> <span data-i18n="sound">Zvonce na nuli</span></label>
-          </div>
-          <div class="zero-alert-row" id="secondaryZeroAlerts" role="group" aria-labelledby="zeroTimerTwo" hidden>
-            <strong id="zeroTimerTwo" data-i18n="timerTwo">Tajmer 2</strong>
-            <label class="chk"><input type="checkbox" id="chkOver2" checked> <span data-i18n="overtime">Minus posle nule</span></label>
-            <label class="chk"><input type="checkbox" id="chkFlash2" checked> <span data-i18n="flashZero">Treptanje na / posle nule</span></label>
-            <label class="chk"><input type="checkbox" id="chkSound2"> <span data-i18n="sound">Zvonce na nuli</span></label>
-          </div>
-          <p class="panel-help" data-i18n="zeroAlertsHelp">Minus uključen: vreme nastavlja crveno u minus. Isključen: prikaz ostaje na 0:00. Treptanje i zvonce biraš zasebno za svaki tajmer; zvonce svira jednom, samo ako je uključeno pre isteka.</p>
-          <button id="btnTestZeroBell" class="ghost" data-i18n="testZeroBell">Probaj zvonce</button>
-          <p id="zeroSoundStatus" class="panel-help" role="status" hidden></p>
         </div>
       </div>
     </div>
@@ -930,6 +963,7 @@ const I18N = {
     outputQualityLimit:'Provera meri prikaz aplikacije u trenutku provere. Ne može da potvrdi rezoluciju HDMI signala, obradu u svičeru ili oštrinu panela televizora.',
     actualSize:'Trenutni izlaz', sizeFailed:'Veličina nije primenjena. Proveri dimenzije i pokušaj ponovo.', sizeInvalid:'Unesi cele brojeve: širina 80–7680 i visina 60–4320.',
     adjustDigits:'Podesi cifre', timerOne:'Tajmer 1', timerTwo:'Tajmer 2', centerReset:'Centriraj · 100%',
+    bothTimers:'Oba tajmera', sharedBlackout:'Zajednički BLACKOUT za oba izlaza',
     freeAudience:'Slobodan raspored', layoutElement:'Element', layoutElementScale:'Veličina (%)', layoutRestoreElement:'Vrati položaj i veličinu',
     layoutTitleElement:'Naslov', layoutMessageElement:'Poruka', layoutRundownElement:'SADA / SLEDI', layoutProgressElement:'Traka napretka',
     freeAudienceHelp:'X i Y važe za ceo izlaz: 0 je centar, −100 i +100 su ivice. Elementi mogu da se preklapaju; seče ih samo spoljna ivica ekrana. Važi i za prikaz u browseru i OBS-u. Pregled u kontroli ostaje centriran.',
@@ -1049,6 +1083,7 @@ const I18N = {
     outputQualityLimit:'This check measures the app output at the time of the check. It cannot verify the HDMI signal resolution, switcher processing or TV panel sharpness.',
     actualSize:'Current output', sizeFailed:'Size was not applied. Check the dimensions and try again.', sizeInvalid:'Enter whole numbers: width 80–7680 and height 60–4320.',
     adjustDigits:'Adjust digits', timerOne:'Timer 1', timerTwo:'Timer 2', centerReset:'Center · 100%',
+    bothTimers:'Both timers', sharedBlackout:'Shared BLACKOUT for both outputs',
     freeAudience:'Free layout', layoutElement:'Element', layoutElementScale:'Size (%)', layoutRestoreElement:'Reset position and size',
     layoutTitleElement:'Title', layoutMessageElement:'Message', layoutRundownElement:'NOW / NEXT', layoutProgressElement:'Progress bar',
     freeAudienceHelp:'X and Y span the entire output: 0 is center, −100 and +100 are the edges. Elements can overlap; only the outside edge of the screen clips them. Also applies to browser and OBS output. Control preview stays centered.',
@@ -1138,7 +1173,7 @@ let cues = [], currentCue = -1, autoNext = false, zeroFired = false, outputOpen 
 let selectedCue = null, editingCue = null, removedCue = null, pendingCueAction = null, rundownHasRun = false;
 let rundownRenderKey = '';
 let autoAdvanceTimer = null;
-let cueDraftMs = 600000, durationPickerTarget = null, durationPickerAnchor = null, targetArmed = false;
+let cueDraftMs = 600000, durationPickerTarget = null, durationPickerAnchor = null, targetArmed = false, secondaryTargetArmed = false;
 
 const $ = id => document.getElementById(id);
 function pad(n){ return String(n).padStart(2,'0'); }
@@ -1266,16 +1301,45 @@ function adjust(sec){
   send();
 }
 function setMode(m){ if(!['countdown','countup','clock'].includes(m)) return; cancelAutoAdvance(); clearTargetArm(true); S.mode=m; S.running=false; S.remMs=S.durationMs; S.elapsedMs=0; zeroFired=false; setModeTabs(); send();deckControl?.prepared('t1'); updateButtons(); }
-function setModeTabs(){ document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('active',b.dataset.mode===S.mode)); }
+function setModeTabs(){ document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('active',b.dataset.mode===S.mode)); }
 
-function secondaryRunning(running){
-  engineClock.sample();
-  if(!S.dualTimer) return;
-  TimerTools.setRunning(S.secondary,!!running,Date.now()); send();
+function clearSecondaryTarget(clearValue){
+  secondaryTargetArmed=false;
+  $('secondaryTargetInput').classList.remove('armed');
+  if(clearValue) $('secondaryTargetInput').value='';
 }
-function secondaryDuration(ms){
+function secondaryRunning(running){
+  if(!S.dualTimer) return;
+  const now=engineClock.sample(), timer=S.secondary;
+  if(running&&!timer.running&&timer.mode==='countdown'&&secondaryTargetArmed){
+    const ms=durationUntilTarget($('secondaryTargetInput').value,now);
+    clearSecondaryTarget(false);
+    if(ms!==null){timer.remMs=ms;timer.durationMs=Math.max(1000,ms);}
+  }
+  TimerTools.setRunning(timer,!!running,now); send();
+}
+function secondaryDuration(ms,keepTarget=false){
   if(!Number.isFinite(ms)||ms<1000||ms>TimerTools.MAX_DURATION) return;
+  if(!keepTarget) clearSecondaryTarget(true);
   S.secondary.mode='countdown';S.secondary.durationMs=ms; TimerTools.reset(S.secondary); send();deckControl?.prepared('t2');
+}
+function resetSecondary(){
+  clearSecondaryTarget(true); TimerTools.reset(S.secondary); send();
+}
+function setSecondaryMode(mode){
+  if(!S.dualTimer||!['countdown','countup','clock'].includes(mode)||S.secondary.mode===mode) return;
+  clearSecondaryTarget(true);
+  S.secondary.mode=mode; TimerTools.reset(S.secondary); send(); deckControl?.prepared('t2');
+}
+function adjustSecondary(seconds){
+  if(!S.dualTimer||S.secondary.mode!=='countdown'||!Number.isFinite(seconds)) return;
+  engineClock.sample();
+  clearSecondaryTarget(true);
+  const timer=S.secondary,ms=seconds*1000;
+  if(timer.running) timer.endAt+=ms;
+  else timer.remMs=Math.max(0,timer.remMs+ms);
+  timer.durationMs=Math.max(1000,Math.min(TimerTools.MAX_DURATION,timer.durationMs+ms));
+  send();
 }
 function primaryRunning(running){ if(S.mode!=='clock'&&S.running!==!!running) startPause(); }
 function bothRunning(running){
@@ -1367,17 +1431,17 @@ $('btnLayoutReset').addEventListener('click',()=>{
 $('chkFreeAudience').addEventListener('change',e=>{S.freeAudience=e.target.checked;syncRoutingUI();send();});
 $('chkDual').addEventListener('change',e=>{
   S.dualTimer=e.target.checked;
-  if(!S.dualTimer) TimerTools.setRunning(S.secondary,false,Date.now());
+  if(!S.dualTimer){ TimerTools.setRunning(S.secondary,false,Date.now()); clearSecondaryTarget(true); }
   if(!S.dualTimer)S.liveTimerView='t1';
   if(S.dualTimer){ S.fitWindow=false; $('chkFit').checked=false; }
   syncDualUI(); send();
 });
 $('dualSplit').addEventListener('change',e=>{ S.dualSplit=e.target.value==='rows'?'rows':'columns'; send(); });
 $('btnSecondaryStart').addEventListener('click',()=>secondaryRunning(!S.secondary.running));
-$('btnSecondaryReset').addEventListener('click',()=>{ TimerTools.reset(S.secondary); send(); });
+$('btnSecondaryReset').addEventListener('click',resetSecondary);
 $('btnBothStart').addEventListener('click',()=>bothRunning(true));
 $('btnBothPause').addEventListener('click',()=>bothRunning(false));
-$('btnBothReset').addEventListener('click',()=>{ TimerTools.reset(S.secondary); reset(); });
+$('btnBothReset').addEventListener('click',()=>{ clearSecondaryTarget(true); TimerTools.reset(S.secondary); reset(); });
 let lastOutputGeometry=null, lastSecondaryGeometry=null;
 let outputQualityVersion=0;
 let outputQuality={role:'primary',key:null,status:'idle',result:null,checkedAt:null};
@@ -1571,17 +1635,34 @@ function calc(now){
   return {text:fmtMs(rem),fg,neg,prog,rem};
 }
 let lastKey='';
+let lastSecondaryMode;
 function render(){
   refreshOutputQualityContext();
   const now=engineClock.sample(), r=calc(now);
   if(S.dualTimer){
     let rem=TimerTools.remaining(S.secondary,now); if(!(S.secondary.overtime??S.overtime)) rem=Math.max(0,rem);
     const mode=S.secondary.mode||'countdown';
-    $('secondaryReadout').textContent=mode==='clock'?new Date(now).toLocaleTimeString('en-GB',{hour12:false}):mode==='countup'?fmtSecs(Math.floor(TimerTools.elapsed(S.secondary,now)/1000),false):fmtMs(rem);
-    $('secondaryReadout').style.color=mode==='countdown'&&rem<=0?S.warnRed:mode==='countdown'&&S.useWarnColors?(rem<=S.redSec*1000?S.warnRed:rem<=S.yellowSec*1000?S.warnYellow:S.fgColor):S.fgColor;
-    $('secondaryReadout').classList.toggle('blink',mode==='countdown'&&rem<=0&&S.secondary.flashZero!==false);
-    $('btnSecondaryStart').textContent=(mode==='clock'?t('clockBtn'):S.secondary.running?t('pause'):t('start'))+' 2';
+    const readout=$('secondaryReadout'),preview=$('secondaryPreview');
+    const time=mode==='clock'?new Date(now).toLocaleTimeString('en-GB',{hour12:false}):mode==='countup'?fmtSecs(Math.floor(TimerTools.elapsed(S.secondary,now)/1000),false):fmtMs(rem);
+    if(readout.textContent!==time) readout.textContent=time;
+    readout.style.fontSize=Math.min(preview.clientWidth*.86/Math.max(4,time.length*.6),preview.clientHeight*.56)+'px';
+    preview.style.background=S.transparent?'transparent':S.bgColor;
+    $('secondaryChecker').style.display=S.transparent?'block':'none';
+    readout.style.color=mode==='countdown'&&rem<=0?S.warnRed:mode==='countdown'&&S.useWarnColors?(rem<=S.redSec*1000?S.warnRed:rem<=S.yellowSec*1000?S.warnYellow:S.fgColor):S.fgColor;
+    readout.classList.toggle('blink',mode==='countdown'&&rem<=0&&S.secondary.flashZero!==false);
+    $('btnSecondaryStart').textContent=mode==='clock'?t('clockBtn'):S.secondary.running?t('pause'):t('start');
     $('btnSecondaryStart').disabled=mode==='clock';
+    $('btnSecondaryStart').classList.toggle('running',mode!=='clock'&&S.secondary.running);
+    $('btnSecondaryBlackout').classList.toggle('on',S.blackout);
+    $('btnSecondaryBlackout').setAttribute('aria-pressed',String(S.blackout));
+    if(lastSecondaryMode!==mode){
+      lastSecondaryMode=mode;
+      document.querySelectorAll('[data-mode-secondary]').forEach(b=>{
+        const active=b.dataset.modeSecondary===mode;
+        b.classList.toggle('active',active); b.setAttribute('aria-pressed',String(active));
+      });
+      document.querySelectorAll('[data-adj-secondary]').forEach(b=>b.disabled=mode!=='countdown');
+    }
   }
   const pv=$('preview');
 
@@ -2055,10 +2136,10 @@ api.onRemoteCmd(c=>{
     case 'reset': reset(); break;
     case 'primaryRunning': primaryRunning(c.value===true); break;
     case 'secondaryRunning': secondaryRunning(c.value===true); break;
-    case 'secondaryReset': TimerTools.reset(S.secondary); send(); break;
+    case 'secondaryReset': resetSecondary(); break;
     case 'secondaryDuration': secondaryDuration(Number(c.value)); break;
     case 'bothRunning': bothRunning(c.value===true); break;
-    case 'bothReset': TimerTools.reset(S.secondary); reset(); break;
+    case 'bothReset': clearSecondaryTarget(true); TimerTools.reset(S.secondary); reset(); break;
     case 'adjust': adjust(+c.value||0); break;
     case 'go': go(); break;
     case 'blackout': $('btnBlackout').click(); break;
@@ -2124,6 +2205,7 @@ $('durTrigger').addEventListener('click',()=>openDurationPicker('timer',$('durTr
 $('btnSetDur').addEventListener('click',()=>openDurationPicker('timer',$('durTrigger')));
 $('cueDurationTrigger').addEventListener('click',()=>openDurationPicker('cue',$('cueDurationTrigger')));
 $('secondaryDurationTrigger').addEventListener('click',()=>openDurationPicker('secondary',$('secondaryDurationTrigger')));
+$('btnSetSecondaryDur').addEventListener('click',()=>openDurationPicker('secondary',$('btnSetSecondaryDur')));
 $('durationPickerClose').addEventListener('click',()=>closeDurationPicker(true));
 $('durationPickerConfirm').addEventListener('click',applyDurationPicker);
 document.querySelectorAll('[data-duration-step]').forEach(b=>b.addEventListener('click',()=>{
@@ -2158,12 +2240,18 @@ document.querySelector('.main').addEventListener('scroll',()=>closeDurationPicke
 $('btnStart').addEventListener('click',startPause);
 $('btnReset').addEventListener('click',reset);
 document.querySelectorAll('[data-adj]').forEach(b=>b.addEventListener('click',()=>adjust(+b.dataset.adj)));
-document.querySelectorAll('.tabs button[data-mode]').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.mode)));
+document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.mode)));
+document.querySelectorAll('[data-adj-secondary]').forEach(b=>b.addEventListener('click',()=>adjustSecondary(+b.dataset.adjSecondary)));
+document.querySelectorAll('[data-mode-secondary]').forEach(b=>b.addEventListener('click',()=>setSecondaryMode(b.dataset.modeSecondary)));
+$('btnSecondaryBlackout').addEventListener('click',()=>$('btnBlackout').click());
 
 [1,2,3,5,10,15,20,30,45,60].forEach(min=>{
   const b=document.createElement('button'); b.textContent=min+'m';
   b.addEventListener('click',()=>{ currentCue=-1; renderCues(); setDuration(min*60000); });
   $('chips').appendChild(b);
+  const second=b.cloneNode(true);
+  second.addEventListener('click',()=>{if(S.dualTimer) secondaryDuration(min*60000);});
+  $('secondaryChips').appendChild(second);
 });
 
 function armEndTarget(){
@@ -2173,6 +2261,14 @@ function armEndTarget(){
 }
 $('targetInput').addEventListener('change',armEndTarget);
 $('targetInput').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); armEndTarget(); $('btnStart').focus(); } });
+function armSecondaryEndTarget(){
+  if(!S.dualTimer) return;
+  const input=$('secondaryTargetInput'),ms=durationUntilTarget(input.value,engineClock.sample());
+  if(ms===null){clearSecondaryTarget(false);return;}
+  secondaryTargetArmed=true;input.classList.add('armed');secondaryDuration(Math.max(1000,ms),true);
+}
+$('secondaryTargetInput').addEventListener('change',armSecondaryEndTarget);
+$('secondaryTargetInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();armSecondaryEndTarget();$('btnSecondaryStart').focus();}});
 
 $('yellowInput').addEventListener('change',()=>{ const ms=parseTime($('yellowInput').value); if(ms!==null){ S.yellowSec=ms/1000; send(); } });
 $('redInput').addEventListener('change',()=>{ const ms=parseTime($('redInput').value); if(ms!==null){ S.redSec=ms/1000; send(); } });
@@ -2406,6 +2502,7 @@ async function applyDeckOperation(op){
     if(!primary&&!S.dualTimer) return {ok:false,code:'TIMER_DISABLED',message:'Enable Timer 2 in Control first.'};
     if(op.type==='loadSet'&&timer.running)return {ok:false,code:'ACTIVE_RUNNING',message:'Pause ACTIVE before loading READY.'};
     if(primary){cancelAutoAdvance();clearTargetArm(true);}
+    else clearSecondaryTarget(true);
     if(op.type==='startSet'||op.type==='loadSet'){
       const start=op.type==='startSet';
       Object.assign(timer,{mode:op.mode,durationMs:op.durationMs,remMs:op.durationMs,elapsedMs:0,startAt:start?now:0,endAt:start?now+op.durationMs:0,running:start&&op.mode!=='clock'});

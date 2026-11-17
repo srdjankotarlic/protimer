@@ -23,7 +23,7 @@ function host() {
     endAt: wall + 1000, remMs: 1000, elapsedMs: 0, soundZero: false });
   const state = { ...timer(), dualTimer: true, secondary: timer() };
   const context = vm.createContext({ S: state, TimerTools, cues: [], currentCue: -1,
-    zeroFired: false, autoNext: false, autoAdvanceTimer: null, targetArmed: false,
+    zeroFired: false, autoNext: false, autoAdvanceTimer: null, targetArmed: false, secondaryTargetArmed: false,
     Date: { now: () => wall }, performance: { now: () => mono },
     ProTimerDeckAudio: () => ({}), showZeroAudioError() {}, beep() { bells++; },
     api: { sendState() {}, onClockPower() {} }, syncDurationDisplays() {},
@@ -40,7 +40,7 @@ function host() {
   for (const [start, end] of [
     ['let deckControl=null;', '// ---------- RASPORED'],
     ['function tickCountdown(){', 'function reset(){'],
-    ['function secondaryRunning(running){', 'function secondaryDuration(ms){'],
+    ['function secondaryRunning(running){', 'function secondaryDuration(ms,keepTarget=false){'],
     ['function primaryRunning(running){', 'function syncDualUI(){'],
     ['function setZeroSound(', "$('chkSound').addEventListener"]
   ]) vm.runInContext(section(start, end), context, { filename: 'controller.html' });
