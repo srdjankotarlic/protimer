@@ -77,7 +77,14 @@ jobs:
             $installer = Start-Process -FilePath $setup -ArgumentList "/S /D=$installDir" -Wait -PassThru
             if ($installer.ExitCode -ne 0) { throw "Setup attempt $attempt failed with exit code $($installer.ExitCode)" }
             if (-not (Test-Path -LiteralPath $appExe)) { throw 'Setup did not install ProTimer.exe' }
-            if ((Get-Item $appExe).VersionInfo.ProductVersion -ne $version) { throw 'Installed application version differs from release' }
+            $info = (Get-Item $appExe).VersionInfo
+            $installedVersion = "$($info.ProductMajorPart).$($info.ProductMinorPart).$($info.ProductBuildPart)"
+            if ($installedVersion -ne $version) { throw "Installed version $installedVersion differs from release $version" }
+            foreach ($file in @('ProTimer.exe', 'resources/app.asar')) {
+              $expected = (Get-FileHash (Join-Path 'dist-installers/win-unpacked' $file) -Algorithm SHA256).Hash
+              $actual = (Get-FileHash (Join-Path $installDir $file) -Algorithm SHA256).Hash
+              if ($actual -ne $expected) { throw "Installer changed payload $file" }
+            }
           }
           foreach ($resource in @('streamdeck/com.srdjankotarlic.protimer.streamDeckPlugin', 'cloudflared.exe')) {
             if (-not (Test-Path (Join-Path "$installDir/resources" $resource))) { throw "Missing installed resource $resource" }
