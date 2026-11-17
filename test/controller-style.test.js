@@ -45,3 +45,8 @@ test('Polish preserves native controls, explicit focus and motion preferences', 
   assert.match(css, /\.pv-time\.blink,\.secondary-readout\.blink\{animation:pulse/);
   assert.doesNotMatch(css, /\.pv-time\.neg\{animation:pulse/);
 });
+test('Control has unique DOM ids across both timer sections', () => {
+  const markup = html.slice(0, html.indexOf('<script'));
+  const ids = [...markup.matchAll(/\sid="([^"]+)"/g)].map(match => match[1]);
+  assert.deepEqual(ids.filter((id, index) => ids.indexOf(id) !== index), []);
+});
