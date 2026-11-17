@@ -24,7 +24,11 @@ Verified on 17 November 2026. Functional changes are tracked in [PR #56](https:/
 
 ## Packaged applications
 
-The release workflow builds and runs the complete smoke suite against Windows x64 and macOS arm64 packaged applications before publishing the full set of installers, native plugin and checksums. Its tagged run is linked from the GitHub release. Source CI also exercises Linux under Xvfb.
+Release packages passed on macOS arm64 and Windows x64 in [run 44121207874](https://github.com/srdjankotarlic/protimer/actions/runs/44121207874). Windows Setup was installed, reinstalled, its executable/archive hashes compared with the build payload, the installed app's full smoke suite passed, and uninstall was verified. The Mac DMG mounted successfully locally and its application version and source files matched the release.
+
+The first tagged run stopped on a new installer-test assertion that compared a four-part Windows product version with three-part semver. The test now checks major/minor/patch and the installed file hashes. The final packages were built at `ac8965d`, whose only difference from tag `v2.5.2` (`574fcca`) is that workflow test correction. Runtime source is identical. The final five release assets were published together after both builds passed.
+
+All three source platform checks passed on the application changes and main merge, including [run 44120383264](https://github.com/srdjankotarlic/protimer/actions/runs/44120383264). A later Linux Xvfb fullscreen transition check intermittently failed; this is recorded separately from the Windows and Mac package results.
 
 The preceding preview package passed on both platforms in [run 44073765310](https://github.com/srdjankotarlic/protimer/actions/runs/44073765310). Its initial macOS native fullscreen restoration check failed on the hosted runner and passed on an unchanged rerun. The complete local Mac check passed. Assertions were retained.
 

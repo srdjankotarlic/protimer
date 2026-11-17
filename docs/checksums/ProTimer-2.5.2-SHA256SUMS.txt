@@ -1,0 +1,4 @@
+a0df8f887cdc2837cd321a447966a30f163d8684a711b99b14623e2acdb7444f  ProTimer-2.5.2-arm64.dmg
+f1f6aae41aca388e105e1fb954c5e7aa194b4382b778a5d5a74fb9ebca5aa350  ProTimer-Setup-2.5.2.exe
+7bcad065b3ee84494c2e679184171fbddf0154776c918eeeebfa27df6ee9b07b  ProTimer-2.5.2-portable.exe
+f9285d8e2534c51eeefd71333ccb08b0a3d5ca6e563d18ebb860482741b563e0  com.srdjankotarlic.protimer.streamDeckPlugin
