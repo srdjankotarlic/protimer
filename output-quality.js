@@ -23,10 +23,11 @@ const MEASURE_RENDERER = `(async () => {
   };
   let clipped = false;
   if (!visible(document.getElementById('blackout')) && !visible(document.getElementById('audienceQr'))) {
-    clipped = ['timer', 'secondaryTimer', 'text', 'msg'].some(id => {
+    const free = document.body?.classList.contains('free-audience');
+    clipped = (free ? ['timer', 'secondaryTimer', 'text', 'msg', 'nownext', 'prog'] : ['timer', 'secondaryTimer', 'text', 'msg']).some(id => {
       const el = document.getElementById(id);
       if (!visible(el)) return false;
-      const rect = el.getBoundingClientRect(), pane = el.closest('.timer-pane');
+      const rect = el.getBoundingClientRect(), pane = free ? null : el.closest('.timer-pane');
       const limit = pane ? pane.getBoundingClientRect() : {left:0,top:0,right:width,bottom:height};
       return rect.left < Math.max(0, limit.left) - 1 || rect.top < Math.max(0, limit.top) - 1 ||
         rect.right > Math.min(width, limit.right) + 1 || rect.bottom > Math.min(height, limit.bottom) + 1;

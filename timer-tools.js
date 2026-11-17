@@ -13,6 +13,20 @@
     const v = value || {};
     return { scale: clamp(v.scale ?? 100, 10, 200, 100), x: clamp(v.x ?? 0, -100, 100, 0), y: clamp(v.y ?? 0, -100, 100, 0) };
   }
+  const freeElements = Object.freeze(['primary', 'secondary', 'title', 'message', 'rundown', 'progress']);
+  function freePosition(element, dual = true, split = 'columns') {
+    const rows = split === 'rows';
+    return {
+      primary: {x: dual && !rows ? -48 : 0, y: dual && rows ? -28 : -5, scale:100},
+      secondary: {x: rows ? 0 : 48, y: rows ? 26 : -5, scale:100},
+      title: {x:0,y:-80,scale:100}, message: {x:0,y:58,scale:100},
+      rundown: {x:0,y:82,scale:100}, progress: {x:0,y:97,scale:100}
+    }[element];
+  }
+  function freeLayout(value, dual, split) {
+    return Object.fromEntries(freeElements.map(key => [key, layout({...freePosition(key, dual, split), ...value?.[key]})]));
+  }
+  function hasFreeLayout(state) { return state?.freeAudience === true && !separateOutputs(state) && !state.outputTimerId; }
   function size(value) {
     if (!value || !Number.isInteger(value.width) || !Number.isInteger(value.height) ||
         value.width < 80 || value.height < 60 || value.width > 7680 || value.height > 4320) return null;
@@ -58,7 +72,9 @@
   function liveView(value){ return ['t1','t2','both'].includes(value)?value:'both'; }
   function secondaryView(state){
     const timer=state.secondary;
+    const free = hasFreeLayout(state) ? freeLayout(state.freeLayout, true, state.dualSplit) : null;
     return {...state,dualTimer:false,fitWindow:false,mode:timer.mode||'countdown',
+      ...(free && {freeLayout:{...free,primary:free.secondary}}),
       durationMs:timer.durationMs,remMs:timer.remMs,endAt:timer.endAt,running:timer.running,
       elapsedMs:timer.elapsedMs||0,startAt:timer.startAt||0,overtime:timer.overtime??state.overtime,
       flashZero:timer.flashZero??state.flashZero??true,soundZero:!!timer.soundZero,
@@ -70,7 +86,8 @@
     const view=liveView(state.liveTimerView);
     if(state.outputTimerId)return {...state,liveHidden:view!=='both'&&view!==state.outputTimerId};
     if(!state.dualTimer||view==='both')return state;
-    return view==='t1'?{...state,dualTimer:false,fitWindow:false}:secondaryView(state);
+    return view==='t1'?{...state,dualTimer:false,fitWindow:false,
+      ...(hasFreeLayout(state) && {freeLayout:freeLayout(state.freeLayout,true,state.dualSplit)})}:secondaryView(state);
   }
   // Project the existing clocks into desktop outputs; never start, pause or copy
   // a clock deadline. Network viewers keep the original combined state.
@@ -89,5 +106,5 @@
       text: '', textOnly: false, showNowNext: false
     };
   }
-  return { MAX_DURATION, clamp, layout, size, grid, outputLayer, outputOnTop, secondary, remaining, elapsed, setRunning, reset, separateOutputs, outputState,liveView,audienceState };
+  return { MAX_DURATION, clamp, layout, freeElements, freePosition, freeLayout, hasFreeLayout, size, grid, outputLayer, outputOnTop, secondary, remaining, elapsed, setRunning, reset, separateOutputs, outputState,liveView,audienceState };
 });

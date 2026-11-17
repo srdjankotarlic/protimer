@@ -520,7 +520,7 @@
 
     <div class="panel" id="outputLayoutPanel">
       <div class="layout-head">
-        <h3 data-i18n="outputLayoutTitle">IZLAZNI PROZOR I CIFRE</h3>
+        <h3 data-i18n="outputLayoutTitle">IZLAZNI PROZOR I RASPORED</h3>
         <label id="outputWindowTargetLabel" class="placement-target" hidden><span data-i18n="adjustOutput">Podesi ekran</span><select id="outputWindowTarget"><option value="primary" data-i18n="timerOne">Tajmer 1</option><option value="secondary" data-i18n="timerTwo">Tajmer 2</option></select></label>
       </div>
       <p id="placementContext" class="panel-help placement-context" hidden></p>
@@ -547,13 +547,18 @@
         </details>
       </div>
       <div class="layout-row">
-        <label id="layoutTargetLabel" hidden><span data-i18n="adjustDigits">Podesi cifre</span><select id="layoutTarget"><option value="primary" data-i18n="timerOne">Tajmer 1</option><option value="secondary" data-i18n="timerTwo" disabled>Tajmer 2</option></select></label>
+        <label class="chk" id="freeAudienceToggle"><input type="checkbox" id="chkFreeAudience"> <span data-i18n="freeAudience">Slobodan raspored</span></label>
+        <label id="layoutTargetLabel" hidden><span id="layoutTargetCaption" data-i18n="adjustDigits">Podesi cifre</span><select id="layoutTarget">
+          <option value="primary" data-i18n="timerOne">Tajmer 1</option><option value="secondary" data-i18n="timerTwo" disabled>Tajmer 2</option>
+          <option value="title" data-i18n="layoutTitleElement" hidden>Naslov</option><option value="message" data-i18n="layoutMessageElement" hidden>Poruka</option>
+          <option value="rundown" data-i18n="layoutRundownElement" hidden>SADA / SLEDI</option><option value="progress" data-i18n="layoutProgressElement" hidden>Traka napretka</option>
+        </select></label>
         <button id="btnLayoutReset" data-i18n="centerReset">Centriraj · 100%</button>
       </div>
-      <div class="layout-slider"><label for="timerScale" data-i18n="digitScale">Veličina cifara (%)</label><input id="timerScale" type="range" min="10" max="200" step="1" value="100" aria-label="Scale"><input id="timerScaleValue" type="number" min="10" max="200" step="1" value="100" aria-label="Scale percent"></div>
+      <div class="layout-slider"><label id="layoutScaleCaption" for="timerScale" data-i18n="digitScale">Veličina cifara (%)</label><input id="timerScale" type="range" min="10" max="200" step="1" value="100" aria-label="Scale"><input id="timerScaleValue" type="number" min="10" max="200" step="1" value="100" aria-label="Scale percent"></div>
       <div class="layout-slider"><label for="timerX" data-i18n="digitX">Levo / desno (%)</label><input id="timerX" type="range" min="-100" max="100" step="0.1" value="0" aria-label="X"><input id="timerXValue" type="number" min="-100" max="100" step="0.1" value="0" aria-label="X percent"></div>
       <div class="layout-slider"><label for="timerY" data-i18n="digitY">Gore / dole (%)</label><input id="timerY" type="range" min="-100" max="100" step="0.1" value="0" aria-label="Y"><input id="timerYValue" type="number" min="-100" max="100" step="0.1" value="0" aria-label="Y percent"></div>
-      <p class="panel-help" data-i18n="layoutHelp">0 = centar. Položaj je procenat širine/visine svakog dela ekrana. Promene važe i za OBS/telefon; pregled u kontroli ostaje centriran. Prevelika skala ili pomeranje mogu iseći cifre.</p>
+      <p class="panel-help" id="layoutHelp" data-i18n="layoutHelp">0 = centar. Položaj je procenat širine/visine svakog dela ekrana. Promene važe i za OBS/telefon; pregled u kontroli ostaje centriran. Prevelika skala ili pomeranje mogu iseći cifre.</p>
     </div>
 
     <div class="panel">
@@ -905,7 +910,7 @@ const I18N = {
     localCheckOK:'Server odgovara. To ne potvrđuje pristup sa telefona — skeniraj QR „Kontrola telefonom“.',
     localCheckFailed:'Server ne odgovara na ovoj adresi. Izaberi drugu mrežu i pogledaj „Telefon se ne povezuje?“ ispod.',
     shareFailureHelp:'Online servis nije dostupan. Proveri internet/VPN i pokušaj ponovo. Lokalna kontrola ostaje dostupna na istoj mreži.',
-    outputLayoutTitle:'IZLAZNI PROZOR I CIFRE', widthPx:'Širina (logička)', heightPx:'Visina (logička)', applySize:'Primeni veličinu',
+    outputLayoutTitle:'IZLAZNI PROZOR I RASPORED', widthPx:'Širina (logička)', heightPx:'Visina (logička)', applySize:'Primeni veličinu',
     deckLiveModeLabel:'Stream Deck LIVE',deckLiveAuto:'Pun ekran · Grid ako je uključen',deckLiveFullscreen:'Uvek pun ekran',deckLiveWindow:'Prozor · podešena veličina / Grid',
     deckLiveHelp:'LIVE dugmad šalju prikaz na izabrane ekrane i vraćaju sliku iz BLACKOUT-a. Ne pokreću niti zaustavljaju odbrojavanje. Podelu i ekrane biraš u kontroli.',
     sizeHelp:'Dimenzije su u logičkim jedinicama ekrana. Full HD/HD bira veličinu prozora, ne kvalitet HDMI signala. Primena izlazi iz punog ekrana i isključuje Grid/Kompaktan samo za izabrani prozor. Pun ekran uključi njegovim dugmetom ⛶.',
@@ -925,6 +930,9 @@ const I18N = {
     outputQualityLimit:'Provera meri prikaz aplikacije u trenutku provere. Ne može da potvrdi rezoluciju HDMI signala, obradu u svičeru ili oštrinu panela televizora.',
     actualSize:'Trenutni izlaz', sizeFailed:'Veličina nije primenjena. Proveri dimenzije i pokušaj ponovo.', sizeInvalid:'Unesi cele brojeve: širina 80–7680 i visina 60–4320.',
     adjustDigits:'Podesi cifre', timerOne:'Tajmer 1', timerTwo:'Tajmer 2', centerReset:'Centriraj · 100%',
+    freeAudience:'Slobodan raspored', layoutElement:'Element', layoutElementScale:'Veličina (%)', layoutRestoreElement:'Vrati položaj i veličinu',
+    layoutTitleElement:'Naslov', layoutMessageElement:'Poruka', layoutRundownElement:'SADA / SLEDI', layoutProgressElement:'Traka napretka',
+    freeAudienceHelp:'X i Y važe za ceo izlaz: 0 je centar, −100 i +100 su ivice. Elementi mogu da se preklapaju; seče ih samo spoljna ivica ekrana. Važi i za prikaz u browseru i OBS-u. Pregled u kontroli ostaje centriran.',
     digitScale:'Veličina cifara (%)', digitX:'Levo / desno (%)', digitY:'Gore / dole (%)',
     layoutHelp:'0 = centar. Položaj je procenat širine/visine svakog dela ekrana. Promene važe i za OBS/telefon; pregled u kontroli ostaje centriran. Prevelika skala ili pomeranje mogu iseći cifre.',
     dualTitle:'DVA TAJMERA', dualEnable:'Prikaži drugi tajmer', splitLabel:'Podela', splitColumns:'Levo / desno │', splitRows:'Gore / dole ─',
@@ -1021,7 +1029,7 @@ const I18N = {
     localCheckOK:'The server responds. This does not confirm phone access — scan the “Phone control” QR.',
     localCheckFailed:'The server does not respond at this address. Select another network and see “Phone cannot connect?” below.',
     shareFailureHelp:'The online service is unavailable. Check internet/VPN and retry. Local control remains available on the same network.',
-    outputLayoutTitle:'OUTPUT WINDOW & DIGITS', widthPx:'Width (logical)', heightPx:'Height (logical)', applySize:'Apply size',
+    outputLayoutTitle:'OUTPUT WINDOW & LAYOUT', widthPx:'Width (logical)', heightPx:'Height (logical)', applySize:'Apply size',
     deckLiveModeLabel:'Stream Deck LIVE',deckLiveAuto:'Fullscreen · Grid when enabled',deckLiveFullscreen:'Always fullscreen',deckLiveWindow:'Window · configured size / Grid',
     deckLiveHelp:'LIVE keys send the picture to your selected displays and restore it from BLACKOUT. They do not start or stop either clock. Choose split and displays in Control.',
     sizeHelp:'Dimensions use logical screen units. Full HD/HD chooses window dimensions, not HDMI signal quality. Applying exits fullscreen and disables Grid/Compact only for the selected window. Use its ⛶ button for fullscreen.',
@@ -1041,6 +1049,9 @@ const I18N = {
     outputQualityLimit:'This check measures the app output at the time of the check. It cannot verify the HDMI signal resolution, switcher processing or TV panel sharpness.',
     actualSize:'Current output', sizeFailed:'Size was not applied. Check the dimensions and try again.', sizeInvalid:'Enter whole numbers: width 80–7680 and height 60–4320.',
     adjustDigits:'Adjust digits', timerOne:'Timer 1', timerTwo:'Timer 2', centerReset:'Center · 100%',
+    freeAudience:'Free layout', layoutElement:'Element', layoutElementScale:'Size (%)', layoutRestoreElement:'Reset position and size',
+    layoutTitleElement:'Title', layoutMessageElement:'Message', layoutRundownElement:'NOW / NEXT', layoutProgressElement:'Progress bar',
+    freeAudienceHelp:'X and Y span the entire output: 0 is center, −100 and +100 are the edges. Elements can overlap; only the outside edge of the screen clips them. Also applies to browser and OBS output. Control preview stays centered.',
     digitScale:'Digit size (%)', digitX:'Left / right (%)', digitY:'Up / down (%)',
     layoutHelp:'0 = center. Position is a percentage of each pane’s width/height. Applies to OBS/phones too; the control preview stays centered. Large scale or offsets can crop the digits.',
     dualTitle:'TWO TIMERS', dualEnable:'Show second timer', splitLabel:'Split', splitColumns:'Left / right │', splitRows:'Top / bottom ─',
@@ -1116,7 +1127,7 @@ let S = {
   gridOn:false, gridSize:3, gridCell:4,
   // kompaktan prozor (prozor prati veličinu tajmera kad nije fullscreen)
   fitWindow:false,
-  outputSize:null, outputLayout:TimerTools.layout(), outputLayer:'normal',
+  outputSize:null, outputLayout:TimerTools.layout(), outputLayer:'normal', freeAudience:false, freeLayout:null,
   dualTimer:false, dualSplit:'columns', separateOutputs:false, liveTimerView:'both',deckLiveMode:'auto',secondary:TimerTools.secondary(),
   // rundown / raspored
   cues:[], currentCue:-1, showStart:'', showNowNext:false,
@@ -1279,12 +1290,9 @@ function bothRunning(running){
   primaryRunning(true);if(S.dualTimer) secondaryRunning(true);
 }
 function syncDualUI(){
-  $('chkFit').disabled=S.dualTimer;
   $('chkDual').checked=S.dualTimer; $('dualOptions').hidden=!S.dualTimer;
   $('secondaryZeroAlerts').hidden=!S.dualTimer;
   $('dualSplit').value=S.dualSplit;
-  $('layoutTarget').querySelector('[value=secondary]').disabled=!S.dualTimer;
-  if(!S.dualTimer) $('layoutTarget').value='primary';
   syncRoutingUI();
   syncOutputSizeFields();
   syncLayoutUI();
@@ -1293,18 +1301,21 @@ function syncRoutingUI(){
   const separate=TimerTools.separateOutputs(S);
   $('outputRouting').value=S.separateOutputs?'separate':'together';
   $('secondaryOutputControls').hidden=!separate;
-  $('dualSplit').disabled=separate;
-  $('dualSplitLabel').hidden=separate;
+  const free=TimerTools.hasFreeLayout(S);
+  $('chkFit').disabled=S.dualTimer||free;
+  $('dualSplit').disabled=separate||free;
+  $('dualSplitLabel').hidden=separate||free;
   $('outputTargetLabel').textContent=t(separate?'primaryOutputLabel':'outLabel');
   $('outputWindowTargetLabel').hidden=!separate;
-  $('layoutTargetLabel').hidden=!S.dualTimer||separate;
+  $('freeAudienceToggle').hidden=separate;
+  $('chkFreeAudience').checked=free;
   $('gridTargetRow').hidden=!separate;
   $('placementContext').hidden=!separate;
   $('gridContext').hidden=!separate;
   if(!separate) $('outputWindowTarget').value='primary';
   $('gridTarget').value=$('outputWindowTarget').value;
   if(separate) $('layoutTarget').value=$('outputWindowTarget').value;
-  if(!S.dualTimer) $('layoutTarget').value='primary';
+  if(!S.dualTimer&&$('layoutTarget').value==='secondary') $('layoutTarget').value='primary';
   showSecondaryOutputGeometry(lastSecondaryGeometry);
   syncLayoutUI(); buildGrid();
 }
@@ -1314,10 +1325,25 @@ $('outputRouting').addEventListener('change',e=>{
 });
 $('deckLiveMode').addEventListener('change',e=>{S.deckLiveMode=e.target.value;saveSettings();});
 function selectedLayout(){
+  if(TimerTools.hasFreeLayout(S)){
+    const key=$('layoutTarget').value;
+    return (S.freeLayout??=TimerTools.freeLayout(null,S.dualTimer,S.dualSplit))[TimerTools.freeElements.includes(key)?key:'primary'];
+  }
   const role=TimerTools.separateOutputs(S)?selectedWindow():S.dualTimer?$('layoutTarget').value:'primary';
   return role==='secondary'?S.secondary.layout:S.outputLayout;
 }
 function syncLayoutUI(){
+  const free=TimerTools.hasFreeLayout(S),select=$('layoutTarget');
+  $('layoutTargetLabel').hidden=!(free||S.dualTimer&&!TimerTools.separateOutputs(S));
+  for(const option of select.options){
+    const allowed=option.value==='primary'||(option.value==='secondary'?S.dualTimer:free);
+    option.hidden=!allowed; option.disabled=!allowed;
+  }
+  if(!select.selectedOptions.length||select.selectedOptions[0].disabled) select.value='primary';
+  $('layoutTargetCaption').textContent=t(free?'layoutElement':'adjustDigits');
+  $('layoutScaleCaption').textContent=t(free?'layoutElementScale':'digitScale');
+  $('btnLayoutReset').textContent=t(free?'layoutRestoreElement':'centerReset');
+  $('layoutHelp').textContent=t(free?'freeAudienceHelp':'layoutHelp');
   const layout=selectedLayout();
   for(const [id,key] of [['timerScale','scale'],['timerX','x'],['timerY','y']]){
     $(id).value=layout[key]; $(id+'Value').value=layout[key];
@@ -1334,7 +1360,11 @@ $('layoutTarget').addEventListener('change',()=>{
   if(TimerTools.separateOutputs(S)) selectPlacement($('layoutTarget').value);
   else syncLayoutUI();
 });
-$('btnLayoutReset').addEventListener('click',()=>{ Object.assign(selectedLayout(),TimerTools.layout()); syncLayoutUI(); send(); });
+$('btnLayoutReset').addEventListener('click',()=>{
+  const defaults=TimerTools.hasFreeLayout(S)?TimerTools.freePosition($('layoutTarget').value,S.dualTimer,S.dualSplit):null;
+  Object.assign(selectedLayout(),TimerTools.layout(defaults)); syncLayoutUI(); send();
+});
+$('chkFreeAudience').addEventListener('change',e=>{S.freeAudience=e.target.checked;syncRoutingUI();send();});
 $('chkDual').addEventListener('change',e=>{
   S.dualTimer=e.target.checked;
   if(!S.dualTimer) TimerTools.setRunning(S.secondary,false,Date.now());
@@ -1390,6 +1420,7 @@ function outputQualityKey(){
   // Clock ticks are deliberately excluded: this is a snapshot of the selected
   // output. Placement and presentation edits invalidate its clipping result.
   return JSON.stringify([role,geometry,S.dualTimer,S.separateOutputs,S.dualSplit,$('layoutTarget').value,
+    TimerTools.hasFreeLayout(S)?S.freeLayout:null,
     role==='secondary'?timer.layout:S.outputLayout,
     S.dualTimer&&!TimerTools.separateOutputs(S)?S.secondary.layout:null,
     timer.gridOn,timer.gridSize,timer.gridCell,timer.outputSize,S.fitWindow,
@@ -1772,6 +1803,7 @@ function saveSettings(){
     gridOn:S.gridOn,gridSize:S.gridSize,gridCell:S.gridCell,fitWindow:S.fitWindow,
     outputSize:S.outputSize,outputLayout:S.outputLayout,outputLayer:TimerTools.outputLayer(S.outputLayer),dualTimer:S.dualTimer,dualSplit:S.dualSplit,
     separateOutputs:S.separateOutputs,liveTimerView:TimerTools.liveView(S.liveTimerView),deckLiveMode:S.deckLiveMode,
+    freeAudience:S.freeAudience,freeLayout:S.freeLayout,
     secondary:{mode:S.secondary.mode,durationMs:S.secondary.durationMs,overtime:S.secondary.overtime,flashZero:S.secondary.flashZero,soundZero:S.secondary.soundZero,layout:S.secondary.layout,outputSize:S.secondary.outputSize,outputLayer:TimerTools.outputLayer(S.secondary.outputLayer),...TimerTools.grid(S.secondary)}
   }));
 }
@@ -1791,6 +1823,7 @@ function load(){
       ...TimerTools.grid(st),
       fitWindow:st.fitWindow??S.fitWindow,
       outputSize:TimerTools.size(st.outputSize),outputLayout:TimerTools.layout(st.outputLayout),outputLayer:TimerTools.outputOnTop(st)?'above':'normal',
+      freeAudience:st.freeAudience===true,freeLayout:st.freeLayout?TimerTools.freeLayout(st.freeLayout,!!st.dualTimer,st.dualSplit):null,
       dualTimer:!!st.dualTimer,dualSplit:st.dualSplit==='rows'?'rows':'columns',separateOutputs:!!st.separateOutputs,liveTimerView:TimerTools.liveView(st.liveTimerView),deckLiveMode:['auto','fullscreen','window'].includes(st.deckLiveMode)?st.deckLiveMode:'auto',secondary:TimerTools.secondary(st.secondary,st)
     });
     S.secondary.outputLayer=TimerTools.outputOnTop(S.secondary)?'above':'normal';
