@@ -1,9 +1,9 @@
 {
   "name": "pro-timer",
   "productName": "ProTimer",
-  "version": "2.5.2",
+  "version": "2.5.3",
   "config": {
-    "stableVersion": "2.5.2"
+    "stableVersion": "2.5.3"
   },
   "description": "Free stage timer and speaker countdown for live events, conferences and OBS",
   "main": "main.js",
@@ -97,6 +97,7 @@
       "scripts/smoke-output-quality.js",
       "scripts/smoke-output-layer.js",
       "scripts/smoke-free-layout.js",
+      "scripts/smoke-audience-visibility.js",
       "scripts/smoke-timer-controls.js",
       "controller.html",
       "output.html",

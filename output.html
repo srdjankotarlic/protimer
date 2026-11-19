@@ -68,6 +68,9 @@
   .free-audience #prog{height:1vh;}
 
   #blackout{position:absolute; inset:0; background:#000; z-index:80; display:none;}
+  body.foreground-hidden #stage,body.foreground-hidden #stage *,
+  body.foreground-hidden #msg,body.foreground-hidden #nownext,
+  body.foreground-hidden #prog,body.foreground-hidden #audienceQr{visibility:hidden!important;}
   #audienceQr{position:absolute; inset:0; z-index:70; display:none; align-items:center; justify-content:center;
     padding:4vh 4vw; background:#000; color:#0b0d11; font-family:-apple-system,"Helvetica Neue",system-ui,sans-serif;}
   .audience-qr-card{width:min(76vw,760px); max-height:92vh; padding:clamp(18px,3.2vh,38px);
@@ -280,7 +283,8 @@ function render(){
   if (fitMode) requestFit();
   renderNowNext(fg,free);
   renderFreeLayout(free);
-  setStyle($('blackout'),'display',S.blackout?'block':'none');
+  document.body.classList.toggle('foreground-hidden',!!S.blackout&&S.blackoutMode==='foreground');
+  setStyle($('blackout'),'display',S.blackout&&S.blackoutMode!=='foreground'?'block':'none');
 }
 
 function applyLayout(element,value){
