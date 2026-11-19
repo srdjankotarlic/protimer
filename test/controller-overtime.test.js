@@ -59,6 +59,25 @@ function host(settings) {
   };
 }
 
+test('restoring a previous T1-only show reveals enabled timers and keeps blackout preference', () => {
+  const h = host({ dualTimer: true, liveTimerView: 't1', blackoutMode: 'foreground', secondary: { durationMs: 420000 } });
+  assert.equal(h.state.liveTimerView, 'both');
+  assert.equal(h.state.dualTimer, true);
+  assert.equal(h.state.secondary.durationMs, 420000);
+  assert.equal(h.state.blackoutMode, 'foreground');
+  h.run("S.liveTimerView='t2';saveSettings()");
+  assert.equal(h.saved().liveTimerView, undefined, 'Session presentation choice must not hide timers in the next session');
+  assert.equal(h.saved().blackoutMode, 'foreground');
+});
+
+test('legacy and unknown blackout preferences retain the black-screen default', () => {
+  for (const blackoutMode of [undefined, 'invalid', null]) {
+    const h = host({ blackoutMode });
+    assert.equal(h.state.blackoutMode, 'black');
+    assert.equal(h.node('blackoutMode').value, 'black');
+  }
+});
+
 test('overtime controls change and save only their own timer without changing running clocks', () => {
   for (const [id, primary] of [['chkOver', true], ['chkOver2', false]]) {
     const h = host({ overtime: true, dualTimer: true, secondary: { overtime: true } });

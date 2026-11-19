@@ -9,9 +9,9 @@
   Send a clear timer to a projector, confidence monitor, browser source or phone from one local app.
 </p>
 
-<p align="center"><strong>Latest release: ProTimer 2.5.2 — free, open source, no account and no watermark.</strong></p>
+<p align="center"><strong>Latest release: ProTimer 2.5.3 — free, open source, no account and no watermark.</strong></p>
 
-**Stream Deck is included in 2.5.2.** Colorful LCD controls, separate ACTIVE/SET readouts and one-touch commands, including **T1 LIVE −/+10, −/+5 and −/+1 minute**. Both desktop installers include the native Elgato plugin and a genuine editable **XL Full 32 profile**. No Node, terminal or Companion required; Elgato Stream Deck 7.6+ is required. [Simple setup guide](docs/STREAM-DECK.md).
+**Stream Deck is included in 2.5.3.** Colorful LCD controls, separate ACTIVE/SET readouts and one-touch commands, including **T1 LIVE −/+10, −/+5 and −/+1 minute**. Both desktop installers include the native Elgato plugin and a genuine editable **XL Full 32 profile**. No Node, terminal or Companion required; Elgato Stream Deck 7.6+ is required. [Simple setup guide](docs/STREAM-DECK.md).
 
 <p align="center">
   <a href="https://github.com/srdjankotarlic/protimer/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/srdjankotarlic/protimer/actions/workflows/ci.yml/badge.svg"></a>
@@ -49,12 +49,12 @@
 
 | Your computer | Recommended download | Install |
 |---|---|---|
-| Apple Silicon Mac (M1 or newer) | **[Download the macOS DMG](https://github.com/srdjankotarlic/protimer/releases/download/v2.5.2/ProTimer-2.5.2-arm64.dmg)** | Open the DMG and drag **ProTimer** to Applications. |
-| Windows 10/11 x64 | **[Download the Windows installer](https://github.com/srdjankotarlic/protimer/releases/download/v2.5.2/ProTimer-Setup-2.5.2.exe)** | Run Setup and follow the installer. |
+| Apple Silicon Mac (M1 or newer) | **[Download the macOS DMG](https://github.com/srdjankotarlic/protimer/releases/download/v2.5.3/ProTimer-2.5.3-arm64.dmg)** | Open the DMG and drag **ProTimer** to Applications. |
+| Windows 10/11 x64 | **[Download the Windows installer](https://github.com/srdjankotarlic/protimer/releases/download/v2.5.3/ProTimer-Setup-2.5.3.exe)** | Run Setup and follow the installer. |
 
-Need a Windows build that does not install? Use the [portable EXE](https://github.com/srdjankotarlic/protimer/releases/download/v2.5.2/ProTimer-2.5.2-portable.exe). Most Windows users should choose Setup.
+Need a Windows build that does not install? Use the [portable EXE](https://github.com/srdjankotarlic/protimer/releases/download/v2.5.3/ProTimer-2.5.3-portable.exe). Most Windows users should choose Setup.
 
-Every installer is built by the public release workflow. You can verify a download with the [ProTimer 2.5.2 SHA-256 checksums](https://github.com/srdjankotarlic/protimer/releases/download/v2.5.2/ProTimer-2.5.2-SHA256SUMS.txt).
+Every installer is built by the public release workflow. You can verify a download with the [ProTimer 2.5.3 SHA-256 checksums](https://github.com/srdjankotarlic/protimer/releases/download/v2.5.3/ProTimer-2.5.3-SHA256SUMS.txt).
 
 <details>
 <summary><strong>First-launch security warning</strong></summary>
@@ -66,13 +66,11 @@ The current downloads are not Apple-notarized or Windows Authenticode-signed.
 
 </details>
 
-## New in ProTimer 2.5.2
+## New in ProTimer 2.5.3
 
-- **Free audience layout.** Move Timer 1, Timer 2, the title, message, NOW/NEXT and progress bar across the whole output with X/Y/Size controls. Timer digits can cross the middle of the screen without being clipped by the old split.
-- **Matching Timer 2 controls.** Countdown, Stopwatch and Clock, Start/Pause, Reset, ± adjustments, duration presets and End at are available in its own section.
-- **Clearer warning controls.** Each timer has its own count-past-zero, blink and bell settings. Shared warning thresholds sit beside their colors.
-
-For a countdown above a clock, enable Timer 2, choose Clock and turn on **Output window & layout → Free layout**. Choose each element and adjust its position and size. [Step-by-step guide in English and Serbian](docs/FREE-AUDIENCE-LAYOUT.md).
+- **Timer 2 visibility fixed.** Enabling the second timer reveals both timers, even after a T1-only live selection. Reopening the app starts with the enabled timers visible. Stream Deck LIVE T1/T2 selections apply to the current session.
+- **Choose BLACKOUT behavior.** In Colors, select **Black screen** or **Hide content · keep background**. The second option hides the timers, title, messages, rundown, progress and QR while preserving the configured background or transparency, including in OBS.
+- **Free layout and matching timer controls** are included. [Layout and blackout guide](docs/FREE-AUDIENCE-LAYOUT.md).
 
 ### Stream Deck and timer features retained
 
@@ -85,7 +83,7 @@ For a countdown above a clock, enable Timer 2, choose Clock and turn on **Output
 
 ### Stream Deck setup on another computer
 
-Install the same recommended ProTimer download, then **Control → Stream Deck → Install / update plugin**. Confirm Elgato's installation, **Set up integration**, select XL and **Activate ProTimer profile**. The plugin/profile comes with ProTimer; no development tools are needed. For plugin-only installation use the [native Stream Deck package](https://github.com/srdjankotarlic/protimer/releases/download/v2.5.2/com.srdjankotarlic.protimer.streamDeckPlugin). [English guide](docs/STREAM-DECK.md) · [Srpski](docs/STREAM-DECK.sr.md).
+Install the same recommended ProTimer download, then **Control → Stream Deck → Install / update plugin**. Confirm Elgato's installation, **Set up integration**, select XL and **Activate ProTimer profile**. The plugin/profile comes with ProTimer; no development tools are needed. For plugin-only installation use the [native Stream Deck package](https://github.com/srdjankotarlic/protimer/releases/download/v2.5.3/com.srdjankotarlic.protimer.streamDeckPlugin). [English guide](docs/STREAM-DECK.md) · [Srpski](docs/STREAM-DECK.sr.md).
 
 Customized layouts and existing settings are preserved. Only untouched starter layouts receive the new T1 LIVE row automatically. To opt in on a customized board, use **Edit layout → Restore defaults → Apply**, or configure individual keys deliberately.
 
@@ -116,7 +114,7 @@ Customized layouts and existing settings are preserved. Only untouched starter l
 
 The scrollable rundown, duration picker, Colors/Text, Grid, Thresholds, Message, audience QR and Backstage controls remain available.
 
-See the complete [2.5.2 release notes](docs/RELEASE-NOTES-2.5.2.md).
+See the complete [2.5.3 release notes](docs/RELEASE-NOTES-2.5.3.md).
 
 [How to size the output, position digits, use two timers and connect a phone →](docs/OUTPUT-AND-PHONE-CONTROL.md)
 
@@ -275,7 +273,7 @@ Clean stack, almost no dependencies: **Electron** + plain HTML/CSS/JS + a Node `
 
 ### Native Stream Deck integration — included
 
-**ProTimer 2.5.2 includes** the optional native Elgato SDK plugin, separate ACTIVE/SET preparations for both timers, an 8×4 editor inside Control and colorful live LCD buttons. The starter's second row provides T1 LIVE −/+10, −/+5 and −/+1 minute corrections. The timer remains independent of Stream Deck and Companion.
+**ProTimer 2.5.3 includes** the optional native Elgato SDK plugin, separate ACTIVE/SET preparations for both timers, an 8×4 editor inside Control and colorful live LCD buttons. The starter's second row provides T1 LIVE −/+10, −/+5 and −/+1 minute corrections. The timer remains independent of Stream Deck and Companion.
 
 1. Install the recommended ProTimer app for your computer. The plugin is included.
 2. Open **Control → Stream Deck → Install / update plugin** and confirm in Elgato Stream Deck 7.6+.

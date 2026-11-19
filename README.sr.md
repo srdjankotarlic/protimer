@@ -6,9 +6,9 @@
 
 <p align="center"><strong>Besplatan stage timer za događaje uživo, konferencije, prezentacije i OBS.</strong><br>Nema naloga, pretplate, vodenog žiga ni vremenskog ograničenja.</p>
 
-**Glavna verzija je ProTimer 2.5.2 — Stream Deck je uključen.** Obojena LCD dugmad, odvojeni ACTIVE/SET prikazi i komande na jedan dodir, uključujući **T1 LIVE −/+10, −/+5 i −/+1 minut**. Native Elgato plugin i pravi, izmenljiv **XL Full 32 profil** dolaze uz Mac i Windows instalaciju. Potreban je Stream Deck 7.6+, ali ne Node, terminal niti Companion. [Novosti](docs/RELEASE-NOTES-2.5.2.md#srpski) · [Uputstvo](docs/STREAM-DECK.sr.md).
+**Glavna verzija je ProTimer 2.5.3 — Stream Deck je uključen.** Obojena LCD dugmad, odvojeni ACTIVE/SET prikazi i komande na jedan dodir, uključujući **T1 LIVE −/+10, −/+5 i −/+1 minut**. Native Elgato plugin i pravi, izmenljiv **XL Full 32 profil** dolaze uz Mac i Windows instalaciju. Potreban je Stream Deck 7.6+, ali ne Node, terminal niti Companion. [Novosti](docs/RELEASE-NOTES-2.5.3.md#srpski) · [Uputstvo](docs/STREAM-DECK.sr.md).
 
-Za Stream Deck: instaliraj ProTimer 2.5.2 → **Control → Stream Deck → Instaliraj / ažuriraj plugin** → potvrdi u Elgato aplikaciji → **Podesi integraciju**. Izaberi XL i **ProTimer XL · Full 32**, pa **Aktiviraj profil**; potvrdi prvi Elgato zahtev za instalaciju profila. Ne moraš ručno postavljati 32 tastera. Svaki naš taster možeš menjati i u Elgato editoru. Svakodnevni rad: T1/T2 → pripremi SET → START SET; zasebni PAUSE, PLAY ACTIVE i BLACK ON/OFF. Detalji i ograničenja su u uputstvu.
+Za Stream Deck: instaliraj ProTimer 2.5.3 → **Control → Stream Deck → Instaliraj / ažuriraj plugin** → potvrdi u Elgato aplikaciji → **Podesi integraciju**. Izaberi XL i **ProTimer XL · Full 32**, pa **Aktiviraj profil**; potvrdi prvi Elgato zahtev za instalaciju profila. Ne moraš ručno postavljati 32 tastera. Svaki naš taster možeš menjati i u Elgato editoru. Svakodnevni rad: T1/T2 → pripremi SET → START SET; zasebni PAUSE, PLAY ACTIVE i BLACK ON/OFF. Detalji i ograničenja su u uputstvu.
 
 <p align="center">
   <a href="README.md"><strong>English</strong></a> ·
@@ -27,22 +27,20 @@ Izaberi samo jedan instalacioni fajl. GitHubovi automatski **Source code** ZIP i
 
 | Računar | Preporučeni fajl |
 |---|---|
-| Apple Silicon Mac (M1 ili noviji) | **[Preuzmi macOS DMG](https://github.com/srdjankotarlic/protimer/releases/download/v2.5.2/ProTimer-2.5.2-arm64.dmg)** |
-| Windows 10/11 x64 | **[Preuzmi Windows Setup](https://github.com/srdjankotarlic/protimer/releases/download/v2.5.2/ProTimer-Setup-2.5.2.exe)** |
+| Apple Silicon Mac (M1 ili noviji) | **[Preuzmi macOS DMG](https://github.com/srdjankotarlic/protimer/releases/download/v2.5.3/ProTimer-2.5.3-arm64.dmg)** |
+| Windows 10/11 x64 | **[Preuzmi Windows Setup](https://github.com/srdjankotarlic/protimer/releases/download/v2.5.3/ProTimer-Setup-2.5.3.exe)** |
 
-Za Windows bez instalacije postoji i [portable EXE](https://github.com/srdjankotarlic/protimer/releases/download/v2.5.2/ProTimer-2.5.2-portable.exe). Za većinu korisnika je bolji Setup.
+Za Windows bez instalacije postoji i [portable EXE](https://github.com/srdjankotarlic/protimer/releases/download/v2.5.3/ProTimer-2.5.3-portable.exe). Za većinu korisnika je bolji Setup.
 
-Svaki instalacioni fajl možeš da proveriš pomoću [ProTimer 2.5.2 SHA-256 checksum liste](https://github.com/srdjankotarlic/protimer/releases/download/v2.5.2/ProTimer-2.5.2-SHA256SUMS.txt).
+Svaki instalacioni fajl možeš da proveriš pomoću [ProTimer 2.5.3 SHA-256 checksum liste](https://github.com/srdjankotarlic/protimer/releases/download/v2.5.3/ProTimer-2.5.3-SHA256SUMS.txt).
 
 > Aplikacija još nije digitalno potpisana. Na Windowsu izaberi **More info → Run anyway** samo za fajl preuzet sa ovog repozitorijuma. Na macOS-u, ako je blokirana, otvori **System Settings → Privacy & Security → Open Anyway**.
 
-## Novo u verziji 2.5.2
+## Novo u verziji 2.5.3
 
-- **Slobodan raspored.** Pomeri oba tajmera, naslov, poruku, SADA/SLEDI i traku napretka preko celog izlaza pomoću X/Y/veličina kontrola. Cifre mogu da pređu sredinu ekrana bez odsecanja na staroj podeli.
-- **Pune kontrole za Tajmer 2.** Odbrojavanje, štoperica, sat, Start/Pauza, Reset, korekcije ±, preseti i „Kraj u” nalaze se u njegovoj sekciji.
-- **Preglednija upozorenja.** Svaki tajmer ima svoje opcije za minus, treptanje i zvonce na nuli. Zajednički pragovi upozorenja stoje uz izbor boja.
-
-Za odbrojavanje iznad sata uključi Tajmer 2, izaberi Sat, pa otvori **Izlazni prozor i raspored → Slobodan raspored**. Izaberi element i podesi položaj i veličinu. [Uputstvo na srpskom i engleskom](docs/FREE-AUDIENCE-LAYOUT.md).
+- **Ispravljen prikaz Tajmera 2.** Uključivanje drugog tajmera prikazuje oba, čak i posle LIVE izbora samo Tajmera 1. Pri novom pokretanju vide se uključeni tajmeri. Stream Deck LIVE T1/T2 izbor važi u tekućoj sesiji.
+- **Izbor BLACKOUT ponašanja.** U sekciji Boje izaberi **Crn ekran** ili **Sakrij sadržaj · zadrži pozadinu**. Druga opcija skriva tajmere, naslov, poruke, raspored, napredak i QR, uz očuvanu pozadinu ili providnost, uključujući OBS.
+- Uključeni su slobodan raspored i pune kontrole oba tajmera. [Uputstvo](docs/FREE-AUDIENCE-LAYOUT.md).
 
 ### Zadržane Stream Deck i timer funkcije
 
@@ -52,7 +50,7 @@ Za odbrojavanje iznad sata uključi Tajmer 2, izaberi Sat, pa otvori **Izlazni p
 - **LIVE T1 / T1+T2 / T2 i BLACK ON/OFF:** stvarno slanje na ekran i vraćanje slike, bez resetovanja tajmera.
 - **Opcije za oba tajmera:** uključi/isključi treptanje crvenog, prirodno zvonce na nuli i minus posle nule. Dodata je i provera veličine izlaza i odsecanja cifara.
 
-Prilagođeni i sačuvani rasporedi ostaju. Samo netaknut početni raspored automatski dobija novi LIVE red. Na drugom računaru instaliraj istu 2.5.2 verziju i otvori instalaciju plugina iz Kontrole. [Plugin zasebno](https://github.com/srdjankotarlic/protimer/releases/download/v2.5.2/com.srdjankotarlic.protimer.streamDeckPlugin).
+Prilagođeni i sačuvani rasporedi ostaju. Samo netaknut početni raspored automatski dobija novi LIVE red. Na drugom računaru instaliraj istu 2.5.3 verziju i otvori instalaciju plugina iz Kontrole. [Plugin zasebno](https://github.com/srdjankotarlic/protimer/releases/download/v2.5.3/com.srdjankotarlic.protimer.streamDeckPlugin).
 
 ### Zadržano iz verzije 2.4.1
 
@@ -87,7 +85,7 @@ Prilagođeni i sačuvani rasporedi ostaju. Samo netaknut početni raspored autom
 
 Postojeći rundown, boje, tekst, Grid, pragovi, poruke i Backstage ostaju dostupni. **Online deljenje je i dalje eksperimentalna usluga treće strane** — za nastup obezbedi lokalnu kontrolu i probaj telefon na stvarnoj mreži.
 
-[Uputstvo za nove kontrole i povezivanje telefona](docs/OUTPUT-AND-PHONE-CONTROL.md#kratko-uputstvo-sr) · [Sve izmene u 2.5.2](docs/RELEASE-NOTES-2.5.2.md)
+[Uputstvo za nove kontrole i povezivanje telefona](docs/OUTPUT-AND-PHONE-CONTROL.md#kratko-uputstvo-sr) · [Sve izmene u 2.5.3](docs/RELEASE-NOTES-2.5.3.md)
 
 ## Pokretanje za 60 sekundi
 

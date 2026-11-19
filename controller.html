@@ -628,6 +628,11 @@
         <label class="chk"><input type="checkbox" id="chkTransparent"> <span data-i18n="transparent">Providna pozadina (OBS)</span></label>
       </div>
       <div class="field">
+        <label class="swatch" for="blackoutMode"><span>BLACKOUT</span>
+          <select id="blackoutMode"><option value="black" data-i18n="blackoutBlack">Crn ekran</option><option value="foreground" data-i18n="blackoutForeground">Sakrij sadržaj · zadrži pozadinu</option></select>
+        </label>
+      </div>
+      <div class="field">
         <span class="glabel" data-i18n="thresholds">Pragovi</span>
         <label class="swatch"><span data-i18n="yellowAt">Žuto na</span> <input type="text" id="yellowInput" class="short" value="2:00"></label>
         <label class="swatch"><span data-i18n="redAt">Crveno na</span> <input type="text" id="redInput" class="short" value="1:00"></label>
@@ -963,6 +968,7 @@ const I18N = {
     actualSize:'Trenutni izlaz', sizeFailed:'Veličina nije primenjena. Proveri dimenzije i pokušaj ponovo.', sizeInvalid:'Unesi cele brojeve: širina 80–7680 i visina 60–4320.',
     adjustDigits:'Podesi cifre', timerOne:'Tajmer 1', timerTwo:'Tajmer 2', centerReset:'Centriraj · 100%',
     bothTimers:'Oba tajmera', sharedBlackout:'Zajednički BLACKOUT za oba izlaza',
+    blackoutBlack:'Crn ekran', blackoutForeground:'Sakrij sadržaj · zadrži pozadinu',
     freeAudience:'Slobodan raspored', layoutElement:'Element', layoutElementScale:'Veličina (%)', layoutRestoreElement:'Vrati položaj i veličinu',
     layoutTitleElement:'Naslov', layoutMessageElement:'Poruka', layoutRundownElement:'SADA / SLEDI', layoutProgressElement:'Traka napretka',
     freeAudienceHelp:'X i Y važe za ceo izlaz: 0 je centar, −100 i +100 su ivice. Elementi mogu da se preklapaju; seče ih samo spoljna ivica ekrana. Važi i za prikaz u browseru i OBS-u. Pregled u kontroli ostaje centriran.',
@@ -1083,6 +1089,7 @@ const I18N = {
     actualSize:'Current output', sizeFailed:'Size was not applied. Check the dimensions and try again.', sizeInvalid:'Enter whole numbers: width 80–7680 and height 60–4320.',
     adjustDigits:'Adjust digits', timerOne:'Timer 1', timerTwo:'Timer 2', centerReset:'Center · 100%',
     bothTimers:'Both timers', sharedBlackout:'Shared BLACKOUT for both outputs',
+    blackoutBlack:'Black screen', blackoutForeground:'Hide content · keep background',
     freeAudience:'Free layout', layoutElement:'Element', layoutElementScale:'Size (%)', layoutRestoreElement:'Reset position and size',
     layoutTitleElement:'Title', layoutMessageElement:'Message', layoutRundownElement:'NOW / NEXT', layoutProgressElement:'Progress bar',
     freeAudienceHelp:'X and Y span the entire output: 0 is center, −100 and +100 are the edges. Elements can overlap; only the outside edge of the screen clips them. Also applies to browser and OBS output. Control preview stays centered.',
@@ -1152,7 +1159,7 @@ let S = {
   durationMs:600000, remMs:600000, endAt:0, elapsedMs:0, startAt:0,
   yellowSec:120, redSec:60,
   flashZero:true, soundZero:false, overtime:true, showProgress:false,
-  message:{text:'', flash:false}, blackout:false,
+  message:{text:'', flash:false}, blackout:false, blackoutMode:'black',
   // izgled
   bgColor:'#000000', fgColor:'#ffffff', useWarnColors:true,
   warnYellow:'#ffc23a', warnRed:'#ff4540',
@@ -1431,7 +1438,7 @@ $('chkFreeAudience').addEventListener('change',e=>{S.freeAudience=e.target.check
 $('chkDual').addEventListener('change',e=>{
   S.dualTimer=e.target.checked;
   if(!S.dualTimer){ TimerTools.setRunning(S.secondary,false,Date.now()); clearSecondaryTarget(true); }
-  if(!S.dualTimer)S.liveTimerView='t1';
+  S.liveTimerView=S.dualTimer?'both':'t1';
   if(S.dualTimer){ S.fitWindow=false; $('chkFit').checked=false; }
   syncDualUI(); send();
 });
@@ -1878,11 +1885,11 @@ function saveSettings(){
     yellowSec:S.yellowSec,redSec:S.redSec,flashZero:S.flashZero,soundZero:S.soundZero,
     overtime:S.overtime,showProgress:S.showProgress,durationMs:S.durationMs,autoNext,
     bgColor:S.bgColor,fgColor:S.fgColor,useWarnColors:S.useWarnColors,
-    warnYellow:S.warnYellow,warnRed:S.warnRed,textOnly:S.textOnly,transparent:S.transparent,
+    warnYellow:S.warnYellow,warnRed:S.warnRed,textOnly:S.textOnly,transparent:S.transparent,blackoutMode:S.blackoutMode,
     showStart:S.showStart,showNowNext:S.showNowNext,
     gridOn:S.gridOn,gridSize:S.gridSize,gridCell:S.gridCell,fitWindow:S.fitWindow,
     outputSize:S.outputSize,outputLayout:S.outputLayout,outputLayer:TimerTools.outputLayer(S.outputLayer),dualTimer:S.dualTimer,dualSplit:S.dualSplit,
-    separateOutputs:S.separateOutputs,liveTimerView:TimerTools.liveView(S.liveTimerView),deckLiveMode:S.deckLiveMode,
+    separateOutputs:S.separateOutputs,deckLiveMode:S.deckLiveMode,
     freeAudience:S.freeAudience,freeLayout:S.freeLayout,
     secondary:{mode:S.secondary.mode,durationMs:S.secondary.durationMs,overtime:S.secondary.overtime,flashZero:S.secondary.flashZero,soundZero:S.secondary.soundZero,layout:S.secondary.layout,outputSize:S.secondary.outputSize,outputLayer:TimerTools.outputLayer(S.secondary.outputLayer),...TimerTools.grid(S.secondary)}
   }));
@@ -1898,13 +1905,15 @@ function load(){
       bgColor:st.bgColor??S.bgColor, fgColor:st.fgColor??S.fgColor,
       useWarnColors:st.useWarnColors??S.useWarnColors,
       warnYellow:st.warnYellow??S.warnYellow, warnRed:st.warnRed??S.warnRed,
-      textOnly:st.textOnly??S.textOnly, transparent:st.transparent??S.transparent,
+      textOnly:st.textOnly??S.textOnly, transparent:st.transparent??S.transparent,blackoutMode:st.blackoutMode==='foreground'?'foreground':'black',
       showStart:st.showStart??S.showStart, showNowNext:st.showNowNext??S.showNowNext,
       ...TimerTools.grid(st),
       fitWindow:st.fitWindow??S.fitWindow,
       outputSize:TimerTools.size(st.outputSize),outputLayout:TimerTools.layout(st.outputLayout),outputLayer:TimerTools.outputOnTop(st)?'above':'normal',
       freeAudience:st.freeAudience===true,freeLayout:st.freeLayout?TimerTools.freeLayout(st.freeLayout,!!st.dualTimer,st.dualSplit):null,
-      dualTimer:!!st.dualTimer,dualSplit:st.dualSplit==='rows'?'rows':'columns',separateOutputs:!!st.separateOutputs,liveTimerView:TimerTools.liveView(st.liveTimerView),deckLiveMode:['auto','fullscreen','window'].includes(st.deckLiveMode)?st.deckLiveMode:'auto',secondary:TimerTools.secondary(st.secondary,st)
+      // LIVE T1/T2 is a session selection. A new session reveals the enabled
+      // timers instead of restoring a hidden output from an earlier show.
+      dualTimer:!!st.dualTimer,dualSplit:st.dualSplit==='rows'?'rows':'columns',separateOutputs:!!st.separateOutputs,liveTimerView:'both',deckLiveMode:['auto','fullscreen','window'].includes(st.deckLiveMode)?st.deckLiveMode:'auto',secondary:TimerTools.secondary(st.secondary,st)
     });
     S.secondary.outputLayer=TimerTools.outputOnTop(S.secondary)?'above':'normal';
     S.remMs=S.durationMs; autoNext=!!st.autoNext;
@@ -1920,6 +1929,7 @@ function load(){
   $('bgColor').value=S.bgColor; $('fgColor').value=S.fgColor;
   $('chkWarn').checked=S.useWarnColors; $('warnYellow').value=S.warnYellow; $('warnRed').value=S.warnRed;
   $('chkTextOnly').checked=S.textOnly; $('chkTransparent').checked=S.transparent;
+  $('blackoutMode').value=S.blackoutMode;
   $('chkFit').checked=S.fitWindow;
   $('deckLiveMode').value=S.deckLiveMode;
   if(S.outputSize){ $('outputWidth').value=S.outputSize.width; $('outputHeight').value=S.outputSize.height; }
@@ -2294,6 +2304,7 @@ $('chkWarn').addEventListener('change',e=>{ S.useWarnColors=e.target.checked; se
 $('warnYellow').addEventListener('input',e=>{ S.warnYellow=e.target.value; send(); });
 $('warnRed').addEventListener('input',e=>{ S.warnRed=e.target.value; send(); });
 $('chkTransparent').addEventListener('change',e=>{ S.transparent=e.target.checked; send(); });
+$('blackoutMode').addEventListener('change',e=>{ S.blackoutMode=e.target.value==='foreground'?'foreground':'black'; send(); });
 $('textInput').addEventListener('input',e=>{ S.text=e.target.value; send(); });
 $('chkTextOnly').addEventListener('change',e=>{ S.textOnly=e.target.checked; lastKey=''; send(); });
 $('btnTextClear').addEventListener('click',()=>{ S.text=''; $('textInput').value=''; send(); });
