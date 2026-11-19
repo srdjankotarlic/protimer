@@ -10,8 +10,22 @@ module.exports = async function ({ controlWin, getOutput, getSecondary, screen }
   };
   const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
   const waitFor = async (probe, message) => {
-    for (let i = 0; i < 60; i++) { if (await probe()) return; await delay(50); }
+    for (let i = 0; i < 120; i++) { if (await probe()) return; await delay(50); }
     throw new Error(message);
+  };
+  const toggleFullscreen = async (win, click, entering, renderer, message) => {
+    // The output publishes its requested mode immediately. That renderer flag
+    // can precede the completed OS transition, during which a second native
+    // toggle may be ignored. Observe the native event before testing reversal.
+    let finished = false;
+    const event = entering ? 'enter-full-screen' : 'leave-full-screen';
+    const onFinish = () => { finished = true; };
+    win.once(event, onFinish);
+    try {
+      await click();
+      await waitFor(async () => finished && win.isFullScreen() === entering &&
+        (entering || win.isResizable()) && await renderer(entering ? 'isFS' : '!isFS'), message);
+    } finally { win.removeListener(event, onFinish); }
   };
   const first = code => getOutput().webContents.executeJavaScript(code);
   const second = code => getSecondary().webContents.executeJavaScript(code);
@@ -67,20 +81,16 @@ module.exports = async function ({ controlWin, getOutput, getSecondary, screen }
   await waitFor(() => first(`$('blackout').style.display==='block'`), 'First output blackout failed');
   await ctl(`$('btnBlackout').click(); $('btnBothPause').click();`);
   unchangedPrimary('Before second fullscreen');
-  await ctl(`$('btnSecondaryFs').click();`);
-  await waitFor(async() => getSecondary().isFullScreen()&&await second('isFS'), 'Second output did not enter fullscreen');
-  await ctl(`$('btnSecondaryFs').click();`);
-  await waitFor(async() => !getSecondary().isFullScreen()&&await second('!isFS'), 'Control failed to exit second output fullscreen');
+  await toggleFullscreen(getSecondary(), () => ctl(`$('btnSecondaryFs').click();`), true, second, 'Second output did not enter fullscreen');
+  await toggleFullscreen(getSecondary(), () => ctl(`$('btnSecondaryFs').click();`), false, second, 'Control failed to exit second output fullscreen');
   await waitFor(()=>getSecondary().getContentSize()[0]===800&&getSecondary().getContentSize()[1]===450,
     'Second output did not finish restoring its windowed dimensions');
   await waitFor(() => JSON.stringify(getOutput().getBounds())===JSON.stringify(primaryBounds),
     'Native fullscreen did not restore the first output');
   unchangedPrimary('After second fullscreen');
   const secondaryBounds = getSecondary().getBounds();
-  await ctl(`$('btnFs').click();`);
-  await waitFor(async() => getOutput().isFullScreen()&&await first('isFS'), 'First output did not enter fullscreen');
-  await ctl(`$('btnFs').click();`);
-  await waitFor(async() => !getOutput().isFullScreen()&&await first('!isFS'), 'Control failed to exit first output fullscreen');
+  await toggleFullscreen(getOutput(), () => ctl(`$('btnFs').click();`), true, first, 'First output did not enter fullscreen');
+  await toggleFullscreen(getOutput(), () => ctl(`$('btnFs').click();`), false, first, 'Control failed to exit first output fullscreen');
   await waitFor(() => {
     const actual=getSecondary().getBounds();
     // X11 window managers may reposition a window on the same display when
