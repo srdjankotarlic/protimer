@@ -86,8 +86,13 @@ jobs:
           $portableDrive = [IO.Path]::GetPathRoot($env:TEMP)
           if (-not $portableDrive) { throw 'Could not determine the portable extraction drive' }
           New-Item -ItemType Directory -Force (Join-Path $portableDrive 'tmp') | Out-Null
-          $smoke = Start-Process -FilePath $appExe -ArgumentList '--smoke', '--disable-gpu' -Wait -PassThru
+          $stdout = Join-Path $env:RUNNER_TEMP 'protimer-chocolatey-smoke-stdout.log'
+          $stderr = Join-Path $env:RUNNER_TEMP 'protimer-chocolatey-smoke-stderr.log'
+          $smoke = Start-Process -FilePath $appExe -ArgumentList '--smoke', '--disable-gpu' -Wait -PassThru -RedirectStandardOutput $stdout -RedirectStandardError $stderr
+          Get-Content $stdout
+          Get-Content $stderr
           if ($smoke.ExitCode -ne 0) { throw "Installed ProTimer smoke launch failed with exit code $($smoke.ExitCode)" }
+          if (-not (Select-String -Path $stdout -Pattern '^SMOKE_OK$' -Quiet)) { throw 'Installed smoke completion marker missing' }
           "PROTIMER_APP_EXE=$appExe" | Out-File -FilePath $env:GITHUB_ENV -Append
           "PROTIMER_GUI_MARKER=$guiMarker" | Out-File -FilePath $env:GITHUB_ENV -Append
           "PROTIMER_SHIM=$shim" | Out-File -FilePath $env:GITHUB_ENV -Append
