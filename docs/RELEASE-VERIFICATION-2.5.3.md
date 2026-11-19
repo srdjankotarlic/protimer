@@ -22,3 +22,11 @@ For #59, the test verifies that foreground blackout hides timers, title, message
 The public Release workflow runs tests, builds macOS arm64 and Windows x64 packages, then runs the full smoke suite from the packaged apps. Windows Setup is installed and reinstalled, executable/archive hashes are compared against the build, and uninstall is verified. The public release links to the successful workflow.
 
 These checks cover rendered pixels, software transports and native windows. Physical Stream Deck USB/LCD operation and a venue HDMI/switcher/projector chain require testing with that equipment. No physical Windows presentation test or continuous multi-day soak is inferred from CI results.
+
+## Packaged and platform results
+
+Both macOS arm64 and Windows x64 packages passed [run 44546404539](https://github.com/srdjankotarlic/protimer/actions/runs/44546404539). Windows Setup passed first install, reinstall, installed-file hash comparison, the full app smoke and uninstall. The downloaded Mac DMG mounted and its app archive source matched the tested checkout. The local installed app is 2.5.3, with the previous app and user data backed up.
+
+All three source checks passed in [run 44547025901](https://github.com/srdjankotarlic/protimer/actions/runs/44547025901). Its first Mac attempt failed the existing native sibling-fullscreen restoration check, and the unchanged failed job passed on rerun. The full Mac packaged check and local suite passed. No assertion was relaxed. A queued macOS 15 source job was replaced with the current macOS runner used by release packaging.
+
+Published assets come from commit `73cfda9`. The release tag targets merged commit `1ebc25e`, whose runtime files, packaging inputs and smoke scripts are identical. The intervening change is the source-CI runner selection. The five release assets were uploaded together and SHA-256 values checked.
