@@ -109,6 +109,31 @@ module.exports = async function smokeNetworkUI() {
     await check('NETWORK_ONLINE_FAILURE_OK', `
       api.shareStart=async()=>{shareMock={};throw new Error('offline');};$('btnShare').click();await delay(5);
       return !$('shareError').hidden&&!shareStarting&&!$('btnShare').disabled&&!!remoteUrl;`);
+    await check('APP_UPDATE_CONTROL_UI_OK', `
+      const calls=[];
+      const status={ok:true,current:'2.7.0',type:'setup',latest:null,ready:false};
+      const state={...status,latest:'2.7.1'};
+      window.appUpdateUI=createUpdateUI({language:()=>lang,api:{
+        appUpdate:async action=>{
+          calls.push(action);
+          if(action==='status')return status;
+          if(action==='check')return state;
+          if(action==='download')return {...state,ready:true};
+          if(action==='open')return {...state,ready:true,ok:false,code:'SHOW_ACTIVE'};
+        },
+        onAppUpdateProgress(){}
+      }});
+      await delay(15);
+      if($('btnCheckUpdates').hidden||$('appCurrentVersion').textContent!=='v2.7.0')return false;
+      $('btnCheckUpdates').click();await delay(15);
+      if(!$('appUpdateDialog').open||$('appUpdateAction').hidden||
+        !$('appUpdateStatus').textContent.includes('2.7.1'))return false;
+      $('appUpdateAction').click();await delay(15);
+      if(!$('appUpdateHelp').textContent.includes('Setup')||calls.at(-1)!=='download')return false;
+      $('appUpdateAction').click();await delay(15);
+      const blocked=$('appUpdateStatus').textContent.length>0&&$('appUpdateHelp').textContent==='';
+      $('appUpdateClose').click();
+      return blocked&&!$('appUpdateDialog').open&&calls.join(',')==='status,check,download,open';`);
     for(const width of [820,1120]){
       win.setSize(width,900);
       for(const language of ['sr','en']){

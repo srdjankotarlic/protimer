@@ -1,9 +1,9 @@
 {
   "name": "pro-timer",
   "productName": "ProTimer",
-  "version": "2.6.1",
+  "version": "2.7.0",
   "config": {
-    "stableVersion": "2.6.1"
+    "stableVersion": "2.7.0"
   },
   "description": "Free stage timer and speaker countdown for live events, conferences and OBS",
   "main": "main.js",
@@ -76,6 +76,8 @@
     },
     "files": [
       "main.js",
+      "app-updater.js",
+      "app-update-ui.js",
       "preload.js",
       "timer-tools.js",
       "audience-routes.js",

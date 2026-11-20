@@ -64,6 +64,7 @@ jobs:
       - name: Smoke test packaged Windows app
         if: runner.os == 'Windows'
         env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PROTIMER_TEST_ONLINE: ${{ inputs.test_online && '1' || '0' }}
         shell: pwsh
         run: |
@@ -72,7 +73,32 @@ jobs:
           $installDir = Join-Path $env:RUNNER_TEMP 'ProTimer-install-test'
           $setup = Join-Path (Get-Location) "dist-installers/ProTimer-Setup-$version.exe"
           $appExe = Join-Path $installDir 'ProTimer.exe'
-          # Exercise first installation and an in-place reinstall through NSIS.
+          # Install the current published edition, then upgrade it in place.
+          if ($env:GITHUB_EVENT_NAME -eq 'push') {
+            $previous = gh release view --repo $env:GITHUB_REPOSITORY --json tagName --jq .tagName
+            if ($LASTEXITCODE -ne 0 -or !$previous) { throw 'Could not resolve the previous stable release' }
+            if ($previous -ne "v$version") {
+              $previousVersion = $previous.TrimStart('v')
+              $previousName = "ProTimer-Setup-$previousVersion.exe"
+              gh release download $previous --repo $env:GITHUB_REPOSITORY --pattern $previousName --dir $env:RUNNER_TEMP
+              if ($LASTEXITCODE -ne 0) { throw 'Could not download the previous installer' }
+              $oldInstaller = Join-Path $env:RUNNER_TEMP $previousName
+              $previousRelease = gh api "repos/$env:GITHUB_REPOSITORY/releases/tags/$previous" | ConvertFrom-Json
+              $expectedDigest = ($previousRelease.assets | Where-Object { $_.name -eq $previousName }).digest
+              if ($LASTEXITCODE -ne 0 -or $expectedDigest -ne "sha256:$((Get-FileHash $oldInstaller -Algorithm SHA256).Hash.ToLowerInvariant())") {
+                throw 'Previous installer checksum does not match GitHub'
+              }
+              $oldResult = Start-Process -FilePath $oldInstaller -ArgumentList "/S /D=$installDir" -Wait -PassThru
+              if ($oldResult.ExitCode -ne 0 -or !(Test-Path -LiteralPath $appExe)) { throw 'Previous installer failed' }
+              $oldInfo = (Get-Item $appExe).VersionInfo
+              $oldVersion = "$($oldInfo.ProductMajorPart).$($oldInfo.ProductMinorPart).$($oldInfo.ProductBuildPart)"
+              if ($oldVersion -ne $previousVersion) { throw 'Unexpected previous version' }
+              $dataDir = New-Item -ItemType Directory -Force (Join-Path $env:APPDATA 'ProTimer')
+              $marker = Join-Path $dataDir.FullName 'upgrade-test-marker.txt'
+              Set-Content -LiteralPath $marker -Value 'keep operator data'
+            }
+          }
+          # Exercise both the upgrade and another install of the same version.
           foreach ($attempt in 1..2) {
             $installer = Start-Process -FilePath $setup -ArgumentList "/S /D=$installDir" -Wait -PassThru
             if ($installer.ExitCode -ne 0) { throw "Setup attempt $attempt failed with exit code $($installer.ExitCode)" }
@@ -85,6 +111,11 @@ jobs:
               $actual = (Get-FileHash (Join-Path $installDir $file) -Algorithm SHA256).Hash
               if ($actual -ne $expected) { throw "Installer changed payload $file" }
             }
+          }
+          if ($marker) {
+            if ((Get-Content -LiteralPath $marker) -ne 'keep operator data') { throw 'Upgrade lost operator data' }
+            Remove-Item -LiteralPath $marker
+            Write-Output 'WINDOWS_PREVIOUS_RELEASE_UPGRADE_AND_DATA_OK'
           }
           foreach ($resource in @('streamdeck/com.srdjankotarlic.protimer.streamDeckPlugin', 'cloudflared.exe')) {
             if (-not (Test-Path (Join-Path "$installDir/resources" $resource))) { throw "Missing installed resource $resource" }
@@ -158,11 +189,17 @@ jobs:
           version="${GITHUB_REF_NAME#v}"
           (
             cd release-assets
+            ln "ProTimer-${version}-arm64.dmg" "ProTimer-Update-${version}-arm64.dmg"
+            ln "ProTimer-Setup-${version}.exe" "ProTimer-Update-${version}-x64.exe"
+            ln "ProTimer-${version}-portable.exe" "ProTimer-Update-${version}-portable.exe"
             sha256sum \
               "ProTimer-${version}-arm64.dmg" \
               "ProTimer-Setup-${version}.exe" \
               "ProTimer-${version}-portable.exe" \
               "com.srdjankotarlic.protimer.streamDeckPlugin" \
+              "ProTimer-Update-${version}-arm64.dmg" \
+              "ProTimer-Update-${version}-x64.exe" \
+              "ProTimer-Update-${version}-portable.exe" \
               > "ProTimer-${version}-SHA256SUMS.txt"
           )
       - name: Publish release atomically
@@ -176,11 +213,14 @@ jobs:
           portable="release-assets/ProTimer-${version}-portable.exe#Windows x64 portable — no installation"
           checksums="release-assets/ProTimer-${version}-SHA256SUMS.txt#SHA-256 checksums"
           plugin="release-assets/com.srdjankotarlic.protimer.streamDeckPlugin#Native Elgato Stream Deck plugin — Windows and macOS"
+          update_mac="release-assets/ProTimer-Update-${version}-arm64.dmg#In-app update package · macOS"
+          update_setup="release-assets/ProTimer-Update-${version}-x64.exe#In-app update package · Windows Setup"
+          update_portable="release-assets/ProTimer-Update-${version}-portable.exe#In-app update package · Windows portable"
           if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             test "$(gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json isDraft --jq .isDraft)" = true
-            gh release upload "$tag" "$mac" "$setup" "$portable" "$plugin" "$checksums" --clobber --repo "$GITHUB_REPOSITORY"
+            gh release upload "$tag" "$mac" "$setup" "$portable" "$plugin" "$checksums" "$update_mac" "$update_setup" "$update_portable" --clobber --repo "$GITHUB_REPOSITORY"
           else
-            gh release create "$tag" "$mac" "$setup" "$portable" "$plugin" "$checksums" --draft --verify-tag \
+            gh release create "$tag" "$mac" "$setup" "$portable" "$plugin" "$checksums" "$update_mac" "$update_setup" "$update_portable" --draft --verify-tag \
               --title "ProTimer $tag" --notes-file "docs/RELEASE-NOTES-${version}.md" --repo "$GITHUB_REPOSITORY"
           fi
           if [[ "$version" == *-* ]]; then

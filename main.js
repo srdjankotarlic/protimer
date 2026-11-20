@@ -1,15 +1,18 @@
-const { app, BrowserWindow, ipcMain, screen, net, powerMonitor } = require('electron');
+const { app, BrowserWindow, ipcMain, screen, net, powerMonitor, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const http = require('http');
 const os = require('os');
 const crypto = require('crypto');
-const { spawn } = require('child_process');
+const { spawn,execFile } = require('child_process');
+const {promisify}=require('node:util');
+const runFile=promisify(execFile);
 const TimerTools = require('./timer-tools');
 const { leaveFullscreen, preserveSiblingBounds, isFullscreen, setPresentationFullscreen, applyContentSize, applyOutputLayer } = require('./window-tools');
 const { waitForTunnelReady } = require('./tunnel-tools');
 const OutputQuality = require('./output-quality');
 const {livePlan} = require('./deck-output-plan');
+const {buildType,createUpdater}=require('./app-updater');
 
 const SMOKE = process.argv.includes('--smoke');
 // UI tests must never overwrite the operator's saved rundown or preferences.
@@ -686,6 +689,32 @@ ipcMain.on('ctl-on-top', (e, flag) => { if (controlWin && !controlWin.isDestroye
 function fromControl(event){
   return event.sender===controlWin?.webContents&&event.senderFrame===controlWin?.webContents.mainFrame;
 }
+let updater;
+function initializeUpdater(){
+  return createUpdater({
+  current:app.getVersion(),
+  type:app.isPackaged&&!SMOKE?buildType(process.platform,process.arch,!!process.env.PORTABLE_EXECUTABLE_FILE):null,
+  temp:app.getPath('temp'),
+  canOpen:()=>!!lastState&&!lastState.running&&!(lastState.dualTimer&&lastState.secondary?.running)&&
+    !outputWin&&!secondaryOutput.getWindow()&&!routed.info().length&&!tunnelUrl&&!tunnelStarting,
+  openPackage:async(file,type)=>{
+    // Preserve OS prompts for executables obtained over the Internet.
+    if(type==='mac'){
+      const time=Math.floor(Date.now()/1000).toString(16);
+      await runFile('/usr/bin/xattr',['-w','com.apple.quarantine',`0081;${time};ProTimer;`,file]);
+    }else{
+      await fs.promises.writeFile(file+':Zone.Identifier','[ZoneTransfer]\r\nZoneId=3\r\n');
+    }
+    if(type==='portable'){shell.showItemInFolder(file);return '';}
+    return shell.openPath(file);
+  },
+  progress:percent=>{
+    if(controlWin&&!controlWin.isDestroyed())controlWin.webContents.send('app-update-progress',percent);
+  }
+  });
+}
+ipcMain.handle('app-update',(event,action)=>fromControl(event)
+  ?(updater??=initializeUpdater()).run(action):{ok:false,code:'CONTROL_ONLY'});
 ipcMain.handle('routed-outputs-apply',(event,routes)=>fromControl(event)?routed.apply(routes):{ok:false,code:'CONTROL_ONLY'});
 ipcMain.handle('routed-outputs-close',(event,id)=>{
   if(!fromControl(event)||!(id===null||Number.isSafeInteger(id))) return {ok:false};
@@ -1020,6 +1049,7 @@ ipcMain.handle('share-stop', () => {
 });
 ipcMain.handle('share-info', () => ({ url: tunnelUrl, starting: tunnelStarting, provider: tunnelProvider }));
 app.on('before-quit', () => {
+  updater?.stop();
   deckHost?.close();
   tunnelGeneration++;
   if (pendingTunnelProcess) { closeTunnel(pendingTunnelProcess); pendingTunnelProcess = null; }

@@ -27,6 +27,8 @@ contextBridge.exposeInMainWorld('pt', {
   setOnTop: (flag) => ipcRenderer.send('ctl-on-top', flag),
   applyRoutedOutputs: (routes) => ipcRenderer.invoke('routed-outputs-apply', routes),
   closeRoutedOutputs: (id = null) => ipcRenderer.invoke('routed-outputs-close', id),
+  appUpdate: action => ipcRenderer.invoke('app-update',action),
+  onAppUpdateProgress: cb => ipcRenderer.on('app-update-progress',(_event,value)=>cb(value)),
   getDisplays: () => ipcRenderer.invoke('displays'),
   isOutputOpen: () => ipcRenderer.invoke('output-open'),
   getNetworkInfo: () => ipcRenderer.invoke('network-info'),

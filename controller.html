@@ -366,6 +366,17 @@
   .dot{width:7px; height:7px; border-radius:50%; background:var(--red); display:inline-block;}
   .dot.on{background:var(--accent);}
 
+  .statusbar{display:flex;align-items:center;gap:8px 14px;flex-wrap:wrap;}
+  .status-shortcuts{flex:1 1 480px;}
+  .status-updates{display:flex;gap:8px;align-items:center;margin-inline-start:auto;}
+  .status-updates button{font-size:11px;padding:3px 7px;}
+  #appUpdateDialog{width:min(480px,calc(100% - 32px));max-height:calc(100% - 32px);
+    padding:20px;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);}
+  #appUpdateDialog::backdrop{background:rgba(0,0,0,.55);}
+  #appUpdateDialog h2{font-size:17px;margin:0 0 10px;}
+  #appUpdateInstalled,#appUpdateHelp{color:var(--dim);}
+  #appUpdateStatus{min-height:20px;}
+  #appUpdateProgress{width:100%;accent-color:var(--accent);}
   .statusbar{flex:0 0 auto; padding:6px 18px; color:var(--dim2); font-size:11px;
     border-top:1px solid var(--border); background:var(--panel); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   kbd{background:rgba(255,255,255,.07); border:1px solid var(--border-strong); border-bottom-width:2px;
@@ -941,9 +952,27 @@
   <div class="duration-help" data-i18n="durationHelp">Enter potvrđuje · Esc otkazuje</div>
 </div>
 
-<div class="statusbar" data-i18n-html="shortcuts">
-  <kbd>Space</kbd> start/pauza · <kbd>R</kbd> reset · <kbd>N</kbd> sledeći · <kbd>↑↓</kbd> ±1m · <kbd>←→</kbd> ±10s · <kbd>B</kbd> blackout · <kbd>F</kbd> pun ekran · <kbd>M</kbd> poruka · <kbd>C</kbd> obriši poruku
-</div>
+<footer class="statusbar">
+  <span class="status-shortcuts" data-i18n-html="shortcuts"></span>
+  <div class="status-updates">
+    <span id="appCurrentVersion"></span>
+    <button type="button" id="btnCheckUpdates" class="ghost" data-i18n="checkUpdates" hidden>Proveri ažuriranje</button>
+  </div>
+</footer>
+
+<dialog id="appUpdateDialog" aria-labelledby="appUpdateTitle">
+  <h2 id="appUpdateTitle" data-i18n="updateTitle">Ažuriranje ProTimera</h2>
+  <p id="appUpdateInstalled"></p>
+  <p id="appUpdateStatus" role="status"></p>
+  <progress id="appUpdateProgress" max="100" value="0" aria-labelledby="appUpdateStatus" hidden></progress>
+  <p id="appUpdateHelp"></p>
+  <div class="row">
+    <button type="button" id="appUpdateAction" class="primary" hidden></button>
+    <button type="button" id="appUpdateCancel" hidden></button>
+    <button type="button" id="appUpdateRecheck" data-i18n="checkUpdates">Proveri ažuriranje</button>
+    <button type="button" id="appUpdateClose" class="ghost" data-i18n="updateClose">Zatvori</button>
+  </div>
+</dialog>
 
 <script src="timer-tools.js"></script>
 <script src="audience-routes.js"></script>
@@ -954,6 +983,7 @@
 <script src="deck-model.js"></script>
 <script src="deck-audio.js"></script>
 <script src="deck-ui.js"></script>
+<script src="app-update-ui.js"></script>
 <script src="deck-controller.js"></script>
 <script>
 const api = window.pt || {
@@ -974,6 +1004,7 @@ const api = window.pt || {
 // ---------- JEZIK / LANGUAGE ----------
 const I18N = {
   sr: {
+    checkUpdates:'Proveri ažuriranje', updateTitle:'Ažuriranje ProTimera', updateClose:'Zatvori',
     outputSection:'Izlazni prozor i položaj', outputDiagnostics:'Provera izlaza i HDMI',
     gridSection:'Pozicija prozora · Grid', appearanceSection:'Izgled i upozorenja', messageSection:'Poruke i tekst na ekranu',
     routeTitle:'Raspodela na više ekrana', routeActions:'Komande', routeSendAll:'Pošalji sve dodeljene', routeCloseAll:'Zatvori sve dodeljene',
@@ -1105,6 +1136,7 @@ const I18N = {
     shortcuts:'<kbd>Space</kbd> start/pauza · <kbd>R</kbd> reset · <kbd>N</kbd> sledeći · <kbd>↑↓</kbd> ±1m · <kbd>←→</kbd> ±10s · <kbd>B</kbd> blackout · <kbd>F</kbd> pun ekran · <kbd>M</kbd> poruka · <kbd>C</kbd> obriši poruku'
   },
   en: {
+    checkUpdates:'Check for updates', updateTitle:'Update ProTimer', updateClose:'Close',
     outputSection:'Output window and placement', outputDiagnostics:'Check output and HDMI',
     gridSection:'Window placement · Grid', appearanceSection:'Appearance and warnings', messageSection:'On-screen messages and text',
     routeTitle:'Route to multiple displays', routeActions:'Actions', routeSendAll:'Send all assigned', routeCloseAll:'Close all routed outputs',
@@ -1239,6 +1271,7 @@ const I18N = {
 let lang = localStorage.getItem('pt_lang') || 'sr';
 function t(key){ return (I18N[lang] && I18N[lang][key]) ?? I18N.sr[key] ?? key; }
 function applyLang(){
+  window.appUpdateUI?.render();
   document.documentElement.lang = lang;
   document.querySelectorAll('[data-i18n]').forEach(el => el.textContent = t(el.dataset.i18n));
   document.querySelectorAll('[data-i18n-ph]').forEach(el => el.placeholder = t(el.dataset.i18nPh));
@@ -2641,7 +2674,7 @@ function focusMessage(){
 
 // Prečice
 document.addEventListener('keydown',e=>{
-  if(document.querySelector('.pt-deck-dialog[open]'))return;
+  if(document.querySelector('.pt-deck-dialog[open], #appUpdateDialog[open]'))return;
   if(e.defaultPrevented||e.isComposing||e.ctrlKey||e.metaKey||e.altKey) return;
   const tag=e.target.tagName;
   if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT'||tag==='BUTTON'||tag==='SUMMARY'||e.target.isContentEditable){ if(e.key==='Escape') e.target.blur(); return; }
@@ -2668,6 +2701,7 @@ document.querySelectorAll('.lang button').forEach(b=>b.addEventListener('click',
 
 // ---------- START ----------
 window.audienceRouting=createAudienceRouting({host:$('audienceRoutingPanel'),api,language:()=>lang,dualEnabled:()=>S.dualTimer,screenList:()=>lastDisplays});
+if(api.appUpdate) window.appUpdateUI=createUpdateUI({api,language:()=>lang});
 load(); refreshDisplays(); send(); updateButtons(); applyLang(); syncCueColors(); setInterval(tickCountdown,50); requestAnimationFrame(render);
 // New explicit commands share the existing authoritative timer objects. In
 // particular START SET is one synchronous mutation followed by one state send.
