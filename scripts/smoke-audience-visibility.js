@@ -58,15 +58,27 @@ module.exports = async function ({ controlWin, getOutput, getSecondary, screen, 
     assert.equal(await ctl('S.endAt'), deadline);
 
     // Keep a colored background or alpha while all foreground layers disappear.
+    await ctl(`$('chkThird').click();document.querySelector('[data-mode-tertiary="countup"]').click();
+      S.tertiary.elapsedMs=42000;send();`);
+    await wait(() => ctl(`$('tertiaryReadout').textContent==='0:42'`), 'Control Timer 3 stopwatch read the wrong clock');
     await ctl(`$('outputRouting').value='together';$('outputRouting').dispatchEvent(new Event('change'));
       api.closeSecondaryOutput();S.bgColor='#234567';S.text='TITLE';S.message={text:'MESSAGE',flash:false};
       S.showProgress=true;S.showNowNext=true;cues=[{name:'Cue',durationMs:600000}];currentCue=0;
       $('blackoutMode').value='foreground';$('blackoutMode').dispatchEvent(new Event('change'));
       $('btnBlackout').click();`);
-    const hidden = `document.body.classList.contains('foreground-hidden')&&getComputedStyle($('blackout')).display==='none'&&['timer','secondaryTimer','text','msg','nownext','prog','audienceQr'].every(id=>getComputedStyle($(id)).visibility==='hidden')`;
+    const hiddenPreview = `['pvStage','pvText','pvTime','pvMsg','pvProg','secondaryReadout','tertiaryReadout'].every(id=>getComputedStyle($(id)).visibility==='hidden')`;
+    await wait(() => ctl(hiddenPreview), 'Control preview did not hide foreground in both timer cards');
+    await wait(() => ctl(`['preview','secondaryPreview','tertiaryPreview'].every(id=>getComputedStyle($(id)).backgroundColor==='rgb(35, 69, 103)')`), 'Control preview lost the configured background');
+    await ctl(`$('blackoutMode').value='black';$('blackoutMode').dispatchEvent(new Event('change'));`);
+    await wait(() => ctl(`(${hiddenPreview})&&['preview','secondaryPreview','tertiaryPreview'].every(id=>getComputedStyle($(id)).backgroundColor==='rgb(0, 0, 0)')`), 'Black-screen mode did not replace the Control preview background');
+    await wait(() => run(viewer, `getComputedStyle($('blackout')).display==='block'`), 'Colored output was not covered by black screen');
+    await ctl(`$('blackoutMode').value='foreground';$('blackoutMode').dispatchEvent(new Event('change'));`);
+    const hidden = `document.body.classList.contains('foreground-hidden')&&getComputedStyle($('blackout')).display==='none'&&['timer','secondaryTimer','tertiaryTimer','text','msg','nownext','prog','audienceQr'].every(id=>getComputedStyle($(id)).visibility==='hidden')`;
     for (const win of [getOutput(), viewer]) await wait(() => run(win, hidden), 'Foreground blackout left content visible');
     await wait(() => run(viewer, `getComputedStyle(document.body).backgroundColor==='rgb(35, 69, 103)'`), 'Blackout changed the configured background');
     await ctl(`$('chkTransparent').checked=true;$('chkTransparent').dispatchEvent(new Event('change'));`);
+    const checkerVisible = `['pvChecker','secondaryChecker','tertiaryChecker'].every(id=>getComputedStyle($(id)).display==='block')`;
+    await wait(() => ctl(`(${hiddenPreview})&&(${checkerVisible})`), 'Transparent foreground blackout should keep the Control checkerboard');
     await wait(() => run(viewer, `getComputedStyle(document.body).backgroundColor==='rgba(0, 0, 0, 0)'`), 'Transparency did not reach viewer');
     await wait(() => getOutput()?.isVisible(), 'Transparent native output did not reopen');
     for (const win of [getOutput(), viewer]) {
@@ -83,10 +95,13 @@ module.exports = async function ({ controlWin, getOutput, getSecondary, screen, 
     assert.equal(await ctl('S.endAt'), deadline);
     await ctl(`$('btnSecondaryBlackout').click();`);
     for (const win of [getOutput(), getSecondary(), viewer]) await wait(() => run(win, `!document.body.classList.contains('foreground-hidden')&&getComputedStyle($('timer')).visibility==='visible'`), 'Restoring foreground failed');
+    await wait(() => ctl(`getComputedStyle($('pvTime')).visibility==='visible'&&getComputedStyle($('secondaryReadout')).visibility==='visible'&&getComputedStyle($('tertiaryReadout')).visibility==='visible'`), 'Control preview did not restore the timers');
     await ctl(`$('blackoutMode').value='black';$('blackoutMode').dispatchEvent(new Event('change'));$('btnBlackout').click();`);
     await wait(() => run(viewer, `getComputedStyle($('blackout')).display==='block'&&!document.body.classList.contains('foreground-hidden')`), 'Traditional black screen failed');
+    await wait(() => ctl(`(${hiddenPreview})&&['pvChecker','secondaryChecker','tertiaryChecker'].every(id=>getComputedStyle($(id)).display==='none')`), 'Black screen should hide the Control checkerboard');
     await ctl(`$('btnBlackout').click();$('blackoutMode').value='foreground';$('blackoutMode').dispatchEvent(new Event('change'));saveSettings();
       $('outputRouting').value='together';$('outputRouting').dispatchEvent(new Event('change'));
+      $('chkThird').click();
       const legacy=JSON.parse(localStorage.getItem('pt_settings'));legacy.liveTimerView='t1';localStorage.setItem('pt_settings',JSON.stringify(legacy));
       api.closeOutput();api.closeSecondaryOutput();`);
     await wait(() => !getOutput()&&!getSecondary(), 'Outputs did not close');
