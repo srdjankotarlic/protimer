@@ -42,10 +42,17 @@ module.exports=async function({controlWin,screen}){
       return [...image.toBitmap().subarray(0,4)]; // BGRA
     };
     async function assertPixel(expected){
-      const actual=await pixel();
-      // The OS display profile may round a saturated RGB channel by a few levels.
-      assert.ok(actual.slice(0,3).every((channel,i)=>Math.abs(channel-expected[i])<=3)&&actual[3]===255,
-        `Expected BGRA close to ${expected}; captured ${actual}`);
+      // State changes arrive before the compositor publishes its next surface.
+      // The display color profile can also round saturated channels slightly.
+      let actual;
+      try{
+        await wait(async()=>{
+          actual=await pixel();
+          return actual.slice(0,3).every((channel,i)=>Math.abs(channel-expected[i])<=3)&&actual[3]===255;
+        },`Keying pixels did not update to ${expected}`);
+      }catch(error){
+        throw new Error(`${error.message}; last captured BGRA ${actual}`,{cause:error});
+      }
     }
     await assertPixel([0,255,0,255]);
     await ctl('S.blackout=true;send()');
