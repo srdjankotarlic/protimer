@@ -23,7 +23,7 @@ function host() {
     endAt: wall + 1000, remMs: 1000, elapsedMs: 0, soundZero: false });
   const state = { ...timer(), dualTimer: true, secondary: timer() };
   const context = vm.createContext({ S: state, TimerTools, cues: [], currentCue: -1,
-    plannedStartValue: null, zeroFired: false, autoNext: false, autoAdvanceTimer: null, targetArmed: false, secondaryTargetArmed: false,
+    plannedStartValue: null, zeroFired: false, autoNext: false, autoAdvanceTimer: null, targetArmed: false, optionalTargetArmed:{secondary:false}, optionalEnabled:role=>role==='secondary',
     Date: { now: () => wall }, performance: { now: () => mono },
     ProTimerDeckAudio: () => ({}), showZeroAudioError() {}, beep() { bells++; },
     api: { sendState() {}, onClockPower() {} }, syncDurationDisplays() {},
@@ -40,15 +40,16 @@ function host() {
   for (const [start, end] of [
     ['let deckControl=null;', '// ---------- RASPORED'],
     ['function tickCountdown(){', 'function reset(){'],
-    ['function secondaryRunning(running){', 'function secondaryDuration(ms,keepTarget=false){'],
+    ['function optionalRunning(role,running){', 'function optionalDuration(role,ms,keepTarget=false){'],
     ['function primaryRunning(running){', 'function syncDualUI(){'],
     ['function setZeroSound(', "$('chkSound').addEventListener"]
   ]) vm.runInContext(section(start, end), context, { filename: 'controller.html' });
-  for (const id of ['chkSound', 'chkSound2']) {
-    const handler = controller.split('\n').find(line => line.startsWith(`$('${id}').addEventListener`));
-    assert.ok(handler, `Real ${id} handler exists`);
-    vm.runInContext(handler, context, { filename: 'controller.html' });
-  }
+  const handler=section("$('chkSound').addEventListener", "$('chkProg').addEventListener");
+  vm.runInContext(handler,context,{filename:'controller.html'});
+  vm.runInContext(section("  bind('chkSound2'",'\n}').trim(),vm.createContext({
+    id:'t2',bind:(id,event,fn)=>context.$(id).addEventListener(event,fn),
+    setZeroSound:(id,enabled)=>context.setZeroSound(id,enabled)
+  }),{filename:'controller.html'});
   return {
     state,
     run: code => vm.runInContext(code, context),

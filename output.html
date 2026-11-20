@@ -13,20 +13,20 @@
   body{background:#000; transition:background .15s;}
   body.idle,body.routed{cursor:none;}
   body.routed{transition:none;}
-  body.key-output #stage.dual #secondaryPane{box-shadow:none;}
+  body.key-output #stage.dual .timer-pane + .timer-pane{box-shadow:none;}
 
   #stage{position:absolute; inset:0; display:flex; flex-direction:column;
     align-items:center; justify-content:center;}
   #stage{align-items:stretch;}
   .timer-pane{position:relative; flex:1 1 0; min-width:0; min-height:0; overflow:hidden;}
   .timer-content{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; transform-origin:center;}
-  #secondaryPane{display:none;}
+  #secondaryPane,#tertiaryPane{display:none;}
   #stage.dual.columns{flex-direction:row;}
-  #stage.dual #secondaryPane{display:block;}
-  #stage.dual.columns #secondaryPane{box-shadow:inset 1px 0 0 rgba(128,128,128,.25);}
-  #stage.dual.rows #secondaryPane{box-shadow:inset 0 1px 0 rgba(128,128,128,.25);}
-  #secondaryTimer{font-family:"SF Mono",ui-monospace,Menlo,monospace; font-weight:700; font-variant-numeric:tabular-nums; line-height:.95; white-space:nowrap;}
-  #secondaryTimer.blink{animation:pulse 1s steps(2,start) infinite;}
+  #stage.dual #secondaryPane,#stage.triple #tertiaryPane{display:block;}
+  #stage.dual.columns .timer-pane + .timer-pane{box-shadow:inset 1px 0 0 rgba(128,128,128,.25);}
+  #stage.dual.rows .timer-pane + .timer-pane{box-shadow:inset 0 1px 0 rgba(128,128,128,.25);}
+  #secondaryTimer,#tertiaryTimer{font-family:"SF Mono",ui-monospace,Menlo,monospace; font-weight:700; font-variant-numeric:tabular-nums; line-height:.95; white-space:nowrap;}
+  #secondaryTimer.blink,#tertiaryTimer.blink{animation:pulse 1s steps(2,start) infinite;}
 
   /* gornji tekst (labela / naziv koji korisnik ubaci) */
   #text{font-weight:600; line-height:1.1; text-align:center; padding:0 5vw;
@@ -62,9 +62,10 @@
   .free-audience #stage{display:block;}
   .free-audience #stage .timer-pane,
   .free-audience #stage .timer-content,
-  .free-audience #stage.dual #secondaryPane{display:contents;}
-  .free-audience #stage:not(.dual) #secondaryPane{display:none;}
-  .free-audience #timer,.free-audience #secondaryTimer,.free-audience #text,
+  .free-audience #stage.dual #secondaryPane,
+  .free-audience #stage.triple #tertiaryPane{display:contents;}
+  .free-audience #stage:not(.dual) #secondaryPane,.free-audience #stage:not(.triple) #tertiaryPane{display:none;}
+  .free-audience #timer,.free-audience #secondaryTimer,.free-audience #tertiaryTimer,.free-audience #text,
   .free-audience #msg,.free-audience #nownext,.free-audience #prog{position:absolute; right:auto; bottom:auto;}
   .free-audience #text,.free-audience #msg{width:max-content; max-width:90vw; padding:0; margin:0!important; overflow-wrap:anywhere;}
   .free-audience #nownext{width:80vw;}
@@ -101,6 +102,7 @@
     <div id="timer">--:--</div>
     </div></div>
     <div class="timer-pane" id="secondaryPane"><div class="timer-content" id="secondaryContent"><div id="secondaryTimer">--:--</div></div></div>
+    <div class="timer-pane" id="tertiaryPane"><div class="timer-content" id="tertiaryContent"><div id="tertiaryTimer">--:--</div></div></div>
   </div>
   <div id="msg"></div>
   <div id="nownext"></div>
@@ -158,7 +160,7 @@ function applyState(s){
   S = TimerTools.audienceState(s);
   const family=TimerTools.digitFamily(S.digitFont);
   setStyle($('timer'),'fontFamily',family);
-  setStyle($('secondaryTimer'),'fontFamily',family);
+  for(const id of ['secondaryTimer','tertiaryTimer']) setStyle($(id),'fontFamily',family);
   $('connection').textContent = s.lang === 'en' ? 'RECONNECTING…' : 'PONOVNO POVEZIVANJE…';
   render(); // Apply BLACK/LIVE and layout changes immediately, not on the next background timer tick.
   return true;
@@ -285,17 +287,18 @@ function render(){
   document.body.classList.toggle('free-audience',free);
   document.body.classList.toggle('windowed',IS_ELECTRON&&!routedOutput&&!isFS&&!S.gridOn);
   setStyle($('stage'),'visibility',S.liveHidden?'hidden':'visible');
-  setClass($('stage'),S.dualTimer?'dual '+(S.dualSplit==='rows'?'rows':'columns'):'');
+  setClass($('stage'),S.dualTimer?'dual '+(S.thirdTimer?'triple ':'')+(S.dualSplit==='rows'?'rows':'columns'):'');
 
   paint(text, fg, bg, neg, blink, S.text || '', S.message ? S.message.text : '',
         S.message && S.message.flash, S.showProgress ? prog : null,free);
   applyLayout($('primaryContent'),S.outputLayout);
-  if(S.dualTimer&&S.secondary) renderSecondary(now,free);
+  if(S.dualTimer&&S.secondary) renderAdditional('secondary',now,free);
+  if(S.thirdTimer&&S.tertiary) renderAdditional('tertiary',now,free);
 
   if (fitMode) requestFit();
   renderNowNext(fg,free);
   renderFreeLayout(free);
-  document.body.classList.toggle('foreground-hidden',!!S.blackout&&S.blackoutMode==='foreground');
+  document.body.classList.toggle('foreground-hidden',!!S.liveHidden||!!S.blackout&&S.blackoutMode==='foreground');
   setStyle($('blackout'),'display',S.blackout&&S.blackoutMode!=='foreground'?'block':'none');
 }
 
@@ -303,7 +306,7 @@ function applyLayout(element,value){
   const layout=TimerTools.layout(value);
   setStyle(element,'transform',`translate(${layout.x}%, ${layout.y}%) scale(${layout.scale/100})`);
 }
-const freeNodes = {primary:'timer',secondary:'secondaryTimer',title:'text',message:'msg',rundown:'nownext',progress:'prog'};
+const freeNodes = {primary:'timer',secondary:'secondaryTimer',tertiary:'tertiaryTimer',title:'text',message:'msg',rundown:'nownext',progress:'prog'};
 let appliedFreeLayout, lastFreeState;
 function renderFreeLayout(enabled){
   if(S===lastFreeState) return;
@@ -319,15 +322,15 @@ function renderFreeLayout(enabled){
     setStyle(el,'transform',pos?`translate(-50%, -50%) scale(${pos.scale/100})`:'');
   }
 }
-function renderSecondary(now,free){
-  const timer=S.secondary, pane=$('secondaryPane'), el=$('secondaryTimer');
+function renderAdditional(role,now,free){
+  const timer=S[role], pane=$(role+'Pane'), el=$(role+'Timer');
   let rem=TimerTools.remaining(timer,now); if(!(timer.overtime??S.overtime)) rem=Math.max(0,rem);
   const mode=timer.mode||'countdown',text=mode==='clock'?new Date(now).toLocaleTimeString('en-GB',{hour12:false}):mode==='countup'?fmtSecs(Math.floor(TimerTools.elapsed(timer,now)/1000),false):fmtMs(rem);
   const fg=S.outputKeyColor?'#ffffff':mode!=='countdown'?S.fgColor:rem<=0?(S.warnRed||'#ff4540'):S.useWarnColors?(rem<=S.redSec*1000?S.warnRed:rem<=S.yellowSec*1000?S.warnYellow:S.fgColor):S.fgColor;
   const neg=mode==='countdown'&&rem<0, blink=mode==='countdown'&&rem<=0&&(timer.flashZero??S.flashZero??true);
   setText(el,text); setStyle(el,'color',fg); setClass(el,[neg?'neg':'',blink?'blink':''].filter(Boolean).join(' '));
   setStyle(el,'fontSize',free?freeDigits(text):Math.min(pane.clientWidth*0.92/(TimerTools.digitWidth(S.digitFont,text)),pane.clientHeight*0.7)+'px');
-  applyLayout($('secondaryContent'),timer.layout);
+  applyLayout($(role+'Content'),timer.layout);
 }
 
 // kompaktan prozor: traži od main-a da visina prozora bude tačno koliko i tajmer (+mali rub)

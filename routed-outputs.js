@@ -6,7 +6,7 @@ const {gridBounds}=require('./output-quality');
 
 function placement(display,route,state){
   if(route.presentation==='fullscreen') return display.bounds;
-  const settings=route.view==='t2'?state.secondary:state;
+  const settings=Routes.placementTimer(state,route);
   if(settings?.gridOn&&settings.gridSize) return gridBounds(display,settings);
   const area=display.workArea;
   const size=TimerTools.size(settings?.outputSize);
@@ -33,7 +33,7 @@ module.exports=function routedOutputs({BrowserWindow,getDisplays,getState,occupi
   }
   function place(entry,display,state){
     const full=entry.route.presentation==='fullscreen';
-    const settings=entry.route.view==='t2'?state.secondary:state;
+    const settings=Routes.placementTimer(state,entry.route);
     entry.window.setAlwaysOnTop((full&&!display.hasControl)||TimerTools.outputOnTop(settings),'floating');
     entry.window.setBounds(placement(display,entry.route,state));
     entry.window.webContents.send('win-fs',full);
@@ -114,7 +114,7 @@ module.exports=function routedOutputs({BrowserWindow,getDisplays,getState,occupi
       if(!target){ entry.window.destroy(); continue; }
       if(entry.live&&(!previous||
         JSON.stringify(placement(target,route,previous))!==JSON.stringify(placement(target,route,current))||
-        TimerTools.outputOnTop(route.view==='t2'?previous.secondary:previous)!==TimerTools.outputOnTop(route.view==='t2'?current.secondary:current)))
+        TimerTools.outputOnTop(Routes.placementTimer(previous,route))!==TimerTools.outputOnTop(Routes.placementTimer(current,route))))
         place(entry,target,current);
       publish(entry,current);
     }

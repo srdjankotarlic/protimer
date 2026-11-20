@@ -25,7 +25,7 @@ function host(settings) {
     });
     return nodes.get(id);
   }
-  const context = vm.createContext({ TimerTools, lang: 'en', cues: [], currentCue: -1,
+  const context = vm.createContext({ TimerTools, additionalTimers:{secondary:'t2',tertiary:'t3'},optionalControl:(role,id)=>node(role==='tertiary'?id.replace(/2$/,'3'):id), lang: 'en', cues: [], currentCue: -1,
     autoNext: false, plannedStartValue: null, countdownRevision: 0, cueDraftMs: 0, selectedCue: null, zeroFired: false, deckControl: null,
     bellAudio: {}, window: { ProTimerDeckController: true },
     ProTimerDeckController(value) { deck = value; return Promise.resolve(null); },
@@ -45,10 +45,12 @@ function host(settings) {
     ['function saveCues(){', '// ---------- MONITORI'],
     ['async function applyDeckOperation(op){', '</script>']
   ]) vm.runInContext(section(start, end), context, { filename: 'controller.html' });
-  for (const id of ['chkOver', 'chkOver2']) {
-    const handler = controller.split('\n').find(line => line.startsWith(`$('${id}').addEventListener`));
-    assert.ok(handler, `Real ${id} handler exists`);
-    vm.runInContext(handler, context, { filename: 'controller.html' });
+  vm.runInContext(section("$('chkOver').addEventListener", "$('chkProg').addEventListener"),context);
+  const bindLine=section("  bind('chkOver2'", "  bind('chkSound2'");
+  for(const role of ['secondary','tertiary']){
+    context.role=role;
+    context.bind=(id,event,fn)=>context.optionalControl(role,id).addEventListener(event,fn);
+    vm.runInContext(`((role)=>{${bindLine}})(role)`,context);
   }
   const run = code => vm.runInContext(code, context);
   run('load()');
@@ -166,4 +168,25 @@ test('Deck adjustment uses the selected paused timer overtime flag in both direc
       assert.deepEqual(structuredClone(h.state), expected, 'Adjustment must not mutate the other timer');
     }
   }
+});
+
+test('Timer 3 settings persist independently and restore a stopped timer',()=>{
+  const h=host({dualTimer:false,thirdTimer:true,mode:'clock',
+    tertiary:{mode:'countup',durationMs:420000,overtime:false,flashZero:false,soundZero:true}});
+  assert.equal(h.state.thirdTimer,true);
+  assert.equal(h.state.dualTimer,false);
+  assert.equal(h.state.mode,'clock');
+  assert.equal(h.state.tertiary.mode,'countup');
+  assert.equal(h.state.liveTimerView,'all');
+  assert.equal(h.node('chkFlash3').checked,false);
+  assert.equal(h.node('chkSound3').checked,true);
+  h.state.tertiary.running=true;
+  h.state.tertiary.startAt=12345;
+  h.toggle('chkOver3',true);
+  const restored=host(h.saved());
+  assert.equal(restored.state.tertiary.durationMs,420000);
+  assert.equal(restored.state.tertiary.overtime,true);
+  assert.equal(restored.state.tertiary.running,false);
+  assert.equal(restored.state.tertiary.startAt,0);
+  assert.equal(host({dualTimer:true}).state.thirdTimer,false);
 });

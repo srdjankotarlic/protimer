@@ -122,3 +122,30 @@ test('the window manager sends seven independent projections and closes only dis
   outputs.close();
   assert.deepEqual(outputs.info(),[]);
 });
+
+test('each nonempty combination projects only its enabled source clocks and per-display split',()=>{
+  const {groups,optionalTimer,audienceState,outputState}=require('../timer-tools');
+  const source={...state,thirdTimer:true,liveTimerView:'all',
+    secondary:{...state.secondary,mode:'countup',elapsedMs:42000,startAt:900001},
+    tertiary:{...optionalTimer(),mode:'clock',durationMs:1000}};
+  const original=structuredClone(source);
+  const selections=['t3','t13','t23','all','both','t2','t1'].map((view,i)=>({
+    ...values[i],view,split:i%2===0?'rows':'columns'
+  }));
+  assert.equal(Routes.plan(selections,displays,source,new Set()).ok,true);
+  const modes={t1:'countdown',t2:'countup',t3:'clock'};
+  for(const route of selections){
+    const picture=Routes.project(source,route);
+    assert.equal(picture.dualSplit,route.split);
+    assert.deepEqual([picture.mode,picture.secondary?.mode,picture.tertiary?.mode].filter(Boolean),groups[route.view].map(id=>modes[id]));
+    assert.equal(audienceState(picture),picture,'An individual assignment must survive the renderer projection');
+  }
+  assert.equal(audienceState(outputState(source)).thirdTimer,false,'Legacy separate T1 output stays solo');
+  assert.equal(audienceState(source).thirdTimer,true,'Shared OBS output can include three');
+  assert.deepEqual(source,original);
+  const two={...source,dualTimer:false};
+  assert.equal(Routes.plan([selections[1]],displays,two,new Set()).ok,true);
+  assert.equal(Routes.plan([selections[2]],displays,two,new Set()).code,'TIMER_DISABLED');
+  assert.equal(Routes.project(two,selections[3]).secondary.mode,'clock');
+  assert.equal(Routes.project({...two,thirdTimer:false},selections[0]).liveHidden,true);
+});

@@ -126,6 +126,8 @@
   .route-table th{font-size:11px;color:var(--dim);}
   .route-table td small{display:block;margin-top:4px;color:var(--dim);}
   .route-table select{max-width:100%;}
+  .route-table select+select{display:block;margin-top:5px;}
+  #timerThreeHost:not([hidden]){margin-top:12px;}
   .route-table button{margin:2px;}
   .route-help{margin-top:8px;}
   .route-help summary{font-size:12px;}
@@ -518,13 +520,17 @@
     </section>
 
     <div class="panel" id="dualPanel">
-      <label class="chk"><input type="checkbox" id="chkDual"> <span data-i18n="dualEnable">Prikaži drugi tajmer</span></label>
+      <div class="layout-row">
+        <label class="chk"><input type="checkbox" id="chkDual"> <span data-i18n="dualEnable">Prikaži drugi tajmer</span></label>
+        <label class="chk"><input type="checkbox" id="chkThird"> <span data-i18n="thirdEnable">Prikaži treći tajmer</span></label>
+      </div>
+      <div class="layout-row" id="splitOptions" hidden>
+        <button type="button" class="ghost" id="openTimerRouting" data-i18n="routeTitle">Raspodela na više ekrana</button>
+        <label id="dualSplitLabel"><span data-i18n="splitLabel">Podela</span><select id="dualSplit"><option value="columns" data-i18n="splitColumns">Levo / desno │</option><option value="rows" data-i18n="splitRows">Gore / dole ─</option></select></label>
+      </div>
       <div id="dualOptions" hidden>
         <div class="layout-row">
           <label><span data-i18n="outputRouting">Prikaz</span><select id="outputRouting"><option value="together" data-i18n="outputsTogether">Zajedno na jednom ekranu</option><option value="separate" data-i18n="outputsSeparate">Na dva odvojena ekrana</option></select></label>
-        </div>
-        <div class="layout-row">
-          <label id="dualSplitLabel"><span data-i18n="splitLabel">Podela</span><select id="dualSplit"><option value="columns" data-i18n="splitColumns">Levo / desno │</option><option value="rows" data-i18n="splitRows">Gore / dole ─</option></select></label>
         </div>
         <section id="timerTwoControls" class="timer-control" aria-labelledby="timerTwoHeading">
           <h3 class="timer-heading" id="timerTwoHeading" data-i18n="timerTwo">Tajmer 2</h3>
@@ -576,10 +582,6 @@
             </details>
           </div>
         </section>
-        <div class="layout-row">
-          <span class="lbl" data-i18n="bothTimers">Oba tajmera</span>
-          <button id="btnBothStart" data-i18n="startBoth">▶ Pokreni oba</button><button id="btnBothPause" data-i18n="pauseBoth">⏸ Pauziraj oba</button><button id="btnBothReset" data-i18n="resetBoth">↺ Resetuj oba</button>
-        </div>
         <p class="panel-help" data-i18n="dualHelp">Glavni START i rundown upravljaju tajmerom 1. Tajmer 2 ima nezavisno trajanje i kontrole.</p>
         <div id="secondaryOutputControls" class="secondary-output-controls" hidden>
           <p class="panel-help" data-i18n="separateHelp">Tajmer 1 šalješ gornjim komandama. Ovde biraš ekran za Tajmer 2. Svaki prozor otvaraš i zatvaraš zasebno; odbrojavanja se ne prekidaju.</p>
@@ -596,6 +598,12 @@
           <p class="panel-help" data-i18n="separateSharedHelp">Boje, upozorenja, poruka i BLACKOUT važe za oba ekrana. Tekst, NOW/NEXT i QR ostaju na ekranu Tajmera 1. OBS i linkovi zadržavaju zajednički prikaz. Televizore podesi kao proširene ekrane, ne preslikane.</p>
         </div>
       </div>
+      <div id="timerThreeHost" hidden></div>
+        <div class="layout-row" id="groupTransport" hidden>
+          <span class="lbl" data-i18n="enabledTimers">Uključeni tajmeri</span>
+          <button id="btnBothStart" data-i18n="startEnabled">▶ Pokreni sve</button><button id="btnBothPause" data-i18n="pauseEnabled">⏸ Pauziraj sve</button><button id="btnBothReset" data-i18n="resetEnabled">↺ Resetuj sve</button>
+        </div>
+
     </div>
     </div>
 
@@ -621,7 +629,7 @@
     <details class="panel disclosure route-panel" id="audienceRoutingPanel">
       <summary data-i18n="routeTitle">Raspodela na više ekrana</summary>
       <div class="section-body">
-        <p class="panel-help" data-i18n="routeIntro">Za svaki prošireni ekran izaberi Tajmer 1, Tajmer 2 ili oba. Promene se pamte, a prikaz otvaraš dugmetom Pošalji.</p>
+        <p class="panel-help" data-i18n="routeIntro">Za svaki prošireni ekran izaberi jedan tajmer ili kombinaciju. Dodela se pamti. Izlaz otvaraš dugmetom Pošalji.</p>
         <div class="route-table"><table>
           <thead><tr><th scope="col"></th><th scope="col"></th><th scope="col"></th><th scope="col"></th><th scope="col" data-i18n="routeActions">Komande</th></tr></thead>
           <tbody></tbody>
@@ -664,7 +672,7 @@
         <div class="layout-row">
           <label class="chk" id="freeAudienceToggle"><input type="checkbox" id="chkFreeAudience"> <span data-i18n="freeAudience">Slobodan raspored</span></label>
           <label id="layoutTargetLabel" hidden><span id="layoutTargetCaption" data-i18n="adjustDigits">Podesi cifre</span><select id="layoutTarget">
-            <option value="primary" data-i18n="timerOne">Tajmer 1</option><option value="secondary" data-i18n="timerTwo" disabled>Tajmer 2</option>
+            <option value="primary" data-i18n="timerOne">Tajmer 1</option><option value="secondary" data-i18n="timerTwo" disabled>Tajmer 2</option><option value="tertiary" data-i18n="timerThree" disabled hidden>Tajmer 3</option>
             <option value="title" data-i18n="layoutTitleElement" hidden>Naslov</option><option value="message" data-i18n="layoutMessageElement" hidden>Poruka</option>
             <option value="rundown" data-i18n="layoutRundownElement" hidden>SADA / SLEDI</option><option value="progress" data-i18n="layoutProgressElement" hidden>Traka napretka</option>
           </select></label>
@@ -1008,7 +1016,9 @@ const I18N = {
     outputSection:'Izlazni prozor i položaj', outputDiagnostics:'Provera izlaza i HDMI',
     gridSection:'Pozicija prozora · Grid', appearanceSection:'Izgled i upozorenja', messageSection:'Poruke i tekst na ekranu',
     routeTitle:'Raspodela na više ekrana', routeActions:'Komande', routeSendAll:'Pošalji sve dodeljene', routeCloseAll:'Zatvori sve dodeljene',
-    routeIntro:'Za svaki prošireni ekran izaberi Tajmer 1, Tajmer 2 ili oba. Promene se pamte, a prikaz otvaraš dugmetom Pošalji.',
+    timerThree:'Tajmer 3',thirdEnable:'Prikaži treći tajmer',enabledTimers:'Uključeni tajmeri',
+    startEnabled:'▶ Pokreni sve',pauseEnabled:'⏸ Pauziraj sve',resetEnabled:'↺ Resetuj sve',
+    routeIntro:'Za svaki prošireni ekran izaberi jedan tajmer ili kombinaciju. Dodela se pamti. Izlaz otvaraš dugmetom Pošalji.',
     routeKeyTitle:'Kako ukloniti pozadinu u Rolandu ili ATEM-u',
     routeKeySend:'HDMI izlaz računara podesi kao prošireni ekran. Na tom redu izaberi Pun ekran i Luma ili Chroma pozadinu.',
     routeKeyRoland:'Roland V-160HD: DSK → SELF KEY. Izaberi HDMI ulaz i Luminance Black ili Chroma. Podesi LEVEL i GAIN u Preview.',
@@ -1140,7 +1150,9 @@ const I18N = {
     outputSection:'Output window and placement', outputDiagnostics:'Check output and HDMI',
     gridSection:'Window placement · Grid', appearanceSection:'Appearance and warnings', messageSection:'On-screen messages and text',
     routeTitle:'Route to multiple displays', routeActions:'Actions', routeSendAll:'Send all assigned', routeCloseAll:'Close all routed outputs',
-    routeIntro:'Choose Timer 1, Timer 2 or both for each extended display. Assignments are saved. Use Send to open an output.',
+    timerThree:'Timer 3',thirdEnable:'Show third timer',enabledTimers:'Enabled timers',
+    startEnabled:'▶ Start all',pauseEnabled:'⏸ Pause all',resetEnabled:'↺ Reset all',
+    routeIntro:'Choose a timer or a combination for each extended display. Assignments are saved. Use Send to open an output.',
     routeKeyTitle:'Remove the background in Roland or ATEM',
     routeKeySend:'Extend the computer desktop to the switcher HDMI input. Choose Fullscreen and a Luma or Chroma background on that display.',
     routeKeyRoland:'Roland V-160HD: DSK → SELF KEY. Select the HDMI input and Luminance Black or Chroma. Adjust LEVEL and GAIN in Preview.',
@@ -1300,7 +1312,7 @@ let S = {
   // kompaktan prozor (prozor prati veličinu tajmera kad nije fullscreen)
   fitWindow:false,
   digitFont:'default', outputSize:null, outputLayout:TimerTools.layout(), outputLayer:'normal', freeAudience:false, freeLayout:null,
-  dualTimer:false, dualSplit:'columns', separateOutputs:false, liveTimerView:'both',deckLiveMode:'auto',secondary:TimerTools.secondary(),
+  thirdTimer:false,tertiary:TimerTools.optionalTimer(),dualTimer:false, dualSplit:'columns', separateOutputs:false, liveTimerView:'both',deckLiveMode:'auto',secondary:TimerTools.secondary(),
   // rundown / raspored
   cues:[], currentCue:-1, showStart:'', showStartAt:null, showNowNext:false,
   lang:lang
@@ -1312,9 +1324,35 @@ let rundownRenderKey = '';
 let autoAdvanceTimer = null;
 let countdownRevision = 0;
 let plannedStartValue = null;
-let cueDraftMs = 600000, durationPickerTarget = null, durationPickerAnchor = null, targetArmed = false, secondaryTargetArmed = false;
-
 const $ = id => document.getElementById(id);
+// Optional timer cards share the same controls, keyboard behavior and timer engine.
+const additionalTimers={secondary:'t2',tertiary:'t3'};
+const thirdCard=$('timerTwoControls').cloneNode(true);
+const thirdNames={timerTwoControls:'timerThreeControls',timerTwoHeading:'timerThreeHeading',zeroTimerTwo:'zeroTimerThree'};
+function thirdName(value){
+  return thirdNames[value]||value.replace(/Secondary|secondary|[2]$/g,part=>({Secondary:'Tertiary',secondary:'tertiary',2:'3'})[part]);
+}
+for(const node of [thirdCard,...thirdCard.querySelectorAll('*')]){
+  for(const name of ['id','aria-labelledby','for']){
+    if(node.hasAttribute(name)) node.setAttribute(name,thirdName(node.getAttribute(name)));
+  }
+  for(const key of ['mode','adj']){
+    const name='data-'+key+'-secondary';
+    if(node.hasAttribute(name)){
+      node.setAttribute('data-'+key+'-tertiary',node.getAttribute(name));
+      node.removeAttribute(name);
+    }
+  }
+}
+const thirdHeading=thirdCard.querySelector('#timerThreeHeading');
+thirdHeading.dataset.i18n='timerThree';
+thirdHeading.textContent='Tajmer 3';
+thirdCard.querySelector('#tertiaryZeroAlerts').hidden=false;
+$('timerThreeHost').append(thirdCard);
+const optionalControl=(role,id)=>$(role==='tertiary'?thirdName(id):id);
+const optionalEnabled=role=>TimerTools.timerEnabled(S,additionalTimers[role]);
+let cueDraftMs = 600000, durationPickerTarget = null, durationPickerAnchor = null, targetArmed = false, optionalTargetArmed = {secondary:false,tertiary:false};
+
 function pad(n){ return String(n).padStart(2,'0'); }
 function fmtSecs(s,neg){ const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),x=s%60;
   return (neg?'−':'')+(h>0?`${h}:${pad(m)}:${pad(x)}`:`${m}:${pad(x)}`); }
@@ -1335,7 +1373,7 @@ function formatDurationHMS(ms){
   return `${String(h).padStart(2,'0')}:${pad(m)}:${pad(s)}`;
 }
 function syncDurationDisplays(){
-  if($('secondaryDurationValue')) $('secondaryDurationValue').textContent=formatDurationHMS(S.secondary.durationMs);
+  for(const role of Object.keys(additionalTimers)) $(role+'DurationValue').textContent=formatDurationHMS(S[role].durationMs);
   if($('durTriggerValue')) $('durTriggerValue').textContent=formatDurationHMS(S.durationMs);
   if($('cueDurationValue')) $('cueDurationValue').textContent=formatDurationHMS(cueDraftMs);
 }
@@ -1359,7 +1397,7 @@ function processZeroAlerts(now){
   const expired=zeroAlerts.sample(S,now);
   // Consume every crossing, even with sound off. Enabling it in overtime must
   // never ring retroactively. Simultaneous expiries share one non-overlapping bell.
-  if(expired.some(id=>(id==='t1'?S:S.secondary).soundZero===true)) void beep();
+  if(expired.some(id=>TimerTools.timerFor(S,id).soundZero===true)) void beep();
 }
 const engineClock=EngineClock.create({onJump:delta=>{EngineClock.shiftRunning(S,delta);api.sendState({...S,cues,currentCue});deckControl?.observe();}});
 api.onClockPower?.(state=>{if(state==='suspend')engineClock.suspend();else engineClock.resume();});
@@ -1475,62 +1513,85 @@ function setMode(m){
   zeroFired=false;
   setModeTabs(); renderCues(); send(); deckControl?.prepared('t1'); updateButtons();
 }
-function setModeTabs(){ document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('active',b.dataset.mode===S.mode)); }
-
-function clearSecondaryTarget(clearValue){
-  secondaryTargetArmed=false;
-  $('secondaryTargetInput').classList.remove('armed');
-  if(clearValue) $('secondaryTargetInput').value='';
+function setModeTabs(){
+  document.querySelectorAll('[data-mode]').forEach(button=>{
+    const selected=button.dataset.mode===S.mode;
+    button.classList.toggle('active',selected);
+    button.setAttribute('aria-pressed',String(selected));
+  });
+  document.querySelectorAll('[data-adj]').forEach(button=>button.disabled=S.mode!=='countdown');
 }
-function secondaryRunning(running){
-  if(!S.dualTimer) return;
-  const now=engineClock.sample(), timer=S.secondary;
-  if(running&&!timer.running&&timer.mode==='countdown'&&secondaryTargetArmed){
-    const ms=durationUntilTarget($('secondaryTargetInput').value,now);
-    clearSecondaryTarget(false);
+
+function clearOptionalTarget(role,clearValue){
+  optionalTargetArmed[role]=false;
+  const input=$(role+'TargetInput');
+  input.classList.remove('armed');
+  if(clearValue) input.value='';
+}
+function clearSecondaryTarget(clearValue){clearOptionalTarget('secondary',clearValue);}
+function optionalRunning(role,running){
+  if(!optionalEnabled(role)) return;
+  const now=engineClock.sample(), timer=S[role];
+  if(running&&!timer.running&&timer.mode==='countdown'&&optionalTargetArmed[role]){
+    const ms=durationUntilTarget($(role+'TargetInput').value,now);
+    clearOptionalTarget(role,false);
     if(ms!==null){timer.remMs=ms;timer.durationMs=Math.max(1000,ms);}
   }
   TimerTools.setRunning(timer,!!running,now); send();
 }
-function secondaryDuration(ms,keepTarget=false){
-  if(!Number.isFinite(ms)||ms<1000||ms>TimerTools.MAX_DURATION) return;
-  if(!keepTarget) clearSecondaryTarget(true);
-  S.secondary.mode='countdown';S.secondary.durationMs=ms; TimerTools.reset(S.secondary); send();deckControl?.prepared('t2');
+function secondaryRunning(running){optionalRunning('secondary',running);}
+function optionalDuration(role,ms,keepTarget=false){
+  if(!optionalEnabled(role)||!Number.isFinite(ms)||ms<1000||ms>TimerTools.MAX_DURATION) return;
+  if(!keepTarget) clearOptionalTarget(role,true);
+  const timer=S[role];
+  timer.mode='countdown'; timer.durationMs=ms;
+  TimerTools.reset(timer); send();
+  if(role==='secondary') deckControl?.prepared('t2');
 }
-function resetSecondary(){
-  clearSecondaryTarget(true); TimerTools.reset(S.secondary); send();
+function secondaryDuration(ms){optionalDuration('secondary',ms);}
+function resetOptional(role){
+  clearOptionalTarget(role,true); TimerTools.reset(S[role]); send();
 }
-function setSecondaryMode(mode){
-  if(!S.dualTimer||!['countdown','countup','clock'].includes(mode)||S.secondary.mode===mode) return;
-  clearSecondaryTarget(true);
-  S.secondary.mode=mode; TimerTools.reset(S.secondary); send(); deckControl?.prepared('t2');
+function resetSecondary(){resetOptional('secondary');}
+function setOptionalMode(role,mode){
+  const timer=S[role];
+  if(!optionalEnabled(role)||!['countdown','countup','clock'].includes(mode)||timer.mode===mode) return;
+  clearOptionalTarget(role,true);
+  timer.mode=mode; TimerTools.reset(timer); send();
+  if(role==='secondary') deckControl?.prepared('t2');
 }
-function adjustSecondary(seconds){
-  if(!S.dualTimer||S.secondary.mode!=='countdown'||!Number.isFinite(seconds)) return;
+function adjustOptional(role,seconds){
+  const timer=S[role];
+  if(!optionalEnabled(role)||timer.mode!=='countdown'||!Number.isFinite(seconds)) return;
   engineClock.sample();
-  clearSecondaryTarget(true);
-  const timer=S.secondary,ms=seconds*1000;
+  clearOptionalTarget(role,true);
+  const ms=seconds*1000;
   if(timer.running) timer.endAt+=ms;
   else timer.remMs=Math.max(0,timer.remMs+ms);
   timer.durationMs=Math.max(1000,Math.min(TimerTools.MAX_DURATION,timer.durationMs+ms));
   send();
 }
 function primaryRunning(running){ if(S.mode!=='clock'&&S.running!==!!running) startPause(); }
-function bothRunning(running){
+function bothRunning(running,includeThird=false){
   if(!running){
     const now=engineClock.sample();cancelAutoAdvance();
     // Publish only after both clocks are paused. An intermediate state must
     // not ring Timer 2 while the operator is deliberately pausing both.
     TimerTools.setRunning(S,false,now);
     if(S.dualTimer) TimerTools.setRunning(S.secondary,false,now);
+    if(includeThird&&S.thirdTimer) TimerTools.setRunning(S.tertiary,false,now);
     send();updateButtons();return;
   }
   primaryRunning(true);if(S.dualTimer) secondaryRunning(true);
+  if(includeThird&&S.thirdTimer) optionalRunning('tertiary',true);
 }
 function syncDualUI(){
   window.audienceRouting?.update();
   $('chkDual').checked=S.dualTimer; $('dualOptions').hidden=!S.dualTimer;
   $('secondaryZeroAlerts').hidden=!S.dualTimer;
+  $('chkThird').checked=S.thirdTimer;
+  $('timerThreeHost').hidden=!S.thirdTimer;
+  $('splitOptions').hidden=$('groupTransport').hidden=!(S.dualTimer||S.thirdTimer);
   $('dualSplit').value=S.dualSplit;
   syncRoutingUI();
   syncOutputSizeFields();
@@ -1541,7 +1602,7 @@ function syncRoutingUI(){
   $('outputRouting').value=S.separateOutputs?'separate':'together';
   $('secondaryOutputControls').hidden=!separate;
   const free=TimerTools.hasFreeLayout(S);
-  $('chkFit').disabled=S.dualTimer||free;
+  $('chkFit').disabled=S.dualTimer||S.thirdTimer||free;
   $('dualSplit').disabled=separate||free;
   $('dualSplitLabel').hidden=separate||free;
   $('outputTargetLabel').textContent=t(separate?'primaryOutputLabel':'outLabel');
@@ -1568,14 +1629,14 @@ function selectedLayout(){
     const key=$('layoutTarget').value;
     return (S.freeLayout??=TimerTools.freeLayout(null,S.dualTimer,S.dualSplit))[TimerTools.freeElements.includes(key)?key:'primary'];
   }
-  const role=TimerTools.separateOutputs(S)?selectedWindow():S.dualTimer?$('layoutTarget').value:'primary';
-  return role==='secondary'?S.secondary.layout:S.outputLayout;
+  const role=$('layoutTarget').value;
+  return additionalTimers[role]?S[role].layout:S.outputLayout;
 }
 function syncLayoutUI(){
   const free=TimerTools.hasFreeLayout(S),select=$('layoutTarget');
-  $('layoutTargetLabel').hidden=!(free||S.dualTimer&&!TimerTools.separateOutputs(S));
+  $('layoutTargetLabel').hidden=!(free||S.thirdTimer||S.dualTimer&&!TimerTools.separateOutputs(S));
   for(const option of select.options){
-    const allowed=option.value==='primary'||(option.value==='secondary'?S.dualTimer:free);
+    const allowed=option.value==='primary'||(additionalTimers[option.value]?optionalEnabled(option.value):free);
     option.hidden=!allowed; option.disabled=!allowed;
   }
   if(!select.selectedOptions.length||select.selectedOptions[0].disabled) select.value='primary';
@@ -1596,7 +1657,7 @@ for(const [id,key] of [['timerScale','scale'],['timerX','x'],['timerY','y']]){
   });
 }
 $('layoutTarget').addEventListener('change',()=>{
-  if(TimerTools.separateOutputs(S)) selectPlacement($('layoutTarget').value);
+  if(TimerTools.separateOutputs(S)&&$('layoutTarget').value!=='tertiary') selectPlacement($('layoutTarget').value);
   else syncLayoutUI();
 });
 $('btnLayoutReset').addEventListener('click',()=>{
@@ -1604,19 +1665,29 @@ $('btnLayoutReset').addEventListener('click',()=>{
   Object.assign(selectedLayout(),TimerTools.layout(defaults)); syncLayoutUI(); send();
 });
 $('chkFreeAudience').addEventListener('change',e=>{S.freeAudience=e.target.checked;syncRoutingUI();send();});
-$('chkDual').addEventListener('change',e=>{
-  S.dualTimer=e.target.checked;
-  if(!S.dualTimer){ TimerTools.setRunning(S.secondary,false,Date.now()); clearSecondaryTarget(true); }
-  S.liveTimerView=S.dualTimer?'both':'t1';
-  if(S.dualTimer){ S.fitWindow=false; $('chkFit').checked=false; }
+function toggleOptional(role,enabled){
+  if(role==='secondary') S.dualTimer=enabled;
+  else S.thirdTimer=enabled;
+  if(!enabled){
+    TimerTools.setRunning(S[role],false,engineClock.sample());
+    clearOptionalTarget(role,true);
+  }
+  S.liveTimerView=S.thirdTimer?'all':S.dualTimer?'both':'t1';
+  if(enabled){ S.fitWindow=false; $('chkFit').checked=false; }
   syncDualUI(); send();
-});
+}
+$('chkDual').addEventListener('change',e=>toggleOptional('secondary',e.target.checked));
+$('chkThird').addEventListener('change',e=>toggleOptional('tertiary',e.target.checked));
 $('dualSplit').addEventListener('change',e=>{ S.dualSplit=e.target.value==='rows'?'rows':'columns'; send(); });
-$('btnSecondaryStart').addEventListener('click',()=>secondaryRunning(!S.secondary.running));
-$('btnSecondaryReset').addEventListener('click',resetSecondary);
-$('btnBothStart').addEventListener('click',()=>bothRunning(true));
-$('btnBothPause').addEventListener('click',()=>bothRunning(false));
-$('btnBothReset').addEventListener('click',()=>{ clearSecondaryTarget(true); TimerTools.reset(S.secondary); reset(); });
+$('btnBothStart').addEventListener('click',()=>bothRunning(true,true));
+$('btnBothPause').addEventListener('click',()=>bothRunning(false,true));
+$('btnBothReset').addEventListener('click',()=>{
+  for(const role of Object.keys(additionalTimers)){
+    if(!optionalEnabled(role)) continue;
+    clearOptionalTarget(role,true); TimerTools.reset(S[role]);
+  }
+  reset();
+});
 let lastOutputGeometry=null, lastSecondaryGeometry=null;
 let outputQualityVersion=0;
 let outputQuality={role:'primary',key:null,status:'idle',result:null,checkedAt:null};
@@ -1658,10 +1729,11 @@ function outputQualityKey(){
   const timer=role==='secondary'?S.secondary:S;
   // Clock ticks are deliberately excluded: this is a snapshot of the selected
   // output. Placement and presentation edits invalidate its clipping result.
-  return JSON.stringify([role,geometry,S.dualTimer,S.separateOutputs,S.dualSplit,$('layoutTarget').value,
+  return JSON.stringify([role,geometry,S.dualTimer,S.thirdTimer,S.separateOutputs,S.dualSplit,$('layoutTarget').value,
     TimerTools.hasFreeLayout(S)?S.freeLayout:null,
     role==='secondary'?timer.layout:S.outputLayout,
     S.dualTimer&&!TimerTools.separateOutputs(S)?S.secondary.layout:null,
+    S.thirdTimer?S.tertiary.layout:null,
     timer.gridOn,timer.gridSize,timer.gridCell,timer.outputSize,S.fitWindow,
     timer.mode,S.text,S.textOnly,S.showNowNext,S.blackout,S.transparent,S.message?.text]);
 }
@@ -1810,33 +1882,35 @@ function calc(now){
   return {text:fmtMs(rem),fg,neg,prog,rem};
 }
 let lastKey='';
-let lastSecondaryMode;
+const lastOptionalMode={};
 function render(){
   refreshOutputQualityContext();
   const now=engineClock.sample(), r=calc(now);
-  if(S.dualTimer){
-    let rem=TimerTools.remaining(S.secondary,now); if(!(S.secondary.overtime??S.overtime)) rem=Math.max(0,rem);
-    const mode=S.secondary.mode||'countdown';
-    const readout=$('secondaryReadout'),preview=$('secondaryPreview');
+  for(const role of Object.keys(additionalTimers)){
+    if(!optionalEnabled(role)) continue;
+    const timer=S[role];
+    let rem=TimerTools.remaining(timer,now); if(!(timer.overtime??S.overtime)) rem=Math.max(0,rem);
+    const mode=timer.mode||'countdown';
+    const readout=$(role+'Readout'),preview=$(role+'Preview');
     const time=mode==='clock'?new Date(now).toLocaleTimeString('en-GB',{hour12:false}):mode==='countup'?fmtSecs(Math.floor(TimerTools.elapsed(S.secondary,now)/1000),false):fmtMs(rem);
     if(readout.textContent!==time) readout.textContent=time;
     readout.style.fontSize=Math.min(preview.clientWidth*.86/Math.max(4,TimerTools.digitWidth(S.digitFont,time)),preview.clientHeight*.56)+'px';
     preview.style.background=S.transparent?'transparent':S.bgColor;
-    $('secondaryChecker').style.display=S.transparent?'block':'none';
+    $(role+'Checker').style.display=S.transparent?'block':'none';
     readout.style.color=mode==='countdown'&&rem<=0?S.warnRed:mode==='countdown'&&S.useWarnColors?(rem<=S.redSec*1000?S.warnRed:rem<=S.yellowSec*1000?S.warnYellow:S.fgColor):S.fgColor;
-    readout.classList.toggle('blink',mode==='countdown'&&rem<=0&&S.secondary.flashZero!==false);
-    $('btnSecondaryStart').textContent=mode==='clock'?t('clockBtn'):S.secondary.running?t('pause'):t('start');
-    $('btnSecondaryStart').disabled=mode==='clock';
-    $('btnSecondaryStart').classList.toggle('running',mode!=='clock'&&S.secondary.running);
-    $('btnSecondaryBlackout').classList.toggle('on',S.blackout);
-    $('btnSecondaryBlackout').setAttribute('aria-pressed',String(S.blackout));
-    if(lastSecondaryMode!==mode){
-      lastSecondaryMode=mode;
-      document.querySelectorAll('[data-mode-secondary]').forEach(b=>{
-        const active=b.dataset.modeSecondary===mode;
+    readout.classList.toggle('blink',mode==='countdown'&&rem<=0&&timer.flashZero!==false);
+    optionalControl(role,'btnSecondaryStart').textContent=mode==='clock'?t('clockBtn'):timer.running?t('pause'):t('start');
+    optionalControl(role,'btnSecondaryStart').disabled=mode==='clock';
+    optionalControl(role,'btnSecondaryStart').classList.toggle('running',mode!=='clock'&&timer.running);
+    optionalControl(role,'btnSecondaryBlackout').classList.toggle('on',S.blackout);
+    optionalControl(role,'btnSecondaryBlackout').setAttribute('aria-pressed',String(S.blackout));
+    if(lastOptionalMode[role]!==mode){
+      lastOptionalMode[role]=mode;
+      document.querySelectorAll('[data-mode-'+role+']').forEach(b=>{
+        const active=b.getAttribute('data-mode-'+role)===mode;
         b.classList.toggle('active',active); b.setAttribute('aria-pressed',String(active));
       });
-      document.querySelectorAll('[data-adj-secondary]').forEach(b=>b.disabled=mode!=='countdown');
+      document.querySelectorAll('[data-adj-'+role+']').forEach(b=>b.disabled=mode!=='countdown');
     }
   }
   const pv=$('preview');
@@ -1903,6 +1977,7 @@ function renderRundownTiming(now){
 function updateButtons(){
   updateRundownTransport();
   const b=$('btnStart');
+  b.disabled=S.mode==='clock';
   if(S.mode==='clock'){ b.textContent=t('clockBtn'); b.classList.remove('running'); return; }
   if(S.running){ b.textContent=t('pause'); b.classList.add('running'); }
   else { b.textContent=t('start'); b.classList.remove('running'); }
@@ -2062,12 +2137,16 @@ function saveCues(){ localStorage.setItem('pt_cues',JSON.stringify(cues)); }
 function syncDigitFont(){
   $('digitFont').value=S.digitFont;
   const family=TimerTools.digitFamily(S.digitFont);
-  for(const id of ['pvTime','secondaryReadout','digitFontSample']) $(id).style.fontFamily=family;
+  for(const id of ['pvTime','secondaryReadout','tertiaryReadout','digitFontSample']) $(id).style.fontFamily=family;
+}
+function optionalSettings(timer){
+  const {mode,durationMs,overtime,flashZero,soundZero,layout,outputSize,outputLayer}=timer;
+  return {mode,durationMs,overtime,flashZero,soundZero,layout,outputSize,outputLayer:TimerTools.outputLayer(outputLayer),...TimerTools.grid(timer)};
 }
 function saveSettings(){
   localStorage.setItem('pt_settings',JSON.stringify({
     yellowSec:S.yellowSec,redSec:S.redSec,flashZero:S.flashZero,soundZero:S.soundZero,
-    overtime:S.overtime,showProgress:S.showProgress,durationMs:S.durationMs,autoNext,
+    overtime:S.overtime,showProgress:S.showProgress,mode:S.mode,durationMs:S.durationMs,autoNext,
     digitFont:S.digitFont,bgColor:S.bgColor,fgColor:S.fgColor,useWarnColors:S.useWarnColors,
     warnYellow:S.warnYellow,warnRed:S.warnRed,textOnly:S.textOnly,transparent:S.transparent,blackoutMode:S.blackoutMode,
     showStart:S.showStart,showNowNext:S.showNowNext,
@@ -2075,7 +2154,7 @@ function saveSettings(){
     outputSize:S.outputSize,outputLayout:S.outputLayout,outputLayer:TimerTools.outputLayer(S.outputLayer),dualTimer:S.dualTimer,dualSplit:S.dualSplit,
     separateOutputs:S.separateOutputs,deckLiveMode:S.deckLiveMode,
     freeAudience:S.freeAudience,freeLayout:S.freeLayout,
-    secondary:{mode:S.secondary.mode,durationMs:S.secondary.durationMs,overtime:S.secondary.overtime,flashZero:S.secondary.flashZero,soundZero:S.secondary.soundZero,layout:S.secondary.layout,outputSize:S.secondary.outputSize,outputLayer:TimerTools.outputLayer(S.secondary.outputLayer),...TimerTools.grid(S.secondary)}
+    secondary:optionalSettings(S.secondary),thirdTimer:S.thirdTimer,tertiary:optionalSettings(S.tertiary)
   }));
 }
 function load(){
@@ -2085,7 +2164,7 @@ function load(){
       yellowSec:st.yellowSec??S.yellowSec, redSec:st.redSec??S.redSec,
       flashZero:st.flashZero??S.flashZero, soundZero:st.soundZero??S.soundZero,
       overtime:st.overtime??S.overtime, showProgress:st.showProgress??S.showProgress,
-      durationMs:st.durationMs??S.durationMs,
+      durationMs:st.durationMs??S.durationMs, mode:TimerTools.optionalTimer(st).mode,
       digitFont:TimerTools.digitFont(st.digitFont),
       bgColor:st.bgColor??S.bgColor, fgColor:st.fgColor??S.fgColor,
       useWarnColors:st.useWarnColors??S.useWarnColors,
@@ -2098,7 +2177,7 @@ function load(){
       freeAudience:st.freeAudience===true,freeLayout:st.freeLayout?TimerTools.freeLayout(st.freeLayout,!!st.dualTimer,st.dualSplit):null,
       // LIVE T1/T2 is a session selection. A new session reveals the enabled
       // timers instead of restoring a hidden output from an earlier show.
-      dualTimer:!!st.dualTimer,dualSplit:st.dualSplit==='rows'?'rows':'columns',separateOutputs:!!st.separateOutputs,liveTimerView:'both',deckLiveMode:['auto','fullscreen','window'].includes(st.deckLiveMode)?st.deckLiveMode:'auto',secondary:TimerTools.secondary(st.secondary,st)
+      dualTimer:!!st.dualTimer,dualSplit:st.dualSplit==='rows'?'rows':'columns',separateOutputs:!!st.separateOutputs,liveTimerView:st.thirdTimer?'all':'both',thirdTimer:!!st.thirdTimer,tertiary:TimerTools.optionalTimer(st.tertiary),deckLiveMode:['auto','fullscreen','window'].includes(st.deckLiveMode)?st.deckLiveMode:'auto',secondary:TimerTools.secondary(st.secondary,st)
     });
     S.secondary.outputLayer=TimerTools.outputOnTop(S.secondary)?'above':'normal';
     S.remMs=S.durationMs; autoNext=!!st.autoNext;
@@ -2108,8 +2187,11 @@ function load(){
   $('yellowInput').value=fmtSecs(S.yellowSec,false);
   $('redInput').value=fmtSecs(S.redSec,false);
   $('chkFlash').checked=S.flashZero; $('chkSound').checked=S.soundZero;
-  $('chkFlash2').checked=S.secondary.flashZero; $('chkSound2').checked=S.secondary.soundZero;
-  $('chkOver').checked=S.overtime; $('chkOver2').checked=S.secondary.overtime; $('chkProg').checked=S.showProgress;
+  for(const role of Object.keys(additionalTimers)){
+    for(const [id,key] of [['chkFlash2','flashZero'],['chkSound2','soundZero'],['chkOver2','overtime']])
+      optionalControl(role,id).checked=S[role][key];
+  }
+  $('chkOver').checked=S.overtime; $('chkProg').checked=S.showProgress;
   $('chkAuto').checked=autoNext; cueDraftMs=S.durationMs;
   $('bgColor').value=S.bgColor; $('fgColor').value=S.fgColor;
   $('chkWarn').checked=S.useWarnColors; $('warnYellow').value=S.warnYellow; $('warnRed').value=S.warnRed;
@@ -2121,6 +2203,7 @@ function load(){
   if(S.outputSize){ $('outputWidth').value=S.outputSize.width; $('outputHeight').value=S.outputSize.height; }
   syncDualUI();
   syncDurationDisplays();
+  setModeTabs();
   buildGrid();
   renderCues();
 }
@@ -2383,8 +2466,8 @@ function closeDurationPicker(returnFocus){
 function openDurationPicker(target,anchor){
   closeDurationPicker(false);
   durationPickerTarget=target; durationPickerAnchor=anchor;
-  $('durationPickerTitle').textContent=t(target==='cue'?'durationPickerCue':target==='secondary'?'timerTwo':'durationPickerTimer');
-  writeDurationPicker(target==='cue'?cueDraftMs:target==='secondary'?S.secondary.durationMs:S.durationMs);
+  $('durationPickerTitle').textContent=t(target==='cue'?'durationPickerCue':target==='secondary'?'timerTwo':target==='tertiary'?'timerThree':'durationPickerTimer');
+  writeDurationPicker(target==='cue'?cueDraftMs:additionalTimers[target]?S[target].durationMs:S.durationMs);
   $('durationPopover').hidden=false; anchor.setAttribute('aria-expanded','true');
   requestAnimationFrame(()=>{ positionDurationPopover(); $('durationMinutes').focus(); $('durationMinutes').select(); });
 }
@@ -2393,15 +2476,14 @@ function applyDurationPicker(){
   const target=durationPickerTarget;
   if(target==='timer'){ currentCue=-1; renderCues(); setDuration(ms); }
   else if(target==='cue'){ cueDraftMs=ms; syncDurationDisplays(); }
-  else if(target==='secondary') secondaryDuration(ms);
+  else if(additionalTimers[target]) optionalDuration(target,ms);
   closeDurationPicker(true);
 }
 
 $('durTrigger').addEventListener('click',()=>openDurationPicker('timer',$('durTrigger')));
 $('btnSetDur').addEventListener('click',()=>openDurationPicker('timer',$('durTrigger')));
 $('cueDurationTrigger').addEventListener('click',()=>openDurationPicker('cue',$('cueDurationTrigger')));
-$('secondaryDurationTrigger').addEventListener('click',()=>openDurationPicker('secondary',$('secondaryDurationTrigger')));
-$('btnSetSecondaryDur').addEventListener('click',()=>openDurationPicker('secondary',$('btnSetSecondaryDur')));
+
 $('durationPickerClose').addEventListener('click',()=>closeDurationPicker(true));
 $('durationPickerConfirm').addEventListener('click',applyDurationPicker);
 document.querySelectorAll('[data-duration-step]').forEach(b=>b.addEventListener('click',()=>{
@@ -2437,17 +2519,41 @@ $('btnStart').addEventListener('click',startPause);
 $('btnReset').addEventListener('click',reset);
 document.querySelectorAll('[data-adj]').forEach(b=>b.addEventListener('click',()=>adjust(+b.dataset.adj)));
 document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.mode)));
-document.querySelectorAll('[data-adj-secondary]').forEach(b=>b.addEventListener('click',()=>adjustSecondary(+b.dataset.adjSecondary)));
-document.querySelectorAll('[data-mode-secondary]').forEach(b=>b.addEventListener('click',()=>setSecondaryMode(b.dataset.modeSecondary)));
-$('btnSecondaryBlackout').addEventListener('click',()=>$('btnBlackout').click());
+for(const [role,id] of Object.entries(additionalTimers)){
+  const bind=(control,event,fn)=>optionalControl(role,control).addEventListener(event,fn);
+  bind('btnSecondaryStart','click',()=>optionalRunning(role,!S[role].running));
+  bind('btnSecondaryReset','click',()=>resetOptional(role));
+  bind('btnSecondaryBlackout','click',()=>$('btnBlackout').click());
+  for(const control of ['secondaryDurationTrigger','btnSetSecondaryDur'])
+    bind(control,'click',e=>openDurationPicker(role,e.currentTarget));
+  document.querySelectorAll('[data-adj-'+role+']').forEach(b=>b.addEventListener('click',()=>adjustOptional(role,Number(b.getAttribute('data-adj-'+role)))));
+  document.querySelectorAll('[data-mode-'+role+']').forEach(b=>b.addEventListener('click',()=>setOptionalMode(role,b.getAttribute('data-mode-'+role))));
+  const input=$(role+'TargetInput');
+  function armTarget(){
+    if(!optionalEnabled(role)) return;
+    const ms=durationUntilTarget(input.value,engineClock.sample());
+    if(ms===null){clearOptionalTarget(role,false);return;}
+    optionalTargetArmed[role]=true;
+    input.classList.add('armed'); optionalDuration(role,Math.max(1000,ms),true);
+  }
+  input.addEventListener('change',armTarget);
+  input.addEventListener('keydown',e=>{
+    if(e.key==='Enter'){e.preventDefault();armTarget();optionalControl(role,'btnSecondaryStart').focus();}
+  });
+  bind('chkFlash2','change',e=>{ S[role].flashZero=e.target.checked; send(); });
+  bind('chkOver2','change',e=>{ S[role].overtime=e.target.checked; send(); });
+  bind('chkSound2','change',e=>setZeroSound(id,e.target.checked));
+}
 
 [1,2,3,5,10,15,20,30,45,60].forEach(min=>{
   const b=document.createElement('button'); b.textContent=min+'m';
   b.addEventListener('click',()=>{ currentCue=-1; renderCues(); setDuration(min*60000); });
   $('chips').appendChild(b);
-  const second=b.cloneNode(true);
-  second.addEventListener('click',()=>{if(S.dualTimer) secondaryDuration(min*60000);});
-  $('secondaryChips').appendChild(second);
+  for(const role of Object.keys(additionalTimers)){
+    const preset=b.cloneNode(true);
+    preset.addEventListener('click',()=>optionalDuration(role,min*60000));
+    $(role+'Chips').appendChild(preset);
+  }
 });
 
 function armEndTarget(){
@@ -2457,30 +2563,18 @@ function armEndTarget(){
 }
 $('targetInput').addEventListener('change',armEndTarget);
 $('targetInput').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); armEndTarget(); $('btnStart').focus(); } });
-function armSecondaryEndTarget(){
-  if(!S.dualTimer) return;
-  const input=$('secondaryTargetInput'),ms=durationUntilTarget(input.value,engineClock.sample());
-  if(ms===null){clearSecondaryTarget(false);return;}
-  secondaryTargetArmed=true;input.classList.add('armed');secondaryDuration(Math.max(1000,ms),true);
-}
-$('secondaryTargetInput').addEventListener('change',armSecondaryEndTarget);
-$('secondaryTargetInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();armSecondaryEndTarget();$('btnSecondaryStart').focus();}});
-
 $('yellowInput').addEventListener('change',()=>{ const ms=parseTime($('yellowInput').value); if(ms!==null){ S.yellowSec=ms/1000; send(); } });
 $('redInput').addEventListener('change',()=>{ const ms=parseTime($('redInput').value); if(ms!==null){ S.redSec=ms/1000; send(); } });
 $('chkFlash').addEventListener('change',e=>{ S.flashZero=e.target.checked; send(); });
 function setZeroSound(timerId,enabled){
-  const timer=timerId==='t2'?S.secondary:S;
+  const timer=TimerTools.timerFor(S,timerId);
   // Consume an already expired countdown under its old opt-in value before
   // enabling sound, even if the normal 50 ms tick has not observed zero yet.
   if(enabled&&!timer.soundZero) processZeroAlerts(engineClock.sample());
   timer.soundZero=!!enabled;send();
 }
 $('chkSound').addEventListener('change',e=>setZeroSound('t1',e.target.checked));
-$('chkFlash2').addEventListener('change',e=>{ S.secondary.flashZero=e.target.checked; send(); });
-$('chkSound2').addEventListener('change',e=>setZeroSound('t2',e.target.checked));
 $('chkOver').addEventListener('change',e=>{ S.overtime=e.target.checked; send(); });
-$('chkOver2').addEventListener('change',e=>{ S.secondary.overtime=e.target.checked; send(); });
 $('chkProg').addEventListener('change',e=>{ S.showProgress=e.target.checked; send(); });
 $('chkAuto').addEventListener('change',e=>{
   autoNext=e.target.checked;
@@ -2649,6 +2743,10 @@ $('cueConfirm').addEventListener('keydown',e=>{ if(e.key==='Escape'){ cancelCueA
 $('showStartInput').addEventListener('change',e=>{ S.showStart=e.target.value; send(); renderCues(); });
 $('chkNowNext').addEventListener('change',e=>{ S.showNowNext=e.target.checked; send(); });
 
+$('openTimerRouting').addEventListener('click',()=>{
+  const panel=$('audienceRoutingPanel');
+  panel.open=true; panel.querySelector('summary').focus(); panel.scrollIntoView({block:'nearest'});
+});
 $('btnOpenOut').addEventListener('click',()=>api.sendToDisplay(+$('displaySel').value||null));
 $('btnCloseOut').addEventListener('click',()=>api.closeOutput());
 $('btnFs').addEventListener('click',()=>api.toggleFullscreen());
@@ -2700,7 +2798,7 @@ document.querySelectorAll('.lang button').forEach(b=>b.addEventListener('click',
 }));
 
 // ---------- START ----------
-window.audienceRouting=createAudienceRouting({host:$('audienceRoutingPanel'),api,language:()=>lang,dualEnabled:()=>S.dualTimer,screenList:()=>lastDisplays});
+window.audienceRouting=createAudienceRouting({host:$('audienceRoutingPanel'),api,language:()=>lang,timerState:()=>S,screenList:()=>lastDisplays});
 if(api.appUpdate) window.appUpdateUI=createUpdateUI({api,language:()=>lang});
 load(); refreshDisplays(); send(); updateButtons(); applyLang(); syncCueColors(); setInterval(tickCountdown,50); requestAnimationFrame(render);
 // New explicit commands share the existing authoritative timer objects. In

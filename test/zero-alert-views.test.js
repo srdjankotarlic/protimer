@@ -162,6 +162,6 @@ test('standalone Timer 2 uses its setting; zero flashing is confined to timer di
   assert.equal(page.node('timer').style.color, current.warnRed);
   assert.doesNotMatch(page.html, /body\.flash|zflash|function doFlash/);
   assert.match(page.html, /#timer\.blink\{animation:/);
-  assert.match(page.html, /#secondaryTimer\.blink\{animation:/);
+  assert.match(page.html, /#secondaryTimer\.blink,#tertiaryTimer\.blink\{animation:/);
   assert.match(page.html, /#msg\.flash\{animation:/);
 });

@@ -24,7 +24,7 @@ const MEASURE_RENDERER = `(async () => {
   let clipped = false;
   if (!visible(document.getElementById('blackout')) && !visible(document.getElementById('audienceQr'))) {
     const free = document.body?.classList.contains('free-audience');
-    clipped = (free ? ['timer', 'secondaryTimer', 'text', 'msg', 'nownext', 'prog'] : ['timer', 'secondaryTimer', 'text', 'msg']).some(id => {
+    clipped = (free ? ['timer', 'secondaryTimer', 'tertiaryTimer', 'text', 'msg', 'nownext', 'prog'] : ['timer', 'secondaryTimer', 'tertiaryTimer', 'text', 'msg']).some(id => {
       const el = document.getElementById(id);
       if (!visible(el)) return false;
       const rect = el.getBoundingClientRect(), pane = free ? null : el.closest('.timer-pane');

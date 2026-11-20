@@ -111,9 +111,9 @@ module.exports=async function({controlWin,getOutput,screen,serverPort,token}){
   await ctl(`const future=new Date(engineClock.sample()+10*60000);
     $('secondaryTargetInput').value=pad(future.getHours())+':'+pad(future.getMinutes());
     $('secondaryTargetInput').dispatchEvent(new Event('change'));render();`);
-  assert.equal(await ctl(`S.secondary.mode==='countdown'&&secondaryTargetArmed`),true);
+  assert.equal(await ctl(`S.secondary.mode==='countdown'&&optionalTargetArmed.secondary`),true);
   await click('#btnSecondaryStart');
-  assert.equal(await ctl(`!secondaryTargetArmed&&S.secondary.running&&new Date(S.secondary.endAt).getSeconds()===0&&S.secondary.endAt-Date.now()>8*60000`),true);
+  assert.equal(await ctl(`!optionalTargetArmed.secondary&&S.secondary.running&&new Date(S.secondary.endAt).getSeconds()===0&&S.secondary.endAt-Date.now()>8*60000`),true);
   await ctl(`$('chkOver2').click();$('chkFlash2').click();$('chkSound2').click();
     $('btnSecondaryBlackout').click();render();`);
   await wait(()=>out(`$('blackout').style.display==='block'`),'T2 shared blackout did not reach output');
@@ -139,7 +139,7 @@ module.exports=async function({controlWin,getOutput,screen,serverPort,token}){
   await new Promise(resolve=>{controlWin.webContents.once('did-finish-load',resolve);controlWin.webContents.reload();});
   const restored=await ctl(`[S.secondary.overtime,S.secondary.flashZero,S.secondary.soundZero,S.freeAudience,S.digitFont]`);
   assert.deepEqual(restored,saved);
-  assert.equal(await ctl(`S.secondary.mode==='clock'&&!S.running&&!S.secondary.running&&!secondaryTargetArmed`),true);
+  assert.equal(await ctl(`S.secondary.mode==='clock'&&!S.running&&!S.secondary.running&&!optionalTargetArmed.secondary`),true);
   assert.equal(getOutput(),null);
   assert.equal(await ctl(`$('digitFont').value==='pixel'&&$('digitFontSample').style.fontFamily.includes('ProTimer pixel')`),true);
   await selectFont('default');

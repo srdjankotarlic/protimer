@@ -46,12 +46,13 @@
     const v = value || {};
     return { scale: clamp(v.scale ?? 100, 10, 200, 100), x: clamp(v.x ?? 0, -100, 100, 0), y: clamp(v.y ?? 0, -100, 100, 0) };
   }
-  const freeElements = Object.freeze(['primary', 'secondary', 'title', 'message', 'rundown', 'progress']);
+  const freeElements = Object.freeze(['primary', 'secondary', 'title', 'message', 'rundown', 'progress', 'tertiary']);
   function freePosition(element, dual = true, split = 'columns') {
     const rows = split === 'rows';
     return {
       primary: {x: dual && !rows ? -48 : 0, y: dual && rows ? -28 : -5, scale:100},
       secondary: {x: rows ? 0 : 48, y: rows ? 26 : -5, scale:100},
+      tertiary: {x:rows ? 0 : 58,y:rows ? 55 : 39,scale:100},
       title: {x:0,y:-80,scale:100}, message: {x:0,y:58,scale:100},
       rundown: {x:0,y:82,scale:100}, progress: {x:0,y:97,scale:100}
     }[element];
@@ -75,7 +76,7 @@
     const layer = outputLayer(state.outputLayer);
     return layer === 'above' || (layer === 'auto' && !!(state.transparent || state.gridOn));
   }
-  function secondary(value, legacyGrid) {
+  function optionalTimer(value, legacyGrid) {
     const v = value || {};
     const mode = ['countdown', 'countup', 'clock'].includes(v.mode) ? v.mode : 'countdown';
     const durationMs = clamp(v.durationMs ?? 600000, mode === 'countdown' ? 1000 : 0, MAX_DURATION, 600000);
@@ -88,6 +89,7 @@
       flashZero: !!(v.flashZero ?? legacyGrid?.flashZero ?? true), soundZero: !!(v.soundZero ?? false),
       ...grid(Object.hasOwn(v, 'gridOn') ? v : legacyGrid) };
   }
+  const secondary = optionalTimer;
   function remaining(timer, now) { return timer.running ? timer.endAt - now : timer.remMs; }
   function elapsed(timer, now) { return (timer.elapsedMs || 0) + (timer.running ? now - timer.startAt : 0); }
   function setRunning(timer, running, now) {
@@ -102,34 +104,56 @@
   }
   function reset(timer) { timer.running = false; timer.remMs = timer.durationMs; timer.endAt = 0; timer.elapsedMs = 0; timer.startAt = 0; }
   function separateOutputs(state) { return !!(state && state.dualTimer && state.separateOutputs); }
+  const groups = Object.freeze({
+    t1:Object.freeze(['t1']), t2:Object.freeze(['t2']), t3:Object.freeze(['t3']),
+    both:Object.freeze(['t1','t2']), t13:Object.freeze(['t1','t3']),
+    t23:Object.freeze(['t2','t3']), all:Object.freeze(['t1','t2','t3'])
+  });
+  const roles = Object.freeze({t1:'primary',t2:'secondary',t3:'tertiary'});
+  function timerFor(state,id){ return id==='t1'?state:roles[id]&&state?.[roles[id]]; }
+  function timerEnabled(state,id){
+    return id==='t1'||(id==='t2'&&!!state?.dualTimer)||(id==='t3'&&!!state?.thirdTimer);
+  }
   function liveView(value){ return ['t1','t2','both'].includes(value)?value:'both'; }
-  function secondaryView(state){
-    const timer=state.secondary;
-    const free = hasFreeLayout(state) ? freeLayout(state.freeLayout, true, state.dualSplit) : null;
-    return {...state,dualTimer:false,fitWindow:false,mode:timer.mode||'countdown',
-      ...(free && {freeLayout:{...free,primary:free.secondary}}),
+  function promote(state,timer){
+    return {...state,fitWindow:false,mode:timer.mode||'countdown',
       durationMs:timer.durationMs,remMs:timer.remMs,endAt:timer.endAt,running:timer.running,
       elapsedMs:timer.elapsedMs||0,startAt:timer.startAt||0,overtime:timer.overtime??state.overtime,
       flashZero:timer.flashZero??state.flashZero??true,soundZero:!!timer.soundZero,
-      outputLayout:timer.layout,outputSize:size(timer.outputSize),...grid(timer),text:'',textOnly:false,showNowNext:false};
+      outputLayout:timer.layout,outputSize:size(timer.outputSize),outputLayer:outputLayer(timer.outputLayer),
+      ...grid(timer),text:'',textOnly:false,showNowNext:false,showProgress:false};
+  }
+  function projectTimers(state,ids){
+    const selected=ids.filter(id=>timerEnabled(state,id)&&timerFor(state,id));
+    if(!selected.length) return {...state,audienceProjected:true,liveHidden:true,dualTimer:false,thirdTimer:false};
+    const [first,second,third]=selected;
+    const projected=first==='t1'?state:promote(state,timerFor(state,first));
+    let freeLayoutForOutput=state.freeLayout;
+    if(hasFreeLayout(state)){
+      const saved=freeLayout(state.freeLayout,state.dualTimer,state.dualSplit);
+      freeLayoutForOutput={...saved,primary:saved[roles[first]],secondary:saved[roles[second]],tertiary:saved[roles[third]]};
+    }
+    return {...projected,audienceProjected:true,liveHidden:false,freeLayout:freeLayoutForOutput,
+      dualTimer:!!second,thirdTimer:!!third,secondary:timerFor(state,second),tertiary:timerFor(state,third),
+      fitWindow:state.fitWindow&&selected.length===1&&first==='t1'};
   }
   // Presentation only: never mutate either timer, routing or window lifecycle.
   function audienceState(state){
-    if(!state)return state;
+    if(!state||state.audienceProjected)return state;
     const view=liveView(state.liveTimerView);
-    if(state.outputTimerId)return {...state,liveHidden:view!=='both'&&view!==state.outputTimerId};
-    if(!state.dualTimer||view==='both')return state;
-    return view==='t1'?{...state,dualTimer:false,fitWindow:false,
-      ...(hasFreeLayout(state) && {freeLayout:freeLayout(state.freeLayout,true,state.dualSplit)})}:secondaryView(state);
+    if(state.outputTimerId)return {...state,liveHidden:state.liveTimerView!=='all'&&view!=='both'&&view!==state.outputTimerId};
+    if(state.liveTimerView==='all')return projectTimers(state,groups.all);
+    if(!state.thirdTimer&&(!state.dualTimer||view==='both'))return state;
+    return projectTimers(state,groups[view]);
   }
   // Project the existing clocks into desktop outputs; never start, pause or copy
   // a clock deadline. Network viewers keep the original combined state.
   function outputState(state, role = 'primary') {
     if (!state || !separateOutputs(state)) return state;
-    if (role !== 'secondary') return { ...state, dualTimer: false, fitWindow: false,outputTimerId:'t1' };
+    if (role !== 'secondary') return { ...state, dualTimer: false, thirdTimer:false, fitWindow: false,outputTimerId:'t1' };
     const timer = state.secondary;
     return {
-      ...state, dualTimer: false, fitWindow: false,outputTimerId:'t2', mode: timer.mode || 'countdown',
+      ...state, dualTimer: false, thirdTimer:false, fitWindow: false,outputTimerId:'t2', mode: timer.mode || 'countdown',
       durationMs: timer.durationMs, remMs: timer.remMs, endAt: timer.endAt,
       running: timer.running, elapsedMs: timer.elapsedMs || 0, startAt: timer.startAt || 0,
       overtime: timer.overtime ?? state.overtime,
@@ -139,5 +163,5 @@
       text: '', textOnly: false, showNowNext: false
     };
   }
-  return { MAX_DURATION, plannedStart, scheduleAnchor, digitFont, digitFamily, digitWidth, clamp, layout, freeElements, freePosition, freeLayout, hasFreeLayout, size, grid, outputLayer, outputOnTop, secondary, remaining, elapsed, setRunning, reset, separateOutputs, outputState,liveView,audienceState };
+  return { MAX_DURATION, plannedStart, scheduleAnchor, digitFont, digitFamily, digitWidth, clamp, layout, freeElements, freePosition, freeLayout, hasFreeLayout, size, grid, outputLayer, outputOnTop, secondary, optionalTimer, remaining, elapsed, setRunning, reset, separateOutputs, outputState,liveView,audienceState,groups,timerFor,timerEnabled,projectTimers };
 });
