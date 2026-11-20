@@ -73,10 +73,12 @@ jobs:
           $installDir = Join-Path $env:RUNNER_TEMP 'ProTimer-install-test'
           $setup = Join-Path (Get-Location) "dist-installers/ProTimer-Setup-$version.exe"
           $appExe = Join-Path $installDir 'ProTimer.exe'
-          # Install the current published edition, then upgrade it in place.
+          # Install the published baseline, then upgrade it in place.
           if ($env:GITHUB_EVENT_NAME -eq 'push') {
             $previous = gh release view --repo $env:GITHUB_REPOSITORY --json tagName --jq .tagName
             if ($LASTEXITCODE -ne 0 -or !$previous) { throw 'Could not resolve the previous stable release' }
+            # Exercise the exact Windows upgrade path reported in issue #67.
+            if ($version -eq '2.8.1') { $previous = 'v2.5.3' }
             if ($previous -ne "v$version") {
               $previousVersion = $previous.TrimStart('v')
               $previousName = "ProTimer-Setup-$previousVersion.exe"
@@ -116,6 +118,7 @@ jobs:
             if ((Get-Content -LiteralPath $marker) -ne 'keep operator data') { throw 'Upgrade lost operator data' }
             Remove-Item -LiteralPath $marker
             Write-Output 'WINDOWS_PREVIOUS_RELEASE_UPGRADE_AND_DATA_OK'
+            Write-Output "Verified Windows upgrade: $previousVersion to $version"
           }
           foreach ($resource in @('streamdeck/com.srdjankotarlic.protimer.streamDeckPlugin', 'cloudflared.exe')) {
             if (-not (Test-Path (Join-Path "$installDir/resources" $resource))) { throw "Missing installed resource $resource" }

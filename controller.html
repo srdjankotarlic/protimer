@@ -97,6 +97,7 @@
   .pv-checker{position:absolute; inset:0; background-color:#2a2f3a;
     background-image:linear-gradient(45deg,#1a1f28 25%,transparent 25%),linear-gradient(-45deg,#1a1f28 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#1a1f28 75%),linear-gradient(-45deg,transparent 75%,#1a1f28 75%);
     background-size:24px 24px; background-position:0 0,0 12px,12px -12px,-12px 0; display:none;}
+  .preview.blackout-active > :is(.pv-stage,.pv-msg,.pv-prog){visibility:hidden;}
   .pv-stage{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; overflow:hidden;}
   .gridsel{width:248px; max-width:100%; aspect-ratio:16/9; background:#000; border:1px solid var(--border);
     border-radius:7px; display:grid; gap:1px; overflow:hidden;}
@@ -758,9 +759,10 @@
           <span class="digit-font-sample" id="digitFontSample" aria-hidden="true">12:34:56</span>
           <div class="sep"></div>
           <label class="swatch" for="blackoutMode"><span>BLACKOUT</span>
-            <select id="blackoutMode"><option value="black" data-i18n="blackoutBlack">Crn ekran</option><option value="foreground" data-i18n="blackoutForeground">Sakrij sadržaj · zadrži pozadinu</option></select>
+            <select id="blackoutMode" aria-describedby="blackoutHelp"><option value="black" data-i18n="blackoutBlack">Crn ekran</option><option value="foreground" data-i18n="blackoutForeground">Sakrij sadržaj · zadrži pozadinu</option></select>
           </label>
         </div>
+        <p id="blackoutHelp" class="panel-help" data-i18n="blackoutHelp">Pritisni BLACKOUT da primeniš izabrani režim. Providna pozadina je u pregledu označena šahovnicom.</p>
         <div class="field">
           <span class="glabel" data-i18n="thresholds">Pragovi</span>
           <label class="swatch"><span data-i18n="yellowAt">Žuto na</span> <input type="text" id="yellowInput" class="short" value="2:00"></label>
@@ -1097,6 +1099,8 @@ const I18N = {
     adjustDigits:'Podesi cifre', timerOne:'Tajmer 1', timerTwo:'Tajmer 2', centerReset:'Centriraj · 100%',
     bothTimers:'Oba tajmera', sharedBlackout:'Zajednički BLACKOUT za oba izlaza',
     blackoutBlack:'Crn ekran', blackoutForeground:'Sakrij sadržaj · zadrži pozadinu',
+    blackoutBadgeBlack:'BLACKOUT · CRN EKRAN', blackoutBadgeForeground:'BLACKOUT · POZADINA',
+    blackoutHelp:'Pritisni BLACKOUT da primeniš izabrani režim. Providna pozadina je u pregledu označena šahovnicom.',
     freeAudience:'Slobodan raspored', layoutElement:'Element', layoutElementScale:'Veličina (%)', layoutRestoreElement:'Vrati položaj i veličinu',
     layoutTitleElement:'Naslov', layoutMessageElement:'Poruka', layoutRundownElement:'SADA / SLEDI', layoutProgressElement:'Traka napretka',
     freeAudienceHelp:'X i Y važe za ceo izlaz: 0 je centar, −100 i +100 su ivice. Elementi mogu da se preklapaju; seče ih samo spoljna ivica ekrana. Važi i za prikaz u browseru i OBS-u. Pregled u kontroli ostaje centriran.',
@@ -1231,6 +1235,8 @@ const I18N = {
     adjustDigits:'Adjust digits', timerOne:'Timer 1', timerTwo:'Timer 2', centerReset:'Center · 100%',
     bothTimers:'Both timers', sharedBlackout:'Shared BLACKOUT for both outputs',
     blackoutBlack:'Black screen', blackoutForeground:'Hide content · keep background',
+    blackoutBadgeBlack:'BLACKOUT · BLACK SCREEN', blackoutBadgeForeground:'BLACKOUT · KEEP BACKGROUND',
+    blackoutHelp:'Press BLACKOUT to apply the selected mode. A checkerboard in the preview indicates transparency.',
     freeAudience:'Free layout', layoutElement:'Element', layoutElementScale:'Size (%)', layoutRestoreElement:'Reset position and size',
     layoutTitleElement:'Title', layoutMessageElement:'Message', layoutRundownElement:'NOW / NEXT', layoutProgressElement:'Progress bar',
     freeAudienceHelp:'X and Y span the entire output: 0 is center, −100 and +100 are the edges. Elements can overlap; only the outside edge of the screen clips them. Also applies to browser and OBS output. Control preview stays centered.',
@@ -1883,6 +1889,14 @@ function calc(now){
 }
 let lastKey='';
 const lastOptionalMode={};
+function renderPreviewBackground(preview,checker){
+  const black=S.blackout&&S.blackoutMode!=='foreground';
+  const transparent=S.transparent&&!black;
+  preview.classList.toggle('blackout-active',S.blackout);
+  preview.style.background=black?'#000000':transparent?'transparent':S.bgColor;
+  checker.style.display=transparent?'block':'none';
+}
+
 function render(){
   refreshOutputQualityContext();
   const now=engineClock.sample(), r=calc(now);
@@ -1892,11 +1906,10 @@ function render(){
     let rem=TimerTools.remaining(timer,now); if(!(timer.overtime??S.overtime)) rem=Math.max(0,rem);
     const mode=timer.mode||'countdown';
     const readout=$(role+'Readout'),preview=$(role+'Preview');
-    const time=mode==='clock'?new Date(now).toLocaleTimeString('en-GB',{hour12:false}):mode==='countup'?fmtSecs(Math.floor(TimerTools.elapsed(S.secondary,now)/1000),false):fmtMs(rem);
+    const time=mode==='clock'?new Date(now).toLocaleTimeString('en-GB',{hour12:false}):mode==='countup'?fmtSecs(Math.floor(TimerTools.elapsed(timer,now)/1000),false):fmtMs(rem);
     if(readout.textContent!==time) readout.textContent=time;
     readout.style.fontSize=Math.min(preview.clientWidth*.86/Math.max(4,TimerTools.digitWidth(S.digitFont,time)),preview.clientHeight*.56)+'px';
-    preview.style.background=S.transparent?'transparent':S.bgColor;
-    $(role+'Checker').style.display=S.transparent?'block':'none';
+    renderPreviewBackground(preview,$(role+'Checker'));
     readout.style.color=mode==='countdown'&&rem<=0?S.warnRed:mode==='countdown'&&S.useWarnColors?(rem<=S.redSec*1000?S.warnRed:rem<=S.yellowSec*1000?S.warnYellow:S.fgColor):S.fgColor;
     readout.classList.toggle('blink',mode==='countdown'&&rem<=0&&timer.flashZero!==false);
     optionalControl(role,'btnSecondaryStart').textContent=mode==='clock'?t('clockBtn'):timer.running?t('pause'):t('start');
@@ -1915,9 +1928,7 @@ function render(){
   }
   const pv=$('preview');
 
-  // pozadina
-  if(S.transparent){ $('pvChecker').style.display='block'; pv.style.background='transparent'; }
-  else { $('pvChecker').style.display='none'; pv.style.background=S.bgColor; }
+  renderPreviewBackground(pv,$('pvChecker'));
 
   const textOnly = S.textOnly && S.text;
   const txtEl=$('pvText'), tEl=$('pvTime'), ps=$('pvStage');
@@ -1952,7 +1963,11 @@ function render(){
   if(S.showProgress&&r.prog!==null){ p.style.display='block'; p.style.width=(r.prog*100)+'%'; p.style.background=r.fg; }
   else p.style.display='none';
 
-  $('bdgBk').classList.toggle('bk',S.blackout);
+  const blackoutBadge=$('bdgBk');
+  blackoutBadge.classList.toggle('bk',S.blackout);
+  const blackoutLabel=S.blackout?t(S.blackoutMode==='foreground'?'blackoutBadgeForeground':'blackoutBadgeBlack'):'BLACKOUT';
+  if(blackoutBadge.textContent!==blackoutLabel) blackoutBadge.textContent=blackoutLabel;
+  $('btnBlackout').setAttribute('aria-pressed',String(S.blackout));
   $('bdgOut').classList.toggle('on',outputOpen);
   $('bdgOut').textContent=outputOpen?t('outLive'):t('outClosed');
 
