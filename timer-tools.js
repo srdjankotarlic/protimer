@@ -5,6 +5,28 @@
   else root.TimerTools = tools;
 })(typeof globalThis === 'object' ? globalThis : this, function () {
   const MAX_DURATION = (99 * 3600 + 59 * 60 + 59) * 1000;
+  // Upper bounds on tabular digit, colon and minus advances, in em.
+  // Sizing uses the widest digit so the readout doesn't resize every second.
+  const digitMetrics = Object.freeze({
+    pixel:[.61,.25,.61], cyber:[.84,.24,.52], condensed:[.50,.28,.44],
+    plex:[.6,.6,.6], space:[.62,.62,.62], bold:[.67,.34,.66],
+    geist:[.70,.32,.55], serif:[.54,.30,.54], lexend:[.68,.26,.58]
+  });
+  function digitFont(value) {
+    return typeof value === 'string' && Object.hasOwn(digitMetrics, value) ? value : 'default';
+  }
+  function digitFamily(value) {
+    const font = digitFont(value);
+    return font === 'default' ? '' : `"ProTimer ${font}", "SF Mono", ui-monospace, Menlo, monospace`;
+  }
+  function digitWidth(value, text, defaultAdvance = .6) {
+    const metrics = digitMetrics[digitFont(value)];
+    if (!metrics) return text.length * defaultAdvance;
+    const [digit, colon, minus] = metrics;
+    let width = 0;
+    for (const character of text) width += character === ':' ? colon : /[−-]/.test(character) ? minus : digit;
+    return width;
+  }
   function clamp(value, min, max, fallback) {
     const n = Number(value);
     return Number.isFinite(n) ? Math.max(min, Math.min(max, n)) : fallback;
@@ -106,5 +128,5 @@
       text: '', textOnly: false, showNowNext: false
     };
   }
-  return { MAX_DURATION, clamp, layout, freeElements, freePosition, freeLayout, hasFreeLayout, size, grid, outputLayer, outputOnTop, secondary, remaining, elapsed, setRunning, reset, separateOutputs, outputState,liveView,audienceState };
+  return { MAX_DURATION, digitFont, digitFamily, digitWidth, clamp, layout, freeElements, freePosition, freeLayout, hasFreeLayout, size, grid, outputLayer, outputOnTop, secondary, remaining, elapsed, setRunning, reset, separateOutputs, outputState,liveView,audienceState };
 });

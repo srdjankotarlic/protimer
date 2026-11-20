@@ -1,7 +1,8 @@
 'use strict';
 const assert=require('node:assert/strict');
+const { BrowserWindow }=require('electron');
 
-module.exports=async function({controlWin,getOutput,screen}){
+module.exports=async function({controlWin,getOutput,screen,serverPort,token}){
   const ctl=code=>controlWin.webContents.executeJavaScript(code);
   const out=code=>getOutput().webContents.executeJavaScript(code);
   const host=screen.getDisplayMatching(controlWin.getBounds());
@@ -54,6 +55,49 @@ module.exports=async function({controlWin,getOutput,screen}){
   await wait(()=>out(`S?.secondary?.mode==='clock'&&/^[0-9]{2}:[0-9]{2}:[0-9]{2}$/.test($('secondaryTimer').textContent)`),'Clock did not render on the audience screen');
   assert.deepEqual(await ctl(t1),primary);
 
+  // Check real Chromium font decoding in both delivery paths, including
+  // all digit shapes, the overtime minus and worst-case long times.
+  const digitFonts=['default','pixel','cyber','condensed','plex','space','bold','geist','serif','lexend'];
+  assert.deepEqual(await ctl(`Array.from($('digitFont').options,o=>o.value)`),digitFonts);
+  const selectFont=id=>ctl(`$('digitFont').value=${JSON.stringify(id)};$('digitFont').dispatchEvent(new Event('change'))`);
+  const probeFont=(id,targets)=>`(async()=>{
+    const family='ProTimer '+${JSON.stringify(id)}, sample='−88:88:88';
+    const advance=TimerTools.digitWidth(${JSON.stringify(id)},sample);
+    const faces=await document.fonts.load('700 100px "'+family+'"',sample+'0123456789');
+    const el=document.createElement('span');
+    el.style.cssText='position:absolute;visibility:hidden;white-space:nowrap;font:700 100px "'+family+'";font-variant-numeric:tabular-nums';
+    el.textContent=sample;document.body.append(el);
+    const measured=el.getBoundingClientRect().width;el.remove();
+    return faces.length===1&&faces[0].status==='loaded'&&measured<=advance*100+1
+      &&${JSON.stringify(targets)}.every(id=>getComputedStyle($(id)).fontFamily.includes(family));
+  })()`;
+  const viewer=new BrowserWindow({width:390,height:844,show:false,webPreferences:{backgroundThrottling:false}});
+  try {
+    await viewer.loadURL(`http://127.0.0.1:${serverPort}/`);
+    const read=code=>viewer.webContents.executeJavaScript(code);
+    for(const id of digitFonts.slice(1)){
+      await selectFont(id);
+      const hasFont=`S?.digitFont===${JSON.stringify(id)}`;
+      await wait(async()=>await out(hasFont)&&await read(hasFont),`Font ${id} did not reach audience state`);
+      assert.equal(await ctl(probeFont(id,['pvTime','secondaryReadout','digitFontSample'])),true,`Controller font ${id}`);
+      assert.equal(await out(probeFont(id,['timer','secondaryTimer'])),true,`Desktop font ${id}`);
+      assert.equal(await read(probeFont(id,['timer','secondaryTimer'])),true,`Browser font ${id}`);
+    }
+    await selectFont('cyber');
+    for(const [url,targets] of [[`/remote?t=${encodeURIComponent(token)}`,['time','secondaryTime']],['/backstage',['nowTimer']]]){
+      await viewer.loadURL(`http://127.0.0.1:${serverPort}${url}`);
+      await wait(()=>read(`S?.digitFont==='cyber'`),`Font did not reach ${url.split('?')[0]}`);
+      assert.equal(await read(probeFont('cyber',targets)),true);
+    }
+    await selectFont('default');
+    await wait(()=>out(`S?.digitFont==='default'&&!$('timer').style.fontFamily&&!$('secondaryTimer').style.fontFamily`),'Default output font did not return');
+    assert.equal(await ctl(`!$('pvTime').style.fontFamily&&!$('secondaryReadout').style.fontFamily`),true);
+    assert.deepEqual(await ctl(t1),primary);
+    await selectFont('pixel');
+  } finally {
+    viewer.destroy();
+  }
+
   // Both tickets together: a running countdown stays at the top, the clock
   // is placed freely lower down, and moving either never changes either clock.
   const beforeLayout=await ctl(t2);
@@ -88,13 +132,16 @@ module.exports=async function({controlWin,getOutput,screen}){
   }
   controlWin.setContentSize(...size);
   await mode('clock');
-  const saved=await ctl(`[S.secondary.overtime,S.secondary.flashZero,S.secondary.soundZero,S.freeAudience]`);
+  const saved=await ctl(`[S.secondary.overtime,S.secondary.flashZero,S.secondary.soundZero,S.freeAudience,S.digitFont]`);
   await ctl('api.closeOutput()');
   await wait(()=>!getOutput(),'Audience window did not close');
   await new Promise(resolve=>{controlWin.webContents.once('did-finish-load',resolve);controlWin.webContents.reload();});
-  const restored=await ctl(`[S.secondary.overtime,S.secondary.flashZero,S.secondary.soundZero,S.freeAudience]`);
+  const restored=await ctl(`[S.secondary.overtime,S.secondary.flashZero,S.secondary.soundZero,S.freeAudience,S.digitFont]`);
   assert.deepEqual(restored,saved);
   assert.equal(await ctl(`S.secondary.mode==='clock'&&!S.running&&!S.secondary.running&&!secondaryTargetArmed`),true);
   assert.equal(getOutput(),null);
+  assert.equal(await ctl(`$('digitFont').value==='pixel'&&$('digitFontSample').style.fontFamily.includes('ProTimer pixel')`),true);
+  await selectFont('default');
+  console.log('TIMER_DIGIT_FONTS_OK=true');
   console.log('TIMER2_PARITY_AND_FREE_LAYOUT_OK=true');
 };

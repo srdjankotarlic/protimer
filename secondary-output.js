@@ -174,7 +174,7 @@ module.exports = function secondaryOutput({ BrowserWindow, screen, getState, con
       placing: placing !== null, beforeMove: () => { ++revision; } });
     notify();
   }
-  return { open, close, update, resize, geometry, displaysChanged, displayMetricsChanged, getWindow: () => win, getRevision: () => revision,
+  return { open, close, update, resize, geometry, target:()=>targetId, displaysChanged, displayMetricsChanged, getWindow: () => win, getRevision: () => revision,
     settled: () => ready && placed && placing === null,
     toggleFullscreen() {
       if (win && !win.isDestroyed()) { const entering=!isFullscreen(win); if(!win.isSimpleFullScreen?.())protectSibling(win, entering); setPresentationFullscreen(win, entering, false, platform); applyOutputLayer(win,state(),{platform,refresh:true}); mode(); }

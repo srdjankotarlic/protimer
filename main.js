@@ -39,6 +39,11 @@ const secondaryOutput = require('./secondary-output')({
     pushDisplays();
   }
 });
+const routed=require('./routed-outputs')({
+  BrowserWindow,getDisplays:routingDisplays,getState:()=>lastState,
+  occupied:()=>new Set([outputTargetId,outputDisplayId(),secondaryOutput.target(),secondaryOutput.geometry()?.displayId]),
+  changed:pushDisplays
+});
 const getOutputQuality = OutputQuality.createQualityReader({ screen,
   getWindow: role => role === 'secondary' ? secondaryOutput.getWindow() : outputWin,
   getRevision: role => role === 'secondary' ? secondaryOutput.getRevision() : outputPlacementVersion
@@ -101,6 +106,17 @@ function startServer(port, attempt = 0) {
     if (url === '/timer-tools.js') {
       res.writeHead(200, { 'Content-Type': 'application/javascript', 'Cache-Control': 'no-store' });
       res.end(fs.readFileSync(path.join(__dirname, 'timer-tools.js')));
+      return;
+    }
+
+    const digitAsset = /^\/fonts\/([a-z]+)\.woff2$/.exec(url)?.[1];
+    if (url === '/fonts/digits.css' || (digitAsset && TimerTools.digitFont(digitAsset) !== 'default')) {
+      const isFont = url.endsWith('.woff2');
+      fs.readFile(path.join(__dirname, 'fonts', isFont ? digitAsset + '.woff2' : 'digits.css'), (error, data) => {
+        if (error) { res.writeHead(404).end(); return; }
+        res.writeHead(200, { 'Content-Type': isFont ? 'font/woff2' : 'text/css', 'Cache-Control': 'no-store' });
+        res.end(data);
+      });
       return;
     }
 
@@ -376,16 +392,23 @@ function outputDisplayId() {
   if (!outputWin || outputWin.isDestroyed()) return null;
   return screen.getDisplayMatching(outputWin.getBounds()).id;
 }
+function routingDisplays() {
+  const controlId=controlDisplayId();
+  return screen.getAllDisplays().map((display,i)=>({...display,label:display.label||`Monitor ${i+1}`,hasControl:display.id===controlId}));
+}
 function displayList() {
   const primaryId = screen.getPrimaryDisplay().id;
   const ctlId = controlDisplayId();
   const outId = outputDisplayId();
-  return screen.getAllDisplays().map((d, i) => ({
+  const secondaryId=secondaryOutput.geometry()?.displayId;
+  const matrix=new Map(routed.info().map(route=>[route.displayId,route]));
+  return routingDisplays().map((d, i) => ({
     ...OutputQuality.displayInfo(d, i),
     id: d.id, label: d.label || `Monitor ${i + 1}`,
     width: d.bounds.width, height: d.bounds.height,
     primary: d.id === primaryId, hasControl: d.id === ctlId, hasOutput: d.id === outId,
-    hasSecondaryOutput: d.id === secondaryOutput.geometry()?.displayId
+    hasSecondaryOutput: d.id === secondaryId,
+    routedOutput: matrix.get(d.id)||null
   }));
 }
 function broadcast(channel, payload) {
@@ -416,12 +439,13 @@ function createControlWindow() {
     controlWin = null;
     if (outputWin && !outputWin.isDestroyed()) outputWin.destroy();
     secondaryOutput.close();
+    routed.close();
     app.quit();
   });
 }
 
 async function positionOutput(target, presentation = 'configured') {
-  if (!outputWin || outputWin.isDestroyed()) return;
+  if (!outputWin || outputWin.isDestroyed() || routed.has(target.id)) return;
   // Re-sending the current full-screen view only changes its content. Avoid
   // exiting/re-entering macOS Spaces for every T1/BOTH/T2 press.
   if (presentation === 'fullscreen' && outputReady && outputPlaced && outputPlacing === null &&
@@ -465,7 +489,8 @@ async function positionOutput(target, presentation = 'configured') {
 }
 
 function createOutputWindow(displayId, presentation = 'configured') {
-  const displays = screen.getAllDisplays();
+  const displays = screen.getAllDisplays().filter(display=>!routed.has(display.id));
+  if(routed.has(displayId)||!displays.length) return;
   const target = displays.find(d => d.id === displayId)
     || displays.find(d => d.id !== controlDisplayId()) || displays[0];
   outputTargetId = target.id;
@@ -558,6 +583,7 @@ function recreateOutputForTransparency() {
 
 // ---------------- IPC ----------------
 ipcMain.on('state', (e, s) => {
+  if(e.sender!==controlWin?.webContents) return;
   const prev = lastState || {};
   const gridModeChanged = !!prev.gridOn !== !!s.gridOn;
   const gridPosChanged = (prev.gridSize !== s.gridSize) || (prev.gridCell !== s.gridCell);
@@ -576,13 +602,14 @@ ipcMain.on('state', (e, s) => {
     }
   }
   secondaryOutput.update(prev);
+  routed.update(prev);
   pushSSE(s);
   pushPoll(s);
 });
 ipcMain.on('open-output', (e, displayId) => createOutputWindow(displayId || null));
 ipcMain.on('send-to-display', (e, displayId) => {
   const d = screen.getAllDisplays().find(x => x.id === displayId);
-  if (TimerTools.separateOutputs(lastState) && !d) return;
+  if (routed.has(displayId) || (TimerTools.separateOutputs(lastState) && !d)) return;
   if (!outputWin || outputWin.isDestroyed()) { createOutputWindow(d ? d.id : null); return; }
   if (d) positionOutput(d);
 });
@@ -597,7 +624,7 @@ ipcMain.handle('output-quality', (e, role = 'primary') => {
 });
 ipcMain.handle('resize-output', async (e, requested) => {
   if (!controlWin || e.sender !== controlWin.webContents) return { ok: false };
-  if (requested?.role === 'secondary') return secondaryOutput.resize(requested);
+  if (requested?.role === 'secondary') return routed.has(requested.displayId)&&!secondaryOutput.getWindow()?{ok:false}:secondaryOutput.resize(requested);
   const size = TimerTools.size(requested);
   if (!size) return { ok: false, error: 'invalid size' };
   if (!outputWin || outputWin.isDestroyed()) createOutputWindow(requested.displayId || null);
@@ -656,11 +683,19 @@ ipcMain.on('fit-window', (e, h) => {
   if (Math.abs(cur - want) > 4) outputWin.setContentSize(w, want);
 });
 ipcMain.on('ctl-on-top', (e, flag) => { if (controlWin && !controlWin.isDestroyed()) controlWin.setAlwaysOnTop(!!flag, 'floating'); });
+function fromControl(event){
+  return event.sender===controlWin?.webContents&&event.senderFrame===controlWin?.webContents.mainFrame;
+}
+ipcMain.handle('routed-outputs-apply',(event,routes)=>fromControl(event)?routed.apply(routes):{ok:false,code:'CONTROL_ONLY'});
+ipcMain.handle('routed-outputs-close',(event,id)=>{
+  if(!fromControl(event)||!(id===null||Number.isSafeInteger(id))) return {ok:false};
+  routed.close(id===null?null:[id]); return {ok:true};
+});
 ipcMain.handle('displays', () => displayList());
 ipcMain.handle('output-open', () => !!outputWin);
 ipcMain.handle('secondary-output-open', (e, displayId) => {
   if (!controlWin || e.sender !== controlWin.webContents) return { ok: false };
-  return secondaryOutput.open(displayId);
+  return routed.has(displayId)?{ok:false,code:'ROUTED_OUTPUT_OPEN'}:secondaryOutput.open(displayId);
 });
 ipcMain.handle('secondary-output-geometry', () => secondaryOutput.geometry());
 ipcMain.on('secondary-output-close', e => {
@@ -1083,6 +1118,7 @@ app.whenReady().then(() => {
     }
     const display = screen.getAllDisplays().find(d => d.id === payload.displayId);
     if (!display) return { ok: false, code: 'DISPLAY_NOT_CONNECTED', message: 'Select a connected display in Control.' };
+    if (routed.has(display.id)) return {ok:false,code:'ROUTED_OUTPUT_OPEN',message:'Close the routed output on this display in Control first.'};
     if (role === 'secondary') secondaryOutput.open(display.id,payload.presentation); else createOutputWindow(display.id,payload.presentation);
     const settled = () => role === 'secondary' ? secondaryOutput.settled() : outputReady && outputPlaced && outputPlacing === null;
     const applied = () => {
@@ -1106,10 +1142,11 @@ app.whenReady().then(() => {
 
   screen.on('display-added', (e, newDisplay) => {
     pushDisplays();
-    if (!TimerTools.separateOutputs(lastState) && outputWin && !outputWin.isDestroyed()) positionOutput(newDisplay);
+    if (!routed.has(newDisplay.id)&&!TimerTools.separateOutputs(lastState) && outputWin && !outputWin.isDestroyed()) positionOutput(newDisplay);
   });
   screen.on('display-removed', (e, removedDisplay) => {
     secondaryOutput.displaysChanged();
+    routed.update();
     if (TimerTools.separateOutputs(lastState)) {
       if (outputWin && outputTargetId === removedDisplay.id) outputWin.close();
       pushDisplays();
@@ -1124,6 +1161,7 @@ app.whenReady().then(() => {
       state: lastState, targetId: outputTargetId, placing: outputPlacing !== null,
       beforeMove: () => { ++outputPlacementVersion; } });
     secondaryOutput.displayMetricsChanged(display, metrics);
+    routed.update();
     pushOutputGeometry();
     pushDisplays();
   });
@@ -1165,12 +1203,16 @@ app.whenReady().then(() => {
         const smokeFailures = [];
         const check = (name, ok) => { if (!ok) smokeFailures.push(name); return !!ok; };
         await waitLoad(controlWin);
+        if(process.argv.includes('--audience-routes-only')){
+          await require('./scripts/smoke-audience-routes')({controlWin,screen});
+          console.log('SMOKE_OK'); app.exit(0); return;
+        }
         if(process.argv.includes('--audience-visibility-only')){
           await require('./scripts/smoke-audience-visibility')({controlWin,getOutput:()=>outputWin,getSecondary:secondaryOutput.getWindow,screen,serverPort});
           console.log('SMOKE_OK'); app.exit(0); return;
         }
         if(process.argv.includes('--timer-controls-only')){
-          await require('./scripts/smoke-timer-controls')({controlWin,getOutput:()=>outputWin,screen});
+          await require('./scripts/smoke-timer-controls')({controlWin,getOutput:()=>outputWin,screen,serverPort,token:CMD_TOKEN});
           console.log('SMOKE_OK'); app.exit(0); return;
         }
         if(process.argv.includes('--free-layout-only')){
@@ -1762,9 +1804,10 @@ app.whenReady().then(() => {
         await require('./scripts/smoke-alerts')({controlWin,getOutput:()=>outputWin,getSecondary:secondaryOutput.getWindow,displayId:screen.getPrimaryDisplay().id});
         await require('./scripts/smoke-output-quality')({controlWin,getOutput:()=>outputWin,getSecondary:secondaryOutput.getWindow,screen});
         await require('./scripts/smoke-output-layer')({controlWin,getOutput:()=>outputWin,getSecondary:secondaryOutput.getWindow,screen});
-        await require('./scripts/smoke-timer-controls')({controlWin,getOutput:()=>outputWin,screen});
+        await require('./scripts/smoke-timer-controls')({controlWin,getOutput:()=>outputWin,screen,serverPort,token:CMD_TOKEN});
         await require('./scripts/smoke-free-layout')({controlWin,getOutput:()=>outputWin,screen,serverPort});
         await require('./scripts/smoke-audience-visibility')({controlWin,getOutput:()=>outputWin,getSecondary:secondaryOutput.getWindow,screen,serverPort});
+        await require('./scripts/smoke-audience-routes')({controlWin,screen});
         if(smokeFailures.length) throw new Error('Failed checks: '+smokeFailures.join(', '));
         console.log('SMOKE_OK');
         app.exit(0);

@@ -25,6 +25,8 @@ contextBridge.exposeInMainWorld('pt', {
   getSecondaryOutputGeometry: () => ipcRenderer.invoke('secondary-output-geometry'),
   onSecondaryOutputGeometry: (cb) => ipcRenderer.on('secondary-output-geometry', (e, info) => cb(info)),
   setOnTop: (flag) => ipcRenderer.send('ctl-on-top', flag),
+  applyRoutedOutputs: (routes) => ipcRenderer.invoke('routed-outputs-apply', routes),
+  closeRoutedOutputs: (id = null) => ipcRenderer.invoke('routed-outputs-close', id),
   getDisplays: () => ipcRenderer.invoke('displays'),
   isOutputOpen: () => ipcRenderer.invoke('output-open'),
   getNetworkInfo: () => ipcRenderer.invoke('network-info'),

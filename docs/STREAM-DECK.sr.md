@@ -4,7 +4,7 @@
 
 ![Pregled stvarne LCD grafike — nije fizički USB test](stream-deck-buttons.png)
 
-**Ukratko:** plugin i pravi izvezeni **XL profil sa 32 dugmeta** dolaze uz instalaciju ProTimera 2.5.3. Otvori **Control → Stream Deck → Instaliraj / ažuriraj plugin**, potvrdi u Elgato aplikaciji i klikni **Podesi integraciju → Aktiviraj ProTimer profil**. Ako Elgato pita, potvrdi prvu instalaciju profila. Paket možeš preuzeti i zasebno. Ne treba terminal, Node, IP adresa niti ručno postavljanje 32 dugmeta. Instalacija/povezivanje nisu isto što i aktiviranje profila.
+**Ukratko:** plugin i pravi izvezeni **XL profil sa 32 dugmeta** dolaze uz instalaciju ProTimera 2.6.0. Otvori **Control → Stream Deck → Instaliraj plugin i poveži**, potvrdi u Elgato aplikaciji i sačekaj vezu, pa klikni **Aktiviraj ProTimer profil**. Ako Elgato pita, potvrdi prvu instalaciju profila. Paket možeš preuzeti i zasebno. Ne treba terminal, Node, IP adresa niti ručno postavljanje 32 dugmeta. Instalacija/povezivanje nisu isto što i aktiviranje profila.
 
 Velike bele ikone i natpisi jasno označavaju funkciju, uz različite grupe boja: zeleno puštanje, žuta pauza, plavo/ljubičasto priprema, mint/roze plus/minus, ljubičasto zvonce, crveno sakrivanje i zeleno vraćanje slike. Ikone ekrana imaju 1, 2 ili podelu 1|2. Status i naziv objašnjavaju dugme i bez oslanjanja samo na boju. Svoje boje i ikone možeš i dalje birati u Elgato editoru.
 
@@ -20,7 +20,7 @@ Velike bele ikone i natpisi jasno označavaju funkciju, uz različite grupe boja
 
 ProTimer ostaje program koji meri vreme. Elgato aplikacija upravlja USB uređajem, a native ProTimer plugin šalje stvarne komande postojećem tajmeru. Ne simulira tastaturu i ne pravi svoje odbrojavanje. Companion nije obavezna instalacija; postojeća HTTP/OSC podrška ostaje.
 
-## Šta je uključeno u ProTimer 2.5.3
+## Šta je uključeno u ProTimer 2.6.0
 
 Plugin može da se izgradi, validira i spakuje. Editor u Control prozoru uređuje logički raspored 8 × 4 i ProTimer Key akcije koje korisnik postavi kroz Elgato.
 
@@ -33,8 +33,8 @@ Na lokalnom Macu dostupni su Elgato softver i korisnikov XL profil. Instalacija,
 Potrebni su Windows 10+ x64 ili macOS 13+ Apple Silicon i **Elgato Stream Deck 7.6+**, verzija iz koje je profil izvezen. Plugin koristi zvanični SDK 3 i Node 20 koji obezbeđuje Elgato. Korisnik ne instalira Node, ne otvara terminal i ne pokreće server.
 
 1. Otvori **ProTimer Control → Stream Deck**. Integracija je opciona; tajmer radi i kada je isključena.
-2. Klikni **Instaliraj / ažuriraj plugin**. Otvara se pravi `.streamDeckPlugin` paket. Potvrdi instalaciju koju traži Elgato.
-3. Klikni **Podesi integraciju** i uključi povezivanje. Lokalno uparivanje koristi podržani deep-link mehanizam, bez upisivanja IP adrese i stalnog kopiranja tokena.
+2. Klikni **Instaliraj plugin i poveži**. Otvara se pravi `.streamDeckPlugin` paket. Potvrdi instalaciju koju traži Elgato.
+3. Sačekaj automatsko povezivanje. Ako treba ponovo probati, klikni **Poveži / obnovi vezu**. Lokalno uparivanje koristi podržani deep-link mehanizam, bez upisivanja IP adrese i stalnog kopiranja tokena.
 4. Sačekaj potvrdu od plugina i izaberi uređaj. Sam folder na disku nije dokaz da plugin radi.
 5. Izaberi XL i **ProTimer XL · Full 32 → Aktiviraj ProTimer profil**. Potvrdi Elgato instalaciju ako se pojavi. Ne moraš ručno postavljati 32 dugmeta. Aktiviranje ne pušta vreme niti otvara izlaz.
 6. Menjaj povezane akcije kroz **Uredi raspored**, ili izaberi taster u Elgato editoru i **Edit here / Save key**. Za dodatne ručno postavljene akcije, u Controlu izaberi vidljivi **ProTimer Key na uređaju → Poveži ovo mesto**. Ne prepisuju se tuđe OBS/Elgato akcije.
@@ -55,7 +55,7 @@ Povezivanje nije aktiviranje profila. Pokretanje ProTimera, promena fokusa, USB 
 
 ### Dodaj ili oduzmi vreme govorniku tokom LIVE-a
 
-U ProTimeru 2.5.3, **Control → Stream Deck → LIVE korekcija** ima −1m, +1m, −10s i +10s za izabrani T1/T2. Korekcija menja ACTIVE odmah: odbrojavanje nastavlja, SET i drugi tajmer ostaju nepromenjeni. Na primer, +1m menja približno 08:43 u 09:43. Prikaz publici dobija isto stvarno stanje.
+U ProTimeru 2.6.0, **Control → Stream Deck → LIVE korekcija** ima −1m, +1m, −10s i +10s za izabrani T1/T2. Korekcija menja ACTIVE odmah: odbrojavanje nastavlja, SET i drugi tajmer ostaju nepromenjeni. Na primer, +1m menja približno 08:43 u 09:43. Prikaz publici dobija isto stvarno stanje.
 
 Za fizički taster izaberi postojeće −1m/+1m u **Uredi raspored**, postavi **Cilj korekcije → LIVE · aktivno vreme** i klikni **Primeni raspored**. Alternativno, u Elgato editoru izaberi **ProTimer Key → Uredi ovde → LIVE −1m / +1m → Save key**. Korak i jedinicu možeš promeniti pre čuvanja. Taster prikazuje **LIVE**; jedan pritisak je jedna korekcija. TIMER 1/2 bira govornika ako je cilj tastera „Izabrani tajmer”. Uređivanje/čuvanje ne izvršava korekciju.
 

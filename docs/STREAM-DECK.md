@@ -6,11 +6,11 @@ ProTimer remains the timer application. Elgato Stream Deck software owns the USB
 
 ![LCD design preview — colored function keys and separate ACTIVE/SET readouts, not a USB test](stream-deck-buttons.png)
 
-**Quick start:** the native plugin and a genuine exported **XL Full 32** profile are included in the ProTimer 2.5.3 desktop installer. Open **Control → Stream Deck → Install / update plugin**, confirm in Elgato, then **Set up integration → Activate ProTimer profile**. Confirm the profile's first installation if Elgato asks. A separate `.streamDeckPlugin` download is also provided. You do not need Node, a terminal, an IP address or manual placement of 32 actions. Installing/pairing is not the same as activating a profile.
+**Quick start:** the native plugin and a genuine exported **XL Full 32** profile are included in the ProTimer 2.6.0 desktop installer. Open **Control → Stream Deck → Install plugin & connect**, confirm in Elgato, wait for connection, then **Activate ProTimer profile**. Confirm the profile's first installation if Elgato asks. A separate `.streamDeckPlugin` download is also provided. You do not need Node, a terminal, an IP address or manual placement of 32 actions. Installing/pairing is not the same as activating a profile.
 
 Color groups help identify a function at a glance: green playback, amber pause, blue/purple presets and preparation, mint/rose plus/minus, violet bell, red hide-picture and green restore-picture. Large white icons/labels and explicit status remain readable without relying on color alone. Screen icons show 1, 2 or a split 1|2. User-selected icons and colors are retained.
 
-## Included in ProTimer 2.5.3
+## Included in ProTimer 2.6.0
 
 The native plugin includes **one real XL Full 32 profile exported from Elgato Stream Deck 7.6**, unmodified and integrity-checked during build. It is registered in the manifest, user-editable, with automatic installation/switching disabled. Activation happens only after an explicit Control click. No invented profile ZIP or live Elgato database editing is used.
 
@@ -25,8 +25,8 @@ Elgato software and the user's XL profile are available on the local Mac. Instal
 - Stream Deck XL for the complete 8 × 4 layout. Keep Elgato software running; no separate server or Companion installation is required.
 
 1. Open **ProTimer Control → Stream Deck**. This section is optional; the normal timer works with integration disabled or without Stream Deck installed.
-2. Choose **Install / update plugin**. ProTimer opens its packaged `.streamDeckPlugin` file. Complete the installation confirmation shown by Elgato. This is not a silent installation.
-3. Choose **Set up integration** and enable the connection. Pairing uses the local `streamdeck://` mechanism, with a passive link where supported. No IP address, terminal or repeatedly copied token is needed.
+2. Choose **Install plugin & connect**. ProTimer opens its packaged `.streamDeckPlugin` file. Complete the installation confirmation shown by Elgato. This is not a silent installation.
+3. Wait for the automatic connection. To retry, click **Connect / reconnect**. Pairing uses the local `streamdeck://` mechanism, with a passive link where supported. No IP address, terminal or repeatedly copied token is needed.
 4. Wait for a real plugin handshake. Select the desired device if several are connected. An installed folder alone is not considered a connection.
 5. With XL selected, choose **ProTimer XL · Full 32 → Activate ProTimer profile**. Accept Elgato's first-import confirmation. The complete board appears without dragging 32 actions. Activation never starts a timer or opens an output.
 6. Use **Edit layout** for linked keys, or select any ProTimer Key in Elgato and **Edit here / Save key** to make it independent. To link an additional manually placed action: choose its visible **ProTimer Key on device → Connect this slot**. This binds only an action you already placed; it never replaces an Elgato/OBS action.
@@ -56,7 +56,7 @@ Switching the selected timer, restarting or losing the controller connection ret
 
 ### Adjust a speaker's time while LIVE
 
-ProTimer 2.5.3 includes **Control → Stream Deck → LIVE adjustment**: −1m, +1m, −10s and +10s for the selected T1/T2. Each tap changes ACTIVE immediately without pausing, changing SET or touching the other timer. For example, +1m changes approximately 08:43 to 09:43. Audience outputs receive the same authoritative state.
+ProTimer 2.6.0 includes **Control → Stream Deck → LIVE adjustment**: −1m, +1m, −10s and +10s for the selected T1/T2. Each tap changes ACTIVE immediately without pausing, changing SET or touching the other timer. For example, +1m changes approximately 08:43 to 09:43. Audience outputs receive the same authoritative state.
 
 For an existing physical −1m/+1m key, use **Edit layout → Adjustment target → LIVE → Apply layout**. Alternatively, use Elgato **ProTimer Key → Edit here → LIVE −1m / +1m → Save key**; adjust the step/unit before saving if needed. The LCD labels the key **LIVE**. One press applies one correction. TIMER 1/2 chooses the speaker when the key targets the selected timer. Editing/saving does not execute a correction.
 

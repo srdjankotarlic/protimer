@@ -4,8 +4,9 @@
 <meta charset="UTF-8">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self'">
 <title>ProTimer — Backstage</title>
+<link rel="stylesheet" href="fonts/digits.css">
 <style>
   :root{ --bg:#0a0c10; --panel:#12151b; --panel2:#171b22; --border:#222934;
     --text:#e8edf3; --dim:#8b97a5; --dim2:#5a6573; --accent:#3fb950;
@@ -101,6 +102,7 @@
     </div>
   </div>
 
+<script src="timer-tools.js"></script>
 <script>
 const $ = id => document.getElementById(id);
 function pad(n){ return String(n).padStart(2,'0'); }
@@ -164,6 +166,7 @@ function applyState(next){
   const signature=JSON.stringify([next.lang,next.text,next.showStart,next.currentCue,next.cues||[]]);
   if(signature!==stateSignature){ stateSignature=signature; staticDirty=true; }
   S=next;
+  $('nowTimer').style.fontFamily=TimerTools.digitFamily(S.digitFont);
   if(S.lang&&S.lang!==lang){ lang=S.lang; applyStaticLabels(); staticDirty=true; }
   return true;
 }

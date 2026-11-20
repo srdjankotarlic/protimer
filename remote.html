@@ -4,10 +4,11 @@
 <meta charset="UTF-8">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self'">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0b0d11">
 <title>ProTimer — Daljinski</title>
+<link rel="stylesheet" href="fonts/digits.css">
 <style>
   :root{ --bg:#0b0d11; --panel:#13161c; --panel2:#1a1f28; --border:#232936;
     --text:#e8edf3; --dim:#7d8794; --accent:#2ea043; --accent-h:#3fb950;
@@ -61,7 +62,7 @@
   #connectionHelp button{margin-top:10px; padding:10px 18px;}
   #commandStatus{font-size:13px; color:var(--amber); margin:8px 0; min-height:18px;}
   #secondaryRemote{border-top:1px solid var(--border); padding-top:14px;}
-  #secondaryTime{font:700 58px/1.2 "SF Mono",Menlo,monospace; text-align:center; margin:10px 0;}
+  #secondaryTime{font:700 58px/1.2 "SF Mono",Menlo,monospace; text-align:center; margin:10px 0; font-variant-numeric:tabular-nums;}
 </style>
 </head>
 <body>
@@ -216,6 +217,9 @@ function applyState(next){
     lastStateVersion=version;
   }
   S=next;
+  const family=TimerTools.digitFamily(S.digitFont);
+  $('time').style.fontFamily=family;
+  $('secondaryTime').style.fontFamily=family;
   if(!clockSynced&&Number.isFinite(S._serverNow)) clockOffsetMs=S._serverNow-Date.now();
   if(S.lang&&S.lang!==lang){ lang=S.lang; applyLang(); if($('dot').classList.contains('on')) $('connTxt').textContent=tr('live'); }
   return true;
@@ -286,7 +290,7 @@ function render(){
     let rem=TimerTools.remaining(S.secondary,hostNow()); if(!(S.secondary.overtime??S.overtime)) rem=Math.max(0,rem);
     const mode=S.secondary.mode||'countdown',text=mode==='clock'?new Date(hostNow()).toLocaleTimeString('en-GB',{hour12:false}):mode==='countup'?fmtSecs(Math.floor(TimerTools.elapsed(S.secondary,hostNow())/1000),false):fmtMs(rem);
     $('secondaryTime').textContent=text;
-    $('secondaryTime').style.fontSize=Math.min(58,($('secondaryRemote').clientWidth-16)/(text.length*.62))+'px';
+    $('secondaryTime').style.fontSize=Math.min(58,($('secondaryRemote').clientWidth-16)/TimerTools.digitWidth(S.digitFont,text,.62))+'px';
     $('secondaryTime').style.color=mode!=='countdown'?S.fgColor:rem<=0?(S.warnRed||'#ff4540'):S.useWarnColors?(rem<=S.redSec*1000?S.warnRed:rem<=S.yellowSec*1000?S.warnYellow:S.fgColor):S.fgColor;
     const neg=mode==='countdown'&&rem<0, blink=mode==='countdown'&&rem<=0&&(S.secondary.flashZero??S.flashZero??true);
     $('secondaryTime').className=[neg?'neg':'',blink?'blink':''].filter(Boolean).join(' ');
@@ -303,7 +307,7 @@ function render(){
     text=fmtMs(rem);
   }
   const t=$('time'); if(t.textContent!==text)t.textContent=text; if(t.style.color!==col)t.style.color=col;
-  t.style.fontSize=Math.min(118,innerWidth*.21,(t.clientWidth-8)/(text.length*.62))+'px';
+  t.style.fontSize=Math.min(118,innerWidth*.21,(t.clientWidth-8)/TimerTools.digitWidth(S.digitFont,text,.62))+'px';
   const tClass='t'+(neg?' neg':'')+(blink?' blink':''); if(t.className!==tClass)t.className=tClass;
   const label=S.text||'', message=S.message?S.message.text:'';
   if($('lbl').textContent!==label)$('lbl').textContent=label;

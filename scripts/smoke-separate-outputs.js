@@ -48,7 +48,9 @@ module.exports = async function ({ controlWin, getOutput, getSecondary, screen }
   const rejected = await ctl(`api.openSecondaryOutput(999999999)`);
   assert.equal(rejected.ok, false); assert.equal(getSecondary(), null);
   await ctl(`$('secondaryDisplaySel').value=${JSON.stringify(String(hostDisplay))}; $('btnOpenSecondaryOut').click();`);
-  await waitFor(() => !!getSecondary(), 'Second output did not open');
+  // State can arrive before ready-to-show. Wait for initial positioning so
+  // it cannot cancel a later resize or native fullscreen request.
+  await waitFor(() => getSecondary()?.isVisible(), 'Second output did not open');
   await waitFor(() => second(`!!S&&S.durationMs===330000&&$('timer').textContent==='5:30'&&!S.dualTimer`), 'Timer 2 was not standalone');
   const targetInfo = await ctl(`api.getSecondaryOutputGeometry()`);
   assert.equal(targetInfo.displayId, hostDisplay);
@@ -70,7 +72,7 @@ module.exports = async function ({ controlWin, getOutput, getSecondary, screen }
   assert.deepEqual(await ctl(`({first:S.endAt,second:S.secondary.endAt})`), deadlines);
   assert.equal(await ctl('S.running&&S.secondary.running'), true);
   await ctl(`$('btnOpenSecondaryOut').click();`);
-  await waitFor(() => !!getSecondary(), 'Second output did not reopen');
+  await waitFor(() => getSecondary()?.isVisible(), 'Second output did not reopen');
   await waitFor(() => second(`!!S&&S.endAt===${deadlines.second}&&S.running`), 'Reopening reset the second timer');
   unchangedPrimary('Reopening second output');
   await ctl(`$('btnSecondaryStart').click();`);

@@ -24,7 +24,7 @@ module.exports = function createDeckHost({ getControl, outputCommand, smoke = fa
     }
   } catch (_) { /* Missing/corrupt integration settings never break ProTimer. */ }
   if (smoke) settings.enabled = false;
-  let softwareDetected = false, bootstrapAt = 0, pairing = false, disposed = false;
+  let softwareDetected = false, bootstrapAt = -Infinity, pairing = false, disposed = false, connecting = null;
   const profileGuard=createProfileGuard();
   let lastFrame = null; const requests = new Map(), registered = new Set();
   function persist() { const temp = `${file}.tmp`; fs.writeFileSync(temp, JSON.stringify(settings, null, 2), { mode: 0o600 }); fs.renameSync(temp, file); }
@@ -46,12 +46,12 @@ module.exports = function createDeckHost({ getControl, outputCommand, smoke = fa
   function safeSettings() { const { audioFile, ...safe } = settings; return safe; }
   function snapshot() {
     const b = bridge.status(), devices = b.inventory.devices;
-    if (!settings.selectedDeviceId && devices.length === 1) settings.selectedDeviceId = devices[0].id;
+    if (!devices.some(d=>d.id===settings.selectedDeviceId) && devices.length === 1) settings.selectedDeviceId = devices[0].id;
     const visible = b.inventory.actions.filter(a => a.deviceId === settings.selectedDeviceId);
     const canReturn=profileGuard.observe(b.inventory,b.sessionId,b.connected&&!b.stale);
     // No supported API for arbitrary active profile. Visible own keys are only
     // evidence, not a claim that a bundled profile is selected.
-    const status = !settings.enabled ? 'disabled' : !softwareDetected ? 'no-software' : !b.connected ? pairing ? 'pairing' : 'plugin-missing' : b.pluginVersion !== '0.1.0' ? 'outdated' : b.stale ? 'stale' : !devices.length ? 'no-device' : !visible.length ? 'profile-inactive' : 'connected';
+    const status = !settings.enabled ? 'disabled' : !softwareDetected ? 'no-software' : !b.connected ? pairing && Date.now()-bootstrapAt<6000 ? 'pairing' : 'plugin-missing' : b.pluginVersion !== '0.1.0' ? 'outdated' : b.stale ? 'stale' : !devices.length ? 'no-device' : !visible.length ? 'profile-inactive' : 'connected';
     return { ...safeSettings(), softwareDetected, status, pluginVersion: b.pluginVersion, devices, inventory: b.inventory.actions,
       profile: { active: false, known: false, canReturn }, profilesVerified: b.inventory.profiles?.includes('profiles/protimer-xl-full')===true,
       canActivate: status==='connected'||status==='profile-inactive' ? b.inventory.canActivate===true&&devices.some(d=>d.id===settings.selectedDeviceId&&d.type===2) : false,
@@ -65,10 +65,19 @@ module.exports = function createDeckHost({ getControl, outputCommand, smoke = fa
     catch (_) { softwareDetected = false; }
     return softwareDetected;
   }
-  async function bootstrap() {
+  function bootstrap() {
+    if(connecting) return connecting;
+    if(bridge.status().connected){ push(); return Promise.resolve({ok:true}); }
+    bootstrapAt=Date.now();
+    connecting=connectSoftware().finally(()=>{ connecting=null; });
+    return connecting;
+  }
+  async function connectSoftware() {
     await detectSoftware();
     if (!settings.enabled || !softwareDetected || disposed) { push(); return { ok: false, error: 'STREAM_DECK_SOFTWARE_NOT_FOUND' }; }
-    await bridge.start(); const bootstrap = bridge.bootstrap(); bootstrapAt = Date.now(); pairing = true; push();
+    await bridge.start();
+    if(!settings.enabled||disposed) return {ok:false,error:'INTEGRATION_DISABLED'};
+    const bootstrap = bridge.bootstrap(); pairing = true; push();
     const url = new URL(`streamdeck://plugins/message/${UUID}/bootstrap`);
     url.searchParams.set('streamdeck', 'hidden'); url.searchParams.set('port', String(bootstrap.port)); url.searchParams.set('nonce', bootstrap.nonce);
     try { await shell.openExternal(url.toString()); return { ok: true }; }
@@ -104,7 +113,13 @@ module.exports = function createDeckHost({ getControl, outputCommand, smoke = fa
     if (action === 'install') {
       const packageFile = app.isPackaged ? path.join(process.resourcesPath, 'streamdeck', `${UUID}.streamDeckPlugin`) : path.join(__dirname, 'streamdeck-plugin', 'dist', `${UUID}.streamDeckPlugin`);
       if (!fs.existsSync(packageFile)) return { ok: false, error: 'PLUGIN_PACKAGE_NOT_BUILT' };
-      const error = await shell.openPath(packageFile); return error ? { ok: false, error: 'PLUGIN_INSTALLER_COULD_NOT_OPEN' } : { ok: true, confirmationRequired: true };
+      if(!await detectSoftware()){ push(); return {ok:false,error:'STREAM_DECK_SOFTWARE_NOT_FOUND'}; }
+      const error=await shell.openPath(packageFile);
+      if(error) return {ok:false,error:'PLUGIN_INSTALLER_COULD_NOT_OPEN'};
+      // Reconnect automatically after the operator confirms the Elgato installer.
+      // A plugin update can terminate the old session and require a fresh nonce.
+      settings.enabled=true; persist(); bootstrapAt=Date.now()-12000; push();
+      return {ok:true,confirmationRequired:true};
     }
     if (action === 'selectDevice') {
       if (!bridge.status().inventory.devices.some(d => d.id === payload.deviceId)) return { ok: false, error: 'DEVICE_NOT_CONNECTED' };

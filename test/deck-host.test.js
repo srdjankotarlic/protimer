@@ -6,8 +6,9 @@ const Module = require('node:module');
 const path = require('node:path');
 const Layout = require('../deck-layout');
 
-function hostHarness(t, saved) {
+function hostHarness(t, saved, {hasSoftware=false}={}) {
   const files = new Map(), handles = new Map(), events = new Map(), sent = [], outputs = [], registered = new Map(), dialogs = [];
+  const opened=[];
   let dialogResponse = 0;
   const settingsPath = path.join('/isolated-test', 'stream-deck.json');
   if (saved) files.set(settingsPath, JSON.stringify(saved));
@@ -16,9 +17,9 @@ function hostHarness(t, saved) {
     existsSync: file => files.has(file), statSync: file => ({ size: Buffer.byteLength(files.get(file) || '') }) };
   const webContents = { send: (channel, value) => sent.push({ channel, value }) }, control = { isDestroyed: () => false, webContents };
   const electron = {
-    app: { getPath: () => '/isolated-test', isPackaged: false, getApplicationInfoForProtocol: async () => { throw Error('Not installed'); } },
+    app: { getPath: () => '/isolated-test', isPackaged: false, getApplicationInfoForProtocol: async () => { if(hasSoftware) return {path:'/test/Stream Deck'}; throw Error('Not installed'); } },
     ipcMain: { handle: (name, handler) => handles.set(name, handler), on: (name, handler) => events.set(name, handler) },
-    shell: { openPath: async () => '', openExternal: async () => {} },
+    shell: { openPath: async value => {opened.push(value);return '';}, openExternal: async value => {opened.push(value);} },
     dialog: { showOpenDialog: async () => ({ canceled: true }), showSaveDialog: async () => ({ canceled: true }),
       showMessageBox: async (_window, options) => { dialogs.push(options); return { response: dialogResponse }; } },
     globalShortcut: { register: (key, callback) => { registered.set(key, callback); return true; }, unregister: key => registered.delete(key) }
@@ -28,7 +29,7 @@ function hostHarness(t, saved) {
   wrapper(module.exports, localRequire, module, filename, path.dirname(filename));
   const host = module.exports({ getControl: () => control, outputCommand: value => { outputs.push(value); return { ok: true }; }, smoke: true });
   t.after(() => host.close());
-  return { host, files, settingsPath, events, handles, outputs, registered, sent, control, dialogs, setDialogResponse(value) { dialogResponse = value; },
+  return { host, files, settingsPath, events, handles, outputs, registered, sent, control, dialogs, opened, setDialogResponse(value) { dialogResponse = value; },
     invoke: (action, payload, sender = webContents) => handles.get('deck-invoke')({ sender }, action, payload),
     emit: (name, value, sender = webContents) => events.get(name)({ sender }, value) };
 }
@@ -104,4 +105,21 @@ test('layout import/save validator refuses tokens and active code through author
   assert.equal((await h.invoke('saveLayout', { layout })).ok, false); assert.equal(h.files.size, 0);
   delete layout.token; layout.slots[0].command = 'eval';
   assert.equal((await h.invoke('applyLayout', { layout })).ok, false); assert.equal(h.host.snapshot().layoutRevision, 1);
+});
+
+test('install enables connection with Elgato confirmation and keeps profile selection manual',async t=>{
+  const h=hostHarness(t,undefined,{hasSoftware:true});
+  const packageFile=path.resolve(__dirname,'../streamdeck-plugin/dist/com.srdjankotarlic.protimer.streamDeckPlugin');
+  h.files.set(packageFile,'package');
+  assert.deepEqual(await h.invoke('install'),{ok:true,confirmationRequired:true});
+  assert.deepEqual(h.opened,[packageFile]);
+  assert.equal(JSON.parse(h.files.get(h.settingsPath)).enabled,true);
+  const connections=await Promise.all([h.invoke('setup'),h.invoke('setup')]);
+  assert.ok(connections.every(result=>result.ok));
+  assert.equal(h.opened.length,2,'Simultaneous setup launches only one passive deep link');
+  const link=new URL(h.opened[1]);
+  assert.equal(link.protocol,'streamdeck:');
+  assert.equal(link.searchParams.get('streamdeck'),'hidden');
+  assert.equal(h.host.snapshot().canActivate,false);
+  assert.deepEqual(h.outputs,[]);
 });
