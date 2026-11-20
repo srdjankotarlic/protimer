@@ -1513,7 +1513,14 @@ function setMode(m){
   zeroFired=false;
   setModeTabs(); renderCues(); send(); deckControl?.prepared('t1'); updateButtons();
 }
-function setModeTabs(){ document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('active',b.dataset.mode===S.mode)); }
+function setModeTabs(){
+  document.querySelectorAll('[data-mode]').forEach(button=>{
+    const selected=button.dataset.mode===S.mode;
+    button.classList.toggle('active',selected);
+    button.setAttribute('aria-pressed',String(selected));
+  });
+  document.querySelectorAll('[data-adj]').forEach(button=>button.disabled=S.mode!=='countdown');
+}
 
 function clearOptionalTarget(role,clearValue){
   optionalTargetArmed[role]=false;
@@ -1970,6 +1977,7 @@ function renderRundownTiming(now){
 function updateButtons(){
   updateRundownTransport();
   const b=$('btnStart');
+  b.disabled=S.mode==='clock';
   if(S.mode==='clock'){ b.textContent=t('clockBtn'); b.classList.remove('running'); return; }
   if(S.running){ b.textContent=t('pause'); b.classList.add('running'); }
   else { b.textContent=t('start'); b.classList.remove('running'); }
@@ -2195,6 +2203,7 @@ function load(){
   if(S.outputSize){ $('outputWidth').value=S.outputSize.width; $('outputHeight').value=S.outputSize.height; }
   syncDualUI();
   syncDurationDisplays();
+  setModeTabs();
   buildGrid();
   renderCues();
 }
