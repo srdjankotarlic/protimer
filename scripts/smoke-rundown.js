@@ -100,7 +100,9 @@ module.exports = async function smokeRundown({ controlWin }) {
     cues=[{name:'Last',durationMs:1000}];const overtime=S.overtime;
     S.overtime=false;autoNext=true;loadCue(0,true);S.endAt=Date.now()-10;tickCountdown();
     const stopped=currentCue===0&&!S.running&&S.remMs===0&&autoAdvanceTimer===null;
-    S.overtime=overtime;autoNext=false;reset();return stopped;`);
+    $('btnStart').click();
+    const retook=S.running&&currentCue===0&&S.endAt-Date.now()>0;
+    S.overtime=overtime;autoNext=false;reset();return stopped&&retook;`);
   await check('RUNDOWN_PLANNED_START_STAYS_ANCHORED_ACROSS_MIDNIGHT_OK', `
     const start=new Date(2026,10,20,23,55).getTime();
     S.showStart='23:55'; S.showStartAt=start; plannedStartValue=S.showStart;
