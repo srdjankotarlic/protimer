@@ -32,7 +32,9 @@
     border-bottom:1px solid var(--border); background:var(--panel);}
   .brand{font-weight:700; letter-spacing:3.2px; font-size:13.5px;}
   .brand b{color:var(--accent); font-weight:700;}
-  .grow{flex:1;}
+  .output-actions{margin-inline-start:auto;display:flex;align-items:center;gap:7px;flex-wrap:wrap;min-width:0;}
+  .output-actions select{min-width:135px;max-width:min(280px,38vw);}
+  .output-actions #btnFs,.output-actions #btnCloseOut{padding-inline:10px;}
   .window-flags{display:flex; flex-wrap:wrap; align-items:center; gap:10px;}
 
   button,input,select,textarea{font-family:inherit;}
@@ -63,9 +65,8 @@
   label.chk{display:flex; align-items:center; gap:6px; color:var(--dim); font-size:12.5px; cursor:pointer; transition:color .15s;}
   label.chk:hover{color:var(--text);}
   label.chk input{accent-color:var(--accent);}
-  .topbar .chk{white-space:nowrap;}
 
-  .main{flex:1 1 auto; min-height:0; display:grid; grid-template-columns:1fr 300px; align-items:start;
+  .main{flex:1 1 auto; min-height:0; display:grid; grid-template-columns:minmax(0,1fr) clamp(275px,28vw,340px); align-items:start;
     gap:14px; padding:14px; overflow-y:auto; overflow-x:hidden;}
   .main::-webkit-scrollbar{width:11px;}
   .main::-webkit-scrollbar-thumb{background:#48484e; border-radius:6px; border:3px solid var(--bg);}
@@ -107,7 +108,18 @@
     white-space:pre-wrap; max-width:100%; overflow:hidden;}
   .pv-time{position:relative; font-family:"SF Mono",ui-monospace,Menlo,monospace; font-weight:700;
     font-variant-numeric:tabular-nums; line-height:.95; white-space:nowrap;}
-  .route-panel summary{cursor:pointer;font-weight:700;}
+  .panel.disclosure,.card.disclosure{padding-block:0;}
+  .disclosure>summary,.subsection>summary{cursor:pointer;color:var(--text);font-weight:600;}
+  .disclosure>summary{padding-block:11px;}
+  .disclosure>summary::marker,.subsection>summary::marker{color:var(--dim);font-size:10px;}
+  .disclosure[open]>.section-body{padding-block:11px 13px;border-top:1px solid var(--border);}
+  .subsection{margin-top:12px;border-top:1px solid var(--border);}
+  .subsection>summary{padding-top:9px;font-size:12px;}
+  .subsection[open]>summary{margin-bottom:9px;}
+  .section-body>.layout-slider{max-width:640px;}
+  .disclosure :is(.section-body,.subsection)>.panel-help:empty{display:none;}
+  .timer-alerts{margin-top:10px;}
+  #dualPanel #dualOptions:not([hidden]){margin-top:10px;}
   .route-table{overflow-x:auto;margin:10px 0;}
   .route-table table{width:100%;border-collapse:collapse;text-align:left;}
   .route-table th,.route-table td{padding:7px 5px;border-bottom:1px solid var(--border);}
@@ -307,7 +319,7 @@
 
   /* mreža / OBS */
   .network-card{display:grid; gap:12px;}
-  .network-card h3,.network-card p{margin:0;}
+  .network-card p{margin:0;}
   .network-card h4{font-size:13px; margin:0;}
   .network-card p,.network-help li{font-size:12px; color:var(--dim); line-height:1.5;}
   .network-state{padding:10px; border:1px solid var(--border); border-radius:9px; background:var(--input); font-size:12px; line-height:1.5;}
@@ -321,9 +333,6 @@
   .network-role[open]>summary{margin-bottom:9px;}
   .network-role>p,.network-role>.net-url,.network-role>.net-actions{margin-top:8px;}
   .network-role>.net-url{display:block;}
-  .network-role.remote-role{border-left:3px solid var(--blue);}
-  .network-role.screen-role{border-left:3px solid var(--accent);}
-  .network-role.backstage-role{border-left:3px solid var(--amber);}
   .network-role .role-heading{display:flex; gap:8px; align-items:center; flex-wrap:wrap;}
   .access-tag{font-size:9px; letter-spacing:.5px; color:var(--dim); border:1px solid var(--border-strong); border-radius:4px; padding:2px 4px;}
   .remote-role .access-tag{color:#9fcaff;}
@@ -367,7 +376,7 @@
   .lang button.active:hover:not(:disabled){background:var(--selection);}
   [hidden]{display:none!important;}
   .layout-head{display:flex; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:14px;}
-  .layout-head h3{margin:0; font-size:12px; letter-spacing:.8px; color:var(--dim);}
+  .layout-head:has(>label[hidden]){display:none;}
   .layout-row{display:flex; align-items:center; flex-wrap:wrap; gap:10px; margin:10px 0;}
   .layout-row label{display:flex; align-items:center; gap:8px; color:var(--dim); font-size:12px;}
   .placement-target{display:flex; align-items:center; flex-wrap:wrap; gap:8px; color:var(--dim); font-size:12px;}
@@ -384,7 +393,6 @@
   .layout-slider input[type=range]{padding:0; accent-color:var(--blue);}
   .panel-help{font-size:11px; color:var(--dim); line-height:1.5; margin:8px 0 0;}
   #outputSizeStatus{color:var(--accent);}
-  .output-quality{margin-top:12px; padding-top:10px; border-top:1px solid var(--border);}
   .output-quality-head{display:flex; align-items:center; flex-wrap:wrap; gap:8px 12px;}
   .output-quality-head .panel-help{flex:1 1 200px; margin:0;}
   .output-quality-head button{font-size:12px;}
@@ -402,8 +410,7 @@
 
   @media (max-width:960px){
     .topbar{flex-wrap:wrap; padding-block:9px;}
-    .topbar>.grow{flex:0 0 100%; height:0;}
-    .topbar #displaySel{flex:1 1 180px; min-width:150px; max-width:220px!important;}
+    .output-actions select{max-width:220px;}
     .transport{flex-wrap:wrap;}
     .transport .timer-start{flex:2 1 160px;}
     .transport .timer-reset{flex:1 1 100px;}
@@ -420,17 +427,12 @@
     <button data-lang="sr">SR</button>
     <button data-lang="en">EN</button>
   </div>
-  <div class="grow"></div>
-  <span class="lbl" id="outputTargetLabel" data-i18n="outLabel">Izlaz na</span>
-  <select id="displaySel" data-i18n-title="displayTitle" title="Monitor za izlazni ekran" style="max-width:280px"></select>
-  <button id="btnOpenOut" class="primary" data-i18n="sendScreen">Pošalji na ekran</button>
-  <button id="btnFs" data-i18n-title="fsTitle" title="Pun ekran (F)">⛶</button>
-  <button id="btnCloseOut" class="ghost" data-i18n-title="closeTitle" title="Zatvori izlazni prozor">✕</button>
-  <div class="sep"></div>
-  <div class="window-flags">
-  <label class="chk" data-i18n-title="fitTitle" title="Prozor (kad nije pun ekran) prati veličinu tajmera"><input type="checkbox" id="chkFit"> <span data-i18n="fitWindow">Kompaktan</span></label>
-  <label class="chk" data-i18n-title="timerOnTopTitle" title="Izlaz tajmera ostaje preko prezentacije"><input type="checkbox" id="chkOutputOnTop"> <span data-i18n="timerOnTop">Tajmer na vrhu</span></label>
-  <label class="chk"><input type="checkbox" id="chkOnTop"> <span data-i18n="onTop">Kontrola na vrhu</span></label>
+  <div class="output-actions">
+    <label class="lbl" for="displaySel" id="outputTargetLabel" data-i18n="outLabel">Izlaz na</label>
+    <select id="displaySel" data-i18n-title="displayTitle" title="Monitor za izlazni ekran"></select>
+    <button id="btnOpenOut" class="primary" data-i18n="sendScreen">Pošalji na ekran</button>
+    <button id="btnFs" data-i18n-title="fsTitle" title="Pun ekran (F)">⛶</button>
+    <button id="btnCloseOut" class="ghost" data-i18n-title="closeTitle" title="Zatvori izlazni prozor">✕</button>
   </div>
 </div>
 
@@ -493,20 +495,19 @@
         <span class="glabel" data-i18n="quick">Brzo</span>
         <div class="chips" id="chips"></div>
       </div>
-      <div class="field zero-alert-row" role="group" aria-labelledby="zeroTimerOne">
-        <span class="glabel" id="zeroTimerOne" data-i18n="zeroAlerts" data-i18n-title="zeroAlertsHelp">Na nuli</span>
-        <label class="chk"><input type="checkbox" id="chkOver" checked> <span data-i18n="overtime">Minus posle nule</span></label>
-        <label class="chk"><input type="checkbox" id="chkFlash" checked> <span data-i18n="flashZero">Treptanje na / posle nule</span></label>
-        <label class="chk"><input type="checkbox" id="chkSound"> <span data-i18n="sound">Zvonce na nuli</span></label>
-      </div>
+      <details class="subsection timer-alerts">
+        <summary id="zeroTimerOne" data-i18n="zeroAlerts" data-i18n-title="zeroAlertsHelp">Na nuli</summary>
+        <div class="field zero-alert-row" role="group" aria-labelledby="zeroTimerOne">
+          <label class="chk"><input type="checkbox" id="chkOver" checked> <span data-i18n="overtime">Minus posle nule</span></label>
+          <label class="chk"><input type="checkbox" id="chkFlash" checked> <span data-i18n="flashZero">Treptanje na / posle nule</span></label>
+          <label class="chk"><input type="checkbox" id="chkSound"> <span data-i18n="sound">Zvonce na nuli</span></label>
+        </div>
+      </details>
     </div>
     </section>
 
     <div class="panel" id="dualPanel">
-      <div class="layout-head">
-        <h3 data-i18n="dualTitle">DVA TAJMERA</h3>
-        <label class="chk"><input type="checkbox" id="chkDual"> <span data-i18n="dualEnable">Prikaži drugi tajmer</span></label>
-      </div>
+      <label class="chk"><input type="checkbox" id="chkDual"> <span data-i18n="dualEnable">Prikaži drugi tajmer</span></label>
       <div id="dualOptions" hidden>
         <div class="layout-row">
           <label><span data-i18n="outputRouting">Prikaz</span><select id="outputRouting"><option value="together" data-i18n="outputsTogether">Zajedno na jednom ekranu</option><option value="separate" data-i18n="outputsSeparate">Na dva odvojena ekrana</option></select></label>
@@ -554,12 +555,14 @@
               <span class="glabel" data-i18n="quick">Brzo</span>
               <div class="chips" id="secondaryChips"></div>
             </div>
-            <div class="field zero-alert-row" id="secondaryZeroAlerts" role="group" aria-labelledby="zeroTimerTwo" hidden>
-              <span class="glabel" id="zeroTimerTwo" data-i18n="zeroAlerts" data-i18n-title="zeroAlertsHelp">Na nuli</span>
-              <label class="chk"><input type="checkbox" id="chkOver2" checked> <span data-i18n="overtime">Minus posle nule</span></label>
-              <label class="chk"><input type="checkbox" id="chkFlash2" checked> <span data-i18n="flashZero">Treptanje na / posle nule</span></label>
-              <label class="chk"><input type="checkbox" id="chkSound2"> <span data-i18n="sound">Zvonce na nuli</span></label>
-            </div>
+            <details class="subsection timer-alerts">
+              <summary id="zeroTimerTwo" data-i18n="zeroAlerts" data-i18n-title="zeroAlertsHelp">Na nuli</summary>
+              <div class="field zero-alert-row" id="secondaryZeroAlerts" role="group" aria-labelledby="zeroTimerTwo" hidden>
+                <label class="chk"><input type="checkbox" id="chkOver2" checked> <span data-i18n="overtime">Minus posle nule</span></label>
+                <label class="chk"><input type="checkbox" id="chkFlash2" checked> <span data-i18n="flashZero">Treptanje na / posle nule</span></label>
+                <label class="chk"><input type="checkbox" id="chkSound2"> <span data-i18n="sound">Zvonce na nuli</span></label>
+              </div>
+            </details>
           </div>
         </section>
         <div class="layout-row">
@@ -585,149 +588,170 @@
     </div>
     </div>
 
-    <details class="panel route-panel" id="audienceRoutingPanel">
-      <summary data-i18n="routeTitle">Raspodela na više ekrana</summary>
-      <p class="panel-help" data-i18n="routeIntro">Za svaki prošireni ekran izaberi Tajmer 1, Tajmer 2 ili oba. Promene se pamte, a prikaz otvaraš dugmetom Pošalji.</p>
-      <div class="route-table"><table>
-        <thead><tr><th scope="col"></th><th scope="col"></th><th scope="col"></th><th scope="col"></th><th scope="col" data-i18n="routeActions">Komande</th></tr></thead>
-        <tbody></tbody>
-      </table></div>
-      <div class="layout-row">
-        <button type="button" class="primary" id="routeSendAll" data-i18n="routeSendAll">Pošalji sve dodeljene</button>
-        <button type="button" id="routeCloseAll" data-i18n="routeCloseAll">Zatvori sve dodeljene</button>
-      </div>
-      <p class="panel-help" role="status" aria-live="polite"></p>
-      <details class="route-help"><summary data-i18n="routeKeyTitle">Kako ukloniti pozadinu u Rolandu ili ATEM-u</summary>
-        <ol class="panel-help"><li data-i18n="routeKeySend">HDMI izlaz računara podesi kao prošireni ekran. Na tom redu izaberi Pun ekran i Luma ili Chroma pozadinu.</li>
-        <li data-i18n="routeKeyRoland">Roland V-160HD: DSK → SELF KEY. Izaberi HDMI ulaz i Luminance Black ili Chroma. Podesi LEVEL i GAIN u Preview.</li>
-        <li data-i18n="routeKeyAtem">ATEM: za Luma na Downstream Keyer izaberi isti HDMI za Fill i Key i podesi Clip/Gain. Za Chroma na Upstream Keyer uzorkuj boju pozadine.</li></ol>
-        <p class="panel-help" data-i18n="routeKeyHelp">U key režimu ProTimer šalje samo bele cifre na jednobojnoj pozadini. Svičer uklanja pozadinu. BLACKOUT sakriva cifre i zadržava ključnu boju.</p>
-      </details>
-    </details>
-
-    <div class="panel" id="outputLayoutPanel">
-      <div class="layout-head">
-        <h3 data-i18n="outputLayoutTitle">IZLAZNI PROZOR I RASPORED</h3>
-        <label id="outputWindowTargetLabel" class="placement-target" hidden><span data-i18n="adjustOutput">Podesi ekran</span><select id="outputWindowTarget"><option value="primary" data-i18n="timerOne">Tajmer 1</option><option value="secondary" data-i18n="timerTwo">Tajmer 2</option></select></label>
-      </div>
-      <p id="placementContext" class="panel-help placement-context" hidden></p>
-      <div class="layout-row">
-        <label><span data-i18n="deckLiveModeLabel">Stream Deck LIVE</span><select id="deckLiveMode"><option value="auto" data-i18n="deckLiveAuto">Pun ekran · Grid ako je uključen</option><option value="fullscreen" data-i18n="deckLiveFullscreen">Uvek pun ekran</option><option value="window" data-i18n="deckLiveWindow">Prozor · podešena veličina / Grid</option></select></label>
-      </div>
-      <p class="panel-help" data-i18n="deckLiveHelp">LIVE dugmad šalju prikaz na izabrane ekrane i vraćaju sliku iz BLACKOUT-a. Ne pokreću niti zaustavljaju odbrojavanje. Podelu i ekrane biraš u kontroli.</p>
-      <div class="layout-row">
-        <label><span data-i18n="widthPx">Širina (logička)</span><input id="outputWidth" type="number" min="80" max="7680" step="1" value="1920"></label>
-        <span>×</span>
-        <label><span data-i18n="heightPx">Visina (logička)</span><input id="outputHeight" type="number" min="60" max="4320" step="1" value="1080"></label>
-        <button id="btnOutputSize" class="primary" data-i18n="applySize">Primeni veličinu</button>
-        <button data-output-size="1920,1080" data-i18n-title="sizePresetTitle" title="Dimenzije prozora, ne podešavanje HDMI signala">Full HD</button><button data-output-size="1280,720" data-i18n-title="sizePresetTitle" title="Dimenzije prozora, ne podešavanje HDMI signala">HD</button>
-      </div>
-      <div id="outputSizeStatus" class="panel-help" role="status"></div>
-      <p class="panel-help" data-i18n="sizeHelp">Dimenzije su u logičkim jedinicama ekrana. Full HD/HD bira veličinu prozora, ne kvalitet HDMI signala. Primena izlazi iz punog ekrana i isključuje Grid/Kompaktan samo za izabrani prozor. Pun ekran uključi njegovim dugmetom ⛶.</p>
-      <div id="outputQualityPanel" class="output-quality">
-        <div class="output-quality-head"><p id="outputQualityStatus" class="panel-help" role="status" aria-live="polite"></p><button id="btnCheckOutput" type="button" data-i18n="checkOutput">Proveri izlaz</button></div>
-        <p id="outputQualityReadout" class="panel-help"></p>
-        <p id="outputQualityClipping" class="panel-help" hidden data-i18n="outputClipped">Tajmer ili tekst izlazi van vidljivog prostora. Smanji „Veličina cifara“, vrati pomeranje ka centru ili skrati tekst, pa ponovi proveru.</p>
-        <details id="outputQualityHelp"><summary data-i18n="outputQualityHelpTitle">Oštrina na televizoru / HDMI / svičer</summary>
-          <ol><li data-i18n="outputQualityFullscreenHelp">Za izabrani ekran koristi postojeće dugme ⛶ za pun ekran. Za probu preko celog ekrana možeš isključiti Grid/Kompaktan. Proveru ponovi posle promene.</li><li data-i18n="outputQualityDisplayHelp">Na računaru izaberi izvornu rezoluciju ekrana. Skaliranje sistema menja odnos logičkih jedinica i piksela; veći prozor sam po sebi ne poboljšava HDMI signal.</li><li data-i18n="outputQualitySwitcherHelp">Na probi uskladi računar, HDMI svičer i televizor na isti podržani format, npr. 1920 × 1080 progresivno (1080p), i istu brzinu kadrova. Na televizoru proveri overscan i obradu slike.</li></ol>
-          <p class="panel-help" data-i18n="outputQualityLimit">Provera meri prikaz aplikacije u trenutku provere. Ne može da potvrdi rezoluciju HDMI signala, obradu u svičeru ili oštrinu panela televizora.</p>
-        </details>
-      </div>
-      <div class="layout-row">
-        <label class="chk" id="freeAudienceToggle"><input type="checkbox" id="chkFreeAudience"> <span data-i18n="freeAudience">Slobodan raspored</span></label>
-        <label id="layoutTargetLabel" hidden><span id="layoutTargetCaption" data-i18n="adjustDigits">Podesi cifre</span><select id="layoutTarget">
-          <option value="primary" data-i18n="timerOne">Tajmer 1</option><option value="secondary" data-i18n="timerTwo" disabled>Tajmer 2</option>
-          <option value="title" data-i18n="layoutTitleElement" hidden>Naslov</option><option value="message" data-i18n="layoutMessageElement" hidden>Poruka</option>
-          <option value="rundown" data-i18n="layoutRundownElement" hidden>SADA / SLEDI</option><option value="progress" data-i18n="layoutProgressElement" hidden>Traka napretka</option>
-        </select></label>
-        <button id="btnLayoutReset" data-i18n="centerReset">Centriraj · 100%</button>
-      </div>
-      <div class="layout-slider"><label id="layoutScaleCaption" for="timerScale" data-i18n="digitScale">Veličina cifara (%)</label><input id="timerScale" type="range" min="10" max="200" step="1" value="100" aria-label="Scale"><input id="timerScaleValue" type="number" min="10" max="200" step="1" value="100" aria-label="Scale percent"></div>
-      <div class="layout-slider"><label for="timerX" data-i18n="digitX">Levo / desno (%)</label><input id="timerX" type="range" min="-100" max="100" step="0.1" value="0" aria-label="X"><input id="timerXValue" type="number" min="-100" max="100" step="0.1" value="0" aria-label="X percent"></div>
-      <div class="layout-slider"><label for="timerY" data-i18n="digitY">Gore / dole (%)</label><input id="timerY" type="range" min="-100" max="100" step="0.1" value="0" aria-label="Y"><input id="timerYValue" type="number" min="-100" max="100" step="0.1" value="0" aria-label="Y percent"></div>
-      <p class="panel-help" id="layoutHelp" data-i18n="layoutHelp">0 = centar. Položaj je procenat širine/visine svakog dela ekrana. Promene važe i za OBS/telefon; pregled u kontroli ostaje centriran. Prevelika skala ili pomeranje mogu iseći cifre.</p>
-    </div>
-
-    <div class="panel" id="zeroAlertsPanel">
-      <div class="field">
-        <span class="glabel" data-i18n="colors">Boje</span>
-        <label class="swatch"><span data-i18n="background">Pozadina</span> <input type="color" id="bgColor" value="#000000"></label>
-        <label class="swatch"><span data-i18n="timeText">Vreme/tekst</span> <input type="color" id="fgColor" value="#ffffff"></label>
-        <div class="sep"></div>
-        <label class="chk"><input type="checkbox" id="chkWarn" checked> <span data-i18n="warnColors">Boje upozorenja</span></label>
-        <span class="warn-sw"><span class="tag" data-i18n="tagY">Ž</span><input type="color" id="warnYellow" value="#ffc23a" data-i18n-title="yellow" title="Žuto"></span>
-        <span class="warn-sw"><span class="tag" data-i18n="tagR">C</span><input type="color" id="warnRed" value="#ff4540" data-i18n-title="red" title="Crveno"></span>
-        <div class="sep"></div>
-        <label class="chk"><input type="checkbox" id="chkTransparent"> <span data-i18n="transparent">Providna pozadina (OBS)</span></label>
-      </div>
-      <div class="field">
-        <label class="swatch"><span data-i18n="digitFont">Font cifara</span>
-          <select id="digitFont">
-            <option value="default" data-i18n="digitDefault">Podrazumevani</option>
-            <option value="pixel" data-i18n="digitPixel">Piksel</option>
-            <option value="cyber" data-i18n="digitCyber">Sajber</option>
-            <option value="condensed" data-i18n="digitCondensed">Uski</option>
-            <option value="plex">IBM Plex Mono</option>
-            <option value="space">Space Mono</option>
-            <option value="bold">Archivo Black</option>
-            <option value="geist">Geist</option>
-            <option value="serif">DM Serif</option>
-            <option value="lexend">Lexend</option>
-          </select>
-        </label>
-        <span class="digit-font-sample" id="digitFontSample" aria-hidden="true">12:34:56</span>
-        <div class="sep"></div>
-        <label class="swatch" for="blackoutMode"><span>BLACKOUT</span>
-          <select id="blackoutMode"><option value="black" data-i18n="blackoutBlack">Crn ekran</option><option value="foreground" data-i18n="blackoutForeground">Sakrij sadržaj · zadrži pozadinu</option></select>
-        </label>
-      </div>
-      <div class="field">
-        <span class="glabel" data-i18n="thresholds">Pragovi</span>
-        <label class="swatch"><span data-i18n="yellowAt">Žuto na</span> <input type="text" id="yellowInput" class="short" value="2:00"></label>
-        <label class="swatch"><span data-i18n="redAt">Crveno na</span> <input type="text" id="redInput" class="short" value="1:00"></label>
-        <label class="chk"><input type="checkbox" id="chkProg"> <span data-i18n="progress">Traka napretka</span></label>
-        <button id="btnTestZeroBell" class="ghost" data-i18n="testZeroBell">Probaj zvonce</button>
-        <p id="zeroSoundStatus" class="panel-help" role="status" hidden></p>
-      </div>
-      <div class="field">
-        <span class="glabel" data-i18n="text">Tekst</span>
-        <input type="text" id="textInput" placeholder="Tekst na ekranu (npr. PAUZA, DOBRO DOŠLI)…" data-i18n-ph="textPh" style="flex:1; min-width:140px">
-        <label class="chk"><input type="checkbox" id="chkTextOnly"> <span data-i18n="textOnly">Samo tekst</span></label>
-        <button id="btnTextClear" class="ghost" data-i18n="clear">Obriši</button>
-      </div>
-    </div>
-
-    <div class="panel" id="gridPanel">
-      <div class="field" style="align-items:flex-start">
-        <span class="glabel" data-i18n="grid">Grid</span>
-        <div style="flex:1; min-width:0;">
-          <div id="gridTargetRow" class="layout-row" hidden>
-            <label class="placement-target"><span data-i18n="adjustOutput">Podesi ekran</span><select id="gridTarget"><option value="primary" data-i18n="timerOne">Tajmer 1</option><option value="secondary" data-i18n="timerTwo">Tajmer 2</option></select></label>
-          </div>
-          <p id="gridContext" class="panel-help placement-context" hidden></p>
-          <div class="row" style="margin-bottom:9px">
-            <label class="chk"><input type="checkbox" id="chkGrid"> <span data-i18n="gridOn">Pozicija na ekranu</span></label>
-            <div class="sep"></div>
-            <div class="tabs" id="gridSizes">
-              <button data-gs="3">3×3</button><button data-gs="5">5×5</button><button data-gs="7">7×7</button><button data-gs="9">9×9</button>
-            </div>
-            <span class="lbl" id="gridHint" data-i18n="gridHint">izaberi kockicu →</span>
-          </div>
-          <div class="gridsel" id="gridSel"></div>
-          <p class="panel-help" data-i18n="gridHelp">Grid postavlja prozor u izabrani deo displeja. Isključi ga za slobodno pomeranje mišem i tačnu veličinu prozora.</p>
+    <details class="panel disclosure" id="messagePanel">
+      <summary data-i18n="messageSection">Poruke i tekst na ekranu</summary>
+      <div class="section-body">
+        <div class="field">
+          <span class="glabel" data-i18n="message">Poruka</span>
+          <input type="text" id="msgInput" placeholder="Poruka govorniku… (M za fokus, Enter šalje)" data-i18n-ph="messagePh" style="flex:1; min-width:140px">
+          <label class="chk"><input type="checkbox" id="chkMsgFlash"> <span data-i18n="flash">Treperi</span></label>
+          <button id="btnMsgSend" class="primary" data-i18n="send">Pošalji</button>
+          <button id="btnMsgClear" class="ghost" data-i18n="clear">Obriši</button>
+        </div>
+        <div class="field">
+          <span class="glabel" data-i18n="text">Tekst</span>
+          <input type="text" id="textInput" placeholder="Tekst na ekranu (npr. PAUZA, DOBRO DOŠLI)…" data-i18n-ph="textPh" style="flex:1; min-width:140px">
+          <label class="chk"><input type="checkbox" id="chkTextOnly"> <span data-i18n="textOnly">Samo tekst</span></label>
+          <button id="btnTextClear" class="ghost" data-i18n="clear">Obriši</button>
         </div>
       </div>
-    </div>
+    </details>
 
-    <div class="panel">
-      <div class="field">
-        <span class="glabel" data-i18n="message">Poruka</span>
-        <input type="text" id="msgInput" placeholder="Poruka govorniku… (M za fokus, Enter šalje)" data-i18n-ph="messagePh" style="flex:1; min-width:140px">
-        <label class="chk"><input type="checkbox" id="chkMsgFlash"> <span data-i18n="flash">Treperi</span></label>
-        <button id="btnMsgSend" class="primary" data-i18n="send">Pošalji</button>
-        <button id="btnMsgClear" class="ghost" data-i18n="clear">Obriši</button>
+    <details class="panel disclosure route-panel" id="audienceRoutingPanel">
+      <summary data-i18n="routeTitle">Raspodela na više ekrana</summary>
+      <div class="section-body">
+        <p class="panel-help" data-i18n="routeIntro">Za svaki prošireni ekran izaberi Tajmer 1, Tajmer 2 ili oba. Promene se pamte, a prikaz otvaraš dugmetom Pošalji.</p>
+        <div class="route-table"><table>
+          <thead><tr><th scope="col"></th><th scope="col"></th><th scope="col"></th><th scope="col"></th><th scope="col" data-i18n="routeActions">Komande</th></tr></thead>
+          <tbody></tbody>
+        </table></div>
+        <div class="layout-row">
+          <button type="button" class="primary" id="routeSendAll" data-i18n="routeSendAll">Pošalji sve dodeljene</button>
+          <button type="button" id="routeCloseAll" data-i18n="routeCloseAll">Zatvori sve dodeljene</button>
+        </div>
+        <p class="panel-help" role="status" aria-live="polite"></p>
+        <details class="route-help"><summary data-i18n="routeKeyTitle">Kako ukloniti pozadinu u Rolandu ili ATEM-u</summary>
+          <ol class="panel-help"><li data-i18n="routeKeySend">HDMI izlaz računara podesi kao prošireni ekran. Na tom redu izaberi Pun ekran i Luma ili Chroma pozadinu.</li>
+          <li data-i18n="routeKeyRoland">Roland V-160HD: DSK → SELF KEY. Izaberi HDMI ulaz i Luminance Black ili Chroma. Podesi LEVEL i GAIN u Preview.</li>
+          <li data-i18n="routeKeyAtem">ATEM: za Luma na Downstream Keyer izaberi isti HDMI za Fill i Key i podesi Clip/Gain. Za Chroma na Upstream Keyer uzorkuj boju pozadine.</li></ol>
+          <p class="panel-help" data-i18n="routeKeyHelp">U key režimu ProTimer šalje samo bele cifre na jednobojnoj pozadini. Svičer uklanja pozadinu. BLACKOUT sakriva cifre i zadržava ključnu boju.</p>
+        </details>
       </div>
-    </div>
+    </details>
+
+    <details class="panel disclosure" id="outputLayoutPanel">
+      <summary data-i18n="outputSection">Izlazni prozor i položaj</summary>
+      <div class="section-body">
+        <div class="window-flags">
+          <label class="chk" data-i18n-title="fitTitle" title="Prozor (kad nije pun ekran) prati veličinu tajmera"><input type="checkbox" id="chkFit"> <span data-i18n="fitWindow">Kompaktan</span></label>
+          <label class="chk" data-i18n-title="timerOnTopTitle" title="Izlaz tajmera ostaje preko prezentacije"><input type="checkbox" id="chkOutputOnTop"> <span data-i18n="timerOnTop">Tajmer na vrhu</span></label>
+          <label class="chk"><input type="checkbox" id="chkOnTop"> <span data-i18n="onTop">Kontrola na vrhu</span></label>
+          </div>
+        <div class="layout-head">
+          <label id="outputWindowTargetLabel" class="placement-target" hidden><span data-i18n="adjustOutput">Podesi ekran</span><select id="outputWindowTarget"><option value="primary" data-i18n="timerOne">Tajmer 1</option><option value="secondary" data-i18n="timerTwo">Tajmer 2</option></select></label>
+        </div>
+        <p id="placementContext" class="panel-help placement-context" hidden></p>
+        <div class="layout-row">
+          <label><span data-i18n="widthPx">Širina (logička)</span><input id="outputWidth" type="number" min="80" max="7680" step="1" value="1920"></label>
+          <span>×</span>
+          <label><span data-i18n="heightPx">Visina (logička)</span><input id="outputHeight" type="number" min="60" max="4320" step="1" value="1080"></label>
+          <button id="btnOutputSize" class="primary" data-i18n="applySize">Primeni veličinu</button>
+          <button data-output-size="1920,1080" data-i18n-title="sizePresetTitle" title="Dimenzije prozora, ne podešavanje HDMI signala">Full HD</button><button data-output-size="1280,720" data-i18n-title="sizePresetTitle" title="Dimenzije prozora, ne podešavanje HDMI signala">HD</button>
+        </div>
+        <div id="outputSizeStatus" class="panel-help" role="status"></div>
+        <p class="panel-help" data-i18n="sizeHelp">Veličina je u logičkim pikselima. Primena vraća izabrani izlaz u prozor i isključuje Grid i kompaktan režim za taj izlaz.</p>
+        <div class="layout-row">
+          <label class="chk" id="freeAudienceToggle"><input type="checkbox" id="chkFreeAudience"> <span data-i18n="freeAudience">Slobodan raspored</span></label>
+          <label id="layoutTargetLabel" hidden><span id="layoutTargetCaption" data-i18n="adjustDigits">Podesi cifre</span><select id="layoutTarget">
+            <option value="primary" data-i18n="timerOne">Tajmer 1</option><option value="secondary" data-i18n="timerTwo" disabled>Tajmer 2</option>
+            <option value="title" data-i18n="layoutTitleElement" hidden>Naslov</option><option value="message" data-i18n="layoutMessageElement" hidden>Poruka</option>
+            <option value="rundown" data-i18n="layoutRundownElement" hidden>SADA / SLEDI</option><option value="progress" data-i18n="layoutProgressElement" hidden>Traka napretka</option>
+          </select></label>
+          <button id="btnLayoutReset" data-i18n="centerReset">Centriraj · 100%</button>
+        </div>
+        <div class="layout-slider"><label id="layoutScaleCaption" for="timerScale" data-i18n="digitScale">Veličina cifara (%)</label><input id="timerScale" type="range" min="10" max="200" step="1" value="100" aria-label="Scale"><input id="timerScaleValue" type="number" min="10" max="200" step="1" value="100" aria-label="Scale percent"></div>
+        <div class="layout-slider"><label for="timerX" data-i18n="digitX">Levo / desno (%)</label><input id="timerX" type="range" min="-100" max="100" step="0.1" value="0" aria-label="X"><input id="timerXValue" type="number" min="-100" max="100" step="0.1" value="0" aria-label="X percent"></div>
+        <div class="layout-slider"><label for="timerY" data-i18n="digitY">Gore / dole (%)</label><input id="timerY" type="range" min="-100" max="100" step="0.1" value="0" aria-label="Y"><input id="timerYValue" type="number" min="-100" max="100" step="0.1" value="0" aria-label="Y percent"></div>
+        <p class="panel-help" id="layoutHelp" data-i18n="layoutHelp">0% je centar. Promena važi i za prikaz u OBS-u i na telefonu. U Kontroli cifre ostaju centrirane.</p>
+        <details class="subsection" id="gridPanel">
+          <summary data-i18n="gridSection">Pozicija prozora · Grid</summary>
+          <div class="field" style="align-items:flex-start">
+            <div style="flex:1; min-width:0;">
+              <div id="gridTargetRow" class="layout-row" hidden>
+                <label class="placement-target"><span data-i18n="adjustOutput">Podesi ekran</span><select id="gridTarget"><option value="primary" data-i18n="timerOne">Tajmer 1</option><option value="secondary" data-i18n="timerTwo">Tajmer 2</option></select></label>
+              </div>
+              <p id="gridContext" class="panel-help placement-context" hidden></p>
+              <div class="row" style="margin-bottom:9px">
+                <label class="chk"><input type="checkbox" id="chkGrid"> <span data-i18n="gridOn">Pozicija na ekranu</span></label>
+                <div class="sep"></div>
+                <div class="tabs" id="gridSizes">
+                  <button data-gs="3">3×3</button><button data-gs="5">5×5</button><button data-gs="7">7×7</button><button data-gs="9">9×9</button>
+                </div>
+                <span class="lbl" id="gridHint" data-i18n="gridHint">izaberi kockicu →</span>
+              </div>
+              <div class="gridsel" id="gridSel"></div>
+              <p class="panel-help" data-i18n="gridHelp">Grid postavlja prozor u izabrani deo displeja. Isključi ga za slobodno pomeranje mišem i tačnu veličinu prozora.</p>
+            </div>
+          </div>
+        </details>
+
+        <details class="subsection" id="outputDiagnostics">
+          <summary data-i18n="outputDiagnostics">Provera izlaza i HDMI</summary>
+          <div id="outputQualityPanel" class="output-quality">
+              <div class="output-quality-head"><p id="outputQualityStatus" class="panel-help" role="status" aria-live="polite"></p><button id="btnCheckOutput" type="button" data-i18n="checkOutput">Proveri izlaz</button></div>
+              <p id="outputQualityReadout" class="panel-help"></p>
+              <p id="outputQualityClipping" class="panel-help" hidden data-i18n="outputClipped">Tajmer ili tekst izlazi van vidljivog prostora. Smanji „Veličina cifara“, vrati pomeranje ka centru ili skrati tekst, pa ponovi proveru.</p>
+              <details id="outputQualityHelp"><summary data-i18n="outputQualityHelpTitle">Oštrina na televizoru / HDMI / svičer</summary>
+                <ol><li data-i18n="outputQualityFullscreenHelp">Za izabrani ekran koristi postojeće dugme ⛶ za pun ekran. Za probu preko celog ekrana možeš isključiti Grid/Kompaktan. Proveru ponovi posle promene.</li><li data-i18n="outputQualityDisplayHelp">Na računaru izaberi izvornu rezoluciju ekrana. Skaliranje sistema menja odnos logičkih jedinica i piksela; veći prozor sam po sebi ne poboljšava HDMI signal.</li><li data-i18n="outputQualitySwitcherHelp">Na probi uskladi računar, HDMI svičer i televizor na isti podržani format, npr. 1920 × 1080 progresivno (1080p), i istu brzinu kadrova. Na televizoru proveri overscan i obradu slike.</li></ol>
+                <p class="panel-help" data-i18n="outputQualityLimit">Provera meri prikaz aplikacije u trenutku provere. Ne može da potvrdi rezoluciju HDMI signala, obradu u svičeru ili oštrinu panela televizora.</p>
+              </details>
+          </div>
+        </details>
+        <details class="subsection">
+          <summary data-i18n="deckLiveModeLabel">Stream Deck LIVE</summary>
+          <div class="layout-row">
+            <label><span data-i18n="deckLiveModeLabel">Stream Deck LIVE</span><select id="deckLiveMode"><option value="auto" data-i18n="deckLiveAuto">Pun ekran · Grid ako je uključen</option><option value="fullscreen" data-i18n="deckLiveFullscreen">Uvek pun ekran</option><option value="window" data-i18n="deckLiveWindow">Prozor · podešena veličina / Grid</option></select></label>
+          </div>
+          <p class="panel-help" data-i18n="deckLiveHelp">LIVE dugmad šalju prikaz na izabrane ekrane i vraćaju sliku iz BLACKOUT-a. Ne pokreću niti zaustavljaju odbrojavanje. Podelu i ekrane biraš u kontroli.</p>
+        </details>
+      </div>
+    </details>
+
+    <details class="panel disclosure" id="zeroAlertsPanel">
+      <summary data-i18n="appearanceSection">Izgled i upozorenja</summary>
+      <div class="section-body">
+        <div class="field">
+          <span class="glabel" data-i18n="colors">Boje</span>
+          <label class="swatch"><span data-i18n="background">Pozadina</span> <input type="color" id="bgColor" value="#000000"></label>
+          <label class="swatch"><span data-i18n="timeText">Vreme/tekst</span> <input type="color" id="fgColor" value="#ffffff"></label>
+          <div class="sep"></div>
+          <label class="chk"><input type="checkbox" id="chkWarn" checked> <span data-i18n="warnColors">Boje upozorenja</span></label>
+          <span class="warn-sw"><span class="tag" data-i18n="tagY">Ž</span><input type="color" id="warnYellow" value="#ffc23a" data-i18n-title="yellow" title="Žuto"></span>
+          <span class="warn-sw"><span class="tag" data-i18n="tagR">C</span><input type="color" id="warnRed" value="#ff4540" data-i18n-title="red" title="Crveno"></span>
+          <div class="sep"></div>
+          <label class="chk"><input type="checkbox" id="chkTransparent"> <span data-i18n="transparent">Providna pozadina (OBS)</span></label>
+        </div>
+        <div class="field">
+          <label class="swatch"><span data-i18n="digitFont">Font cifara</span>
+            <select id="digitFont">
+              <option value="default" data-i18n="digitDefault">Podrazumevani</option>
+              <option value="pixel" data-i18n="digitPixel">Piksel</option>
+              <option value="cyber" data-i18n="digitCyber">Sajber</option>
+              <option value="condensed" data-i18n="digitCondensed">Uski</option>
+              <option value="plex">IBM Plex Mono</option>
+              <option value="space">Space Mono</option>
+              <option value="bold">Archivo Black</option>
+              <option value="geist">Geist</option>
+              <option value="serif">DM Serif</option>
+              <option value="lexend">Lexend</option>
+            </select>
+          </label>
+          <span class="digit-font-sample" id="digitFontSample" aria-hidden="true">12:34:56</span>
+          <div class="sep"></div>
+          <label class="swatch" for="blackoutMode"><span>BLACKOUT</span>
+            <select id="blackoutMode"><option value="black" data-i18n="blackoutBlack">Crn ekran</option><option value="foreground" data-i18n="blackoutForeground">Sakrij sadržaj · zadrži pozadinu</option></select>
+          </label>
+        </div>
+        <div class="field">
+          <span class="glabel" data-i18n="thresholds">Pragovi</span>
+          <label class="swatch"><span data-i18n="yellowAt">Žuto na</span> <input type="text" id="yellowInput" class="short" value="2:00"></label>
+          <label class="swatch"><span data-i18n="redAt">Crveno na</span> <input type="text" id="redInput" class="short" value="1:00"></label>
+          <label class="chk"><input type="checkbox" id="chkProg"> <span data-i18n="progress">Traka napretka</span></label>
+          <button id="btnTestZeroBell" class="ghost" data-i18n="testZeroBell">Probaj zvonce</button>
+          <p id="zeroSoundStatus" class="panel-help" role="status" hidden></p>
+        </div>
+      </div>
+    </details>
   </div>
 
   <div class="right">
@@ -751,7 +775,7 @@
       </div>
       </details>
       <span id="ouStatus" class="ou"></span>
-      <div class="rundown-now">
+      <div class="rundown-now" id="cueNow" hidden>
         <span class="lbl" id="cueLiveState"></span>
         <strong id="cueLiveName"></strong>
         <div class="next" id="cueNextName"></div>
@@ -808,76 +832,78 @@
       </div>
     </section>
 
-    <section class="card network-card" id="networkPanel" aria-labelledby="networkTitle">
-      <h3 id="networkTitle" data-i18n="netTitle">POVEZIVANJE I DELJENJE</h3>
-      <div class="network-state"><span class="dot" id="netDot" aria-hidden="true"></span> <span id="netStatus">—</span><small id="netConnections"></small></div>
-      <div class="network-local">
-        <label class="lbl" for="networkSel" data-i18n="networkAddress">Lokalna mreža računara</label>
-        <select id="networkSel"></select>
-        <p data-i18n="localNetworkHelp">Telefon i računar moraju biti na istoj lokalnoj mreži. Internet nije potreban.</p>
-        <button id="btnCheckLocal" class="ghost" data-i18n="checkLocal" style="margin-top:8px">Proveri lokalni server</button>
-        <p id="localCheckStatus" role="status"></p>
+    <details class="card disclosure" id="networkPanel">
+      <summary data-i18n="netTitle">Povezivanje i deljenje</summary>
+      <div class="section-body network-card">
+        <div class="network-state"><span class="dot" id="netDot" aria-hidden="true"></span> <span id="netStatus">—</span><small id="netConnections"></small></div>
+        <div class="network-local">
+          <label class="lbl" for="networkSel" data-i18n="networkAddress">Lokalna mreža računara</label>
+          <select id="networkSel"></select>
+          <p data-i18n="localNetworkHelp">Telefon i računar moraju biti na istoj lokalnoj mreži. Internet nije potreban.</p>
+          <button id="btnCheckLocal" class="ghost" data-i18n="checkLocal" style="margin-top:8px">Proveri lokalni server</button>
+          <p id="localCheckStatus" role="status"></p>
+        </div>
+        <details class="network-role remote-role" data-link-role="remoteLabel">
+          <summary><div class="role-heading"><h4 data-i18n="remoteLabel">Kontrola telefonom</h4><span class="access-tag" data-i18n="privateAccess">PRIVATNO</span></div></summary>
+          <p data-i18n="remoteHelp">Privatan link za operatera. Daje pristup komandama tajmera.</p>
+          <span class="net-url private-url" id="netRemote">—</span>
+          <div class="net-actions"><button class="qrbtn" data-qr="netRemote" data-i18n="scanQr">Prikaži QR</button><button id="btnCopyRemote" data-i18n="copyLink">Kopiraj link</button></div>
+        </details>
+        <details class="network-role screen-role" data-link-role="screenOBS">
+          <summary><div class="role-heading"><h4 data-i18n="screenOBS">Tajmer · publika / OBS</h4><span class="access-tag" data-i18n="viewAccess">SAMO PRAĆENJE</span></div></summary>
+          <p data-i18n="screenHelp">Čist prikaz bez komandi. U OBS-u dodaj Browser Source i nalepi ovaj link.</p>
+          <span class="net-url" id="netUrl">—</span>
+          <div class="net-actions"><button class="qrbtn" data-qr="netUrl" data-audience-qr="timer" data-i18n="scanQr">Prikaži QR</button><button id="btnCopyUrl" data-i18n="copyLink">Kopiraj link</button></div>
+        </details>
+        <details class="network-role backstage-role" data-link-role="backstageLabel">
+          <summary><div class="role-heading"><h4 data-i18n="backstageLabel">Backstage · ekipa</h4><span class="access-tag" data-i18n="viewAccess">SAMO PRAĆENJE</span></div></summary>
+          <p data-i18n="backstageHelp">Aktivna i sledeća stavka, beleške i raspored. Nema komandi za tajmer.</p>
+          <span class="net-url" id="netBackstage">—</span>
+          <div class="net-actions"><button class="qrbtn" data-qr="netBackstage" data-audience-qr="backstage" data-i18n="scanQr">Prikaži QR</button><button id="btnCopyBackstage" data-i18n="copyLink">Kopiraj link</button></div>
+        </details>
+        <div id="qrBox" class="qrbox" role="region" aria-label="QR"></div>
+        <button id="btnHideOutputQr" class="danger" style="display:none" data-i18n="hideQrFromScreen">Skloni QR sa ekrana</button>
+        <p id="networkFeedback" role="status"></p>
+        <details class="network-online" id="onlineSharing">
+          <summary data-i18n="onlineTitle">Online · različite mreže</summary>
+          <p data-i18n="onlineHelp">Oba uređaja trebaju internet. Privremeni link radi dok su program i deljenje uključeni.</p>
+          <p data-i18n="onlinePrivacy">Eksperimentalna usluga treće strane. Javni link izlaže i rundown/beleške — ne unosi poverljive podatke.</p>
+          <button id="btnShare" class="ghost" data-i18n="shareOnline">Uključi online deljenje</button>
+          <p id="shareStatus" role="status"></p>
+          <p id="shareError" role="alert" hidden data-i18n="shareFailureHelp">Online servis nije dostupan. Proveri internet/VPN i pokušaj ponovo. Lokalna kontrola ostaje dostupna na istoj mreži.</p>
+          <div class="network-role screen-role" id="publicRow" hidden data-link-role="publicLabel">
+            <div class="role-heading"><h4 id="publicLbl" data-i18n="publicLabel">Online tajmer · publika</h4><span class="access-tag" data-i18n="viewAccess">SAMO PRAĆENJE</span></div>
+            <span class="net-url" id="netPublic">—</span>
+            <div class="net-actions"><button class="qrbtn" data-qr="netPublic" data-audience-qr="timer" data-i18n="scanQr">Prikaži QR</button><button id="btnCopyPublic" data-i18n="copyLink">Kopiraj link</button></div>
+          </div>
+          <div class="network-role remote-role" id="publicRemoteSection" hidden data-link-role="publicRemoteLabel">
+            <div class="role-heading"><h4 data-i18n="publicRemoteLabel">Online kontrola</h4><span class="access-tag" data-i18n="privateAccess">PRIVATNO</span></div>
+            <p data-i18n="remoteHelp">Privatan link za operatera. Daje pristup komandama tajmera.</p>
+            <span class="net-url private-url" id="netPublicRemote">—</span>
+            <div class="net-actions"><button class="qrbtn" data-qr="netPublicRemote" data-i18n="scanQr">Prikaži QR</button><button id="btnCopyPublicRemote" data-i18n="copyLink">Kopiraj link</button></div>
+          </div>
+        </details>
+        <details class="network-api" id="networkApi">
+          <summary data-i18n="apiLabel">Companion / Stream Deck / OSC</summary>
+          <p data-i18n="apiHelp">Za ProTimer Companion modul koristi adresu računara i HTTP port. Za Generic HTTP kopiraj primer komande ispod.</p>
+          <div class="network-role" data-link-role="apiLabel">
+            <p><span data-i18n="hostAddress">Adresa</span>: <code id="apiHost">—</code><br>HTTP: <code id="apiPort">—</code> · OSC UDP: <code id="oscPortLabel">—</code></p>
+            <label class="lbl" data-i18n="apiExample">Privatna HTTP komanda · Start / pauza</label>
+            <span class="net-url private-url" id="netApi">—</span>
+            <div class="net-actions"><button id="btnCopyApi" data-i18n="copyCommand">Kopiraj komandu</button></div>
+            <p data-i18n="apiWarning">Sadrži ključ za kontrolu. Otvaranje ovog URL-a pokreće/pauzira tajmer. Kopiranje ga ne izvršava.</p>
+            <p data-i18n="oscHelp">OSC je bez ključa: koristi pouzdanu lokalnu mrežu. Adrese:</p>
+            <code>/protimer/start · /protimer/reset · /protimer/go · /protimer/blackout · /protimer/adjust · /protimer/setDuration</code>
+            <p data-i18n="oscValues">adjust: sekunde (npr. 10 ili −10). setDuration: milisekunde (60000 = 1 minut).</p>
+          </div>
+        </details>
+        <details class="network-help">
+          <summary data-i18n="phoneHelpTitle">Telefon se ne povezuje?</summary>
+          <ol><li data-i18n="phoneStepNetwork">Poveži uređaje na istu mrežu. Gostujući Wi-Fi često blokira komunikaciju između uređaja.</li><li data-i18n="phoneStepPermissions">Proveri dozvolu za ProTimer u lokalnoj mreži / firewall-u. Ne isključuj firewall; dozvoli samo aplikaciju na pouzdanoj mreži. Proveri da VPN ne blokira lokalni pristup.</li><li data-i18n="phoneStepQr">Skeniraj novi QR „Kontrola telefonom“ posle ponovnog pokretanja aplikacije ili promene mreže. QR za publiku ne sadrži komande.</li><li data-i18n="phoneStepOnline">Ako lokalna mreža blokira uređaje, probaj online kontrolu. Potreban je internet na oba uređaja.</li></ol>
+          <p data-i18n="obsHelp">OBS overlay: uključi „Providna pozadina (OBS)“ u kontroli. NDI zahteva DistroAV. ProTimer mora ostati uključen za sve linkove.</p>
+        </details>
       </div>
-      <details class="network-role remote-role" data-link-role="remoteLabel" open>
-        <summary><div class="role-heading"><h4 data-i18n="remoteLabel">Kontrola telefonom</h4><span class="access-tag" data-i18n="privateAccess">PRIVATNO</span></div></summary>
-        <p data-i18n="remoteHelp">Start, pauza i ostale komande. Ovaj QR je samo za operatera — ne deli ga publici.</p>
-        <span class="net-url private-url" id="netRemote">—</span>
-        <div class="net-actions"><button class="qrbtn" data-qr="netRemote" data-i18n="scanQr">Prikaži QR</button><button id="btnCopyRemote" data-i18n="copyLink">Kopiraj link</button></div>
-      </details>
-      <details class="network-role screen-role" data-link-role="screenOBS">
-        <summary><div class="role-heading"><h4 data-i18n="screenOBS">Tajmer · publika / OBS</h4><span class="access-tag" data-i18n="viewAccess">SAMO PRAĆENJE</span></div></summary>
-        <p data-i18n="screenHelp">Čist prikaz bez komandi. U OBS-u dodaj Browser Source i nalepi ovaj link.</p>
-        <span class="net-url" id="netUrl">—</span>
-        <div class="net-actions"><button class="qrbtn" data-qr="netUrl" data-audience-qr="timer" data-i18n="scanQr">Prikaži QR</button><button id="btnCopyUrl" data-i18n="copyLink">Kopiraj link</button></div>
-      </details>
-      <details class="network-role backstage-role" data-link-role="backstageLabel">
-        <summary><div class="role-heading"><h4 data-i18n="backstageLabel">Backstage · ekipa</h4><span class="access-tag" data-i18n="viewAccess">SAMO PRAĆENJE</span></div></summary>
-        <p data-i18n="backstageHelp">Aktivna i sledeća stavka, beleške i raspored. Nema komandi za tajmer.</p>
-        <span class="net-url" id="netBackstage">—</span>
-        <div class="net-actions"><button class="qrbtn" data-qr="netBackstage" data-audience-qr="backstage" data-i18n="scanQr">Prikaži QR</button><button id="btnCopyBackstage" data-i18n="copyLink">Kopiraj link</button></div>
-      </details>
-      <div id="qrBox" class="qrbox" role="region" aria-label="QR"></div>
-      <button id="btnHideOutputQr" class="danger" style="display:none" data-i18n="hideQrFromScreen">Skloni QR sa ekrana</button>
-      <p id="networkFeedback" role="status"></p>
-      <details class="network-online" id="onlineSharing">
-        <summary data-i18n="onlineTitle">Online · različite mreže</summary>
-        <p data-i18n="onlineHelp">Oba uređaja trebaju internet. Privremeni link radi dok su program i deljenje uključeni.</p>
-        <p data-i18n="onlinePrivacy">Eksperimentalna usluga treće strane. Javni link izlaže i rundown/beleške — ne unosi poverljive podatke.</p>
-        <button id="btnShare" class="ghost" data-i18n="shareOnline">Uključi online deljenje</button>
-        <p id="shareStatus" role="status"></p>
-        <p id="shareError" role="alert" hidden data-i18n="shareFailureHelp">Online servis nije dostupan. Proveri internet/VPN i pokušaj ponovo. Lokalna kontrola ostaje dostupna na istoj mreži.</p>
-        <div class="network-role screen-role" id="publicRow" hidden data-link-role="publicLabel">
-          <div class="role-heading"><h4 id="publicLbl" data-i18n="publicLabel">Online tajmer · publika</h4><span class="access-tag" data-i18n="viewAccess">SAMO PRAĆENJE</span></div>
-          <span class="net-url" id="netPublic">—</span>
-          <div class="net-actions"><button class="qrbtn" data-qr="netPublic" data-audience-qr="timer" data-i18n="scanQr">Prikaži QR</button><button id="btnCopyPublic" data-i18n="copyLink">Kopiraj link</button></div>
-        </div>
-        <div class="network-role remote-role" id="publicRemoteSection" hidden data-link-role="publicRemoteLabel">
-          <div class="role-heading"><h4 data-i18n="publicRemoteLabel">Online kontrola</h4><span class="access-tag" data-i18n="privateAccess">PRIVATNO</span></div>
-          <p data-i18n="remoteHelp">Start, pauza i ostale komande. Ovaj QR je samo za operatera — ne deli ga publici.</p>
-          <span class="net-url private-url" id="netPublicRemote">—</span>
-          <div class="net-actions"><button class="qrbtn" data-qr="netPublicRemote" data-i18n="scanQr">Prikaži QR</button><button id="btnCopyPublicRemote" data-i18n="copyLink">Kopiraj link</button></div>
-        </div>
-      </details>
-      <details class="network-api" id="networkApi">
-        <summary data-i18n="apiLabel">Companion / Stream Deck / OSC</summary>
-        <p data-i18n="apiHelp">Za ProTimer Companion modul koristi adresu računara i HTTP port. Za Generic HTTP kopiraj primer komande ispod.</p>
-        <div class="network-role" data-link-role="apiLabel">
-          <p><span data-i18n="hostAddress">Adresa</span>: <code id="apiHost">—</code><br>HTTP: <code id="apiPort">—</code> · OSC UDP: <code id="oscPortLabel">—</code></p>
-          <label class="lbl" data-i18n="apiExample">Privatna HTTP komanda · Start / pauza</label>
-          <span class="net-url private-url" id="netApi">—</span>
-          <div class="net-actions"><button id="btnCopyApi" data-i18n="copyCommand">Kopiraj komandu</button></div>
-          <p data-i18n="apiWarning">Sadrži ključ za kontrolu. Otvaranje ovog URL-a pokreće/pauzira tajmer. Kopiranje ga ne izvršava.</p>
-          <p data-i18n="oscHelp">OSC je bez ključa: koristi pouzdanu lokalnu mrežu. Adrese:</p>
-          <code>/protimer/start · /protimer/reset · /protimer/go · /protimer/blackout · /protimer/adjust · /protimer/setDuration</code>
-          <p data-i18n="oscValues">adjust: sekunde (npr. 10 ili −10). setDuration: milisekunde (60000 = 1 minut).</p>
-        </div>
-      </details>
-      <details class="network-help">
-        <summary data-i18n="phoneHelpTitle">Telefon se ne povezuje?</summary>
-        <ol><li data-i18n="phoneStepNetwork">Poveži uređaje na istu mrežu. Gostujući Wi-Fi često blokira komunikaciju između uređaja.</li><li data-i18n="phoneStepPermissions">Proveri dozvolu za ProTimer u lokalnoj mreži / firewall-u. Ne isključuj firewall; dozvoli samo aplikaciju na pouzdanoj mreži. Proveri da VPN ne blokira lokalni pristup.</li><li data-i18n="phoneStepQr">Skeniraj novi QR „Kontrola telefonom“ posle ponovnog pokretanja aplikacije ili promene mreže. QR za publiku ne sadrži komande.</li><li data-i18n="phoneStepOnline">Ako lokalna mreža blokira uređaje, probaj online kontrolu. Potreban je internet na oba uređaja.</li></ol>
-        <p data-i18n="obsHelp">OBS overlay: uključi „Providna pozadina (OBS)“ u kontroli. NDI zahteva DistroAV. ProTimer mora ostati uključen za sve linkove.</p>
-      </details>
-    </section>
+    </details>
     <section id="streamDeckHost" class="card"></section>
   </div>
 </div>
@@ -948,6 +974,8 @@ const api = window.pt || {
 // ---------- JEZIK / LANGUAGE ----------
 const I18N = {
   sr: {
+    outputSection:'Izlazni prozor i položaj', outputDiagnostics:'Provera izlaza i HDMI',
+    gridSection:'Pozicija prozora · Grid', appearanceSection:'Izgled i upozorenja', messageSection:'Poruke i tekst na ekranu',
     routeTitle:'Raspodela na više ekrana', routeActions:'Komande', routeSendAll:'Pošalji sve dodeljene', routeCloseAll:'Zatvori sve dodeljene',
     routeIntro:'Za svaki prošireni ekran izaberi Tajmer 1, Tajmer 2 ili oba. Promene se pamte, a prikaz otvaraš dugmetom Pošalji.',
     routeKeyTitle:'Kako ukloniti pozadinu u Rolandu ili ATEM-u',
@@ -980,7 +1008,7 @@ const I18N = {
     cueColor:'Boja stavke', cueNoColor:'Bez boje', cuePrepared:'PRIPREMLJENO', cueActionChanged:'Aktivna stavka je u međuvremenu promenjena. Ponovi komandu ako je i dalje želiš.',
     localNetworkHelp:'Telefon i računar moraju biti na istoj lokalnoj mreži. Internet nije potreban.',
     privateAccess:'PRIVATNO', viewAccess:'SAMO PRAĆENJE', scanQr:'Prikaži QR', copyLink:'Kopiraj link', copyCommand:'Kopiraj komandu',
-    remoteHelp:'Start, pauza i ostale komande. Ovaj QR je samo za operatera — ne deli ga publici.',
+    remoteHelp:'Privatan link za operatera. Daje pristup komandama tajmera.',
     screenHelp:'Čist prikaz bez komandi. U OBS-u dodaj Browser Source i nalepi ovaj link.',
     backstageHelp:'Aktivna i sledeća stavka, beleške i raspored. Nema komandi za tajmer.',
     onlineTitle:'Online · različite mreže', onlineHelp:'Oba uređaja trebaju internet. Privremeni link radi dok su program i deljenje uključeni.',
@@ -1006,10 +1034,10 @@ const I18N = {
     localCheckOK:'Server odgovara. To ne potvrđuje pristup sa telefona — skeniraj QR „Kontrola telefonom“.',
     localCheckFailed:'Server ne odgovara na ovoj adresi. Izaberi drugu mrežu i pogledaj „Telefon se ne povezuje?“ ispod.',
     shareFailureHelp:'Online servis nije dostupan. Proveri internet/VPN i pokušaj ponovo. Lokalna kontrola ostaje dostupna na istoj mreži.',
-    outputLayoutTitle:'IZLAZNI PROZOR I RASPORED', widthPx:'Širina (logička)', heightPx:'Visina (logička)', applySize:'Primeni veličinu',
+    widthPx:'Širina (logička)', heightPx:'Visina (logička)', applySize:'Primeni veličinu',
     deckLiveModeLabel:'Stream Deck LIVE',deckLiveAuto:'Pun ekran · Grid ako je uključen',deckLiveFullscreen:'Uvek pun ekran',deckLiveWindow:'Prozor · podešena veličina / Grid',
     deckLiveHelp:'LIVE dugmad šalju prikaz na izabrane ekrane i vraćaju sliku iz BLACKOUT-a. Ne pokreću niti zaustavljaju odbrojavanje. Podelu i ekrane biraš u kontroli.',
-    sizeHelp:'Dimenzije su u logičkim jedinicama ekrana. Full HD/HD bira veličinu prozora, ne kvalitet HDMI signala. Primena izlazi iz punog ekrana i isključuje Grid/Kompaktan samo za izabrani prozor. Pun ekran uključi njegovim dugmetom ⛶.',
+    sizeHelp:'Veličina je u logičkim pikselima. Primena vraća izabrani izlaz u prozor i isključuje Grid i kompaktan režim za taj izlaz.',
     sizePresetTitle:'Dimenzije prozora, ne podešavanje HDMI signala', logicalUnits:'logičkih jedinica',
     checkOutput:'Proveri izlaz', outputChecking:'Proveravam prikaz aplikacije…', outputUnchecked:'Izlaz još nije proveren',
     outputChecked:'Poslednja provera', outputQualityClosed:'Izlazni prozor je zatvoren', outputQualityChanged:'Izlaz se promenio. Ponovi proveru.',
@@ -1032,8 +1060,8 @@ const I18N = {
     layoutTitleElement:'Naslov', layoutMessageElement:'Poruka', layoutRundownElement:'SADA / SLEDI', layoutProgressElement:'Traka napretka',
     freeAudienceHelp:'X i Y važe za ceo izlaz: 0 je centar, −100 i +100 su ivice. Elementi mogu da se preklapaju; seče ih samo spoljna ivica ekrana. Važi i za prikaz u browseru i OBS-u. Pregled u kontroli ostaje centriran.',
     digitScale:'Veličina cifara (%)', digitX:'Levo / desno (%)', digitY:'Gore / dole (%)',
-    layoutHelp:'0 = centar. Položaj je procenat širine/visine svakog dela ekrana. Promene važe i za OBS/telefon; pregled u kontroli ostaje centriran. Prevelika skala ili pomeranje mogu iseći cifre.',
-    dualTitle:'DVA TAJMERA', dualEnable:'Prikaži drugi tajmer', splitLabel:'Podela', splitColumns:'Levo / desno │', splitRows:'Gore / dole ─',
+    layoutHelp:'0% je centar. Promena važi i za prikaz u OBS-u i na telefonu. U Kontroli cifre ostaju centrirane.',
+    dualEnable:'Prikaži drugi tajmer', splitLabel:'Podela', splitColumns:'Levo / desno │', splitRows:'Gore / dole ─',
     startBoth:'▶ Pokreni oba', pauseBoth:'⏸ Pauziraj oba', resetBoth:'↺ Resetuj oba',
     dualHelp:'Glavni START i rundown upravljaju tajmerom 1. Tajmer 2 ima nezavisno trajanje i kontrole.',
     networkAddress:'Lokalna mreža računara', noNetwork:'Nema lokalne mreže — poveži Wi-Fi/Ethernet',
@@ -1064,7 +1092,7 @@ const I18N = {
     backstageLabel:'Backstage · ekipa', onTime:'NA VREME', late:'kasni', early:'ispred',
     apiLabel:'Companion / Stream Deck / OSC', apiTitle:'GET komanda za Companion „Generic HTTP“ dugme. type: start · reset · go · blackout · adjust(&value=sek) · setDuration(&value=ms)',
     nowLabel:'SADA', nextLabel:'SLEDI', endLabel:'Kraj', plannedLabel:'Planirano', projectedLabel:'Procena',
-    netTitle:'POVEZIVANJE I DELJENJE', screenOBS:'Tajmer · publika / OBS', copy:'Kopiraj',
+    netTitle:'Povezivanje i deljenje', screenOBS:'Tajmer · publika / OBS', copy:'Kopiraj',
     showQrOnScreen:'Prikaži QR publici', hideQrFromScreen:'Skloni QR sa ekrana',
     audienceQrTitle:'Skenirajte za tajmer', audienceQrBackstage:'Skenirajte za backstage',
     audienceQrHint:'Otvorite kameru na telefonu i skenirajte kod',
@@ -1077,6 +1105,8 @@ const I18N = {
     shortcuts:'<kbd>Space</kbd> start/pauza · <kbd>R</kbd> reset · <kbd>N</kbd> sledeći · <kbd>↑↓</kbd> ±1m · <kbd>←→</kbd> ±10s · <kbd>B</kbd> blackout · <kbd>F</kbd> pun ekran · <kbd>M</kbd> poruka · <kbd>C</kbd> obriši poruku'
   },
   en: {
+    outputSection:'Output window and placement', outputDiagnostics:'Check output and HDMI',
+    gridSection:'Window placement · Grid', appearanceSection:'Appearance and warnings', messageSection:'On-screen messages and text',
     routeTitle:'Route to multiple displays', routeActions:'Actions', routeSendAll:'Send all assigned', routeCloseAll:'Close all routed outputs',
     routeIntro:'Choose Timer 1, Timer 2 or both for each extended display. Assignments are saved. Use Send to open an output.',
     routeKeyTitle:'Remove the background in Roland or ATEM',
@@ -1109,7 +1139,7 @@ const I18N = {
     cueColor:'Item color', cueNoColor:'No color', cuePrepared:'LOADED', cueActionChanged:'The active item has changed. Repeat the command if you still want to apply it.',
     localNetworkHelp:'The phone and computer must be on the same local network. No internet required.',
     privateAccess:'PRIVATE', viewAccess:'VIEW ONLY', scanQr:'Show QR', copyLink:'Copy link', copyCommand:'Copy command',
-    remoteHelp:'Start, pause and other commands. This QR is for the operator only — do not share with the audience.',
+    remoteHelp:'Private operator link with access to timer controls.',
     screenHelp:'A clean view without controls. In OBS, add a Browser Source and paste this link.',
     backstageHelp:'Current and next items, notes and schedule. No timer controls.',
     onlineTitle:'Online · different networks', onlineHelp:'Both devices need internet. The temporary link works while the app and sharing remain on.',
@@ -1135,10 +1165,10 @@ const I18N = {
     localCheckOK:'The server responds. This does not confirm phone access — scan the “Phone control” QR.',
     localCheckFailed:'The server does not respond at this address. Select another network and see “Phone cannot connect?” below.',
     shareFailureHelp:'The online service is unavailable. Check internet/VPN and retry. Local control remains available on the same network.',
-    outputLayoutTitle:'OUTPUT WINDOW & LAYOUT', widthPx:'Width (logical)', heightPx:'Height (logical)', applySize:'Apply size',
+    widthPx:'Width (logical)', heightPx:'Height (logical)', applySize:'Apply size',
     deckLiveModeLabel:'Stream Deck LIVE',deckLiveAuto:'Fullscreen · Grid when enabled',deckLiveFullscreen:'Always fullscreen',deckLiveWindow:'Window · configured size / Grid',
     deckLiveHelp:'LIVE keys send the picture to your selected displays and restore it from BLACKOUT. They do not start or stop either clock. Choose split and displays in Control.',
-    sizeHelp:'Dimensions use logical screen units. Full HD/HD chooses window dimensions, not HDMI signal quality. Applying exits fullscreen and disables Grid/Compact only for the selected window. Use its ⛶ button for fullscreen.',
+    sizeHelp:'Dimensions are in logical pixels. Applying returns the selected output to a window and turns off Grid and Compact for that output.',
     sizePresetTitle:'Window dimensions, not an HDMI signal setting', logicalUnits:'logical units',
     checkOutput:'Check output', outputChecking:'Checking the app output…', outputUnchecked:'Output has not been checked',
     outputChecked:'Last check', outputQualityClosed:'Output window is closed', outputQualityChanged:'Output changed. Check again.',
@@ -1161,8 +1191,8 @@ const I18N = {
     layoutTitleElement:'Title', layoutMessageElement:'Message', layoutRundownElement:'NOW / NEXT', layoutProgressElement:'Progress bar',
     freeAudienceHelp:'X and Y span the entire output: 0 is center, −100 and +100 are the edges. Elements can overlap; only the outside edge of the screen clips them. Also applies to browser and OBS output. Control preview stays centered.',
     digitScale:'Digit size (%)', digitX:'Left / right (%)', digitY:'Up / down (%)',
-    layoutHelp:'0 = center. Position is a percentage of each pane’s width/height. Applies to OBS/phones too; the control preview stays centered. Large scale or offsets can crop the digits.',
-    dualTitle:'TWO TIMERS', dualEnable:'Show second timer', splitLabel:'Split', splitColumns:'Left / right │', splitRows:'Top / bottom ─',
+    layoutHelp:'0% is center. Changes also apply to OBS and phone displays. Control keeps its preview centered.',
+    dualEnable:'Show second timer', splitLabel:'Split', splitColumns:'Left / right │', splitRows:'Top / bottom ─',
     startBoth:'▶ Start both', pauseBoth:'⏸ Pause both', resetBoth:'↺ Reset both',
     dualHelp:'The main START and rundown control timer 1. Timer 2 has its own duration and controls.',
     networkAddress:'Computer local network', noNetwork:'No local network — connect Wi-Fi/Ethernet',
@@ -1193,7 +1223,7 @@ const I18N = {
     backstageLabel:'Backstage · crew', onTime:'ON TIME', late:'behind', early:'ahead',
     apiLabel:'Companion / Stream Deck / OSC', apiTitle:'GET command for a Companion "Generic HTTP" button. type: start · reset · go · blackout · adjust(&value=sec) · setDuration(&value=ms)',
     nowLabel:'NOW', nextLabel:'NEXT', endLabel:'End', plannedLabel:'Planned', projectedLabel:'Projected',
-    netTitle:'CONNECT & SHARE', screenOBS:'Timer · audience / OBS', copy:'Copy',
+    netTitle:'Connect & share', screenOBS:'Timer · audience / OBS', copy:'Copy',
     showQrOnScreen:'Show QR to audience', hideQrFromScreen:'Hide QR from screen',
     audienceQrTitle:'Scan to follow the timer', audienceQrBackstage:'Scan for backstage',
     audienceQrHint:'Open your phone camera and scan the code',
@@ -1239,7 +1269,7 @@ let S = {
   digitFont:'default', outputSize:null, outputLayout:TimerTools.layout(), outputLayer:'normal', freeAudience:false, freeLayout:null,
   dualTimer:false, dualSplit:'columns', separateOutputs:false, liveTimerView:'both',deckLiveMode:'auto',secondary:TimerTools.secondary(),
   // rundown / raspored
-  cues:[], currentCue:-1, showStart:'', showNowNext:false,
+  cues:[], currentCue:-1, showStart:'', showStartAt:null, showNowNext:false,
   lang:lang
 };
 let lastNetInfo = null, lastDisplays = [];
@@ -1247,6 +1277,8 @@ let cues = [], currentCue = -1, autoNext = false, zeroFired = false, outputOpen 
 let selectedCue = null, editingCue = null, removedCue = null, pendingCueAction = null, rundownHasRun = false;
 let rundownRenderKey = '';
 let autoAdvanceTimer = null;
+let countdownRevision = 0;
+let plannedStartValue = null;
 let cueDraftMs = 600000, durationPickerTarget = null, durationPickerAnchor = null, targetArmed = false, secondaryTargetArmed = false;
 
 const $ = id => document.getElementById(id);
@@ -1298,17 +1330,19 @@ function processZeroAlerts(now){
 }
 const engineClock=EngineClock.create({onJump:delta=>{EngineClock.shiftRunning(S,delta);api.sendState({...S,cues,currentCue});deckControl?.observe();}});
 api.onClockPower?.(state=>{if(state==='suspend')engineClock.suspend();else engineClock.resume();});
-function send(){ S.cues=cues; S.currentCue=currentCue; processZeroAlerts(engineClock.sample()); syncDurationDisplays(); api.sendState(S); saveSettings(); deckControl?.observe(); }
+function send(){
+  S.cues=cues; S.currentCue=currentCue;
+  const now=engineClock.sample();
+  if(plannedStartValue!==S.showStart){
+    plannedStartValue=S.showStart;
+    S.showStartAt=TimerTools.plannedStart(S.showStart,now);
+  }
+  processZeroAlerts(now); syncDurationDisplays(); api.sendState(S); saveSettings(); deckControl?.observe();
+}
 
 // ---------- RASPORED / OVER-UNDER ----------
-function todayAt(hhmm, now){
-  if(!hhmm) return null;
-  const [h,m]=hhmm.split(':').map(Number);
-  if(isNaN(h)||isNaN(m)) return null;
-  const d=new Date(now); d.setHours(h,m,0,0); return d.getTime();
-}
 function schedule(now){
-  const list=cues||[]; const anchor=todayAt(S.showStart, now);
+  const list=cues; const anchor=TimerTools.scheduleAnchor(S,now);
   let acc=anchor;
   const rows=list.map((c,i)=>{ const start=acc; const end=acc==null?null:acc+c.durationMs; acc=end;
     return {name:c.name,durationMs:c.durationMs,note:c.note||'',color:c.color||'',plannedStart:start,plannedEnd:end,index:i}; });
@@ -1329,17 +1363,29 @@ function schedule(now){
 function cancelAutoAdvance(){
   if(autoAdvanceTimer!==null){ clearTimeout(autoAdvanceTimer); autoAdvanceTimer=null; }
 }
+function finishRundownCue(){
+  if(!cues[currentCue]||S.overtime||!S.running) return;
+  S.running=false;
+  S.remMs=0;
+  send();
+  updateButtons();
+}
 function tickCountdown(){
-  engineClock.sample();
-  processZeroAlerts(Date.now());
-  // Transport must not depend on an animation frame: a minimized/covered
-  // Control may stop painting while both audience outputs remain live.
-  if(S.mode!=='countdown'||!S.running||S.endAt>Date.now()||zeroFired) return;
+  const now=engineClock.sample();
+  processZeroAlerts(now);
+  // Transport must keep working when Control is minimized or covered.
+  if(S.mode!=='countdown'||!S.running||S.endAt>now||zeroFired) return;
   zeroFired=true;
-  if(autoNext&&currentCue>=0&&currentCue+1<cues.length){
-    const nextCue=currentCue+1;
-    autoAdvanceTimer=setTimeout(()=>{ autoAdvanceTimer=null; loadCue(nextCue,true); },800);
-  }
+  const active=cues[currentCue];
+  if(!active) return;
+  if(!autoNext||!cues[currentCue+1]){ finishRundownCue(); return; }
+  autoAdvanceTimer=setTimeout(()=>{
+    autoAdvanceTimer=null;
+    const now=engineClock.sample();
+    if(!autoNext||cues[currentCue]!==active||!S.running||S.mode!=='countdown'||S.endAt>now) return;
+    if(cues[currentCue+1]) loadCue(currentCue+1,true);
+    else finishRundownCue();
+  },800);
 }
 function startPause(){
   engineClock.sample();
@@ -1350,6 +1396,10 @@ function startPause(){
   }
   const now=Date.now();
   if(S.mode==='clock') return;
+  if(!S.running&&S.mode==='countdown'&&!S.overtime&&S.remMs<=0&&cues[currentCue]){
+    loadCue(currentCue,true);
+    return;
+  }
   if(S.running){
     // countup broji naviše; sve ostalo (i countdown) računa preko endAt — usklađeno sa calc()
     if(S.mode==='countup') S.elapsedMs+=now-S.startAt; else S.remMs=S.endAt-now;
@@ -1362,8 +1412,17 @@ function startPause(){
   }
   send(); updateButtons();
 }
-function reset(){ cancelAutoAdvance(); clearTargetArm(true); S.running=false; S.remMs=S.durationMs; S.elapsedMs=0; zeroFired=false; send(); updateButtons(); }
-function setDuration(ms,keepTarget=false){ cancelAutoAdvance(); if(!keepTarget) clearTargetArm(true); S.mode='countdown'; S.durationMs=ms; S.remMs=ms; S.running=false; zeroFired=false; setModeTabs(); send();deckControl?.prepared('t1'); updateButtons(); }
+function reset(){ countdownRevision++; cancelAutoAdvance(); clearTargetArm(true); S.running=false; S.remMs=S.durationMs; S.elapsedMs=0; zeroFired=false; send(); updateButtons(); }
+function setDuration(ms,keepTarget=false,run=false){
+  const now=engineClock.sample();
+  countdownRevision++;
+  cancelAutoAdvance();
+  if(!keepTarget) clearTargetArm(true);
+  Object.assign(S,{mode:'countdown',durationMs:ms,remMs:ms,elapsedMs:0,endAt:run?now+ms:0,running:run});
+  zeroFired=false;
+  if(run&&cues[currentCue]) rundownHasRun=true;
+  setModeTabs(); send(); deckControl?.prepared('t1'); updateButtons();
+}
 function adjust(sec){
   engineClock.sample();
   if(S.mode!=='countdown') return;
@@ -1374,7 +1433,15 @@ function adjust(sec){
   if((S.running?S.endAt-Date.now():S.remMs)>0) zeroFired=false;
   send();
 }
-function setMode(m){ if(!['countdown','countup','clock'].includes(m)) return; cancelAutoAdvance(); clearTargetArm(true); S.mode=m; S.running=false; S.remMs=S.durationMs; S.elapsedMs=0; zeroFired=false; setModeTabs(); send();deckControl?.prepared('t1'); updateButtons(); }
+function setMode(m){
+  if(!['countdown','countup','clock'].includes(m)||m===S.mode) return;
+  countdownRevision++;
+  cancelAutoAdvance(); clearTargetArm(true);
+  currentCue=-1;
+  Object.assign(S,{mode:m,running:false,remMs:S.durationMs,elapsedMs:0,endAt:0});
+  zeroFired=false;
+  setModeTabs(); renderCues(); send(); deckControl?.prepared('t1'); updateButtons();
+}
 function setModeTabs(){ document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('active',b.dataset.mode===S.mode)); }
 
 function clearSecondaryTarget(clearValue){
@@ -1782,7 +1849,16 @@ function render(){
   $('bdgOut').classList.toggle('on',outputOpen);
   $('bdgOut').textContent=outputOpen?t('outLive'):t('outClosed');
 
-  // over / under raspored
+  renderRundownTiming(now);
+  updateRundownTransport();
+
+  requestAnimationFrame(render);
+}
+let lastRundownSecond;
+function renderRundownTiming(now){
+  const second=Math.floor(now/1000);
+  if(second===lastRundownSecond) return;
+  lastRundownSecond=second;
   const sch=schedule(now); const ou=$('ouStatus');
   if(sch.delta==null||!rundownHasRun){ ou.textContent=t(S.showStart?'cueWaiting':'cueNoPlan'); ou.className='ou'; ou.title=''; }
   else { const sec=Math.round(sch.delta/1000);
@@ -1790,9 +1866,6 @@ function render(){
     else if(sec>0){ ou.textContent=t('late')+' '+fmtSecs(sec,false); ou.className='ou late'; ou.title=t('late'); }
     else { ou.textContent=t('early')+' '+fmtSecs(-sec,false); ou.className='ou early'; ou.title=t('early'); }
   }
-  updateRundownTransport();
-
-  requestAnimationFrame(render);
 }
 function updateButtons(){
   updateRundownTransport();
@@ -1805,6 +1878,7 @@ function updateButtons(){
 // ---------- RUNDOWN ----------
 function clock(ms){ const d=new Date(ms); return pad(d.getHours())+':'+pad(d.getMinutes()); }
 function renderCues(){
+  lastRundownSecond=undefined;
   const el=$('cueList'), scroll=el.scrollTop;
   const focused=document.activeElement?.closest('.cue');
   const focusCue=focused?._cue;
@@ -1857,9 +1931,9 @@ function renderCues(){
   $('cueColors').setAttribute('aria-label',t('cueColor'));
   rundownRenderKey=''; updateRundownTransport();
 }
-function loadCue(i,autostart){ if(i<0||i>=cues.length) return; cancelAutoAdvance(); currentCue=i; setDuration(cues[i].durationMs); if(autostart) startPause(); renderCues(); revealCue(i); }
+function loadCue(i,autostart){ if(i<0||i>=cues.length) return; cancelAutoAdvance(); currentCue=i; setDuration(cues[i].durationMs,false,autostart); renderCues(); revealCue(i); }
 function moveCue(i,dir){ const j=i+dir; if(j<0||j>=cues.length) return; [cues[i],cues[j]]=[cues[j],cues[i]];
-  cancelAutoAdvance(); if(currentCue===i) currentCue=j; else if(currentCue===j) currentCue=i; saveCues(); send(); renderCues(); revealCue(j); }
+  if(currentCue===i) currentCue=j; else if(currentCue===j) currentCue=i; saveCues(); send(); renderCues(); revealCue(j); }
 function startRundown(){ cancelAutoAdvance(); rundownHasRun=false; if(cues.length) loadCue(0,true); }
 function go(){ cancelAutoAdvance(); if(currentCue+1<cues.length) loadCue(currentCue+1,true); }
 
@@ -1878,6 +1952,7 @@ function updateRundownTransport(){
   $('btnCueReveal').disabled=!active;
   $('btnCueDelete').disabled=!!active&&selectedCue===active&&S.running;
   $('btnCueDelete').title=$('btnCueDelete').disabled?t('cueDeleteLive'):t('cueDelete');
+  $('cueNow').hidden=!cues.length;
   $('cueLiveState').textContent=t(!valid?'cueReady':S.running?'cuePlaying':finished?'cueFinished':rundownHasRun?'cuePaused':'cuePrepared');
   $('cueLiveName').textContent=valid?(currentCue+1)+'. '+active.name:t('cueNotStarted');
   const next=cues[valid?currentCue+1:0];
@@ -1885,8 +1960,8 @@ function updateRundownTransport(){
 }
 function rundownPlay(){
   if(currentCue>=0&&cues[currentCue]&&S.mode==='countdown'){
-    if(!S.running&&S.remMs<=0) setDuration(cues[currentCue].durationMs);
-    startPause();
+    if(!S.running&&S.remMs<=0) loadCue(currentCue,true);
+    else startPause();
   } else requestCueLoad(cues[0],true);
 }
 function revealCue(i=currentCue){
@@ -1900,8 +1975,11 @@ function cancelCueAction(){ pendingCueAction=null; $('cueConfirm').hidden=true; 
 function requestCueAction(text,action){
   cancelCueAction();
   if(!S.running){ action(); return; }
-  const active=cues[currentCue];
-  pendingCueAction=()=>{ if(cues[currentCue]!==active){ cueFeedback('cueActionChanged'); return; } action(); };
+  const active=cues[currentCue], revision=countdownRevision;
+  pendingCueAction=()=>{
+    if(cues[currentCue]!==active||countdownRevision!==revision){ cueFeedback('cueActionChanged'); return; }
+    action();
+  };
   $('cueConfirmText').textContent=text; $('cueConfirm').hidden=false; $('btnCueCancelAction').focus();
 }
 function requestCueLoad(cue,run){
@@ -1914,7 +1992,6 @@ function requestCueLoad(cue,run){
 function deleteSelectedCue(){
   const i=cues.indexOf(selectedCue); if(i<0) return;
   if(i===currentCue&&S.running){ cueFeedback('cueDeleteLive'); return; }
-  cancelAutoAdvance();
   removedCue={cue:selectedCue,index:i,before:cues[i+1]||null};
   if(editingCue===selectedCue) cancelCueEdit();
   cues.splice(i,1);
@@ -1924,7 +2001,6 @@ function deleteSelectedCue(){
 }
 function undoCueDelete(){
   if(!removedCue) return;
-  cancelAutoAdvance();
   const active=cues[currentCue],entry=removedCue;
   let i=cues.indexOf(entry.before); if(i<0) i=Math.min(entry.index,cues.length);
   cues.splice(i,0,entry.cue); currentCue=active?cues.indexOf(active):-1;
@@ -1935,7 +2011,7 @@ function duplicateSelectedCue(){
   const i=cues.indexOf(selectedCue); if(i<0) return;
   const copy={...selectedCue,name:selectedCue.name+' ('+t('cueCopySuffix')+')'};
   cues.splice(i+1,0,copy); if(currentCue>i) currentCue++;
-  cancelAutoAdvance(); selectedCue=copy;
+  selectedCue=copy;
   saveCues(); send(); renderCues(); revealCue(i+1); cueFeedback('cueCopied');
 }
 function editSelectedCue(){
@@ -2373,7 +2449,11 @@ $('chkSound2').addEventListener('change',e=>setZeroSound('t2',e.target.checked))
 $('chkOver').addEventListener('change',e=>{ S.overtime=e.target.checked; send(); });
 $('chkOver2').addEventListener('change',e=>{ S.secondary.overtime=e.target.checked; send(); });
 $('chkProg').addEventListener('change',e=>{ S.showProgress=e.target.checked; send(); });
-$('chkAuto').addEventListener('change',e=>{ autoNext=e.target.checked; if(!autoNext) cancelAutoAdvance(); saveSettings(); });
+$('chkAuto').addEventListener('change',e=>{
+  autoNext=e.target.checked;
+  if(!autoNext&&autoAdvanceTimer!==null){ cancelAutoAdvance(); finishRundownCue(); }
+  saveSettings();
+});
 
 // izgled
 $('bgColor').addEventListener('input',e=>{ S.bgColor=e.target.value; send(); });
@@ -2530,7 +2610,7 @@ $('btnCueNew').addEventListener('click',()=>{ cancelCueEdit(); $('cueEditor').op
 $('btnCueReveal').addEventListener('click',()=>revealCue());
 $('btnCueConfirm').addEventListener('click',()=>{ const action=pendingCueAction; cancelCueAction(); if(action) action(); });
 $('btnCueCancelAction').addEventListener('click',cancelCueAction);
-$('btnPlanNow').addEventListener('click',()=>{ S.showStart=clock(Date.now()); $('showStartInput').value=S.showStart; send(); renderCues(); });
+$('btnPlanNow').addEventListener('click',()=>{ plannedStartValue=null; S.showStart=clock(Date.now()); $('showStartInput').value=S.showStart; send(); renderCues(); });
 $('btnPlanClear').addEventListener('click',()=>{ S.showStart=''; $('showStartInput').value=''; send(); renderCues(); });
 $('cueConfirm').addEventListener('keydown',e=>{ if(e.key==='Escape'){ cancelCueAction(); $('btnRundownStart').focus(); } e.stopPropagation(); });
 $('showStartInput').addEventListener('change',e=>{ S.showStart=e.target.value; send(); renderCues(); });
@@ -2554,6 +2634,11 @@ $('chkFit').addEventListener('change',e=>{ S.fitWindow=e.target.checked; lastKey
 api.onOutputState(open=>{ outputOpen=open; if(!open) applyOutputQrState(null); });
 api.isOutputOpen().then(open=>{ outputOpen=open; }).catch(()=>{});
 
+function focusMessage(){
+  $('messagePanel').open=true;
+  $('msgInput').focus();
+}
+
 // Prečice
 document.addEventListener('keydown',e=>{
   if(document.querySelector('.pt-deck-dialog[open]'))return;
@@ -2565,7 +2650,7 @@ document.addEventListener('keydown',e=>{
     case 'r': case 'R': reset(); break;
     case 'b': case 'B': $('btnBlackout').click(); break;
     case 'f': case 'F': api.toggleFullscreen(); break;
-    case 'm': case 'M': e.preventDefault(); $('msgInput').focus(); break;
+    case 'm': case 'M': e.preventDefault(); focusMessage(); break;
     case 'c': case 'C': $('btnMsgClear').click(); break;
     case 'n': case 'N': go(); break;
     case 'ArrowUp': e.preventDefault(); adjust(60); break;
@@ -2583,7 +2668,7 @@ document.querySelectorAll('.lang button').forEach(b=>b.addEventListener('click',
 
 // ---------- START ----------
 window.audienceRouting=createAudienceRouting({host:$('audienceRoutingPanel'),api,language:()=>lang,dualEnabled:()=>S.dualTimer,screenList:()=>lastDisplays});
-load(); $('cueEditor').open=!cues.length; refreshDisplays(); send(); updateButtons(); applyLang(); syncCueColors(); setInterval(tickCountdown,50); requestAnimationFrame(render);
+load(); refreshDisplays(); send(); updateButtons(); applyLang(); syncCueColors(); setInterval(tickCountdown,50); requestAnimationFrame(render);
 // New explicit commands share the existing authoritative timer objects. In
 // particular START SET is one synchronous mutation followed by one state send.
 async function applyDeckOperation(op){
@@ -2596,15 +2681,18 @@ async function applyDeckOperation(op){
     if(op.type==='startSet'||op.type==='loadSet'){
       const start=op.type==='startSet';
       Object.assign(timer,{mode:op.mode,durationMs:op.durationMs,remMs:op.durationMs,elapsedMs:0,startAt:start?now:0,endAt:start?now+op.durationMs:0,running:start&&op.mode!=='clock'});
-      if(primary){currentCue=-1;zeroFired=false;setModeTabs();renderCues();}
+      if(primary){countdownRevision++;currentCue=-1;zeroFired=false;setModeTabs();renderCues();}
     }else if(op.type==='reset'){
-      timer.durationMs=op.durationMs;TimerTools.reset(timer);if(primary)zeroFired=false;
+      timer.durationMs=op.durationMs;TimerTools.reset(timer);if(primary){ countdownRevision++; zeroFired=false; }
     }else if(op.type==='adjust'){
       if(timer.running)timer.endAt+=op.deltaMs;
       else timer.remMs=(timer.overtime??S.overtime)?timer.remMs+op.deltaMs:Math.max(0,timer.remMs+op.deltaMs);
       timer.durationMs=Math.max(1000,Math.min(TimerTools.MAX_DURATION,timer.durationMs+op.deltaMs));
       if(primary&&(timer.running?timer.endAt-now:timer.remMs)>0)zeroFired=false;
-    }else TimerTools.setRunning(timer,op.type!=='pause',now);
+    }else {
+      TimerTools.setRunning(timer,op.type!=='pause',now);
+      if(primary&&timer.running&&timer.mode==='countdown'&&cues[currentCue]) rundownHasRun=true;
+    }
     send();updateButtons();return {ok:true};
   }
   if(['blackout','blackoutOn','blackoutOff'].includes(op.type)){S.blackout=op.type==='blackout'?!S.blackout:op.type==='blackoutOn';$('btnBlackout').classList.toggle('on',S.blackout);send();return {ok:true};}
@@ -2626,7 +2714,7 @@ async function applyDeckOperation(op){
   }
   if(op.type==='loadSelected')return selectedCue?{ok:true,cue:{durationMs:selectedCue.durationMs}}:{ok:false,code:'NO_CUE',message:'Select a rundown item first.'};
   if(op.type==='message'){
-    if(op.text===undefined){const focused=await api.deckInvoke('focusControl');if(!focused.ok)return focused;$('msgInput').scrollIntoView({block:'center'});$('msgInput').focus();return {ok:true};}
+    if(op.text===undefined){const focused=await api.deckInvoke('focusControl');if(!focused.ok)return focused;focusMessage();return {ok:true};}
     S.message={text:op.text,flash:!!op.flash};$('msgInput').value=op.text;send();return {ok:true};
   }
   if(['outputA','outputB','fullscreen'].includes(op.type)){

@@ -163,7 +163,7 @@ function applyState(next){
     lastStateVersion=version;
   }
   if(!clockSynced&&Number.isFinite(next._serverNow)) clockOffsetMs=next._serverNow-Date.now();
-  const signature=JSON.stringify([next.lang,next.text,next.showStart,next.currentCue,next.cues||[]]);
+  const signature=JSON.stringify([next.lang,next.text,next.showStart,next.showStartAt,next.currentCue,next.cues||[]]);
   if(signature!==stateSignature){ stateSignature=signature; staticDirty=true; }
   S=next;
   $('nowTimer').style.fontFamily=TimerTools.digitFamily(S.digitFont);
@@ -218,11 +218,9 @@ function applyStaticLabels(){
 }
 applyStaticLabels();
 
-function todayAt(hhmm, now){ if(!hhmm) return null; const [h,m]=hhmm.split(':').map(Number);
-  if(isNaN(h)||isNaN(m)) return null; const d=new Date(now); d.setHours(h,m,0,0); return d.getTime(); }
 function dayKey(now){ const d=new Date(now); return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`; }
 function buildPlan(state,now){
-  const source=state.cues||[], anchor=todayAt(state.showStart,now); let acc=anchor;
+  const source=state.cues||[], anchor=TimerTools.scheduleAnchor(state,now); let acc=anchor;
   const rows=source.map((c,i)=>{ const start=acc, end=acc==null?null:acc+c.durationMs; acc=end;
     return {name:c.name,durationMs:c.durationMs,note:c.note||'',color:c.color||'',plannedStart:start,plannedEnd:end,index:i}; });
   const ci=state.currentCue!=null?state.currentCue:-1;

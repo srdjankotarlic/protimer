@@ -26,7 +26,7 @@ function host(settings) {
     return nodes.get(id);
   }
   const context = vm.createContext({ TimerTools, lang: 'en', cues: [], currentCue: -1,
-    autoNext: false, cueDraftMs: 0, selectedCue: null, zeroFired: false, deckControl: null,
+    autoNext: false, plannedStartValue: null, countdownRevision: 0, cueDraftMs: 0, selectedCue: null, zeroFired: false, deckControl: null,
     bellAudio: {}, window: { ProTimerDeckController: true },
     ProTimerDeckController(value) { deck = value; return Promise.resolve(null); },
     localStorage: { getItem: key => storage.get(key) ?? null,

@@ -121,7 +121,7 @@ module.exports = async function({controlWin,getOutput,getSecondary,screen}) {
   for(const width of [820,1120]) {
     controlWin.setContentSize(width,740);
     for(const language of ['sr','en']) {
-      await ctl(`lang='${language}';S.lang=lang;applyLang();`);
+      await ctl(`$('outputLayoutPanel').open=true;lang='${language}';S.lang=lang;applyLang();`);
       assert.equal(await ctl(`(()=>{return ['chkOutputOnTop','chkSecondaryOutputOnTop','chkOnTop'].every(id=>{const r=$(id).parentElement.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth;});})()`),true,`Checkbox clipped at ${width} ${language}`);
     }
   }

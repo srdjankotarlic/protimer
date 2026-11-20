@@ -64,6 +64,14 @@ module.exports = async function smokeRundown({ controlWin }) {
     loadCue(1,true); const deadline=S.endAt;
     $('btnCueConfirm').click();
     return currentCue===1&&S.endAt===deadline&&$('cueConfirm').hidden&&$('cueFeedbackText').textContent===t('cueActionChanged');`);
+  await check('RUNDOWN_CONFIRM_REJECTS_RELOADED_SAME_CUE_OK', `
+    const matching=cues[currentCue];
+    requestCueLoad(cues[0],true);
+    if($('cueConfirm').hidden)return false;
+    loadCue(currentCue,true);
+    const deadline=S.endAt;
+    $('btnCueConfirm').click();
+    return cues[currentCue]===matching&&S.endAt===deadline&&$('cueFeedbackText').textContent===t('cueActionChanged');`);
   await check('RUNDOWN_RESET_NEXT_PREVIOUS_OK', `
     $('btnCueReset').click(); $('btnCueConfirm').click();
     if(S.running||S.remMs!==cues[1].durationMs) return false;
@@ -79,6 +87,29 @@ module.exports = async function smokeRundown({ controlWin }) {
     await new Promise(r=>setTimeout(r,1100));
     const advanced=currentCue===1&&S.running&&S.durationMs===60000;
     autoNext=false;cancelAutoAdvance();reset();return advanced;`);
+  await check('RUNDOWN_AUTO_ADVANCE_RESPECTS_EDITED_ORDER_OK', `
+    cues=[{name:'First',durationMs:1000},{name:'Second',durationMs:60000},{name:'Third',durationMs:90000}];
+    const next=cues[2];
+    autoNext=true;loadCue(0,true);S.endAt=Date.now()-10;tickCountdown();
+    if(autoAdvanceTimer===null)return false;
+    moveCue(2,-1);
+    await new Promise(r=>setTimeout(r,1050));
+    const advanced=cues[currentCue]===next&&S.running&&S.durationMs===90000;
+    autoNext=false;cancelAutoAdvance();reset();return advanced;`);
+  await check('RUNDOWN_LAST_CUE_STOPS_AT_ZERO_WITHOUT_OVERTIME_OK', `
+    cues=[{name:'Last',durationMs:1000}];const overtime=S.overtime;
+    S.overtime=false;autoNext=true;loadCue(0,true);S.endAt=Date.now()-10;tickCountdown();
+    const stopped=currentCue===0&&!S.running&&S.remMs===0&&autoAdvanceTimer===null;
+    $('btnStart').click();
+    const retook=S.running&&currentCue===0&&S.endAt-Date.now()>0;
+    S.overtime=overtime;autoNext=false;reset();return stopped&&retook;`);
+  await check('RUNDOWN_PLANNED_START_STAYS_ANCHORED_ACROSS_MIDNIGHT_OK', `
+    const start=new Date(2026,10,20,23,55).getTime();
+    S.showStart='23:55'; S.showStartAt=start; plannedStartValue=S.showStart;
+    cues=[{name:'Night event',durationMs:600000}];
+    const before=schedule(start),after=schedule(start+600000);
+    const same=before.plannedEnd===start+600000&&after.plannedEnd===before.plannedEnd;
+    S.showStart='';send();return same;`);
   controlWin.hide();
   try {
     await check('RUNDOWN_BACKGROUND_AUTO_ADVANCE_OK', `

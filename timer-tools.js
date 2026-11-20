@@ -27,6 +27,17 @@
     for (const character of text) width += character === ':' ? colon : /[−-]/.test(character) ? minus : digit;
     return width;
   }
+  function plannedStart(hhmm, now) {
+    if (typeof hhmm!=='string'||!/^([01]\d|2[0-3]):[0-5]\d$/.test(hhmm)) return null;
+    const [hours,minutes]=hhmm.split(':').map(Number);
+    const time=new Date(now);
+    time.setHours(hours,minutes,0,0);
+    return time.getTime();
+  }
+  function scheduleAnchor(state,now) {
+    if(!state.showStart) return null;
+    return Number.isFinite(state.showStartAt)?state.showStartAt:plannedStart(state.showStart,now);
+  }
   function clamp(value, min, max, fallback) {
     const n = Number(value);
     return Number.isFinite(n) ? Math.max(min, Math.min(max, n)) : fallback;
@@ -128,5 +139,5 @@
       text: '', textOnly: false, showNowNext: false
     };
   }
-  return { MAX_DURATION, digitFont, digitFamily, digitWidth, clamp, layout, freeElements, freePosition, freeLayout, hasFreeLayout, size, grid, outputLayer, outputOnTop, secondary, remaining, elapsed, setRunning, reset, separateOutputs, outputState,liveView,audienceState };
+  return { MAX_DURATION, plannedStart, scheduleAnchor, digitFont, digitFamily, digitWidth, clamp, layout, freeElements, freePosition, freeLayout, hasFreeLayout, size, grid, outputLayer, outputOnTop, secondary, remaining, elapsed, setRunning, reset, separateOutputs, outputState,liveView,audienceState };
 });
