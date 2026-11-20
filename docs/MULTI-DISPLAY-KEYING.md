@@ -5,11 +5,11 @@
 ## Route timers independently
 
 1. Connect your screens or the switcher's HDMI input and use **Extend** in Windows or **Extended display** in macOS. Each destination needs to appear as a separate display in the operating system. A mirrored output or HDMI splitter shows the same signal on every screen it feeds.
-2. Open **Control → Route to multiple displays**. Enable Timer 2 if you need it. Choose **Timer 1**, **Timer 2** or **Both timers** on each row. For example, send Timer 1 to screens 1–3, Timer 2 to 4–5 and both to 6–7.
-3. Pick **Fullscreen** or **Window / Grid** and press **Send** on one row or **Send all assigned**. Both uses the split direction or free layout already configured in Control. Window / Grid uses the corresponding timer's placement and the target display's work area.
+2. Open **Control → Route to multiple displays**. Enable Timer 2 or Timer 3 as needed. Choose one timer, any pair or all three on each row. You can send Timer 3 to a confidence monitor, 1 + 3 to the stage and all three to the director.
+3. Pick **Fullscreen** or **Window / Grid** and press **Send** on one row or **Send all assigned**. For a group, select side by side or stacked on that row, or inherit the Control setting. Free layout uses the configured positions. Window / Grid uses the corresponding timer's placement and the target display's work area.
 4. Press **Close** on a row to take that display off air. Assignments are saved. Startup and reconnection leave the output closed until you send it. Close an existing standard ProTimer output before sending a routed output to that same display. If a saved display is missing, use the row buttons for connected displays or remove the old assignment before sending all.
 
-Routing projects the same two live clocks. Sending or closing a routed output leaves their deadlines intact. The routing table works directly from Control and uses its own assignments. The standard output, OBS viewer and native Stream Deck retain their existing controls.
+Routing projects the same live clocks. Sending or closing a routed output leaves their deadlines intact. The routing table works directly from Control and uses its own assignments. The standard output, OBS viewer and native Stream Deck retain their existing controls.
 
 ## Overlay just the digits with a Roland or ATEM
 
@@ -29,8 +29,8 @@ Put the key on program after confirming the digits are clean. The signal contain
 ### Pošalji tajmere na više ekrana
 
 1. Poveži ekrane ili HDMI ulaz svičera i u sistemu izaberi **Proširi ekran**. Svaka destinacija mora da se pojavi kao poseban ekran. HDMI razdelnik šalje istu sliku na sve priključene ekrane.
-2. U **Kontrola → Raspodela na više ekrana** za svaki red izaberi **Tajmer 1**, **Tajmer 2** ili **Oba tajmera**. Uključi Tajmer 2 ako ga koristiš. Možeš, recimo, poslati T1 na ekrane 1–3, T2 na 4–5 i oba na 6–7.
-3. Izaberi **Pun ekran** ili **Prozor / Grid**. Klikni **Pošalji** na pojedinačnom redu ili **Pošalji sve dodeljene**. Prikaz oba tajmera prati izabranu podelu ili slobodan raspored. Prozor koristi podešavanja odgovarajućeg tajmera.
+2. U **Kontrola → Raspodela na više ekrana** za svaki red izaberi jedan tajmer, bilo koja dva ili sva tri. Uključi Tajmer 2 ili 3 po potrebi. Na primer, pošalji Tajmer 3 na monitor za govornike, 1 + 3 na binu i sva tri u režiju.
+3. Izaberi **Pun ekran** ili **Prozor / Grid**. Klikni **Pošalji** na pojedinačnom redu ili **Pošalji sve dodeljene**. Podelu za više tajmera biraj na tom redu ili koristi podelu iz Kontrole. Slobodan raspored koristi podešene položaje. Prozor koristi podešavanja odgovarajućeg tajmera.
 4. Zatvori pojedinačni izlaz dugmetom **Zatvori**. Dodela se pamti i ponovo se šalje ručno posle pokretanja ili ponovnog priključenja ekrana. Ako je na istom ekranu otvoren običan izlaz ProTimera, prvo ga zatvori. Ako spremljeni ekran nije povezan, šalji pojedinačno ili ukloni njegovu dodelu.
 
 Raspodela radi iz same Kontrole. Slanje i zatvaranje izlaza ne prekidaju odbrojavanje. Običan izlaz, OBS i Stream Deck zadržavaju svoje komande.

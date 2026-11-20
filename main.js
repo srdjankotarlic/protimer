@@ -696,6 +696,7 @@ function initializeUpdater(){
   type:app.isPackaged&&!SMOKE?buildType(process.platform,process.arch,!!process.env.PORTABLE_EXECUTABLE_FILE):null,
   temp:app.getPath('temp'),
   canOpen:()=>!!lastState&&!lastState.running&&!(lastState.dualTimer&&lastState.secondary?.running)&&
+    !(lastState.thirdTimer&&lastState.tertiary?.running)&&
     !outputWin&&!secondaryOutput.getWindow()&&!routed.info().length&&!tunnelUrl&&!tunnelStarting,
   openPackage:async(file,type)=>{
     // Preserve OS prompts for executables obtained over the Internet.

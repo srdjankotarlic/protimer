@@ -80,8 +80,39 @@ module.exports=async function({controlWin,screen}){
     })()`);
     assert.equal(await ctl(`JSON.parse(localStorage.getItem('pt_routes')).routes[0].view`),'t1');
     assert.equal(windowFor(),undefined);
+    // Toggle from the real Control UI and exercise each mode before routing.
+    assert.equal(await ctl("$('timerThreeHost').hidden"),true);
+    await ctl(`$('chkThird').click();document.querySelector('[data-mode-tertiary="countup"]').click();
+      $('btnTertiaryStart').click()`);
+    await wait(()=>ctl("S.tertiary.running&&S.tertiary.mode==='countup'"),'Timer 3 stopwatch did not start');
+    await ctl("$('btnTertiaryStart').click();$('btnTertiaryReset').click()");
+    assert.equal(await ctl("!S.tertiary.running&&S.tertiary.elapsedMs===0"),true);
+    await ctl(`document.querySelector('[data-mode-tertiary="countdown"]').click()`);
+    await wait(()=>ctl(`!document.querySelector('[data-adj-tertiary="60"]').disabled`),'Countdown adjustments not enabled');
+    await ctl(`$('tertiaryChips').querySelector('button').click();$('btnTertiaryStart').click();
+      document.querySelector('[data-adj-tertiary="60"]').click();`);
+    assert.equal(await ctl("S.tertiary.running&&S.tertiary.durationMs===120000"),true);
+    assert.deepEqual(await clocks(),before,'Timer 3 transport must leave the other deadlines intact');
+    await ctl(`document.querySelector('[data-mode-tertiary="clock"]').click();
+      document.querySelector('[data-mode-secondary="countup"]').click();$('btnSecondaryStart').click();`);
+    await wait(()=>ctl("$('btnTertiaryStart').disabled"),'Wall clock should not have a transport');
+    assert.equal(await ctl("JSON.parse(localStorage.getItem('pt_settings')).tertiary.mode"),'clock');
+    for(const [view,modes] of [['t3',['clock']],['t13',['countdown','clock']],
+      ['t23',['countup','clock']],['all',['countdown','countup','clock']]]){
+      assert.equal((await send({view,split:'rows',background:'luma'})).ok,true);
+      await wait(()=>out(`S?.audienceProjected&&S.dualSplit==='rows'&&[S.mode,S.secondary?.mode,S.tertiary?.mode]
+        .filter(Boolean).join(',')===${JSON.stringify(modes.join(','))}&&
+        ['timer','secondaryTimer','tertiaryTimer'].filter(id=>$(id).getBoundingClientRect().width>0).length===${modes.length}`),
+        'Wrong panes or modes for '+view);
+      assert.equal(await out(`getComputedStyle($('tertiaryPane')).boxShadow==='none'`),true);
+    }
+    await ctl("$('chkThird').click()");
+    await wait(()=>out(`!S.thirdTimer&&S.dualTimer&&getComputedStyle($('tertiaryPane')).display==='none'`),
+      'Disabling Timer 3 did not remove it from a live combined output');
+    assert.equal((await send({view:'t3'})).code,'TIMER_DISABLED');
+    console.log('THREE_TIMER_MODES_AND_OUTPUT_COMBINATIONS_OK=true');
   }finally{
-    await ctl(`api.closeRoutedOutputs();localStorage.removeItem('pt_routes');S.blackout=false;bothRunning(false);`);
+    await ctl(`api.closeRoutedOutputs();localStorage.removeItem('pt_routes');S.blackout=false;if(S.thirdTimer)$('chkThird').click();bothRunning(false,true);`);
   }
   console.log('AUDIENCE_ROUTES_AND_HDMI_KEY_PIXELS_OK=true');
 };

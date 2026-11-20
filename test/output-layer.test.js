@@ -59,7 +59,7 @@ test('automatic legacy macOS mode does not change workspaces; updated modes do n
   const fs=require('node:fs'),path=require('node:path');
   const html=fs.readFileSync(path.join(__dirname,'../controller.html'),'utf8');
   assert.match(html,/outputLayer:TimerTools\.outputLayer\(S\.outputLayer\)/);
-  assert.match(html,/outputLayer:TimerTools\.outputLayer\(S\.secondary\.outputLayer\)/);
+  assert.match(html,/outputLayer:TimerTools\.outputLayer\(outputLayer\)/);
   assert.match(html,/outputLayer:TimerTools\.outputOnTop\(st\)\?'above':'normal'/);
   assert.ok(html.includes('id="chkOutputOnTop"'));
   assert.ok(html.includes('id="chkSecondaryOutputOnTop"'));

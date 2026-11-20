@@ -7,7 +7,7 @@
   'use strict';
 
   function createZeroTracker() {
-    const armed = { t1: false, t2: false };
+    const armed = { t1: false, t2: false, t3: false };
 
     function observe(id, timer, enabled, now, events) {
       if (!enabled || !timer || timer.mode !== 'countdown') {
@@ -34,6 +34,7 @@
         const events = [];
         observe('t1', state, !!state, now, events);
         observe('t2', state?.secondary, !!state?.dualTimer, now, events);
+        observe('t3', state?.tertiary, !!state?.thirdTimer, now, events);
         return events;
       }
     };
