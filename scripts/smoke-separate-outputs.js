@@ -165,6 +165,7 @@ module.exports = async function ({ controlWin, getOutput, getSecondary, screen }
   await waitFor(()=>boundsEqual(getOutput(),gridBounds(host,3,0)),'Primary grid did not restore');
   assert.deepEqual(await ctl(`({a:S.remMs,b:S.secondary.remMs,aRun:S.running,bRun:S.secondary.running})`),savedClockState);
   await choose('secondary');
+  await ctl(`$('outputLayoutPanel').open=true;$('gridPanel').open=true;`);
   const keyboard=await ctl(`(()=>{const before=S.secondary.gridCell,clock=S.secondary.remMs,cell=$('gridSel').children[24];cell.focus();cell.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowLeft',bubbles:true}));return {focused:document.activeElement===$('gridSel').children[23],unchanged:S.secondary.gridCell===before&&S.secondary.remMs===clock,tabStops:$('gridSel').querySelectorAll('[tabindex="0"]').length,label:document.activeElement.getAttribute('aria-label')};})()`);
   assert.deepEqual(keyboard,{focused:true,unchanged:true,tabStops:1,label:'Red 5, kolona 4'});
   await ctl(`$('gridPanel').scrollIntoView({block:'center'});`); await delay(100);

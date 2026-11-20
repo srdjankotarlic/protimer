@@ -100,13 +100,13 @@ module.exports = async function smokeAlerts({controlWin,getOutput,getSecondary,d
     await ctl(`S.soundZero=false;S.secondary.soundZero=false;window.__alertCalls=0;$('btnTestZeroBell').click();`);
     check('ALERT_MANUAL_TEST_DOES_NOT_ENABLE_AUTO',await ctl(`window.__alertCalls===1&&!S.soundZero&&!S.secondary.soundZero`));
     for(const language of ['sr','en']){
-      await ctl(`lang='${language}';applyLang();S.dualTimer=true;syncDualUI();`);
+      await ctl(`$('zeroAlertsPanel').open=true;lang='${language}';applyLang();S.dualTimer=true;syncDualUI();`);
       for(const width of [820,1120]){
         controlWin.setBounds({...bounds,width,height:740});await delay(100);
         check(`ALERT_REFLOW_${language}_${width}`,await ctl(`(()=>{const p=$('zeroAlertsPanel'),r=p.getBoundingClientRect();return p.scrollWidth<=p.clientWidth+2&&Array.from(p.querySelectorAll('button,input')).every(e=>{const b=e.getBoundingClientRect();return b.left>=r.left&&b.right<=r.right+1;});})()`));
       }
     }
-    await ctl(`lang='sr';applyLang();$('zeroAlertsPanel').scrollIntoView({block:'center'});`);
+    await ctl(`$('zeroAlertsPanel').open=true;lang='sr';applyLang();$('zeroAlertsPanel').scrollIntoView({block:'center'});`);
     await delay(100);
     const screenshot=path.join(os.tmpdir(),'protimer-zero-alerts.png');
     fs.writeFileSync(screenshot,(await controlWin.webContents.capturePage()).toPNG());

@@ -1203,6 +1203,10 @@ app.whenReady().then(() => {
         const smokeFailures = [];
         const check = (name, ok) => { if (!ok) smokeFailures.push(name); return !!ok; };
         await waitLoad(controlWin);
+        if(process.argv.includes('--rundown-only')){
+          await require('./scripts/smoke-rundown')({controlWin});
+          console.log('SMOKE_OK'); app.exit(0); return;
+        }
         if(process.argv.includes('--audience-routes-only')){
           await require('./scripts/smoke-audience-routes')({controlWin,screen});
           console.log('SMOKE_OK'); app.exit(0); return;
@@ -1277,6 +1281,26 @@ app.whenReady().then(() => {
         }catch(e){uiContractStr='ERR '+e;}
         console.log('UI_CONTRACT_OK='+uiContractOK+' '+uiContractStr);
         check('UI_CONTRACT_OK',uiContractOK);
+        const disclosure=await controlWin.webContents.executeJavaScript(`(()=>{
+          const panels=['messagePanel','audienceRoutingPanel','outputLayoutPanel','zeroAlertsPanel','networkPanel'].map($);
+          const folded=panels.every(panel=>panel?.tagName==='DETAILS'&&!panel.open);
+          const live=['btnStart','btnOpenOut','btnRundownStart'].every(id=>$(id).checkVisibility());
+          $('msgInput').focus();
+          const hidden=document.activeElement!==$('msgInput');
+          const layout=$('outputLayoutPanel');
+          layout.firstElementChild.click();
+          const toggled=layout.open&&!$('gridPanel').open&&$('outputWidth').checkVisibility();
+          layout.firstElementChild.click();
+          document.activeElement.blur();
+          document.body.dispatchEvent(new KeyboardEvent('keydown',{key:'m',bubbles:true,cancelable:true}));
+          const focused=$('messagePanel').open&&document.activeElement===$('msgInput');
+          $('msgInput').blur();$('messagePanel').open=false;
+          document.querySelector('.main').scrollTop=0;
+          return {folded,live,hidden,toggled,focused,closed:!layout.open};
+        })()`);
+        const disclosureOK=Object.values(disclosure).every(Boolean);
+        console.log('CONTROL_DISCLOSURES_OK='+disclosureOK+' '+JSON.stringify(disclosure));
+        check('CONTROL_DISCLOSURES_OK',disclosureOK);
         // Deklarisana minimalna širina kontrole ne sme da odseče topbar ili napravi horizontalni overflow.
         let controlResponsiveOK=false,controlResponsiveStr='?';
         try{

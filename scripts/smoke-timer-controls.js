@@ -122,6 +122,7 @@ module.exports=async function({controlWin,getOutput,screen,serverPort,token}){
   await wait(()=>out(`$('blackout').style.display==='none'`),'Shared blackout did not clear');
   assert.deepEqual(await ctl(t1),primary);
 
+  await ctl(`$('zeroAlertsPanel').open=true;document.querySelectorAll('.timer-alerts').forEach(panel=>panel.open=true);`);
   const size=controlWin.getContentSize();
   for(const width of [820,1120]){
     controlWin.setContentSize(width,740);

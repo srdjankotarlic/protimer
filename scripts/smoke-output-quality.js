@@ -149,6 +149,7 @@ module.exports = async function smokeOutputQuality({ controlWin, getOutput, getS
       $('outputQualityStatus').textContent.includes(t('outputChecked'))&&
       $('outputQualityReadout').textContent.includes(t('outputRenderer'))&&
       $('outputQualityReadout').textContent.includes('1280')`));
+    await ctl(`$('outputLayoutPanel').open=true;$('outputDiagnostics').open=true;`);
     for (const language of ['sr', 'en']) {
       for (const width of [820, 1120]) {
         controlWin.setContentSize(width, 740);

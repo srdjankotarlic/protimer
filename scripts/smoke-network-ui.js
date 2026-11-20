@@ -25,7 +25,7 @@ module.exports = async function smokeNetworkUI() {
       api.hideOutputQr=()=>applyOutputQrState(null);
       window.clipboardWrites=[];
       Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async value=>{clipboardWrites.push(value);}}});
-      showNet(testInfo); document.querySelectorAll('#networkPanel details').forEach(d=>d.open=true);`);
+      showNet(testInfo); document.querySelectorAll('#networkPanel, #networkPanel details').forEach(d=>d.open=true);`);
     await check('NETWORK_LINK_ROLES_OK', `
       return netUrl==='http://192.0.2.10:7888'&&remoteUrl===netUrl+'/remote?t=test-only-key'&&
         backstageUrl===netUrl+'/backstage'&&apiUrl===netUrl+'/cmd?type=start&t=test-only-key'&&
@@ -112,7 +112,7 @@ module.exports = async function smokeNetworkUI() {
     for(const width of [820,1120]){
       win.setSize(width,900);
       for(const language of ['sr','en']){
-        await js(`lang='${language}';applyLang();document.querySelectorAll('#networkPanel details').forEach(d=>d.open=true);applyShare({url:'https://a-very-long-tunnel-name-for-layout-test.example',provider:'cloudflare'});`);
+        await js(`lang='${language}';applyLang();document.querySelectorAll('#networkPanel, #networkPanel details').forEach(d=>d.open=true);applyShare({url:'https://a-very-long-tunnel-name-for-layout-test.example',provider:'cloudflare'});`);
         await delay(50);
         await check('NETWORK_REFLOW_'+width+'_'+language.toUpperCase()+'_OK', `
           const card=$('networkPanel'),bounds=card.getBoundingClientRect();
