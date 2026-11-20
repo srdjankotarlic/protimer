@@ -5,6 +5,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'">
 <title>ProTimer — Kontrola</title>
 <link rel="stylesheet" href="deck-ui.css">
+<link rel="stylesheet" href="fonts/digits.css">
 <style>
   :root{
     color-scheme:dark;
@@ -106,6 +107,18 @@
     white-space:pre-wrap; max-width:100%; overflow:hidden;}
   .pv-time{position:relative; font-family:"SF Mono",ui-monospace,Menlo,monospace; font-weight:700;
     font-variant-numeric:tabular-nums; line-height:.95; white-space:nowrap;}
+  .route-panel summary{cursor:pointer;font-weight:700;}
+  .route-table{overflow-x:auto;margin:10px 0;}
+  .route-table table{width:100%;border-collapse:collapse;text-align:left;}
+  .route-table th,.route-table td{padding:7px 5px;border-bottom:1px solid var(--border);}
+  .route-table th{font-size:11px;color:var(--dim);}
+  .route-table td small{display:block;margin-top:4px;color:var(--dim);}
+  .route-table select{max-width:100%;}
+  .route-table button{margin:2px;}
+  .route-help{margin-top:8px;}
+  .route-help summary{font-size:12px;}
+  .route-help ol{margin:8px 0;padding-left:22px;}
+  .digit-font-sample{font:700 15px/1.2 "SF Mono",ui-monospace,Menlo,monospace; font-variant-numeric:tabular-nums; white-space:nowrap;}
   .pv-time.blink,.secondary-readout.blink{animation:pulse 1s steps(2,start) infinite;}
   .zero-alert-row{display:flex;align-items:center;gap:12px 18px;flex-wrap:wrap;}
   .zero-alert-row[hidden]{display:none;}
@@ -572,6 +585,26 @@
     </div>
     </div>
 
+    <details class="panel route-panel" id="audienceRoutingPanel">
+      <summary data-i18n="routeTitle">Raspodela na više ekrana</summary>
+      <p class="panel-help" data-i18n="routeIntro">Za svaki prošireni ekran izaberi Tajmer 1, Tajmer 2 ili oba. Promene se pamte, a prikaz otvaraš dugmetom Pošalji.</p>
+      <div class="route-table"><table>
+        <thead><tr><th scope="col"></th><th scope="col"></th><th scope="col"></th><th scope="col"></th><th scope="col" data-i18n="routeActions">Komande</th></tr></thead>
+        <tbody></tbody>
+      </table></div>
+      <div class="layout-row">
+        <button type="button" class="primary" id="routeSendAll" data-i18n="routeSendAll">Pošalji sve dodeljene</button>
+        <button type="button" id="routeCloseAll" data-i18n="routeCloseAll">Zatvori sve dodeljene</button>
+      </div>
+      <p class="panel-help" role="status" aria-live="polite"></p>
+      <details class="route-help"><summary data-i18n="routeKeyTitle">Kako ukloniti pozadinu u Rolandu ili ATEM-u</summary>
+        <ol class="panel-help"><li data-i18n="routeKeySend">HDMI izlaz računara podesi kao prošireni ekran. Na tom redu izaberi Pun ekran i Luma ili Chroma pozadinu.</li>
+        <li data-i18n="routeKeyRoland">Roland V-160HD: DSK → SELF KEY. Izaberi HDMI ulaz i Luminance Black ili Chroma. Podesi LEVEL i GAIN u Preview.</li>
+        <li data-i18n="routeKeyAtem">ATEM: za Luma na Downstream Keyer izaberi isti HDMI za Fill i Key i podesi Clip/Gain. Za Chroma na Upstream Keyer uzorkuj boju pozadine.</li></ol>
+        <p class="panel-help" data-i18n="routeKeyHelp">U key režimu ProTimer šalje samo bele cifre na jednobojnoj pozadini. Svičer uklanja pozadinu. BLACKOUT sakriva cifre i zadržava ključnu boju.</p>
+      </details>
+    </details>
+
     <div class="panel" id="outputLayoutPanel">
       <div class="layout-head">
         <h3 data-i18n="outputLayoutTitle">IZLAZNI PROZOR I RASPORED</h3>
@@ -628,6 +661,22 @@
         <label class="chk"><input type="checkbox" id="chkTransparent"> <span data-i18n="transparent">Providna pozadina (OBS)</span></label>
       </div>
       <div class="field">
+        <label class="swatch"><span data-i18n="digitFont">Font cifara</span>
+          <select id="digitFont">
+            <option value="default" data-i18n="digitDefault">Podrazumevani</option>
+            <option value="pixel" data-i18n="digitPixel">Piksel</option>
+            <option value="cyber" data-i18n="digitCyber">Sajber</option>
+            <option value="condensed" data-i18n="digitCondensed">Uski</option>
+            <option value="plex">IBM Plex Mono</option>
+            <option value="space">Space Mono</option>
+            <option value="bold">Archivo Black</option>
+            <option value="geist">Geist</option>
+            <option value="serif">DM Serif</option>
+            <option value="lexend">Lexend</option>
+          </select>
+        </label>
+        <span class="digit-font-sample" id="digitFontSample" aria-hidden="true">12:34:56</span>
+        <div class="sep"></div>
         <label class="swatch" for="blackoutMode"><span>BLACKOUT</span>
           <select id="blackoutMode"><option value="black" data-i18n="blackoutBlack">Crn ekran</option><option value="foreground" data-i18n="blackoutForeground">Sakrij sadržaj · zadrži pozadinu</option></select>
         </label>
@@ -871,6 +920,8 @@
 </div>
 
 <script src="timer-tools.js"></script>
+<script src="audience-routes.js"></script>
+<script src="audience-routing-ui.js"></script>
 <script src="timer-alerts.js"></script>
 <script src="engine-clock.js"></script>
 <script src="deck-layout.js"></script>
@@ -881,6 +932,7 @@
 <script>
 const api = window.pt || {
   sendState(){}, onState(){}, openOutput(){}, closeOutput(){}, toggleFullscreen(){},
+  applyRoutedOutputs:async()=>({ok:false}), closeRoutedOutputs:async()=>({ok:false}),
   exitFullscreen(){}, setOnTop(){}, getDisplays:async()=>[], isOutputOpen:async()=>false,
   resizeOutput:async()=>({ok:false}), getOutputGeometry:async()=>null, onOutputGeometry(){},
   getOutputQuality:async()=>({ok:false,code:'OUTPUT_UNAVAILABLE'}),
@@ -896,6 +948,13 @@ const api = window.pt || {
 // ---------- JEZIK / LANGUAGE ----------
 const I18N = {
   sr: {
+    routeTitle:'Raspodela na više ekrana', routeActions:'Komande', routeSendAll:'Pošalji sve dodeljene', routeCloseAll:'Zatvori sve dodeljene',
+    routeIntro:'Za svaki prošireni ekran izaberi Tajmer 1, Tajmer 2 ili oba. Promene se pamte, a prikaz otvaraš dugmetom Pošalji.',
+    routeKeyTitle:'Kako ukloniti pozadinu u Rolandu ili ATEM-u',
+    routeKeySend:'HDMI izlaz računara podesi kao prošireni ekran. Na tom redu izaberi Pun ekran i Luma ili Chroma pozadinu.',
+    routeKeyRoland:'Roland V-160HD: DSK → SELF KEY. Izaberi HDMI ulaz i Luminance Black ili Chroma. Podesi LEVEL i GAIN u Preview.',
+    routeKeyAtem:'ATEM: za Luma na Downstream Keyer izaberi isti HDMI za Fill i Key i podesi Clip/Gain. Za Chroma na Upstream Keyer uzorkuj boju pozadine.',
+    routeKeyHelp:'U key režimu ProTimer šalje samo bele cifre na jednobojnoj pozadini. Svičer uklanja pozadinu. BLACKOUT sakriva cifre i zadržava ključnu boju.',
     timerOnTop:'Tajmer na vrhu',timerTwoOnTop:'Tajmer 2 na vrhu',timerOnTopTitle:'Izlaz tajmera ostaje preko prezentacije; ne menja kontrolu, vreme ili poziciju',
     outputRouting:'Prikaz', outputsTogether:'Zajedno na jednom ekranu', outputsSeparate:'Na dva odvojena ekrana',
     primaryOutputLabel:'Tajmer 1 na', sendTimerTwo:'Pošalji Tajmer 2', resizeWindow:'Prozor',
@@ -987,6 +1046,7 @@ const I18N = {
     durationPickerTitle:'Postavi trajanje', durationPickerTimer:'Trajanje glavnog tajmera', durationPickerCue:'Trajanje rundown stavke',
     hours:'Sati', minutes:'Minuti', seconds:'Sekunde', confirmDuration:'Potvrdi', cancel:'Otkaži',
     durationHelp:'Enter potvrđuje · Esc otkazuje', cueDurationTitle:'Postavi trajanje stavke',
+    digitFont:'Font cifara', digitDefault:'Podrazumevani', digitPixel:'Piksel', digitCyber:'Sajber', digitCondensed:'Uski',
     colors:'Boje', background:'Pozadina', timeText:'Vreme/tekst', warnColors:'Boje upozorenja',
     tagY:'Ž', tagR:'C', yellow:'Žuto', red:'Crveno', transparent:'Providna pozadina (OBS)',
     grid:'Grid', gridOn:'Pozicija na ekranu', gridHint:'klikni kockicu →',
@@ -1017,6 +1077,13 @@ const I18N = {
     shortcuts:'<kbd>Space</kbd> start/pauza · <kbd>R</kbd> reset · <kbd>N</kbd> sledeći · <kbd>↑↓</kbd> ±1m · <kbd>←→</kbd> ±10s · <kbd>B</kbd> blackout · <kbd>F</kbd> pun ekran · <kbd>M</kbd> poruka · <kbd>C</kbd> obriši poruku'
   },
   en: {
+    routeTitle:'Route to multiple displays', routeActions:'Actions', routeSendAll:'Send all assigned', routeCloseAll:'Close all routed outputs',
+    routeIntro:'Choose Timer 1, Timer 2 or both for each extended display. Assignments are saved. Use Send to open an output.',
+    routeKeyTitle:'Remove the background in Roland or ATEM',
+    routeKeySend:'Extend the computer desktop to the switcher HDMI input. Choose Fullscreen and a Luma or Chroma background on that display.',
+    routeKeyRoland:'Roland V-160HD: DSK → SELF KEY. Select the HDMI input and Luminance Black or Chroma. Adjust LEVEL and GAIN in Preview.',
+    routeKeyAtem:'ATEM: for Luma on a Downstream Keyer, use the same HDMI source for Fill and Key, and adjust Clip/Gain. For Chroma, sample the background in an Upstream Keyer.',
+    routeKeyHelp:'A keyed output sends white digits on a solid background. The switcher removes that background. BLACKOUT hides the digits and preserves the key color.',
     timerOnTop:'Timer on top',timerTwoOnTop:'Timer 2 on top',timerOnTopTitle:'Keep the timer output above the presentation; does not change Control, timing or placement',
     outputRouting:'Display', outputsTogether:'Together on one screen', outputsSeparate:'On two separate screens',
     primaryOutputLabel:'Timer 1 to', sendTimerTwo:'Send Timer 2', resizeWindow:'Window',
@@ -1108,6 +1175,7 @@ const I18N = {
     durationPickerTitle:'Set duration', durationPickerTimer:'Main timer duration', durationPickerCue:'Rundown item duration',
     hours:'Hours', minutes:'Minutes', seconds:'Seconds', confirmDuration:'Confirm', cancel:'Cancel',
     durationHelp:'Enter confirms · Esc cancels', cueDurationTitle:'Set item duration',
+    digitFont:'Digit font', digitDefault:'Default', digitPixel:'Pixel', digitCyber:'Cyber', digitCondensed:'Condensed',
     colors:'Colors', background:'Background', timeText:'Time/text', warnColors:'Warning colors',
     tagY:'Y', tagR:'R', yellow:'Yellow', red:'Red', transparent:'Transparent background (OBS)',
     grid:'Grid', gridOn:'Position on screen', gridHint:'click a cell →',
@@ -1168,7 +1236,7 @@ let S = {
   gridOn:false, gridSize:3, gridCell:4,
   // kompaktan prozor (prozor prati veličinu tajmera kad nije fullscreen)
   fitWindow:false,
-  outputSize:null, outputLayout:TimerTools.layout(), outputLayer:'normal', freeAudience:false, freeLayout:null,
+  digitFont:'default', outputSize:null, outputLayout:TimerTools.layout(), outputLayer:'normal', freeAudience:false, freeLayout:null,
   dualTimer:false, dualSplit:'columns', separateOutputs:false, liveTimerView:'both',deckLiveMode:'auto',secondary:TimerTools.secondary(),
   // rundown / raspored
   cues:[], currentCue:-1, showStart:'', showNowNext:false,
@@ -1360,6 +1428,7 @@ function bothRunning(running){
   primaryRunning(true);if(S.dualTimer) secondaryRunning(true);
 }
 function syncDualUI(){
+  window.audienceRouting?.update();
   $('chkDual').checked=S.dualTimer; $('dualOptions').hidden=!S.dualTimer;
   $('secondaryZeroAlerts').hidden=!S.dualTimer;
   $('dualSplit').value=S.dualSplit;
@@ -1651,7 +1720,7 @@ function render(){
     const readout=$('secondaryReadout'),preview=$('secondaryPreview');
     const time=mode==='clock'?new Date(now).toLocaleTimeString('en-GB',{hour12:false}):mode==='countup'?fmtSecs(Math.floor(TimerTools.elapsed(S.secondary,now)/1000),false):fmtMs(rem);
     if(readout.textContent!==time) readout.textContent=time;
-    readout.style.fontSize=Math.min(preview.clientWidth*.86/Math.max(4,time.length*.6),preview.clientHeight*.56)+'px';
+    readout.style.fontSize=Math.min(preview.clientWidth*.86/Math.max(4,TimerTools.digitWidth(S.digitFont,time)),preview.clientHeight*.56)+'px';
     preview.style.background=S.transparent?'transparent':S.bgColor;
     $('secondaryChecker').style.display=S.transparent?'block':'none';
     readout.style.color=mode==='countdown'&&rem<=0?S.warnRed:mode==='countdown'&&S.useWarnColors?(rem<=S.redSec*1000?S.warnRed:rem<=S.yellowSec*1000?S.warnYellow:S.fgColor):S.fgColor;
@@ -1694,10 +1763,11 @@ function render(){
   else {
     tEl.style.display='block'; tEl.textContent=r.text; tEl.style.color=r.fg;
     tEl.className='pv-time'+(r.neg?' neg':'')+(r.rem!==null&&r.rem<=0&&S.flashZero!==false?' blink':'');
-    const key=r.text.length+'|'+Math.round(sw)+'x'+Math.round(sh)+'|'+(S.text?1:0);
+    const digitWidth=TimerTools.digitWidth(S.digitFont,r.text);
+    const key=digitWidth+'|'+Math.round(sw)+'x'+Math.round(sh)+'|'+(S.text?1:0);
     if(key!==lastKey){ lastKey=key;
       const avail=S.text?sh*0.42:sh*0.55;
-      tEl.style.fontSize=Math.min(sw*0.9/(r.text.length*0.6),avail)+'px'; }
+      tEl.style.fontSize=Math.min(sw*0.9/digitWidth,avail)+'px'; }
   }
 
   const m=$('pvMsg');
@@ -1880,11 +1950,16 @@ function cancelCueEdit(){
 
 // ---------- ČUVANJE ----------
 function saveCues(){ localStorage.setItem('pt_cues',JSON.stringify(cues)); }
+function syncDigitFont(){
+  $('digitFont').value=S.digitFont;
+  const family=TimerTools.digitFamily(S.digitFont);
+  for(const id of ['pvTime','secondaryReadout','digitFontSample']) $(id).style.fontFamily=family;
+}
 function saveSettings(){
   localStorage.setItem('pt_settings',JSON.stringify({
     yellowSec:S.yellowSec,redSec:S.redSec,flashZero:S.flashZero,soundZero:S.soundZero,
     overtime:S.overtime,showProgress:S.showProgress,durationMs:S.durationMs,autoNext,
-    bgColor:S.bgColor,fgColor:S.fgColor,useWarnColors:S.useWarnColors,
+    digitFont:S.digitFont,bgColor:S.bgColor,fgColor:S.fgColor,useWarnColors:S.useWarnColors,
     warnYellow:S.warnYellow,warnRed:S.warnRed,textOnly:S.textOnly,transparent:S.transparent,blackoutMode:S.blackoutMode,
     showStart:S.showStart,showNowNext:S.showNowNext,
     gridOn:S.gridOn,gridSize:S.gridSize,gridCell:S.gridCell,fitWindow:S.fitWindow,
@@ -1902,6 +1977,7 @@ function load(){
       flashZero:st.flashZero??S.flashZero, soundZero:st.soundZero??S.soundZero,
       overtime:st.overtime??S.overtime, showProgress:st.showProgress??S.showProgress,
       durationMs:st.durationMs??S.durationMs,
+      digitFont:TimerTools.digitFont(st.digitFont),
       bgColor:st.bgColor??S.bgColor, fgColor:st.fgColor??S.fgColor,
       useWarnColors:st.useWarnColors??S.useWarnColors,
       warnYellow:st.warnYellow??S.warnYellow, warnRed:st.warnRed??S.warnRed,
@@ -1929,6 +2005,7 @@ function load(){
   $('bgColor').value=S.bgColor; $('fgColor').value=S.fgColor;
   $('chkWarn').checked=S.useWarnColors; $('warnYellow').value=S.warnYellow; $('warnRed').value=S.warnRed;
   $('chkTextOnly').checked=S.textOnly; $('chkTransparent').checked=S.transparent;
+  syncDigitFont();
   $('blackoutMode').value=S.blackoutMode;
   $('chkFit').checked=S.fitWindow;
   $('deckLiveMode').value=S.deckLiveMode;
@@ -1942,6 +2019,7 @@ function load(){
 // ---------- MONITORI ----------
 function fillDisplays(list){
   lastDisplays = list || [];
+  window.audienceRouting?.update();
   for(const id of ['displaySel','secondaryDisplaySel']){
     const sel=$(id),previous=sel.value,secondary=id==='secondaryDisplaySel';
     const active=lastDisplays.find(d=>secondary?d.hasSecondaryOutput:d.hasOutput);
@@ -2304,6 +2382,7 @@ $('chkWarn').addEventListener('change',e=>{ S.useWarnColors=e.target.checked; se
 $('warnYellow').addEventListener('input',e=>{ S.warnYellow=e.target.value; send(); });
 $('warnRed').addEventListener('input',e=>{ S.warnRed=e.target.value; send(); });
 $('chkTransparent').addEventListener('change',e=>{ S.transparent=e.target.checked; send(); });
+$('digitFont').addEventListener('change',e=>{ S.digitFont=TimerTools.digitFont(e.target.value); syncDigitFont(); send(); });
 $('blackoutMode').addEventListener('change',e=>{ S.blackoutMode=e.target.value==='foreground'?'foreground':'black'; send(); });
 $('textInput').addEventListener('input',e=>{ S.text=e.target.value; send(); });
 $('chkTextOnly').addEventListener('change',e=>{ S.textOnly=e.target.checked; lastKey=''; send(); });
@@ -2503,6 +2582,7 @@ document.querySelectorAll('.lang button').forEach(b=>b.addEventListener('click',
 }));
 
 // ---------- START ----------
+window.audienceRouting=createAudienceRouting({host:$('audienceRoutingPanel'),api,language:()=>lang,dualEnabled:()=>S.dualTimer,screenList:()=>lastDisplays});
 load(); $('cueEditor').open=!cues.length; refreshDisplays(); send(); updateButtons(); applyLang(); syncCueColors(); setInterval(tickCountdown,50); requestAnimationFrame(render);
 // New explicit commands share the existing authoritative timer objects. In
 // particular START SET is one synchronous mutation followed by one state send.

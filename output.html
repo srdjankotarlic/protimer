@@ -3,14 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="referrer" content="no-referrer">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self'">
 <title>ProTimer — Ekran</title>
+<link rel="stylesheet" href="fonts/digits.css">
 <style>
   *{box-sizing:border-box; user-select:none; margin:0;}
   html,body{height:100%; overflow:hidden;
     font-family:-apple-system, "Helvetica Neue", system-ui, sans-serif;}
   body{background:#000; transition:background .15s;}
-  body.idle{cursor:none;}
+  body.idle,body.routed{cursor:none;}
+  body.routed{transition:none;}
+  body.key-output #stage.dual #secondaryPane{box-shadow:none;}
 
   #stage{position:absolute; inset:0; display:flex; flex-direction:column;
     align-items:center; justify-content:center;}
@@ -118,6 +121,8 @@
 const IS_ELECTRON = !!window.pt;
 const api = window.pt || null;
 
+const routedOutput=new URLSearchParams(location.search).get('routed')==='1';
+document.body.classList.toggle('routed',routedOutput);
 let S = null, lastKey = '', lastNowNextKey = '', lastStateVersion = -1, lastServerInstance = null;
 let isFS = false, fitMode = false, lastFitH = 0;   // kompaktan prozor (prati tajmer)
 if (IS_ELECTRON) api.onWinFs(v => { isFS = !!v; lastKey = ''; lastFitH = 0; });
@@ -151,6 +156,9 @@ function applyState(s){
   }
   if (!clockSynced && Number.isFinite(s._serverNow)) clockOffsetMs=s._serverNow-Date.now();
   S = TimerTools.audienceState(s);
+  const family=TimerTools.digitFamily(S.digitFont);
+  setStyle($('timer'),'fontFamily',family);
+  setStyle($('secondaryTimer'),'fontFamily',family);
   $('connection').textContent = s.lang === 'en' ? 'RECONNECTING…' : 'PONOVNO POVEZIVANJE…';
   render(); // Apply BLACK/LIVE and layout changes immediately, not on the next background timer tick.
   return true;
@@ -240,10 +248,12 @@ function render(){
   const d = new Date(now);
 
   // dok ne stigne stanje — prikaži tačno vreme
+  if (!S&&routedOutput) return;
   if (!S){ paint(`${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`, '#ffffff', '#000000', false, false, '', '', false, null); return; }
 
   const bg = S.transparent ? 'transparent' : (S.bgColor || '#000000');
   document.body.classList.toggle('overlay', !!S.transparent);
+  document.body.classList.toggle('key-output',!!S.outputKeyColor);
   let fg = S.fgColor || '#ffffff';
   let text, neg = false, blink = false, prog = null;
 
@@ -264,6 +274,8 @@ function render(){
     text = fmtMs(rem);
   }
 
+  if(S.outputKeyColor) fg='#ffffff';
+
   // kompaktan prozor: kad NIJE fullscreen i opcija je uključena → tajmer puni širinu, prozor prati visinu
   // tajmer UVEK puni prozor; grid se realizuje veličinom/pozicijom samog PROZORA (main proces)
   { const st=$('stage'); if(st.style.left){ st.style.inset='0'; st.style.left=st.style.top=st.style.width=st.style.height=''; } }
@@ -271,7 +283,7 @@ function render(){
   const free = TimerTools.hasFreeLayout(S);
   fitMode = IS_ELECTRON && !!S.fitWindow && !isFS && !S.gridOn && !S.dualTimer && !free;
   document.body.classList.toggle('free-audience',free);
-  document.body.classList.toggle('windowed',IS_ELECTRON&&!isFS&&!S.gridOn);
+  document.body.classList.toggle('windowed',IS_ELECTRON&&!routedOutput&&!isFS&&!S.gridOn);
   setStyle($('stage'),'visibility',S.liveHidden?'hidden':'visible');
   setClass($('stage'),S.dualTimer?'dual '+(S.dualSplit==='rows'?'rows':'columns'):'');
 
@@ -311,10 +323,10 @@ function renderSecondary(now,free){
   const timer=S.secondary, pane=$('secondaryPane'), el=$('secondaryTimer');
   let rem=TimerTools.remaining(timer,now); if(!(timer.overtime??S.overtime)) rem=Math.max(0,rem);
   const mode=timer.mode||'countdown',text=mode==='clock'?new Date(now).toLocaleTimeString('en-GB',{hour12:false}):mode==='countup'?fmtSecs(Math.floor(TimerTools.elapsed(timer,now)/1000),false):fmtMs(rem);
-  const fg=mode!=='countdown'?S.fgColor:rem<=0?(S.warnRed||'#ff4540'):S.useWarnColors?(rem<=S.redSec*1000?S.warnRed:rem<=S.yellowSec*1000?S.warnYellow:S.fgColor):S.fgColor;
+  const fg=S.outputKeyColor?'#ffffff':mode!=='countdown'?S.fgColor:rem<=0?(S.warnRed||'#ff4540'):S.useWarnColors?(rem<=S.redSec*1000?S.warnRed:rem<=S.yellowSec*1000?S.warnYellow:S.fgColor):S.fgColor;
   const neg=mode==='countdown'&&rem<0, blink=mode==='countdown'&&rem<=0&&(timer.flashZero??S.flashZero??true);
   setText(el,text); setStyle(el,'color',fg); setClass(el,[neg?'neg':'',blink?'blink':''].filter(Boolean).join(' '));
-  setStyle(el,'fontSize',free?freeDigits(text):Math.min(pane.clientWidth*0.92/(text.length*0.6),pane.clientHeight*0.7)+'px');
+  setStyle(el,'fontSize',free?freeDigits(text):Math.min(pane.clientWidth*0.92/(TimerTools.digitWidth(S.digitFont,text)),pane.clientHeight*0.7)+'px');
   applyLayout($('secondaryContent'),timer.layout);
 }
 
@@ -352,7 +364,7 @@ function renderNowNext(fg,free){
   setStyle($('msg'),'bottom',free?'':nxt?'17vh':'12vh');
 }
 
-function freeDigits(text){ return Math.min(innerWidth*.43/(text.length*.6),innerHeight*.34)+'px'; }
+function freeDigits(text){ return Math.min(innerWidth*.43/(TimerTools.digitWidth(S?.digitFont,text)),innerHeight*.34)+'px'; }
 function paint(timeText, fg, bg, neg, blink, bigText, msgText, msgFlash, prog,free=false){
   setStyle(document.body,'background',bg);
 
@@ -386,14 +398,17 @@ function paint(timeText, fg, bg, neg, blink, bigText, msgText, msgFlash, prog,fr
       setStyle(tEl,'fontSize',freeDigits(timeText)); lastKey='';
     } else if (fitMode){
       // puni širinu prozora; rezervisana dužina (stabilna) da se prozor ne trza po cifri
-      const refLen = Math.max(timeText.length, fmtMs(S.durationMs||0).length, 4);
-      setStyle(tEl,'fontSize',Math.max(14,sw*0.86/(refLen*0.6))+'px');
+      const width = Math.max(TimerTools.digitWidth(S?.digitFont,timeText),
+        TimerTools.digitWidth(S?.digitFont,fmtMs(S?.durationMs||0)),
+        TimerTools.digitWidth(S?.digitFont,'0:00'));
+      setStyle(tEl,'fontSize',Math.max(14,sw*0.86/width)+'px');
     } else {
-      const key = timeText.length + '|' + Math.round(sw) + 'x' + Math.round(sh) + '|' + (bigText?1:0);
+      const width = TimerTools.digitWidth(S?.digitFont,timeText);
+      const key = width + '|' + Math.round(sw) + 'x' + Math.round(sh) + '|' + (bigText?1:0);
       if (key !== lastKey){
         lastKey = key;
         const avail = bigText ? sh*0.6 : sh*0.7;
-        setStyle(tEl,'fontSize',Math.min(sw*0.92/(timeText.length*0.6),avail)+'px');
+        setStyle(tEl,'fontSize',Math.min(sw*0.92/width,avail)+'px');
       }
     }
   }

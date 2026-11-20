@@ -20,7 +20,7 @@ function host(settings) {
   if (settings) storage.set('pt_settings', JSON.stringify(settings));
   function node(id) {
     if (!nodes.has(id)) nodes.set(id, {
-      value: '', checked: false,
+      value: '', checked: false, style: {},
       addEventListener(event, handler) { this[event] = handler; }
     });
     return nodes.get(id);
