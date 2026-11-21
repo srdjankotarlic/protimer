@@ -266,7 +266,7 @@ function renderStatic(now){
 }
 
 function renderTick(){
-  const now=hostNow(), d=new Date(now);
+  const now=hostNow(), second=TimerTools.displaySecond(now), d=new Date(second);
   setHTML($('clock'),`${pad(d.getHours())}:${pad(d.getMinutes())}<span class="s">:${pad(d.getSeconds())}</span>`);
   if(!S) return;
   if(dayKey(now)!==planDay) staticDirty=true;
@@ -279,7 +279,7 @@ function renderTick(){
     if(!S.overtime&&curRem<0) curRem=0;
     if(S.useWarnColors){ if(curRem<=S.redSec*1000)tcol=S.warnRed||'#ff4540'; else if(curRem<=S.yellowSec*1000)tcol=S.warnYellow||'#ffc23a'; }
     if(curRem<0)tcol=S.warnRed||'#ff4540';
-    ttxt=fmtMs(curRem);
+    ttxt=fmtMs(TimerTools.displayRemaining(S,second,S.overtime));
   }
   setText($('nowTimer'),ttxt);
   if($('nowTimer').style.color!==tcol)$('nowTimer').style.color=tcol;
@@ -298,8 +298,7 @@ function renderTick(){
       (projectedEnd!=null?`<span>${tr('projected')}: <b>${clk(projectedEnd)}</b></span>`:'')+ouHtml);
   } else setHTML(f,'');
 }
-renderTick();
-setInterval(renderTick,100);
+TimerTools.displayLoop(renderTick,hostNow,setTimeout,100);
 </script>
 </body>
 </html>

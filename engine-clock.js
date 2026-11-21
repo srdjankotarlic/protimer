@@ -23,8 +23,8 @@
   function shiftRunning(state, delta) {
     for (const timer of [state, state.secondary, state.tertiary]) {
       if (!timer?.running || timer.mode === 'clock') continue;
-      if (timer.mode === 'countup') timer.startAt += delta;
-      else timer.endAt += delta;
+      if (timer.mode === 'countup' || timer.startAt) timer.startAt += delta;
+      if (timer.mode !== 'countup') timer.endAt += delta;
     }
   }
   return { create, shiftRunning };

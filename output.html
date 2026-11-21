@@ -246,8 +246,8 @@ if (IS_ELECTRON){
 }
 
 function render(){
-  const now = hostNow();
-  const d = new Date(now);
+  const now = hostNow(), second = TimerTools.displaySecond(now);
+  const d = new Date(second);
 
   // dok ne stigne stanje — prikaži tačno vreme
   if (!S&&routedOutput) return;
@@ -262,7 +262,7 @@ function render(){
   if (S.mode === 'clock'){
     text = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
   } else if (S.mode === 'countup'){
-    const el = S.running ? S.elapsedMs + (now - S.startAt) : S.elapsedMs;
+    const el = TimerTools.displayElapsed(S,second);
     text = fmtSecs(Math.floor(el/1000), false);
   } else {
     let rem = S.running ? S.endAt - now : S.remMs;
@@ -273,7 +273,7 @@ function render(){
     }
     if (rem <= 0){ fg = S.warnRed || '#ff4540'; neg = rem < 0; blink = S.flashZero !== false; }
     prog = S.durationMs > 0 ? Math.max(0, Math.min(1, rem / S.durationMs)) : 0;
-    text = fmtMs(rem);
+    text = fmtMs(TimerTools.displayRemaining(S,second,S.overtime));
   }
 
   if(S.outputKeyColor) fg='#ffffff';
@@ -292,8 +292,8 @@ function render(){
   paint(text, fg, bg, neg, blink, S.text || '', S.message ? S.message.text : '',
         S.message && S.message.flash, S.showProgress ? prog : null,free);
   applyLayout($('primaryContent'),S.outputLayout);
-  if(S.dualTimer&&S.secondary) renderAdditional('secondary',now,free);
-  if(S.thirdTimer&&S.tertiary) renderAdditional('tertiary',now,free);
+  if(S.dualTimer&&S.secondary) renderAdditional('secondary',now,second,free);
+  if(S.thirdTimer&&S.tertiary) renderAdditional('tertiary',now,second,free);
 
   if (fitMode) requestFit();
   renderNowNext(fg,free);
@@ -322,10 +322,10 @@ function renderFreeLayout(enabled){
     setStyle(el,'transform',pos?`translate(-50%, -50%) scale(${pos.scale/100})`:'');
   }
 }
-function renderAdditional(role,now,free){
+function renderAdditional(role,now,second,free){
   const timer=S[role], pane=$(role+'Pane'), el=$(role+'Timer');
   let rem=TimerTools.remaining(timer,now); if(!(timer.overtime??S.overtime)) rem=Math.max(0,rem);
-  const mode=timer.mode||'countdown',text=mode==='clock'?new Date(now).toLocaleTimeString('en-GB',{hour12:false}):mode==='countup'?fmtSecs(Math.floor(TimerTools.elapsed(timer,now)/1000),false):fmtMs(rem);
+  const mode=timer.mode||'countdown',text=mode==='clock'?new Date(second).toLocaleTimeString('en-GB',{hour12:false}):mode==='countup'?fmtSecs(Math.floor(TimerTools.displayElapsed(timer,second)/1000),false):fmtMs(TimerTools.displayRemaining(timer,second,timer.overtime??S.overtime));
   const fg=S.outputKeyColor?'#ffffff':mode!=='countdown'?S.fgColor:rem<=0?(S.warnRed||'#ff4540'):S.useWarnColors?(rem<=S.redSec*1000?S.warnRed:rem<=S.yellowSec*1000?S.warnYellow:S.fgColor):S.fgColor;
   const neg=mode==='countdown'&&rem<0, blink=mode==='countdown'&&rem<=0&&(timer.flashZero??S.flashZero??true);
   setText(el,text); setStyle(el,'color',fg); setClass(el,[neg?'neg':'',blink?'blink':''].filter(Boolean).join(' '));
@@ -437,8 +437,7 @@ if (IS_ELECTRON){
 }
 
 window.addEventListener('resize', () => { lastKey=''; });
-render();
-setInterval(render,50);
+TimerTools.displayLoop(render,hostNow,setTimeout);
 </script>
 </body>
 </html>

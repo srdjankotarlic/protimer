@@ -4,6 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 const TimerTools = require('../timer-tools');
+const AudienceRoutes = require('../audience-routes');
 
 test('secondary zero alerts restore independently and do not opt into primary audio', () => {
   const defaults = TimerTools.secondary();
@@ -43,7 +44,7 @@ test('separate output projects only its own zero-alert choices without changing 
 
 // Execute the actual view scripts with a minimal DOM; the network never resolves
 // and timers do not run, so each assertion observes exactly one requested frame.
-function view(file) {
+function view(file, DateImpl = Date) {
   const nodes = new Map();
   function element() {
     const node = { style: {}, className: '', textContent: '', innerHTML: '', value: '',
@@ -64,7 +65,7 @@ function view(file) {
     getElementById(id) { if (!nodes.has(id)) nodes.set(id, element()); return nodes.get(id); } };
   const context = vm.createContext({ document, TimerTools, innerWidth: 900, innerHeight: 500,
     window: { pt: { onWinFs() {}, onState() {}, onAudienceQr() {} }, addEventListener() {} },
-    location: { search: '', protocol: 'https:' }, URLSearchParams, AbortController,
+    location: { search: '', protocol: 'https:' }, URLSearchParams, AbortController, Date: DateImpl,
     fetch: () => new Promise(() => {}), setInterval() {}, setTimeout() {}, clearTimeout() {} });
   const html = fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
   for (const match of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g))
@@ -164,4 +165,44 @@ test('standalone Timer 2 uses its setting; zero flashing is confined to timer di
   assert.match(page.html, /#timer\.blink\{animation:/);
   assert.match(page.html, /#secondaryTimer\.blink,#tertiaryTimer\.blink\{animation:/);
   assert.match(page.html, /#msg\.flash\{animation:/);
+});
+
+
+test('staggered countdown, stopwatch and clock change digits on the same host second across outputs', () => {
+  const base = 1700000000000;
+  let now = base;
+  class DisplayDate extends Date { static now() { return now; } }
+  const combined = view('output.html', DisplayDate);
+  const separate = ['t1', 't2', 't3'].map(selection => ({
+    page: view('output.html', DisplayDate), route: { view: selection, background: 'standard', presentation: 'fullscreen' }
+  }));
+  const remote = view('remote.html', DisplayDate);
+  const current = {
+    ...state(), liveTimerView: 'all', thirdTimer: true,
+    running: true, startAt: base + 250, endAt: base + 5250, remMs: 5000,
+    secondary: { mode: 'countup', running: true, startAt: base + 750, elapsedMs: 0 },
+    tertiary: { mode: 'clock', running: false }
+  };
+  const before = structuredClone(current);
+  const digits = (page, ids) => ids.map(id => page.node(id).textContent);
+  for (const [offset, countdown, stopwatch] of [
+    [850, '0:05', '0:00'], [3749, '0:03', '0:02'], [3999, '0:03', '0:02'],
+    [4000, '0:02', '0:03'], [4999, '0:02', '0:03'], [5000, '0:01', '0:04'],
+    [5250, '0:01', '0:04'], [6000, '−0:00', '0:05']
+  ]) {
+    now = base + offset;
+    const clock = new Date(base + Math.floor(offset / 1000) * 1000)
+      .toLocaleTimeString('en-GB', { hour12: false });
+    const expected = [countdown, stopwatch, clock];
+    combined.render(current);
+    assert.deepEqual(digits(combined, ['timer', 'secondaryTimer', 'tertiaryTimer']), expected, String(offset));
+    assert.deepEqual(separate.map(({page, route}) => {
+      page.render(AudienceRoutes.project(current, route));
+      return page.node('timer').textContent;
+    }), expected);
+    remote.render(current);
+    assert.deepEqual(digits(remote, ['time', 'secondaryTime']), expected.slice(0, 2));
+  }
+  assert.equal(TimerTools.remaining(current, base + 5250), 0, 'The real deadline remains exact');
+  assert.deepEqual(current, before, 'Rendering does not alter starts or deadlines');
 });

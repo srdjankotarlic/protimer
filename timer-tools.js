@@ -92,13 +92,30 @@
   const secondary = optionalTimer;
   function remaining(timer, now) { return timer.running ? timer.endAt - now : timer.remMs; }
   function elapsed(timer, now) { return (timer.elapsedMs || 0) + (timer.running ? now - timer.startAt : 0); }
+  // Sample the digits on the host's whole seconds. A new run keeps its
+  // opening reading until the next beat, even if Start fell mid-second.
+  function displaySecond(now) { return Math.floor(now / 1000) * 1000; }
+  function displaySample(timer, second) { return Math.max(second, timer.startAt || second); }
+  function displayRemaining(timer, second, overtime) {
+    const ms = remaining(timer, displaySample(timer, second));
+    return overtime ? ms : Math.max(0, ms);
+  }
+  function displayElapsed(timer, second) { return elapsed(timer, displaySample(timer, second)); }
+  function displayLoop(render, now, schedule, interval = 50) {
+    function tick() {
+      render();
+      const time = now();
+      schedule(tick, Math.min(interval, displaySecond(time) + 1000 - time));
+    }
+    tick();
+  }
   function setRunning(timer, running, now) {
     if (timer.mode === 'clock') return; // A clock display has no transport/deadline.
     if (timer.running === running) return;
-    if (timer.mode === 'countup') {
-      if (running) timer.startAt = now;
-      else timer.elapsedMs = elapsed(timer, now);
-    } else if (running) timer.endAt = now + timer.remMs;
+    if (running) {
+      timer.startAt = now;
+      if (timer.mode !== 'countup') timer.endAt = now + timer.remMs;
+    } else if (timer.mode === 'countup') timer.elapsedMs = elapsed(timer, now);
     else timer.remMs = remaining(timer, now);
     timer.running = running;
   }
@@ -163,5 +180,5 @@
       text: '', textOnly: false, showNowNext: false
     };
   }
-  return { MAX_DURATION, plannedStart, scheduleAnchor, digitFont, digitFamily, digitWidth, clamp, layout, freeElements, freePosition, freeLayout, hasFreeLayout, size, grid, outputLayer, outputOnTop, secondary, optionalTimer, remaining, elapsed, setRunning, reset, separateOutputs, outputState,liveView,audienceState,groups,timerFor,timerEnabled,projectTimers };
+  return { MAX_DURATION, plannedStart, scheduleAnchor, digitFont, digitFamily, digitWidth, clamp, layout, freeElements, freePosition, freeLayout, hasFreeLayout, size, grid, outputLayer, outputOnTop, secondary, optionalTimer, remaining, elapsed, displaySecond, displayRemaining, displayElapsed, displayLoop, setRunning, reset, separateOutputs, outputState,liveView,audienceState,groups,timerFor,timerEnabled,projectTimers };
 });
