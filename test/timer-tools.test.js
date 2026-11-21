@@ -87,3 +87,18 @@ test('secondary mode migration defaults old settings to countdown and never auto
     assert.equal(timer.startAt, 0); assert.equal(timer.elapsedMs, 0); assert.equal(timer.remMs, timer.durationMs);
   }
 });
+
+test('display refresh targets the next host second even when renderer polling phases differ', () => {
+  for (const phase of [950, 978, 999]) {
+    let now = 10000 + phase, rendered = 0;
+    const pending = [];
+    tools.displayLoop(() => { rendered++; }, () => now, (fn, delay) => pending.push({fn, delay}));
+    assert.equal(pending[0].delay, 1000 - phase);
+    const {fn, delay} = pending.shift();
+    now += delay;
+    fn();
+    assert.equal(rendered, 2);
+    assert.equal(tools.displaySecond(now), 11000);
+    assert.equal(pending[0].delay, 50);
+  }
+});

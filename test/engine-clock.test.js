@@ -3,10 +3,10 @@ const assert = require('node:assert/strict');
 const Clock = require('../engine-clock');
 test('wall-clock jumps correct both authoritative deadlines without changing durations or paused timers', () => {
   let wall=100000,mono=0;
-  const s={mode:'countdown',running:true,endAt:wall+600000,durationMs:600000,secondary:{mode:'countup',running:true,startAt:wall,elapsedMs:0}};
+  const s={mode:'countdown',running:true,endAt:wall+600000,startAt:wall,durationMs:600000,secondary:{mode:'countup',running:true,startAt:wall,elapsedMs:0}};
   const clock=Clock.create({wallNow:()=>wall,monoNow:()=>mono,onJump:d=>Clock.shiftRunning(s,d)});
   wall+=1000;mono+=1000;clock.sample();assert.equal(s.endAt-wall,599000);
-  wall+=3600000;clock.sample();assert.equal(s.endAt-wall,599000);assert.equal(wall-s.secondary.startAt,1000);
+  wall+=3600000;clock.sample();assert.equal(s.endAt-wall,599000);assert.equal(wall-s.secondary.startAt,1000);assert.equal(wall-s.startAt,1000);
   wall-=7200000;clock.sample();assert.equal(s.endAt-wall,599000);assert.equal(s.durationMs,600000);
   s.running=false;const deadline=s.endAt;wall+=86400000;clock.sample();assert.equal(s.endAt,deadline);
 });

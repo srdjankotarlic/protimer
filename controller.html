@@ -1482,8 +1482,8 @@ function startPause(){
     if(S.mode==='countup') S.elapsedMs+=now-S.startAt; else S.remMs=S.endAt-now;
     S.running=false;
   } else {
-    if(S.mode==='countup') S.startAt=now;
-    else { S.endAt=now+S.remMs; if(S.remMs>0) zeroFired=false; }
+    S.startAt=now;
+    if(S.mode!=='countup'){ S.endAt=now+S.remMs; if(S.remMs>0) zeroFired=false; }
     S.running=true;
     if(currentCue>=0 && cues[currentCue] && S.mode==='countdown') rundownHasRun=true;
   }
@@ -1495,7 +1495,7 @@ function setDuration(ms,keepTarget=false,run=false){
   countdownRevision++;
   cancelAutoAdvance();
   if(!keepTarget) clearTargetArm(true);
-  Object.assign(S,{mode:'countdown',durationMs:ms,remMs:ms,elapsedMs:0,endAt:run?now+ms:0,running:run});
+  Object.assign(S,{mode:'countdown',durationMs:ms,remMs:ms,elapsedMs:0,startAt:run?now:0,endAt:run?now+ms:0,running:run});
   zeroFired=false;
   if(run&&cues[currentCue]) rundownHasRun=true;
   setModeTabs(); send(); deckControl?.prepared('t1'); updateButtons();
@@ -1875,9 +1875,9 @@ async function beep(){
 $('btnTestZeroBell').addEventListener('click',()=>{void beep();});
 
 // ---------- RENDER (ogledalo izlaza) ----------
-function calc(now){
-  if(S.mode==='clock'){ const d=new Date(); return {text:`${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`,fg:S.fgColor,neg:false,prog:null,rem:null}; }
-  if(S.mode==='countup'){ const el=S.running?S.elapsedMs+(now-S.startAt):S.elapsedMs; return {text:fmtSecs(Math.floor(el/1000),false),fg:S.fgColor,neg:false,prog:null,rem:null}; }
+function calc(now,second=TimerTools.displaySecond(now)){
+  if(S.mode==='clock'){ const d=new Date(second); return {text:`${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`,fg:S.fgColor,neg:false,prog:null,rem:null}; }
+  if(S.mode==='countup'){ const el=TimerTools.displayElapsed(S,second); return {text:fmtSecs(Math.floor(el/1000),false),fg:S.fgColor,neg:false,prog:null,rem:null}; }
   let rem=S.running?S.endAt-now:S.remMs;
   if(!S.overtime&&rem<0) rem=0;
   let fg=S.fgColor, neg=false;
@@ -1885,7 +1885,7 @@ function calc(now){
   if(rem<=0) fg=S.warnRed;
   if(rem<0) neg=true;
   const prog=S.durationMs>0?Math.max(0,Math.min(1,rem/S.durationMs)):0;
-  return {text:fmtMs(rem),fg,neg,prog,rem};
+  return {text:fmtMs(TimerTools.displayRemaining(S,second,S.overtime)),fg,neg,prog,rem};
 }
 let lastKey='';
 const lastOptionalMode={};
@@ -1899,14 +1899,14 @@ function renderPreviewBackground(preview,checker){
 
 function render(){
   refreshOutputQualityContext();
-  const now=engineClock.sample(), r=calc(now);
+  const now=engineClock.sample(), second=TimerTools.displaySecond(now), r=calc(now,second);
   for(const role of Object.keys(additionalTimers)){
     if(!optionalEnabled(role)) continue;
     const timer=S[role];
     let rem=TimerTools.remaining(timer,now); if(!(timer.overtime??S.overtime)) rem=Math.max(0,rem);
     const mode=timer.mode||'countdown';
     const readout=$(role+'Readout'),preview=$(role+'Preview');
-    const time=mode==='clock'?new Date(now).toLocaleTimeString('en-GB',{hour12:false}):mode==='countup'?fmtSecs(Math.floor(TimerTools.elapsed(timer,now)/1000),false):fmtMs(rem);
+    const time=mode==='clock'?new Date(second).toLocaleTimeString('en-GB',{hour12:false}):mode==='countup'?fmtSecs(Math.floor(TimerTools.displayElapsed(timer,second)/1000),false):fmtMs(TimerTools.displayRemaining(timer,second,timer.overtime??S.overtime));
     if(readout.textContent!==time) readout.textContent=time;
     readout.style.fontSize=Math.min(preview.clientWidth*.86/Math.max(4,TimerTools.digitWidth(S.digitFont,time)),preview.clientHeight*.56)+'px';
     renderPreviewBackground(preview,$(role+'Checker'));
